@@ -5,11 +5,10 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_ARMOR, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, disableCheckDB: true, typeList: ["harpy"] })
-    
+
     return {
         configs: [
             {
@@ -20,7 +19,9 @@ export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ... MAGE_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             maximumTargets: 1,
                             type: "harpy",
                         }),
@@ -31,7 +32,9 @@ export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             maximumTargets: 1,
                             type: "harpy",
                         }),
@@ -43,7 +46,9 @@ export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacte
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "attack"]
+                            },
                             maximumTargets: 1,
                             type: "harpy",
                         }),
@@ -59,7 +64,9 @@ export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ... MAGE_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             maximumTargets: 1,
                             type: "harpy",
                         }),
@@ -70,7 +77,9 @@ export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             maximumTargets: 1,
                             type: "harpy",
                         }),
@@ -86,7 +95,9 @@ export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             maximumTargets: 1,
                             type: "harpy",
                         }),
@@ -98,7 +109,9 @@ export function constructHarpySetup(contexts: Strategist<PingCompensatedCharacte
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "attack"]
+                            },
                             maximumTargets: 1,
                             type: "harpy",
                         }),

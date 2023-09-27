@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_NORMAL, PRIEST_NORMAL } from "./equipment.js"
 
 export function constructPorcupineSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -17,7 +16,9 @@ export function constructPorcupineSetup(contexts: Strategist<PingCompensatedChar
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "int"]
+                            },
                             type: "porcupine",
                         }),
                         move: new ImprovedMoveStrategy("porcupine")
@@ -31,7 +32,9 @@ export function constructPorcupineSetup(contexts: Strategist<PingCompensatedChar
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...PRIEST_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "int"]
+                            },
                             type: "porcupine"
                         }),
                         move: new ImprovedMoveStrategy("porcupine")
@@ -45,7 +48,9 @@ export function constructPorcupineSetup(contexts: Strategist<PingCompensatedChar
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
-                            // TODO: Ranger normal
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "dex"]
+                            },
                             type: "porcupine"
                         }),
                         move: new ImprovedMoveStrategy("porcupine")
@@ -77,7 +82,10 @@ export function constructPorcupineHelperSetup(contexts: Strategist<PingCompensat
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, type: "porcupine" }),
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            type: "porcupine"
+                        }),
                         move: new ImprovedMoveStrategy("porcupine")
                     }
                 ]
@@ -87,7 +95,10 @@ export function constructPorcupineHelperSetup(contexts: Strategist<PingCompensat
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, type: "porcupine" }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            type: "porcupine"
+                        }),
                         move: new ImprovedMoveStrategy("porcupine")
                     }
                 ]

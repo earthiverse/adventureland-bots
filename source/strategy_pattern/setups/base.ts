@@ -18,7 +18,6 @@ import { constructGigaCrabHelperSetup, constructGigaCrabSetup } from "./crabxx.j
 import { constructCuteBeeHelperSetup, constructCuteBeeSetup } from "./cutebee.js"
 import { constructDragoldHelperSetup, constructDragoldSetup } from "./dragold.js"
 import { constructEntHelperSetup, constructEntSetup } from "./ent.js"
-import { MAGE_NORMAL, MAGE_SPLASH, PRIEST_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
 import { constructFireRoamerSetup } from "./fireroamer.js"
 import { constructFrankyHelperSetup, constructFrankySetup } from "./franky.js"
 import { constructFrogHelperSetup, constructFrogSetup } from "./frog.js"
@@ -62,9 +61,10 @@ import { constructCrabSetup } from "./crab.js"
 import { constructBeeSetup } from "./bee.js"
 import { constructIceRoamerHelperSetup, constructIceRoamerSetup } from "./iceroamer.js"
 import { constructCryptHelperSetup, constructCryptSetup } from "./crypt.js"
+import { constructXMageSetup } from "./xmage.js"
 
 export type Requirements = {
-     [T in Attribute]?: number
+    [T in Attribute]?: number
 } & {
     items?: ItemName[]
 }
@@ -141,7 +141,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: privateInstance ? (allMagical ? { ...MAGE_SPLASH } : { ...MAGE_NORMAL }) : undefined,
+                            generateEnsureEquipped: { attributes: allMagical ? ["int", "explosion", "blast"] : allPhysical ? ["int", "attack"] : ["int", "attack"] },
                             typeList: monsters
                         }),
                         move: moveStrategy
@@ -153,7 +153,10 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "paladin",
-                        attack: new PaladinAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        attack: new PaladinAttackStrategy({
+                            contexts: contexts,
+                            typeList: monsters
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -165,7 +168,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: privateInstance ? { ...PRIEST_NORMAL } : undefined,
+                            generateEnsureEquipped: { attributes: ["int", "attack"] },
                             typeList: monsters,
                             enableGreedyAggro: (privateInstance && allMagical) ? true : undefined
                         }),
@@ -178,7 +181,11 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["dex", "attack"] },
+                            typeList: monsters
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -188,7 +195,11 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "rogue",
-                        attack: new RogueAttackStrategy({ contexts: contexts, typeList: monsters }),
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["dex", "attack"] },
+                            typeList: monsters
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -202,7 +213,7 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             enableEquipForCleave: privateInstance ? true : undefined,
                             enableGreedyAggro: (privateInstance && allPhysical) ? true : undefined,
-                            ensureEquipped: privateInstance ? (allPhysical ? { ...WARRIOR_SPLASH } : { ...WARRIOR_NORMAL }) : undefined,
+                            generateEnsureEquipped: { attributes: allMagical ? ["str", "attack"] : allPhysical ? ["str", "explosion", "blast"] : ["str", "attack"] },
                             typeList: monsters,
                         }),
                         move: moveStrategy
@@ -334,15 +345,19 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
 }
 
 export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]): Setups {
+    const cryptSetup = constructCryptSetup(contexts)
+    const osnakeSetup = constructOSnakeSetup(contexts)
+    const xmageSetup = constructXMageSetup(contexts)
+
     return {
-        a1: constructCryptSetup(contexts),
-        a2: constructCryptSetup(contexts),
-        a3: constructCryptSetup(contexts),
-        a4: constructCryptSetup(contexts),
-        a5: constructCryptSetup(contexts),
-        a6: constructCryptSetup(contexts),
-        a7: constructCryptSetup(contexts),
-        a8: constructCryptSetup(contexts),
+        a1: cryptSetup,
+        a2: cryptSetup,
+        a3: cryptSetup,
+        a4: cryptSetup,
+        a5: cryptSetup,
+        a6: cryptSetup,
+        a7: cryptSetup,
+        a8: cryptSetup,
         arcticbee: constructGenericSetup(contexts, ["arcticbee", "snowman"], true),
         armadillo: constructArmadilloSetup(contexts),
         bat: constructGenericSetup(contexts, ["bat", "goldenbat", "phoenix", "mvampire"], true),
@@ -383,7 +398,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         mvampire: constructMVampireSetup(contexts),
         nerfedbat: constructCryptSetup(contexts),
         oneeye: constructOneEyeSetup(contexts),
-        osnake: constructOSnakeSetup(contexts),
+        osnake: osnakeSetup,
         phoenix: constructPhoenixSetup(contexts),
         pinkgoo: constructPinkGooSetup(contexts),
         plantoid: constructPlantoidSetup(contexts),
@@ -396,7 +411,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         rharpy: constructRHarpySetup(contexts),
         scorpion: constructGenericSetup(contexts, ["scorpion", "phoenix"], true),
         skeletor: constructSkeletorSetup(contexts),
-        snake: constructOSnakeSetup(contexts),
+        snake: osnakeSetup,
         snowman: constructSnowmanSetup(contexts),
         spider: constructGenericSetup(contexts, ["spider", "phoenix"], true),
         squig: constructSquigToadSetup(contexts),
@@ -406,24 +421,31 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         tiger: constructTigerSetup(contexts),
         // tinyp: constructTinyPSetup(contexts),
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"], true),
-        vbat: constructCryptSetup(contexts),
+        vbat: cryptSetup,
         wabbit: constructWabbitSetup(contexts),
         wolf: constructWolfSetup(contexts),
         wolfie: constructWolfieSetup(contexts),
+        xmagefi: xmageSetup,
+        xmagefz: xmageSetup,
+        xmagen: xmageSetup,
+        xmagex: xmageSetup,
         xscorpion: constructXScorpionSetup(contexts),
     }
 }
 
 export function constructHelperSetups(contexts: Strategist<PingCompensatedCharacter>[]): Setups {
+    const cryptSetup = constructCryptHelperSetup(contexts)
+    const osnakeSetup = constructOSnakeHelperSetup(contexts)
+
     return {
-        a1: constructCryptHelperSetup(contexts),
-        a2: constructCryptHelperSetup(contexts),
-        a3: constructCryptHelperSetup(contexts),
-        a4: constructCryptHelperSetup(contexts),
-        a5: constructCryptHelperSetup(contexts),
-        a6: constructCryptHelperSetup(contexts),
-        a7: constructCryptHelperSetup(contexts),
-        a8: constructCryptHelperSetup(contexts),
+        a1: cryptSetup,
+        a2: cryptSetup,
+        a3: cryptSetup,
+        a4: cryptSetup,
+        a5: cryptSetup,
+        a6: cryptSetup,
+        a7: cryptSetup,
+        a8: cryptSetup,
         arcticbee: constructGenericSetup(contexts, ["arcticbee", "snowman"]),
         armadillo: constructArmadilloHelperSetup(contexts),
         bat: constructGenericSetup(contexts, ["bat"]),
@@ -451,7 +473,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         mrgreen: constructMrGreenHelperSetup(contexts),
         mrpumpkin: constructMrPumpkinHelperSetup(contexts),
         nerfedbat: constructCryptHelperSetup(contexts),
-        osnake: constructOSnakeHelperSetup(contexts),
+        osnake: osnakeSetup,
         phoenix: constructPhoenixHelperSetup(contexts),
         pinkgoo: constructPinkGooHelperSetup(contexts),
         poisio: constructGenericSetup(contexts, ["poisio"]),
@@ -459,7 +481,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         rat: constructGenericSetup(contexts, ["rat"]),
         rgoo: constructRGooHelperSetup(contexts),
         scorpion: constructGenericSetup(contexts, ["scorpion"]),
-        snake: constructOSnakeHelperSetup(contexts),
+        snake: osnakeSetup,
         snowman: constructSnowmanHelperSetup(contexts),
         spider: constructGenericSetup(contexts, ["spider"]),
         squig: constructSquigToadHelperSetup(contexts),
@@ -469,5 +491,6 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"]),
         wabbit: constructWabbitHelperSetup(contexts),
         wolfie: constructGenericWithPriestSetup(contexts, ["wolfie"]),
+        vbat: cryptSetup
     }
 }

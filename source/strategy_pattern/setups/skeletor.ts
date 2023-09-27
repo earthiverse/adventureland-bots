@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_ARMOR, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 class WarriorSkeletorAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
@@ -31,7 +30,9 @@ export function constructSkeletorSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            ensureEquipped: { ...MAGE_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"],
+                            },
                             typeList: typeList,
                         }),
                         move: moveStrategy
@@ -42,7 +43,9 @@ export function constructSkeletorSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"],
+                            },
                             typeList: typeList,
                         }),
                         move: moveStrategy
@@ -52,7 +55,9 @@ export function constructSkeletorSetup(contexts: Strategist<PingCompensatedChara
                         attack: new WarriorSkeletorAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "attack"],
+                            },
                             typeList: typeList,
                         }),
                         move: moveStrategy
@@ -68,7 +73,9 @@ export function constructSkeletorSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"],
+                            },
                             typeList: typeList,
                         }),
                         move: moveStrategy
@@ -78,7 +85,9 @@ export function constructSkeletorSetup(contexts: Strategist<PingCompensatedChara
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "attack"],
+                            },
                             typeList: typeList,
                         }),
                         move: moveStrategy

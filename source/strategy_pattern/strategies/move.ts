@@ -2,7 +2,7 @@ import AL, { IPosition, MonsterName, Pathfinder, Character, PingCompensatedChara
 import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
 import { sortClosestDistance, sortClosestDistancePathfinder, sortSpreadOut, sortTypeThenClosest } from "../../base/sort.js"
-import { Loop, LoopName, Strategist, Strategy } from "../context.js"
+import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 import { suppress_errors } from "../logging.js"
 
 export const AVOID_DOORS_COSTS = { blink: 999_999_999, enter: 999_999_999, town: 999_999_999, transport: 999_999_999 }
@@ -558,8 +558,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
         if (this.options.contexts) {
             // Look for it around the other contexts
-            for (const context of this.options.contexts) {
-                if (!context.isReady()) continue
+            for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
                 if (bot == context.bot) continue // We've already looked for it around ourself
                 const target = context.bot.getEntity({ returnNearest: true, typeList: this.options.typeList })
                 if (target) return this.returnUndefinedIfMapIgnored(target)
@@ -572,7 +571,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             if (sInfo?.live && sInfo.map && sInfo.x !== undefined && sInfo.y !== undefined) return this.returnUndefinedIfMapIgnored(sInfo as { map: MapName; x: number; y: number })
         }
 
-        if (!disableCheckDB) {
+        if (!disableCheckDB && AL.Database.connection) {
             // Look for it in our database
             const targets = await AL.EntityModel.find({
                 lastSeen: { $gt: Date.now() - 60_000 },

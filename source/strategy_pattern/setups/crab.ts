@@ -6,7 +6,6 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base.js"
-import { MAGE_SPLASH, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
 
 const attackTypes: MonsterName[] = ["crab", "phoenix", "squigtoad", "squig"]
 const moveTypes: MonsterName[] = ["crab"]
@@ -23,7 +22,9 @@ export function constructCrabSetup(contexts: Strategist<PingCompensatedCharacter
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "blast", "explosion"]
+                            },
                             typeList: attackTypes
                         }),
                         move: moveStrategy
@@ -38,7 +39,9 @@ export function constructCrabSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableCurse: true,
-                            ensureEquipped: { ...PRIEST_FAST },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "frequency"]
+                            },
                             typeList: attackTypes
                         }),
                         move: moveStrategy
@@ -50,7 +53,13 @@ export function constructCrabSetup(contexts: Strategist<PingCompensatedCharacter
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: attackTypes }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["dex", "frequency"]
+                            },
+                            typeList: attackTypes
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -65,7 +74,9 @@ export function constructCrabSetup(contexts: Strategist<PingCompensatedCharacter
                             disableAgitate: true,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["str", "blast", "explosion"]
+                            },
                             typeList: attackTypes
                         }),
                         move: moveStrategy

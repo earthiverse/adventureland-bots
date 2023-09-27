@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_NORMAL, PRIEST_LUCK, WARRIOR_NORMAL } from "./equipment.js"
 
 export function constructMVampireSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["mvampire"] })
@@ -20,8 +19,10 @@ export function constructMVampireSetup(contexts: Strategist<PingCompensatedChara
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_NORMAL },
-                            type: "mvampire",
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "luck", "blast", "explosion"]
+                            },
+                            typeList: ["mvampire", "goldenbat", "bat"],
                         }),
                         move: moveStrategy
                     },
@@ -31,8 +32,10 @@ export function constructMVampireSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
-                            type: "mvampire",
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "luck"]
+                            },
+                            typeList: ["mvampire", "goldenbat", "bat"],
                         }),
                         move: moveStrategy
                     },
@@ -40,8 +43,10 @@ export function constructMVampireSetup(contexts: Strategist<PingCompensatedChara
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
-                            type: "mvampire",
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "luck", "blast", "explosion"]
+                            },
+                            typeList: ["mvampire", "goldenbat", "bat"],
                         }),
                         move: moveStrategy
                     }

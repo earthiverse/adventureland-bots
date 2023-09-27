@@ -6,7 +6,6 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base.js"
-import { MAGE_FAST, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructMinimushSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("minimush")
@@ -21,7 +20,9 @@ export function constructMinimushSetup(contexts: Strategist<PingCompensatedChara
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_FAST },
+                            generateEnsureEquipped: {
+                                attributes: ["frequency", "blast", "explosion"]
+                            },
                             typeList: types
                         }),
                         move: moveStrategy
@@ -37,7 +38,9 @@ export function constructMinimushSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableCurse: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_FAST },
+                            generateEnsureEquipped: {
+                                attributes: ["frequency"]
+                            },
                             typeList: types
                         }),
                         move: moveStrategy
@@ -49,7 +52,13 @@ export function constructMinimushSetup(contexts: Strategist<PingCompensatedChara
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: types }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["frequency", "blast", "explosion"]
+                            },
+                            typeList: types
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -63,7 +72,9 @@ export function constructMinimushSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableAgitate: true,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["frequency", "blast", "explosion"]
+                            },
                             typeList: types
                         }),
                         move: moveStrategy

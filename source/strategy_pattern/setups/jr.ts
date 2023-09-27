@@ -3,7 +3,6 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_NORMAL } from "./equipment.js"
 import { suppress_errors } from "../logging.js"
 
 /**
@@ -28,7 +27,11 @@ export function constructJrSetup(contexts: Strategist<PingCompensatedCharacter>[
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageNoPartyAttackStrategy({ contexts: contexts, ensureEquipped: { ...MAGE_NORMAL }, type: "jr" }),
+                        attack: new MageNoPartyAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["luck"] },
+                            type: "jr"
+                        }),
                         move: new ImprovedMoveStrategy("jr")
                     }
                 ]

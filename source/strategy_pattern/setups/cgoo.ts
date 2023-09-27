@@ -8,7 +8,6 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_NORMAL, PRIEST_NORMAL, WARRIOR_NORMAL } from "./equipment.js"
 
 const typeList: MonsterName[] = ["cgoo"]
 
@@ -25,7 +24,7 @@ export function constructCGooSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: { attributes: ["armor", "str", "attack"] },
                             typeList: typeList
                         }),
                         move: cgooMoveStrategy
@@ -39,7 +38,7 @@ export function constructCGooSetup(contexts: Strategist<PingCompensatedCharacter
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_NORMAL },
+                            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
                             typeList: typeList,
                         }),
                         move: cgooMoveStrategy
@@ -66,6 +65,7 @@ export function constructCGooSetup(contexts: Strategist<PingCompensatedCharacter
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["armor", "dex", "attack"] },
                             typeList: typeList,
                         }),
                         move: cgooMoveStrategy
@@ -79,6 +79,7 @@ export function constructCGooSetup(contexts: Strategist<PingCompensatedCharacter
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({
                             contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["armor", "dex", "attack"] },
                             typeList: typeList,
                         }),
                         move: cgooMoveStrategy
@@ -92,7 +93,7 @@ export function constructCGooSetup(contexts: Strategist<PingCompensatedCharacter
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...PRIEST_NORMAL },
+                            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
                             typeList: typeList,
                         }),
                         move: cgooMoveStrategy

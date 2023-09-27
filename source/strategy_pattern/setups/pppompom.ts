@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_ARMOR, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 export function constructPPPomPomSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -18,7 +17,9 @@ export function constructPPPomPomSetup(contexts: Strategist<PingCompensatedChara
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"],
+                            },
                             maximumTargets: 1,
                             targetingPartyMember: true,
                             type: "pppompom"
@@ -30,7 +31,10 @@ export function constructPPPomPomSetup(contexts: Strategist<PingCompensatedChara
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            enableAbsorbToTank: true,
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"],
+                            },
                             maximumTargets: 1,
                             type: "pppompom",
                         }),
@@ -40,7 +44,9 @@ export function constructPPPomPomSetup(contexts: Strategist<PingCompensatedChara
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "attack"],
+                            },
                             maximumTargets: 1,
                             targetingPartyMember: true,
                             type: "pppompom"

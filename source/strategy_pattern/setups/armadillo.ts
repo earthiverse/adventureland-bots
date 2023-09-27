@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH } from "./equipment.js"
 
 const attackTypes: MonsterName[] = ["armadillo", "phoenix"]
 const moveTypes: MonsterName[] = ["armadillo"]
@@ -22,7 +21,9 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "blast", "explosion"]
+                            },
                             typeList: attackTypes
                         }),
                         move: moveStrategy
@@ -34,7 +35,13 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: attackTypes }),
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["int", "attack"]
+                            },
+                            typeList: attackTypes
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -44,7 +51,13 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: attackTypes }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["dex", "attack"]
+                            },
+                            typeList: attackTypes
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -63,7 +76,10 @@ export function constructArmadilloHelperSetup(contexts: Strategist<PingCompensat
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, typeList: attackTypes }),
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            typeList: attackTypes
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -73,7 +89,10 @@ export function constructArmadilloHelperSetup(contexts: Strategist<PingCompensat
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, typeList: attackTypes }),
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            typeList: attackTypes
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -83,7 +102,10 @@ export function constructArmadilloHelperSetup(contexts: Strategist<PingCompensat
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: attackTypes }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            typeList: attackTypes
+                        }),
                         move: moveStrategy
                     }
                 ]

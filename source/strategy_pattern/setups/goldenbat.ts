@@ -3,7 +3,6 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_NORMAL } from "./equipment.js"
 
 export function constructGoldenbatSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -13,8 +12,15 @@ export function constructGoldenbatSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, ensureEquipped: { ...MAGE_NORMAL }, type: "goldenbat" }),
-                        move: new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["goldenbat"] })
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["int", "attack"] },
+                            type: "goldenbat"
+                        }),
+                        move: new SpecialMonsterMoveStrategy({
+                            contexts: contexts,
+                            typeList: ["goldenbat"]
+                        })
                     }
                 ]
             }

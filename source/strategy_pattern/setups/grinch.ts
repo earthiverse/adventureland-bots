@@ -8,7 +8,6 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_NORMAL, PRIEST_LUCK, WARRIOR_NORMAL } from "./equipment.js"
 
 const typeList: MonsterName[] = ["grinch"]
 
@@ -25,7 +24,7 @@ export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharact
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_NORMAL },
+                            generateEnsureEquipped: { attributes: ["luck"] },
                             typeList: typeList
                         }),
                         move: grinchMoveStrategy
@@ -35,7 +34,7 @@ export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharact
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: { attributes: ["luck"] },
                             typeList: typeList,
                         }),
                         move: grinchMoveStrategy
@@ -47,7 +46,7 @@ export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharact
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: { attributes: ["luck"] },
                             typeList: typeList
                         }),
                         move: grinchMoveStrategy
@@ -62,7 +61,7 @@ export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharact
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: { attributes: ["luck"] },
                             typeList: typeList,
                         }),
                         move: grinchMoveStrategy
@@ -73,7 +72,7 @@ export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: { attributes: ["luck"] },
                             typeList: typeList
                         }),
                         move: grinchMoveStrategy
@@ -94,7 +93,12 @@ export function constructGrinchHelperSetup(contexts: Strategist<PingCompensatedC
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, typeList: typeList, hasTarget: true }),
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["luck"] },
+                            typeList: typeList,
+                            hasTarget: true
+                        }),
                         move: grinchMoveStrategy
                     }
                 ]
@@ -104,7 +108,12 @@ export function constructGrinchHelperSetup(contexts: Strategist<PingCompensatedC
                 characters: [
                     {
                         ctype: "paladin",
-                        attack: new PaladinAttackStrategy({ contexts: contexts, typeList: typeList, hasTarget: true }),
+                        attack: new PaladinAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["luck"] },
+                            typeList: typeList,
+                            hasTarget: true
+                        }),
                         move: grinchMoveStrategy
                     }
                 ]
@@ -114,7 +123,13 @@ export function constructGrinchHelperSetup(contexts: Strategist<PingCompensatedC
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, typeList: typeList, hasTarget: true }),
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableAbsorb: true,
+                            generateEnsureEquipped: { attributes: ["luck"] },
+                            typeList: typeList,
+                            hasTarget: true
+                        }),
                         move: grinchMoveStrategy
                     }
                 ]
@@ -124,7 +139,12 @@ export function constructGrinchHelperSetup(contexts: Strategist<PingCompensatedC
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: typeList, hasTarget: true }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["luck"] },
+                            typeList: typeList,
+                            hasTarget: true
+                        }),
                         move: grinchMoveStrategy
                     }
                 ]
@@ -134,7 +154,12 @@ export function constructGrinchHelperSetup(contexts: Strategist<PingCompensatedC
                 characters: [
                     {
                         ctype: "rogue",
-                        attack: new RogueAttackStrategy({ contexts: contexts, typeList: typeList, hasTarget: true }),
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["luck"] },
+                            typeList: typeList,
+                            hasTarget: true
+                        }),
                         move: grinchMoveStrategy
                     }
                 ]
@@ -144,7 +169,15 @@ export function constructGrinchHelperSetup(contexts: Strategist<PingCompensatedC
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, enableEquipForCleave: true, enableEquipForStomp: true, typeList: typeList, hasTarget: true }),
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            disableAgitate: true,
+                            enableEquipForCleave: true,
+                            enableEquipForStomp: true,
+                            generateEnsureEquipped: { attributes: ["luck"] },
+                            typeList: typeList,
+                            hasTarget: true
+                        }),
                         move: grinchMoveStrategy
                     }
                 ]

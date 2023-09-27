@@ -10,7 +10,7 @@ export class ElixirStrategy<Type extends Character> implements Strategy<Type> {
         this.elixir = elixir
 
         this.loops.set("elixir", {
-            fn: async (bot: Type) => { await this.applyElixir(bot) },
+            fn: async (bot: Type) => { await this.applyElixir(bot).catch(console.error) },
             interval: 1000
         })
     }
@@ -21,7 +21,7 @@ export class ElixirStrategy<Type extends Character> implements Strategy<Type> {
 
         try {
             if (!bot.hasItem(this.elixir)) {
-            // Buy an elixir if we can
+                // Buy an elixir if we can
                 if (!bot.canBuy(this.elixir)) return
                 await bot.buy(this.elixir)
             }

@@ -2,7 +2,7 @@ import { Entity, GetEntityFilters, IPosition, Mage, MonsterName, PingCompensated
 import { KiteMonsterMoveStrategy } from "../strategies/move.js";
 import { Strategist, filterContexts } from "../context.js";
 import { suppress_errors } from "../logging.js";
-import { bankingPosition, getClosestBotToPosition, offsetPositionParty } from "../../base/locations.js";
+import { bankingPosition, getClosestBotToPosition } from "../../base/locations.js";
 import { NodeData } from "alclient/build/definitions/pathfinder.js";
 import { goAndWithdrawItem, locateItemsInBank } from "../../base/banking.js";
 import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js";
@@ -34,7 +34,6 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
         for (const friend of friends) {
             if (friend.hasItem("fieldgen0")) {
                 fieldGen = true
-                break
             }
 
             if (friend.map !== "winter_instance") continue
@@ -45,26 +44,39 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
             }
         }
 
-        if (!fieldGen) {
-            // Have the closest bot to the bank go and grab one
-            const closest = getClosestBotToPosition(bankingPosition as NodeData, friends)
-            if (closest === bot) {
-                await bot.smartMove(bankingPosition)
-                const bankFieldgens = locateItemsInBank(bot, { name: "fieldgen0" })
-                if (bankFieldgens.length) {
-                    const [packName, indexes] = bankFieldgens[0]
-                    await goAndWithdrawItem(bot, packName, indexes[0])
+        if (typeof fieldGen === "boolean") {
+            if (bot.hasItem("fieldgen0")) {
+                if (bot.map === "winter_instance") {
+                    // Place the fieldgen0
+                    const fieldGen0 = bot.locateItem("fieldgen0")
+                    await bot.equip(fieldGen0)
+                } else {
+                    // Move to xmage
+                    super.move(bot)
+                    return
                 }
-                return
             } else {
-                // Have the rest farm arctic bees until we get a field gen
-                // TODO: Improve this a bit
-                if (!bot.smartMoving) {
-                    bot.smartMove("arcticbee").catch(suppress_errors)
+                // Have the closeest bot get a fieldgen0 from the bank
+                const closest = getClosestBotToPosition(bankingPosition as NodeData, friends)
+                if (closest === bot) {
+                    await bot.smartMove(bankingPosition)
+                    const bankFieldgens = locateItemsInBank(bot, { name: "fieldgen0" })
+                    if (bankFieldgens.length) {
+                        const [packName, indexes] = bankFieldgens[0]
+                        await goAndWithdrawItem(bot, packName, indexes[0])
+                    }
+                    return
                 }
+
+                // Wait for a fieldgen0 to be placed
+                this.options.typeList = ["snowman", "arcticbee"]
+                super.move(bot)
                 return
             }
         }
+
+        // Reset incase we were farming arctic bees
+        this.options.typeList = XMAGE_MONSTERS
 
         // If priest, and the fieldgen needs healing, move within healing range
         if (bot.ctype === "priest" && typeof fieldGen !== "boolean" && fieldGen.hp < (fieldGen.max_hp * 0.75)) {
@@ -72,8 +84,6 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
                 bot.smartMove(fieldGen, { getWithin: bot.range - 25 }).catch(suppress_errors)
             return
         }
-
-        // TODO: Place Field gen if we have one and it's time to use it
 
         for (const type of XMAGE_MONSTERS) {
             filter.type = type as MonsterName
@@ -102,35 +112,21 @@ class MageXMageAttackStrategy extends MageAttackStrategy {
     public constructor(options?: MageAttackStrategyOptions) {
         super(options)
 
-        this.options.maximumTargets = 0
-        this.options.ensureEquipped = {
-            amulet: { name: "intamulet", filters: RETURN_HIGHEST },
+        this.options.generateEnsureEquipped = {
+            attributes: ["resistance", "int"],
+            ensure: {
+                mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
+                offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
+                orb: { name: "jacko", filters: { returnHighestLevel: true } }
+            }
         }
+        this.options.maximumTargets = 0
         this.options.typeList = XMAGE_MONSTERS
     }
 
     protected async attack(bot: Mage): Promise<void> {
         const entity = bot.getEntity({ typeList: XMAGE_MONSTERS })
         if (!entity) return super.attack(bot)
-
-        // TODO: Choose equipment based on what we're fighting
-        // this.options.ensureEquipped = {
-        //     amulet: { name: "intamulet", filters: RETURN_HIGHEST },
-        //     belt: { name: "intbelt", filters: RETURN_HIGHEST },
-        //     cape: { name: "tigercape", filters: RETURN_HIGHEST },
-        //     chest: { name: "harmor", filters: RETURN_HIGHEST },
-        //     earring1: { name: "cearring", filters: RETURN_HIGHEST },
-        //     earring2: { name: "cearring", filters: RETURN_HIGHEST },
-        //     gloves: { name: "hgloves", filters: RETURN_HIGHEST },
-        //     helmet: { name: "hhelmet", filters: RETURN_HIGHEST },
-        //     mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
-        //     offhand: { name: "wbookhs", filters: RETURN_HIGHEST },
-        //     orb: { name: "jacko", filters: RETURN_HIGHEST },
-        //     pants: { name: "hpants", filters: RETURN_HIGHEST },
-        //     ring1: { name: "cring", filters: RETURN_HIGHEST },
-        //     ring2: { name: "cring", filters: RETURN_HIGHEST },
-        //     shoes: { name: "vboots", filters: RETURN_HIGHEST },
-        // }
 
         switch (entity.type) {
             case "xmagefi":
@@ -155,10 +151,15 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
     public constructor(options?: PriestAttackStrategyOptions) {
         super(options)
 
-        this.options.enableAbsorbToTank = true
-        this.options.ensureEquipped = {
-            amulet: { name: "t2stramulet", filters: RETURN_HIGHEST },
+        this.options.generateEnsureEquipped = {
+            attributes: ["resistance", "int"],
+            ensure: {
+                mainhand: { name: "lmace", filters: { returnHighestLevel: true } },
+                offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
+                orb: { name: "jacko", filters: { returnHighestLevel: true } }
+            }
         }
+        this.options.enableAbsorbToTank = true
         this.options.typeList = XMAGE_MONSTERS
     }
 
@@ -171,25 +172,6 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
 
         const entity = bot.getEntity({ typeList: XMAGE_MONSTERS })
         if (!entity) return super.attack(bot)
-
-        // TODO: Choose equipment based on what we're fighting
-        // this.options.ensureEquipped = {
-        //     amulet: { name: "intamulet", filters: RETURN_HIGHEST },
-        //     belt: { name: "intbelt", filters: RETURN_HIGHEST },
-        //     cape: { name: "angelwings", filters: RETURN_HIGHEST },
-        //     chest: { name: "harmor", filters: RETURN_HIGHEST },
-        //     earring1: { name: "cearring", filters: RETURN_HIGHEST },
-        //     earring2: { name: "cearring", filters: RETURN_HIGHEST },
-        //     gloves: { name: "xgloves", filters: RETURN_HIGHEST },
-        //     helmet: { name: "hhelmet", filters: RETURN_HIGHEST },
-        //     mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
-        //     offhand: { name: "tigershield", filters: RETURN_HIGHEST },
-        //     orb: { name: "jacko", filters: RETURN_HIGHEST },
-        //     pants: { name: "hpants", filters: RETURN_HIGHEST },
-        //     ring1: { name: "cring", filters: RETURN_HIGHEST },
-        //     ring2: { name: "cring", filters: RETURN_HIGHEST },
-        //     shoes: { name: "hboots", filters: RETURN_HIGHEST },
-        // }
 
         switch (entity.type) {
             case "xmagefi":
@@ -214,34 +196,21 @@ class WarriorXMageAttackStrategy extends WarriorAttackStrategy {
     public constructor(options?: WarriorAttackStrategyOptions) {
         super(options)
 
-        this.options.maximumTargets = 0
-        this.options.ensureEquipped = {
-            amulet: { name: "snring", filters: RETURN_HIGHEST },
+        this.options.generateEnsureEquipped = {
+            attributes: ["resistance", "str"],
+            ensure: {
+                mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
+                offhand: { name: "fireblade", filters: { returnHighestLevel: true } },
+                orb: { name: "jacko", filters: { returnHighestLevel: true } }
+            }
         }
+        this.options.maximumTargets = 0
         this.options.typeList = XMAGE_MONSTERS
     }
 
     protected async attack(bot: Warrior): Promise<void> {
         const entity = bot.getEntity({ typeList: XMAGE_MONSTERS })
         if (!entity) return super.attack(bot)
-
-        // TODO: Choose equipment based on what we're fighting
-        // this.options.ensureEquipped = {
-        //     amulet: { name: "snring", filters: RETURN_HIGHEST },
-        //     belt: { name: "strbelt", filters: RETURN_HIGHEST },
-        //     cape: { name: "bcape", filters: RETURN_HIGHEST },
-        //     chest: { name: "xarmor", filters: RETURN_HIGHEST },
-        //     earring1: { name: "cearring", filters: RETURN_HIGHEST },
-        //     earring2: { name: "cearring", filters: RETURN_HIGHEST },
-        //     gloves: { name: "xgloves", filters: RETURN_HIGHEST },
-        //     helmet: { name: "xhelmet", filters: RETURN_HIGHEST },
-        //     mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
-        //     offhand: { name: "ololipop", filters: RETURN_HIGHEST },
-        //     pants: { name: "xpants", filters: RETURN_HIGHEST },
-        //     ring1: { name: "strring", filters: RETURN_HIGHEST },
-        //     ring2: { name: "strring", filters: RETURN_HIGHEST },
-        //     shoes: { name: "vboots", filters: RETURN_HIGHEST },
-        // }
 
         switch (entity.type) {
             case "xmagefi":

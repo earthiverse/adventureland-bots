@@ -1,11 +1,10 @@
-import AL, { PingCompensatedCharacter, Priest } from "alclient"
+import { PingCompensatedCharacter, Priest } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { HoldPositionMoveStrategy, ImprovedMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
+import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 
 class PriestGhostAttackStrategy extends PriestAttackStrategy {
     protected async attack(bot: Priest): Promise<void> {
@@ -47,7 +46,9 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "priest",
                         attack: new PriestGhostAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "attack"]
+                            },
                             enableGreedyAggro: true,
                             typeList: ["ghost", "tinyp"],
                         }),
@@ -58,7 +59,9 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "blast", "explosion"]
+                            },
                             typeList: ["ghost", "tinyp"],
                         }),
                         move: moveStrategy
@@ -70,7 +73,9 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                             disableAgitate: true,
                             disableZapper: true,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "str", "blast", "explosion"]
+                            },
                             typeList: ["ghost", "tinyp"],
                         }),
                         move: moveStrategy
@@ -84,7 +89,9 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "priest",
                         attack: new PriestGhostAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "attack"]
+                            },
                             enableGreedyAggro: true,
                             typeList: ["ghost", "tinyp"],
                         }),
@@ -95,7 +102,9 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "blast", "explosion"]
+                            },
                             typeList: ["ghost", "tinyp"],
                         }),
                         move: moveStrategy
@@ -109,7 +118,9 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "priest",
                         attack: new PriestGhostAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "attack"]
+                            },
                             enableGreedyAggro: true,
                             typeList: ["ghost", "tinyp"],
                         }),
@@ -122,7 +133,9 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                             disableAgitate: true,
                             disableZapper: true,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "str", "blast", "explosion"]
+                            },
                             typeList: ["ghost", "tinyp"],
                         }),
                         move: moveStrategy

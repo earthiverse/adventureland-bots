@@ -8,7 +8,6 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_ARMOR, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 class WarriorIceGolemAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
@@ -41,7 +40,9 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            ensureEquipped: { ...MAGE_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             type: "icegolem",
                         }),
                         move: moveStrategy
@@ -52,7 +53,9 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             type: "icegolem",
                         }),
                         move: moveStrategy
@@ -62,7 +65,9 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
                         attack: new WarriorIceGolemAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "attack"]
+                            },
                             type: "icegolem",
                         }),
                         move: moveStrategy
@@ -78,7 +83,9 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             type: "icegolem",
                         }),
                         move: moveStrategy
@@ -88,7 +95,9 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
                         attack: new WarriorIceGolemAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "attack"]
+                            },
                             type: "icegolem",
                         }),
                         move: moveStrategy

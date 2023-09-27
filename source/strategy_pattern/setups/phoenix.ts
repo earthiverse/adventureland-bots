@@ -8,7 +8,6 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_NORMAL, PRIEST_LUCK, WARRIOR_NORMAL } from "./equipment.js"
 
 const typeList: MonsterName[] = ["phoenix"]
 
@@ -25,7 +24,9 @@ export function constructPhoenixSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "luck", "int"]
+                            },
                             typeList: typeList
                         }),
                         move: phoenixMoveStrategy
@@ -36,7 +37,9 @@ export function constructPhoenixSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "luck", "int"]
+                            },
                             typeList: typeList,
                         }),
                         move: phoenixMoveStrategy
@@ -48,7 +51,9 @@ export function constructPhoenixSetup(contexts: Strategist<PingCompensatedCharac
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "luck", "str"]
+                            },
                             typeList: typeList
                         }),
                         move: phoenixMoveStrategy
@@ -64,7 +69,9 @@ export function constructPhoenixSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "luck", "int"]
+                            },
                             typeList: typeList,
                         }),
                         move: phoenixMoveStrategy
@@ -75,7 +82,9 @@ export function constructPhoenixSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "luck", "str"]
+                            },
                             typeList: typeList
                         }),
                         move: phoenixMoveStrategy
@@ -89,6 +98,9 @@ export function constructPhoenixSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "luck", "int"]
+                            },
                             typeList: typeList,
                         }),
                         move: phoenixMoveStrategy
@@ -102,6 +114,9 @@ export function constructPhoenixSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({
                             contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "luck", "dex"]
+                            },
                             typeList: typeList,
                         }),
                         move: phoenixMoveStrategy
@@ -122,7 +137,10 @@ export function constructPhoenixHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, typeList: typeList }),
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            typeList: typeList
+                        }),
                         move: phoenixMoveStrategy
                     }
                 ]
@@ -132,7 +150,10 @@ export function constructPhoenixHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "paladin",
-                        attack: new PaladinAttackStrategy({ contexts: contexts, typeList: typeList }),
+                        attack: new PaladinAttackStrategy({
+                            contexts: contexts,
+                            typeList: typeList
+                        }),
                         move: phoenixMoveStrategy
                     }
                 ]
@@ -142,7 +163,11 @@ export function constructPhoenixHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, typeList: typeList }),
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableAbsorb: true,
+                            typeList: typeList
+                        }),
                         move: phoenixMoveStrategy
                     }
                 ]
@@ -152,7 +177,10 @@ export function constructPhoenixHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: typeList }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            typeList: typeList
+                        }),
                         move: phoenixMoveStrategy
                     }
                 ]
@@ -162,7 +190,10 @@ export function constructPhoenixHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "rogue",
-                        attack: new RogueAttackStrategy({ contexts: contexts, typeList: typeList }),
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            typeList: typeList
+                        }),
                         move: phoenixMoveStrategy
                     }
                 ]
@@ -172,7 +203,13 @@ export function constructPhoenixHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, enableEquipForCleave: true, enableEquipForStomp: true, typeList: typeList }),
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            disableAgitate: true,
+                            enableEquipForCleave: true,
+                            enableEquipForStomp: true,
+                            typeList: typeList
+                        }),
                         move: phoenixMoveStrategy
                     }
                 ]

@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy, KiteInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { PRIEST_LUCK } from "./equipment.js"
 
 export function constructBScorpionSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const spawn = AL.Pathfinder.locateMonster("bscorpion")[0]
@@ -23,9 +22,8 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            ensureEquipped: {
-                                mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
-                                offhand: { name: "wbook1", filters: { returnHighestLevel: true } }
+                            generateEnsureEquipped: {
+                                attributes: ["int", "attack"]
                             },
                             targetingPartyMember: true,
                             type: "bscorpion"
@@ -38,7 +36,9 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "int"]
+                            },
                             type: "bscorpion",
                         }),
                         move: kiteStrategy
@@ -49,9 +49,8 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableZapper: true,
                             enableEquipForCleave: true,
-                            ensureEquipped: {
-                                mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
-                                offhand: { name: "fireblade", filters: { returnHighestLevel: true } }
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "str"]
                             },
                             targetingPartyMember: true,
                             type: "bscorpion"

@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_ARMOR, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 export function constructRHarpySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["rharpy"] })
@@ -20,7 +19,9 @@ export function constructRHarpySetup(contexts: Strategist<PingCompensatedCharact
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ... MAGE_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "attack"],
+                            },
                             type: "rharpy",
                         }),
                         move: moveStrategy
@@ -31,7 +32,9 @@ export function constructRHarpySetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "attack"],
+                            },
                             type: "rharpy",
                         }),
                         move: moveStrategy
@@ -40,7 +43,9 @@ export function constructRHarpySetup(contexts: Strategist<PingCompensatedCharact
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "str", "attack"],
+                            },
                             type: "rharpy",
                         }),
                         move: moveStrategy

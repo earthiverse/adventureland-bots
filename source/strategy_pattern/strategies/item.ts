@@ -34,7 +34,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
                 await this.transferItems(bot)
                 await this.transferSellableItems(bot)
                 await this.transferStackableItems(bot)
-                await this.upgradeOrCompoundItems(bot)
+                await this.upgradeOrCompoundItems(bot).catch(console.error)
             },
             interval: 5_000
         })

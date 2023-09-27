@@ -8,7 +8,6 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_NORMAL, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
@@ -41,7 +40,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            ensureEquipped: { ...MAGE_NORMAL },
+                            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
                             type: "mrgreen",
                         }),
                         move: moveStrategy
@@ -52,7 +51,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
                             type: "mrgreen",
                         }),
                         move: moveStrategy
@@ -62,7 +61,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new WarriorMrGreenAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: { attributes: ["armor", "str", "attack"] },
                             type: "mrgreen",
                         }),
                         move: moveStrategy
@@ -78,7 +77,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
                             type: "mrgreen",
                         }),
                         move: moveStrategy
@@ -88,7 +87,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: { attributes: ["armor", "str", "attack"] },
                             type: "mrgreen",
                         }),
                         move: moveStrategy
@@ -107,7 +106,12 @@ export function constructMrGreenHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, type: "mrgreen", hasTarget: true }),
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
+                            type: "mrgreen",
+                            hasTarget: true
+                        }),
                         move: new ImprovedMoveStrategy("mrgreen")
                     }
                 ]
@@ -117,7 +121,11 @@ export function constructMrGreenHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "paladin",
-                        attack: new PaladinAttackStrategy({ contexts: contexts, type: "mrgreen", hasTarget: true }),
+                        attack: new PaladinAttackStrategy({
+                            contexts: contexts,
+                            type: "mrgreen",
+                            hasTarget: true
+                        }),
                         move: new ImprovedMoveStrategy("mrgreen")
                     }
                 ]
@@ -127,7 +135,13 @@ export function constructMrGreenHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, type: "mrgreen", hasTarget: true }),
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
+                            disableAbsorb: true,
+                            type: "mrgreen",
+                            hasTarget: true
+                        }),
                         move: new ImprovedMoveStrategy("mrgreen")
                     }
                 ]
@@ -137,7 +151,12 @@ export function constructMrGreenHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, type: "mrgreen", hasTarget: true }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["armor", "dex", "attack"] },
+                            type: "mrgreen",
+                            hasTarget: true
+                        }),
                         move: new ImprovedMoveStrategy("mrgreen")
                     }
                 ]
@@ -147,7 +166,12 @@ export function constructMrGreenHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "rogue",
-                        attack: new RogueAttackStrategy({ contexts: contexts, type: "mrgreen", hasTarget: true }),
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["armor", "dex", "attack"] },
+                            type: "mrgreen",
+                            hasTarget: true
+                        }),
                         move: new ImprovedMoveStrategy("mrgreen")
                     }
                 ]
@@ -157,7 +181,14 @@ export function constructMrGreenHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, type: "mrgreen", hasTarget: true }),
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            disableAgitate: true,
+                            disableCleave: true,
+                            generateEnsureEquipped: { attributes: ["armor", "str", "attack"] },
+                            type: "mrgreen",
+                            hasTarget: true
+                        }),
                         move: new ImprovedMoveStrategy("mrgreen")
                     }
                 ]

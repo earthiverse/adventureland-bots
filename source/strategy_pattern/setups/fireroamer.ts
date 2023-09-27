@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 
 class PriestFireRoamerAttackStrategy extends PriestAttackStrategy {
     protected attack(bot: Priest): Promise<void> {
@@ -33,7 +32,9 @@ export function constructFireRoamerSetup(contexts: Strategist<PingCompensatedCha
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "blast", "explosion"]
+                            },
                             maximumTargets: 1,
                             targetingPartyMember: true,
                             type: "fireroamer"
@@ -46,7 +47,9 @@ export function constructFireRoamerSetup(contexts: Strategist<PingCompensatedCha
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "attack"]
+                            },
                             type: "fireroamer",
                         }),
                         move: new HoldPositionMoveStrategy({ map: "desertland", x: 180, y: -675 })
@@ -57,7 +60,9 @@ export function constructFireRoamerSetup(contexts: Strategist<PingCompensatedCha
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "str", "blast", "explosion"]
+                            },
                             maximumTargets: 1,
                             targetingPartyMember: true,
                             type: "fireroamer"

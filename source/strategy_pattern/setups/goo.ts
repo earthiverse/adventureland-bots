@@ -6,7 +6,6 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base.js"
-import { MAGE_SPLASH, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructGooSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("goo")
@@ -20,7 +19,9 @@ export function constructGooSetup(contexts: Strategist<PingCompensatedCharacter>
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["frequency", "blast", "explosion"]
+                            },
                             type: "goo"
                         }),
                         move: moveStrategy
@@ -35,7 +36,9 @@ export function constructGooSetup(contexts: Strategist<PingCompensatedCharacter>
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableCurse: true,
-                            ensureEquipped: { ...PRIEST_FAST },
+                            generateEnsureEquipped: {
+                                attributes: ["frequency"]
+                            },
                             type: "goo"
                         }),
                         move: moveStrategy
@@ -47,7 +50,13 @@ export function constructGooSetup(contexts: Strategist<PingCompensatedCharacter>
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, type: "goo" }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["frequency"]
+                            },
+                            type: "goo"
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -62,7 +71,9 @@ export function constructGooSetup(contexts: Strategist<PingCompensatedCharacter>
                             disableAgitate: true,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["frequency", "blast", "explosion"]
+                            },
                             type: "goo"
                         }),
                         move: moveStrategy

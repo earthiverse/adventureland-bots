@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_LUCK, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("bbpompom")
@@ -20,7 +19,9 @@ export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedChara
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "blast", "explosion"]
+                            },
                             type: "bbpompom"
                         }),
                         move: moveStrategy
@@ -31,7 +32,9 @@ export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "attack"]
+                            },
                             type: "bbpompom",
                         }),
                         move: moveStrategy
@@ -46,7 +49,9 @@ export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedChara
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["str", "blast", "explosion"]
+                            },
                             type: "bbpompom"
                         }),
                         move: moveStrategy
@@ -57,7 +62,9 @@ export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "attack"]
+                            },
                             type: "bbpompom",
                         }),
                         move: moveStrategy
@@ -72,7 +79,9 @@ export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedChara
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "blast", "explosion"]
+                            },
                             type: "bbpompom"
                         }),
                         move: moveStrategy
@@ -83,7 +92,9 @@ export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "attack"]
+                            },
                             type: "bbpompom",
                         }),
                         move: moveStrategy
@@ -93,7 +104,9 @@ export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedChara
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "blast", "explosion"]
+                            },
                             type: "bbpompom"
                         }),
                         move: moveStrategy

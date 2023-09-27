@@ -8,14 +8,14 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpreadOutImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 
 const types: MonsterName[] = ["crabx", "crabxx"]
 
+// TODO: Optimize PVP weapons
 class MageGigaCrabAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
         super.onApply(bot)
-        if (bot.serverData.name === "PVP") {
+        if (bot.isPVP()) {
             // No splash damage
             this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
             this.options.ensureEquipped.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
@@ -32,7 +32,7 @@ class MageGigaCrabAttackStrategy extends MageAttackStrategy {
 class PriestGigaCrabAttackStrategy extends PriestAttackStrategy {
     public onApply(bot: Priest): void {
         super.onApply(bot)
-        if (bot.serverData.name === "PVP") {
+        if (bot.isPVP()) {
             this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
             this.options.ensureEquipped.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
         } else {
@@ -46,7 +46,7 @@ class PriestGigaCrabAttackStrategy extends PriestAttackStrategy {
 class WarriorGigaCrabAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
         super.onApply(bot)
-        if (bot.serverData.name === "PVP") {
+        if (bot.isPVP()) {
             // No Splash Damage
             this.options.disableCleave = true
             this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
@@ -76,7 +76,9 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "blast", "explosion"]
+                            },
                             typeList: types
                         }),
                         move: moveStrategy
@@ -88,7 +90,9 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "attack", "int"]
+                            },
                             typeList: types,
                         }),
                         move: moveStrategy
@@ -101,7 +105,9 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "blast", "explosion"]
+                            },
                             typeList: types
                         }),
                         move: moveStrategy
@@ -117,13 +123,19 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
                             disableEnergize: true,
-                            ensureEquipped: {
-                                mainhand: { name: "crossbow", filters: { returnHighestLevel: true } },
-                                orb: { name: "jacko", filters: { returnHighestLevel: true } }
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "blast", "explosion"],
+                                ensure: {
+                                    mainhand: { name: "crossbow", filters: { returnHighestLevel: true } },
+                                    orb: { name: "jacko", filters: { returnHighestLevel: true } }
+                                }
                             },
                             typeList: types
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
+                        require: {
+                            items: ["crossbow", "jacko"]
+                        }
                     },
                     {
                         ctype: "priest",
@@ -132,7 +144,9 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             typeList: types,
                         }),
                         move: moveStrategy
@@ -146,7 +160,9 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "blast", "explosion"]
+                            },
                             typeList: types
                         }),
                         move: moveStrategy
@@ -163,7 +179,9 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             typeList: types,
                         }),
                         move: moveStrategy
@@ -176,7 +194,9 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "blast", "explosion"]
+                            },
                             typeList: types
                         }),
                         move: moveStrategy
@@ -197,7 +217,12 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, disableCreditCheck: true, hasTarget: true, typeList: types }),
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            disableCreditCheck: true,
+                            hasTarget: true,
+                            typeList: types
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -207,7 +232,12 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "paladin",
-                        attack: new PaladinAttackStrategy({ contexts: contexts, disableCreditCheck: true, hasTarget: true, typeList: types }),
+                        attack: new PaladinAttackStrategy({
+                            contexts: contexts,
+                            disableCreditCheck: true,
+                            hasTarget: true,
+                            typeList: types
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -217,7 +247,14 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, disableCreditCheck: true, enableHealStrangers: true, hasTarget: true, typeList: types }),
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableAbsorb: true,
+                            disableCreditCheck: true,
+                            enableHealStrangers: true,
+                            hasTarget: true,
+                            typeList: types
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -227,7 +264,12 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, disableCreditCheck: true, hasTarget: true, typeList: types }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            disableCreditCheck: true,
+                            hasTarget: true,
+                            typeList: types
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -237,7 +279,12 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "rogue",
-                        attack: new RogueAttackStrategy({ contexts: contexts, disableCreditCheck: true, hasTarget: true, typeList: types }),
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            disableCreditCheck: true,
+                            hasTarget: true,
+                            typeList: types
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -247,7 +294,14 @@ export function constructGigaCrabHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCreditCheck: true, enableEquipForStomp: true, hasTarget: true, typeList: types }),
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            disableAgitate: true,
+                            disableCreditCheck: true,
+                            enableEquipForStomp: true,
+                            hasTarget: true,
+                            typeList: types
+                        }),
                         move: moveStrategy
                     }
                 ]

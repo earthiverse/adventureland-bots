@@ -86,7 +86,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
         }
 
         this.loops.set("buy", {
-            fn: async (bot: Type) => { await this.buy(bot) },
+            fn: async (bot: Type) => { await this.buy(bot).catch(console.error) },
             interval: 1000
         })
     }

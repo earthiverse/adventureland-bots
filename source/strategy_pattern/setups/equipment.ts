@@ -4,42 +4,6 @@ import { EnsureEquipped, EnsureEquippedSlot } from "../strategies/attack"
 export const RETURN_HIGHEST: LocateItemFilters = { returnHighestLevel: true }
 export const UNEQUIP: EnsureEquippedSlot = { name: undefined, unequip: true }
 
-export const MAGE_ARMOR: EnsureEquipped = {
-    amulet: { name: "intamulet", filters: RETURN_HIGHEST },
-    belt: { name: "intbelt", filters: RETURN_HIGHEST },
-    cape: { name: "tigercape", filters: RETURN_HIGHEST },
-    chest: { name: "harmor", filters: RETURN_HIGHEST },
-    earring1: { name: "cearring", filters: RETURN_HIGHEST },
-    earring2: { name: "cearring", filters: RETURN_HIGHEST },
-    gloves: { name: "hgloves", filters: RETURN_HIGHEST },
-    helmet: { name: "hhelmet", filters: RETURN_HIGHEST },
-    mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
-    offhand: { name: "wbookhs", filters: RETURN_HIGHEST },
-    orb: { name: "jacko", filters: RETURN_HIGHEST },
-    pants: { name: "hpants", filters: RETURN_HIGHEST },
-    ring1: { name: "zapper", filters: RETURN_HIGHEST },
-    ring2: { name: "cring", filters: RETURN_HIGHEST },
-    shoes: { name: "vboots", filters: RETURN_HIGHEST },
-}
-
-export const MAGE_NORMAL: EnsureEquipped = {
-    amulet: { name: "intamulet", filters: RETURN_HIGHEST },
-    belt: { name: "intbelt", filters: RETURN_HIGHEST },
-    cape: { name: "tigercape", filters: RETURN_HIGHEST },
-    chest: { name: "wattire", filters: RETURN_HIGHEST },
-    earring1: { name: "cearring", filters: RETURN_HIGHEST },
-    earring2: { name: "cearring", filters: RETURN_HIGHEST },
-    gloves: { name: "wgloves", filters: RETURN_HIGHEST },
-    helmet: { name: "wcap", filters: RETURN_HIGHEST },
-    mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
-    offhand: { name: "wbook1", filters: RETURN_HIGHEST },
-    orb: { name: "jacko", filters: RETURN_HIGHEST },
-    pants: { name: "wbreeches", filters: RETURN_HIGHEST },
-    ring1: { name: "zapper", filters: RETURN_HIGHEST },
-    ring2: { name: "cring", filters: RETURN_HIGHEST },
-    shoes: { name: "wshoes", filters: RETURN_HIGHEST },
-}
-
 export const MAGE_SPLASH: EnsureEquipped = {
     amulet: { name: "intamulet", filters: RETURN_HIGHEST },
     belt: { name: "intbelt", filters: RETURN_HIGHEST },
@@ -58,8 +22,21 @@ export const MAGE_SPLASH: EnsureEquipped = {
 }
 
 export const MAGE_FAST: EnsureEquipped = {
-    ...MAGE_NORMAL,
+    amulet: { name: "intamulet", filters: RETURN_HIGHEST },
+    belt: { name: "intbelt", filters: RETURN_HIGHEST },
+    cape: { name: "tigercape", filters: RETURN_HIGHEST },
+    chest: { name: "wattire", filters: RETURN_HIGHEST },
+    earring1: { name: "cearring", filters: RETURN_HIGHEST },
+    earring2: { name: "cearring", filters: RETURN_HIGHEST },
+    gloves: { name: "wgloves", filters: RETURN_HIGHEST },
+    helmet: { name: "wcap", filters: RETURN_HIGHEST },
     mainhand: { name: "pinkie", filters: RETURN_HIGHEST },
+    offhand: { name: "wbook1", filters: RETURN_HIGHEST },
+    orb: { name: "jacko", filters: RETURN_HIGHEST },
+    pants: { name: "wbreeches", filters: RETURN_HIGHEST },
+    ring1: { name: "zapper", filters: RETURN_HIGHEST },
+    ring2: { name: "cring", filters: RETURN_HIGHEST },
+    shoes: { name: "wshoes", filters: RETURN_HIGHEST },
 }
 
 export const PRIEST_ARMOR: EnsureEquipped = {
@@ -70,11 +47,11 @@ export const PRIEST_ARMOR: EnsureEquipped = {
     earring1: { name: "cearring", filters: RETURN_HIGHEST },
     earring2: { name: "cearring", filters: RETURN_HIGHEST },
     gloves: { name: "vgloves", filters: RETURN_HIGHEST },
-    helmet: { name: "hhelmet", filters: RETURN_HIGHEST },
+    helmet: { name: "xhelmet", filters: RETURN_HIGHEST },
     mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
     offhand: { name: "tigershield", filters: RETURN_HIGHEST },
     orb: { name: "tigerstone", filters: RETURN_HIGHEST },
-    pants: { name: "hpants", filters: RETURN_HIGHEST },
+    pants: { name: "xpants", filters: RETURN_HIGHEST },
     ring1: { name: "zapper", filters: RETURN_HIGHEST },
     ring2: { name: "cring", filters: RETURN_HIGHEST },
     shoes: { name: "hboots", filters: RETURN_HIGHEST },
@@ -84,15 +61,15 @@ export const PRIEST_NORMAL: EnsureEquipped = {
     amulet: { name: "intamulet", filters: RETURN_HIGHEST },
     belt: { name: "intbelt", filters: RETURN_HIGHEST },
     cape: { name: "angelwings", filters: RETURN_HIGHEST },
-    chest: { name: "vattire", filters: RETURN_HIGHEST },
+    chest: { name: "wattire", filters: RETURN_HIGHEST },
     earring1: { name: "cearring", filters: RETURN_HIGHEST },
     earring2: { name: "cearring", filters: RETURN_HIGHEST },
     gloves: { name: "vgloves", filters: RETURN_HIGHEST },
-    helmet: { name: "hhelmet", filters: RETURN_HIGHEST },
+    helmet: { name: "wcap", filters: RETURN_HIGHEST },
     mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
     offhand: { name: "wbookhs", filters: RETURN_HIGHEST },
     orb: { name: "jacko", filters: RETURN_HIGHEST },
-    pants: { name: "hpants", filters: RETURN_HIGHEST },
+    pants: { name: "wbreeches", filters: RETURN_HIGHEST },
     ring1: { name: "zapper", filters: RETURN_HIGHEST },
     ring2: { name: "cring", filters: RETURN_HIGHEST },
     shoes: { name: "hboots", filters: RETURN_HIGHEST },
@@ -168,6 +145,7 @@ export const WARRIOR_STOMP: EnsureEquipped = {
     gloves: { name: "gloves1", filters: RETURN_HIGHEST },
     helmet: { name: "helmet1", filters: RETURN_HIGHEST },
     mainhand: { name: "basher", filters: RETURN_HIGHEST },
+    offhand: UNEQUIP,
     orb: { name: "jacko", filters: RETURN_HIGHEST },
     pants: { name: "pants1", filters: RETURN_HIGHEST },
     ring1: { name: "zapper", filters: RETURN_HIGHEST },
@@ -193,6 +171,8 @@ export const UNEQUIP_EVERYTHING: EnsureEquipped = {
     shoes: UNEQUIP,
 }
 
+// TODO: Combine 2nd and 3rd arguments to `options`, and add `ability` support
+// TODO: Add check for weapon type checks on classes (e.g. equipping crossbow on ranger lowers frequency)
 /**
  * Generates an ensured equipped loadout for a given bot
  * 
@@ -207,6 +187,9 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
     const equippableOffhand = Object.keys(Game.G.classes[bot.ctype].offhand) as WeaponType[]
     const equippableArmor: ItemType[] = ["amulet", "belt", "chest", "earring", "gloves", "helmet", "orb", "ring", "shoes"]
     const equippableItemTypes: (ItemType | WeaponType)[] = [...equippableMainhand, ...equippableOffhand, ...equippableDoublehand, ...equippableArmor]
+
+    // Remove blast and explosion if we're on PVP
+    if (bot.isPVP()) attributes.filter(a => (a !== "blast" && a !== "explosion"))
 
     const options: {
         [T in (ItemType | WeaponType)]?: ItemData[]
@@ -251,6 +234,28 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
         return sumB - sumA
     }
     for (const optionName in options) options[optionName as (ItemType | WeaponType)].sort(sortHighestAttributeFirst)
+
+    // const sortHighestAttributeFirstWithSlot = (a: ItemData, b: ItemData, slot: SlotType) => {
+    //     const itemDataA = new Item(a)
+    //     const itemDataB = new Item(b)
+
+    //     let sumA = 0
+    //     let sumB = 0
+    //     for (const attribute of attributes) {
+    //         sumA += (itemDataA[attribute] ?? 0) + (Game.G.classes[slot][itemDataA.type][attribute] ?? 0) + (Game.G.classes[slot][itemDataA.wtype][attribute] ?? 0)
+    //         sumB += (itemDataB[attribute] ?? 0) + (Game.G.classes[slot][itemDataB.type][attribute] ?? 0) + (Game.G.classes[slot][itemDataB.wtype][attribute] ?? 0)
+    //     }
+
+    //     for(const itemName in Game.G.classes[slot]) {
+
+    //         for(const attributeName in Game.G.classes[slot][itemName as ItemName]) {
+                
+    //         }
+
+
+    //     }
+    //     return sumB - sumA
+    // }
 
     const best: { [T in SlotType]?: ItemData } = {}
     const addBest = (slot: SlotType, item: ItemData) => {
@@ -303,6 +308,9 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
             toEquip[slotType] = ensure[slotType]
         }
     }
+
+    // Remove elixir
+    delete toEquip["elixir"]
 
     // Swap slots if we already have them equipped in different slots
     for (const [slot1, slot2] of [["earring1", "earring2"], ["ring1", "ring2"], ["mainhand", "offhand"]]) {

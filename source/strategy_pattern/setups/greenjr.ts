@@ -2,7 +2,6 @@ import { PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_NORMAL } from "./equipment.js"
 import { MageNoPartyAttackStrategy } from "./jr.js"
 
 export function constructGreenJrSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
@@ -13,7 +12,11 @@ export function constructGreenJrSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageNoPartyAttackStrategy({ contexts: contexts, ensureEquipped: { ...MAGE_NORMAL }, typeList: ["greenjr", "osnake", "snake"] }),
+                        attack: new MageNoPartyAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["int", "attack"] },
+                            typeList: ["greenjr", "osnake", "snake"]
+                        }),
                         move: new ImprovedMoveStrategy("greenjr")
                     }
                 ]

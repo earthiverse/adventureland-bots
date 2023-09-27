@@ -1,12 +1,10 @@
 import { PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
-import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base.js"
-import { MAGE_ARMOR, MAGE_FAST, MAGE_SPLASH, PRIEST_FAST, PRIEST_NORMAL, WARRIOR_NORMAL, WARRIOR_SPLASH } from "./equipment.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
 
@@ -23,7 +21,9 @@ export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedChar
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableCurse: true,
-                            ensureEquipped: { ...PRIEST_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "attack"]
+                            },
                             type: "iceroamer"
                         }),
                         move: moveStrategy
@@ -35,7 +35,13 @@ export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedChar
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, type: "iceroamer" }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "dex", "attack"]
+                            },
+                            type: "iceroamer"
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -48,7 +54,9 @@ export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedChar
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "str", "attack"]
+                            },
                             type: "iceroamer"
                         }),
                         move: moveStrategy

@@ -6,7 +6,6 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base.js"
-import { MAGE_SPLASH, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("bee")
@@ -20,7 +19,9 @@ export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "blast", "explosion"]
+                            },
                             type: "bee"
                         }),
                         move: moveStrategy
@@ -35,7 +36,9 @@ export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableCurse: true,
-                            ensureEquipped: { ...PRIEST_FAST },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "frequency"]
+                            },
                             type: "bee"
                         }),
                         move: moveStrategy
@@ -47,7 +50,13 @@ export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, type: "bee" }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["dex", "blast", "explosion"]
+                            },
+                            type: "bee"
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -62,7 +71,9 @@ export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>
                             disableAgitate: true,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["str", "blast", "explosion"]
+                            },
                             type: "bee"
                         }),
                         move: moveStrategy

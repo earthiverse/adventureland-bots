@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy, KiteMonsterMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Requirements, Setup } from "./base"
-import { MAGE_ARMOR, MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructPlantoidSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const requirements: Requirements = {
@@ -27,7 +26,9 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "explosion", "blast"],
+                            },
                             targetingPartyMember: true,
                             type: "plantoid"
                         }),
@@ -38,7 +39,9 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"],
+                            },
                             type: "plantoid",
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } })
@@ -50,7 +53,9 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             disableZapper: true,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "explosion", "blast"],
+                            },
                             targetingPartyMember: true,
                             type: "plantoid"
                         }),
@@ -67,7 +72,9 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            ensureEquipped: { ...MAGE_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"],
+                            },
                             targetingPartyMember: true,
                             type: "plantoid"
                         }),
@@ -84,7 +91,9 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"],
+                            },
                             type: "plantoid",
                         }),
                         move: kiteMoveStrategy,

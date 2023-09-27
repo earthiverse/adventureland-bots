@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_NORMAL, PRIEST_LUCK, WARRIOR_NORMAL } from "./equipment.js"
 
 export function constructFVampireSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["fvampire"] })
@@ -19,7 +18,7 @@ export function constructFVampireSetup(contexts: Strategist<PingCompensatedChara
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ... MAGE_NORMAL },
+                            generateEnsureEquipped: { attributes: ["resistance", "int", "attack"] },
                             type: "fvampire",
                         }),
                         move: moveStrategy
@@ -30,7 +29,7 @@ export function constructFVampireSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: { attributes: ["resistance", "int", "attack"] },
                             type: "fvampire",
                         }),
                         move: moveStrategy
@@ -39,7 +38,7 @@ export function constructFVampireSetup(contexts: Strategist<PingCompensatedChara
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: { attributes: ["resistance", "str", "attack"] },
                             type: "fvampire",
                         }),
                         move: moveStrategy

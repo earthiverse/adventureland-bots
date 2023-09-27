@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_ARMOR, PRIEST_ARMOR, WARRIOR_NORMAL } from "./equipment.js"
 
 export function constructOneEyeSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -18,7 +17,9 @@ export function constructOneEyeSetup(contexts: Strategist<PingCompensatedCharact
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             maximumTargets: 1,
                             targetingPartyMember: true,
                             type: "oneeye"
@@ -30,7 +31,9 @@ export function constructOneEyeSetup(contexts: Strategist<PingCompensatedCharact
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             targetingPartyMember: true,
                             maximumTargets: 1,
                             type: "oneeye",
@@ -41,7 +44,9 @@ export function constructOneEyeSetup(contexts: Strategist<PingCompensatedCharact
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...WARRIOR_NORMAL },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "attack"]
+                            },
                             maximumTargets: 1,
                             type: "oneeye"
                         }),

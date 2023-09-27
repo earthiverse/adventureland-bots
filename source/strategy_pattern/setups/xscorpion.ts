@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy, ImprovedMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_ARMOR, MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructXScorpionSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const spawn = AL.Pathfinder.locateMonster("xscorpion")[0]
@@ -25,7 +24,9 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack", "blast", "explosion"],
+                            },
                             targetingPartyMember: true,
                             typeList: monsters,
                         }),
@@ -36,7 +37,9 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"],
+                            },
                             typeList: monsters,
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } })
@@ -48,7 +51,9 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             disableZapper: true,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "explosion", "blast"],
+                            },
                             typeList: monsters,
                         }),
                         move: moveInCircleStrategy
@@ -63,7 +68,9 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"],
+                            },
                             typeList: monsters,
                         }),
                         move: new HoldPositionMoveStrategy(spawn)
@@ -75,7 +82,9 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             disableZapper: true,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "explosion", "blast"],
+                            },
                             typeList: monsters,
                         }),
                         move: moveInCircleStrategy
@@ -91,7 +100,9 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            ensureEquipped: { ...MAGE_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack", "blast", "explosion"],
+                            },
                             targetingPartyMember: true,
                             typeList: monsters,
                         }),
@@ -102,7 +113,9 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"],
+                            },
                             typeList: monsters,
                         }),
                         move: moveStrategy

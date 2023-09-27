@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructMummySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -18,7 +17,9 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "blast", "explosion"]
+                            },
                             type: "mummy"
                         }),
                         move: new HoldPositionMoveStrategy({ map: "spookytown", x: 250, y: -1129 })
@@ -28,7 +29,9 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             type: "mummy",
                         }),
                         move: new HoldPositionMoveStrategy({ map: "spookytown", x: 270, y: -1129 })
@@ -38,7 +41,9 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "blast", "explosion"]
+                            },
                             enableGreedyAggro: true,
                             type: "mummy"
                         }),
@@ -54,7 +59,9 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             type: "mummy",
                         }),
                         move: new HoldPositionMoveStrategy({ map: "spookytown", x: 270, y: -1129 })
@@ -64,7 +71,9 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "blast", "explosion"]
+                            },
                             enableGreedyAggro: true,
                             type: "mummy"
                         }),

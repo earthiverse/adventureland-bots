@@ -5,7 +5,6 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_LUCK, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -18,7 +17,9 @@ export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "blast", "explosion"]
+                            },
                             type: "boar"
                         }),
                         move: new ImprovedMoveStrategy("boar")
@@ -28,7 +29,9 @@ export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "attack"]
+                            },
                             type: "boar",
                         }),
                         move: new ImprovedMoveStrategy("boar")
@@ -38,7 +41,9 @@ export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["str", "blast", "explosion"]
+                            },
                             enableGreedyAggro: true,
                             type: "boar"
                         }),
@@ -54,7 +59,9 @@ export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: {
+                                attributes: ["int", "attack"]
+                            },
                             type: "boar",
                         }),
                         move: new ImprovedMoveStrategy("boar")
@@ -64,7 +71,9 @@ export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["str", "blast", "explosion"]
+                            },
                             enableGreedyAggro: true,
                             type: "boar"
                         }),

@@ -8,11 +8,11 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 
+// TODO: Better PVP setup
 class WarriorDragoldAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
-        if (bot.serverData.name === "PVP") {
+        if (bot.isPVP()) {
             // No Splash Damage
             this.options.disableCleave = true
             delete this.options.enableEquipForCleave
@@ -45,7 +45,9 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "blast", "explosion"]
+                            },
                             typeList: types,
                         }),
                         move: moveStrategy
@@ -56,7 +58,9 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             enableHealStrangers: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "attack"]
+                            },
                             typeList: types,
                         }),
                         move: moveStrategy
@@ -67,7 +71,9 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "str", "blast", "explosion"]
+                            },
                             typeList: types,
                         }),
                         move: moveStrategy
@@ -83,7 +89,9 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             enableHealStrangers: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "attack"]
+                            },
                             typeList: types,
                         }),
                         move: moveStrategy
@@ -94,7 +102,9 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "str", "blast", "explosion"]
+                            },
                             typeList: types,
                         }),
                         move: moveStrategy
@@ -116,7 +126,12 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, typeList: types, hasTarget: true, maximumTargets: 0 }),
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            typeList: types,
+                            hasTarget: true,
+                            maximumTargets: 0
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -126,7 +141,12 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "paladin",
-                        attack: new PaladinAttackStrategy({ contexts: contexts, typeList: types, hasTarget: true, maximumTargets: 0 }),
+                        attack: new PaladinAttackStrategy({
+                            contexts: contexts,
+                            typeList: types,
+                            hasTarget: true,
+                            maximumTargets: 0
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -136,7 +156,14 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, enableHealStrangers: true, typeList: types, hasTarget: true, maximumTargets: 0 }),
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableAbsorb: true,
+                            enableHealStrangers: true,
+                            typeList: types,
+                            hasTarget: true,
+                            maximumTargets: 0
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -146,7 +173,12 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: types, hasTarget: true, maximumTargets: 0 }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            typeList: types,
+                            hasTarget: true,
+                            maximumTargets: 0
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -156,7 +188,12 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "rogue",
-                        attack: new RogueAttackStrategy({ contexts: contexts, typeList: types, hasTarget: true, maximumTargets: 0 }),
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            typeList: types,
+                            hasTarget: true,
+                            maximumTargets: 0
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -166,7 +203,14 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, typeList: types, hasTarget: true, maximumTargets: 0 }),
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            disableAgitate: true,
+                            disableCleave: true,
+                            typeList: types,
+                            hasTarget: true,
+                            maximumTargets: 0
+                        }),
                         move: moveStrategy
                     }
                 ]

@@ -1,10 +1,9 @@
-import { IPosition, PingCompensatedCharacter } from "alclient"
+import { PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("mole", {
@@ -25,7 +24,9 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"]
+                            },
                             type: "mole",
                         }),
                         move: moveStrategy
@@ -35,7 +36,9 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "blast", "explosion"]
+                            },
                             enableGreedyAggro: true,
                             type: "mole"
                         }),
