@@ -24,6 +24,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
     }
 
     public onApply(bot: Priest): void {
+        super.onApply(bot)
         this.healPriority.set(bot.id, (a: PingCompensatedCharacter | Player, b: PingCompensatedCharacter | Player) => {
             // Heal our own characters
             const a_isOurs = a.owner && bot.owner == a.owner

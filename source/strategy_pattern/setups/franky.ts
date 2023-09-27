@@ -9,7 +9,6 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { PRIEST_ARMOR } from "./equipment.js"
 
 // TODO: Improve PVP
 class MageFrankyAttackStrategy extends MageAttackStrategy {
