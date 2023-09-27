@@ -319,6 +319,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
                 // Doublehand logic
                 if (slotType == "mainhand") {
+                    // Check if we have to unequip offhand
                     const weaponType = AL.Game.G.items[ensure.name].wtype
                     const doubleHandTypes = AL.Game.G.classes[bot.ctype].doublehand
                     if (weaponType && doubleHandTypes && doubleHandTypes[weaponType]) {
@@ -328,9 +329,18 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                             await bot.unequip("offhand")
                         }
                     }
+                } else if (slotType == "offhand" && bot.slots[slotType]) {
+                    // Check if we have to unequip mainhand
+                    const equippedName = bot.slots[slotType].name
+                    const weaponType = AL.Game.G.items[equippedName].wtype
+                    const doubleHandTypes = AL.Game.G.classes[bot.ctype].doublehand
+                    if (weaponType && doubleHandTypes && doubleHandTypes[weaponType]) {
+                        if (bot.esize <= 0) continue // We don't have enough space to unequip our offhand
+                        await bot.unequip("mainhand")
+                    }
                 }
 
-                await bot.equip(toEquip, slotType)
+                await bot.equip(toEquip, slotType).catch(console.error)
             }
         }
     }
