@@ -249,7 +249,7 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
     //     for(const itemName in Game.G.classes[slot]) {
 
     //         for(const attributeName in Game.G.classes[slot][itemName as ItemName]) {
-                
+
     //         }
 
 
@@ -295,7 +295,8 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
     for (const slotName in best) {
         const slotType = slotName as SlotType
         const item = best[slotType]
-        const filters: LocateItemFilters = { returnHighestLevel: true }
+        const filters: LocateItemFilters = {}
+        if (typeof item.level === "number") filters.returnHighestLevel = true
         if (item.stat_type) filters.statType = item.stat_type
         if (item.p) filters.special = item.p
         toEquip[slotType] = { name: item.name, filters: filters }
