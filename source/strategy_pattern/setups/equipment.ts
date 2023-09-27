@@ -258,30 +258,26 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
     // }
 
     const best: { [T in SlotType]?: ItemData } = {}
-    const addBest = (slot: SlotType, item: ItemData) => {
+    const addBest = (slot: SlotType, item: ItemData): boolean => {
         const existing = best[slot]
-        if (existing && sortHighestAttributeFirst(existing, item) <= 0) return // It's not better
+        if (existing && sortHighestAttributeFirst(existing, item) <= 0) return false // It's not better
         best[slot] = item
+        return true
     }
 
     for (const optionName in options) {
         // This is the best option for the given item or weapon type
         const bestOption = options[optionName as (ItemType | WeaponType)][0]
 
-        if (equippableMainhand.includes(optionName as WeaponType)) {
-            // We can equip different mainhands
-            addBest("mainhand", bestOption)
-        } else if (equippableOffhand.includes(optionName as WeaponType)) {
-            // We can equip different offhands
-            addBest("offhand", bestOption)
-        } else if (equippableDoublehand.includes(optionName as WeaponType)) {
-            // TODO: Add support for doublehand
-        } else if (equippableArmor.includes(optionName as ItemType)) {
+        if (equippableMainhand.includes(optionName as WeaponType) && addBest("mainhand", bestOption)) continue
+        if (equippableOffhand.includes(optionName as WeaponType) && addBest("offhand", bestOption)) continue
+        // if (equippableDoublehand.includes(optionName as WeaponType) && addBest("mainhand", bestOption)) continue
+        if (equippableArmor.includes(optionName as ItemType)) {
             if (optionName === "earring") {
                 addBest("earring1", bestOption)
                 const secondBest = options[optionName as ItemType][1]
                 if (secondBest) addBest("earring2", secondBest)
-            } else if (optionName == "ring") {
+            } else if (optionName === "ring") {
                 addBest("ring1", bestOption)
                 const secondBest = options[optionName as ItemType][1]
                 if (secondBest) addBest("ring2", secondBest)
