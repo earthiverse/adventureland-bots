@@ -329,9 +329,9 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                             await bot.unequip("offhand")
                         }
                     }
-                } else if (slotType == "offhand" && bot.slots[slotType]) {
+                } else if (slotType == "offhand" && bot.slots["mainhand"]) {
                     // Check if we have to unequip mainhand
-                    const equippedName = bot.slots[slotType].name
+                    const equippedName = bot.slots["mainhand"].name
                     const weaponType = AL.Game.G.items[equippedName].wtype
                     const doubleHandTypes = AL.Game.G.classes[bot.ctype].doublehand
                     if (weaponType && doubleHandTypes && doubleHandTypes[weaponType]) {
