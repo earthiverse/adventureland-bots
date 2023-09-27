@@ -14,6 +14,7 @@ import { PRIEST_ARMOR } from "./equipment.js"
 // TODO: Improve PVP
 class MageFrankyAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
+        super.onApply(bot)
         if (bot.isPVP()) {
             // No splash damage
             this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
@@ -23,12 +24,12 @@ class MageFrankyAttackStrategy extends MageAttackStrategy {
             this.options.ensureEquipped.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
             delete this.options.ensureEquipped.offhand
         }
-        super.onApply(bot)
     }
 }
 
 class PriestFrankyAttackStrategy extends PriestAttackStrategy {
     public onApply(bot: Priest): void {
+        super.onApply(bot)
         if (bot.isPVP()) {
             this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
             this.options.ensureEquipped.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
@@ -37,12 +38,12 @@ class PriestFrankyAttackStrategy extends PriestAttackStrategy {
             this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
             this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
         }
-        super.onApply(bot)
     }
 }
 
 class WarriorFrankyAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
+        super.onApply(bot)
         if (bot.isPVP()) {
             // No Splash Damage
             this.options.disableCleave = true
@@ -58,7 +59,6 @@ class WarriorFrankyAttackStrategy extends WarriorAttackStrategy {
                 this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
             this.options.enableEquipForCleave = true
         }
-        super.onApply(bot)
     }
 }
 
