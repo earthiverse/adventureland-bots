@@ -27,7 +27,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
             return
         }
 
-        const priority = this.sort.get(bot.id)
+        const priority = this.botSort.get(bot.id)
 
         await this.ensureEquipped(bot)
 

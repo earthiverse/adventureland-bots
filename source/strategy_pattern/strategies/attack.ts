@@ -45,9 +45,11 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     protected greedyOnEntities: (data: EntitiesData) => Promise<unknown>
     protected stealOnAction: (data: ActionData) => Promise<unknown>
 
-    protected sort = new Map<string, (a: Entity, b: Entity) => boolean>()
+    protected botSort = new Map<string, (a: Entity, b: Entity) => boolean>()
+    protected botEnsureEquipped = new Map<string, EnsureEquipped>()
 
     protected options: BaseAttackStrategyOptions
+
     protected interval: SkillName[] = ["attack"]
 
     public constructor(options?: BaseAttackStrategyOptions) {
@@ -75,8 +77,9 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
     public onApply(bot: Type) {
         if (this.options.generateEnsureEquipped) this.options.ensureEquipped = generateEnsureEquippedFromAttribute(bot, this.options.generateEnsureEquipped.attributes, this.options.generateEnsureEquipped.ensure)
+        this.botEnsureEquipped.set(bot.id, this.options.ensureEquipped)
 
-        this.sort.set(bot.id, sortPriority(bot, this.options.typeList))
+        this.botSort.set(bot.id, sortPriority(bot, this.options.typeList))
 
         if (!this.options.disableKillSteal && !this.options.disableZapper) {
             this.stealOnAction = async (data: ActionData) => {
@@ -168,7 +171,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     }
 
     protected async attack(bot: Type) {
-        const priority = this.sort.get(bot.id)
+        const priority = this.botSort.get(bot.id)
 
         if (!this.shouldAttack(bot)) {
             this.defensiveAttack(bot).catch(suppress_errors)
@@ -293,10 +296,11 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     }
 
     protected async ensureEquipped(bot: Type) {
-        if (!this.options.ensureEquipped) return
-        for (const sT in this.options.ensureEquipped) {
+        const ensureEquipped = this.botEnsureEquipped.get(bot.id)
+        if (!ensureEquipped) return
+        for (const sT in ensureEquipped) {
             const slotType = sT as SlotType
-            const ensure = this.options.ensureEquipped[slotType]
+            const ensure = ensureEquipped[slotType]
 
             if (ensure.unequip) {
                 // We want no item in this slot
@@ -318,7 +322,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                     const weaponType = AL.Game.G.items[ensure.name].wtype
                     const doubleHandTypes = AL.Game.G.classes[bot.ctype].doublehand
                     if (weaponType && doubleHandTypes && doubleHandTypes[weaponType]) {
-                        if (this.options.ensureEquipped.offhand) throw new Error(`'${ensure.name}' is a doublehand for ${bot.ctype}. We can't equip '${this.options.ensureEquipped.offhand}' in our offhand.`)
+                        if (ensureEquipped.offhand) throw new Error(`'${ensure.name}' is a doublehand for ${bot.ctype}. We can't equip '${this.options.ensureEquipped.offhand}' in our offhand.`)
                         if (bot.slots.offhand) {
                             if (bot.esize <= 0) continue // We don't have enough space to unequip our offhand
                             await bot.unequip("offhand")

@@ -52,7 +52,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             return
         }
 
-        const priority = this.sort.get(bot.id)
+        const priority = this.botSort.get(bot.id)
 
         await this.ensureEquipped(bot)
 
