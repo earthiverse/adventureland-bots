@@ -160,8 +160,7 @@ const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
 const partyAcceptStrategy = new AcceptPartyRequestStrategy(/** TODO: TEMP: Allow anyone to join { allowList: PARTY_ALLOWLIST } */)
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 // Mage
-const privateMagiportStrategy = new MagiportOthersSmartMovingToUsStrategy(PRIVATE_CONTEXTS)
-const publicMagiportStrategy = new MagiportOthersSmartMovingToUsStrategy(ALL_CONTEXTS)
+const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(ALL_CONTEXTS)
 // Priest
 const privatePartyHealStrategy = new PartyHealStrategy(PRIVATE_CONTEXTS)
 const publicPartyHealStrategy = new PartyHealStrategy(ALL_CONTEXTS)
@@ -773,11 +772,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
 
 async function startMage(context: Strategist<Mage>, privateContext = false) {
     startShared(context, privateContext)
-    if (privateContext) {
-        context.applyStrategy(privateMagiportStrategy)
-    } else {
-        context.applyStrategy(publicMagiportStrategy)
-    }
+    context.applyStrategy(magiportStrategy)
 }
 
 async function startPaladin(context: Strategist<Paladin>, privateContext = false) {
