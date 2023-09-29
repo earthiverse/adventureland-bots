@@ -268,20 +268,31 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
 
     for (const optionName in options) {
         // This is the best option for the given item or weapon type
-        const bestOption = options[optionName as (ItemType | WeaponType)][0]
+        let bestOption = options[optionName as (ItemType | WeaponType)][0]
 
-        if (equippableMainhand.includes(optionName as WeaponType) && addBest("mainhand", bestOption)) continue
+        if (equippableMainhand.includes(optionName as WeaponType) && addBest("mainhand", bestOption)) {
+            // Get second best for potential offhand
+            bestOption = options[optionName as (ItemType | WeaponType)][1]
+            if (!bestOption) continue
+        }
         if (equippableOffhand.includes(optionName as WeaponType) && addBest("offhand", bestOption)) continue
         // if (equippableDoublehand.includes(optionName as WeaponType) && addBest("mainhand", bestOption)) continue
         if (equippableArmor.includes(optionName as ItemType)) {
             if (optionName === "earring") {
-                addBest("earring1", bestOption)
-                const secondBest = options[optionName as ItemType][1]
-                if (secondBest) addBest("earring2", secondBest)
-            } else if (optionName === "ring") {
-                addBest("ring1", bestOption)
-                const secondBest = options[optionName as ItemType][1]
-                if (secondBest) addBest("ring2", secondBest)
+                if (addBest("earring1", bestOption)) {
+                    // Get second best for potential earring2
+                    bestOption = options[optionName as (ItemType | WeaponType)][1]
+                    if (!bestOption) continue
+                    addBest("earring2", bestOption)
+                }
+            }
+            if (optionName === "ring") {
+                if (addBest("ring1", bestOption)) {
+                    // Get second best for potential ring2
+                    bestOption = options[optionName as (ItemType | WeaponType)][1]
+                    if (!bestOption) continue
+                    addBest("ring2", bestOption)
+                }
             } else {
                 addBest(optionName as SlotType, bestOption)
             }
