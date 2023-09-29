@@ -74,7 +74,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                             disableZapper: true,
                             enableEquipForCleave: true,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "str", "blast", "explosion"]
+                                attributes: ["attack", "blast", "explosion"]
                             },
                             typeList: ["ghost", "tinyp"],
                         }),
@@ -134,7 +134,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                             disableZapper: true,
                             enableEquipForCleave: true,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "str", "blast", "explosion"]
+                                attributes: ["attack", "blast", "explosion"]
                             },
                             typeList: ["ghost", "tinyp"],
                         }),
