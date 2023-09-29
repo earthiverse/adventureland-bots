@@ -197,7 +197,7 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
 
     const addOption = (item: ItemData) => {
         const gItem = Game.G.items[item.name]
-        const type = gItem.type
+        const type = gItem.type === "weapon" ? gItem.wtype : gItem.type
         if (!options[type]) options[type] = []
         options[type].push(item)
     }
@@ -218,7 +218,8 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
         const gItem = Game.G.items[item.name]
         if (gItem.class && !gItem.class.includes(bot.ctype)) continue // Our class can't equip it
 
-        if (equippableItemTypes.includes(gItem.type) || equippableItemTypes.includes(gItem.wtype)) addOption(item)
+        const type = gItem.type === "weapon" ? gItem.wtype : gItem.type
+        if (equippableItemTypes.includes(type)) addOption(item)
     }
 
     const sortHighestAttributeFirst = (a: ItemData, b: ItemData) => {
