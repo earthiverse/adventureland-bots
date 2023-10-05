@@ -903,7 +903,9 @@ class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> 
 const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 
 type Settings = {
-    sell?: SellStrategyOptions
+    sell?: {
+        sellMap: [ItemName, [number, number][]][]
+    }
 }
 
 // Allow others to join me
@@ -1068,7 +1070,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
     if (PARTY_ALLOWLIST.indexOf(bot.id) < 0) PARTY_ALLOWLIST.push(bot.id)
     context.applyStrategy(disconnectOnCommandStrategy)
 
-    context.applyStrategy(new SellStrategy(settings.sell ?? { sellMap: PUBLIC_ITEMS_TO_SELL }))
+    context.applyStrategy(new SellStrategy(settings.sell?.sellMap ? {sellMap: new Map(settings.sell.sellMap)} : { sellMap: PUBLIC_ITEMS_TO_SELL }))
 
     SETTINGS_CACHE[characterID] = settings
     PUBLIC_CONTEXTS.push(context)
