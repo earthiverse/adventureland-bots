@@ -82,7 +82,7 @@ export function constructSkeletorSetup(contexts: Strategist<PingCompensatedChara
                     },
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
+                        attack: new WarriorSkeletorAttackStrategy({
                             contexts: contexts,
                             disableCleave: true,
                             generateEnsureEquipped: {
