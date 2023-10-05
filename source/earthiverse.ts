@@ -1142,6 +1142,7 @@ app.post("/",
             await startPublicContext(charType, userID, userAuth, characterID, settings)
             return res.status(200).send("Go to https://adventure.land/comm to observer your character.")
         } catch (e) {
+            console.error(e)
             return res.status(500).send(e)
         }
     })
