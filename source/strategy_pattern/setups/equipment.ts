@@ -345,5 +345,21 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
         }
     }
 
+    // Swap slots if throwing stars are in mainhand, but not in offhand
+    if (toEquip["mainhand"] && toEquip["offhand"]) {
+        const mainhandType = Game.G.items[toEquip["mainhand"].name].wtype
+        const offhandType = Game.G.items[toEquip["offhand"].name].wtype
+        if (
+            mainhandType == "stars"
+            && offhandType !== "stars"
+            && equippableMainhand.includes(offhandType)
+            && equippableOffhand.includes(mainhandType)
+        ) {
+            const temp = toEquip["mainhand"]
+            toEquip["mainhand"] = toEquip["offhand"]
+            toEquip["offhand"] = temp
+        }
+    }
+
     return toEquip
 }
