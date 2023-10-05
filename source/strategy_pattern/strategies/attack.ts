@@ -318,8 +318,34 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 // We want the lowest level, and d we have a lower level item in our inventory
                 || (ensure.filters?.returnLowestLevel && bot.hasItem(ensure.name, bot.items, { ...ensure.filters, levelLessThan: bot.slots[slotType].level })) // We have a lower level one to equip
             ) {
-                const toEquip = bot.locateItem(ensure.name, bot.items, ensure.filters)
-                if (toEquip == undefined) throw new Error(`${bot.name} couldn't find ${ensure.name} to equip in ${sT}.`)
+                let toEquip = bot.locateItem(ensure.name, bot.items, ensure.filters)
+                if (toEquip === undefined) {
+                    if (
+                        slotType === "mainhand"
+                        // We have it equipped in our offhand
+                        && bot.slots["offhand"]?.name === ensure.name
+                        // We don't want it equipped in our offhand
+                        && (!ensureEquipped["offhand"] || ensureEquipped["offhand"].name !== ensure.name)
+                        // We have enough space to unequip something
+                        && bot.esize > 0
+                    ) {
+                        toEquip = await bot.unequip("offhand")
+                    } else if (
+                        slotType === "offhand"
+                        // We have it equipped in our mainhand
+                        && bot.slots["mainhand"]?.name === ensure.name
+                        // We don't want it equipped in our mainhand
+                        && (!ensureEquipped["mainhand"] || ensureEquipped["mainhand"].name !== ensure.name)
+                        // We have enough space to unequip something
+                        && bot.esize > 0
+                    ) {
+                        toEquip = await bot.unequip("mainhand")
+                    }
+                    // TODO: Add cases for earrings and rings
+                    else {
+                        throw new Error(`${bot.name} couldn't find ${ensure.name} to equip in ${sT}.`)
+                    }
+                }
 
                 // Doublehand logic
                 if (slotType == "mainhand") {
