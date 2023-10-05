@@ -285,8 +285,7 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
                     if (!bestOption) continue
                     addBest("earring2", bestOption)
                 }
-            }
-            if (optionName === "ring") {
+            } else if (optionName === "ring") {
                 if (addBest("ring1", bestOption)) {
                     // Get second best for potential ring2
                     bestOption = options[optionName as (ItemType | WeaponType)][1]
