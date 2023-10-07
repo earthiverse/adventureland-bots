@@ -303,7 +303,7 @@ class AdminCommandStrategy implements Strategy<PingCompensatedCharacter> {
         const publicData = filterContexts(PUBLIC_CONTEXTS).reduce((acc: string, c) => {
             c.bot.characterID
             const row = PUBLIC_FIELDS.map(field => c.bot[field]).join("🔥")
-            return acc + row + "🔥" + (SETTINGS_CACHE[c.bot.id] ?? '{}') + "\n"
+            return acc + row + "🔥" + (JSON.stringify(SETTINGS_CACHE[c.bot.id]) ?? '{}') + "\n"
         }, PUBLIC_FIELDS.join(",") + "\n")
         fs.writeFileSync(PUBLIC_CSV, publicData)
 
