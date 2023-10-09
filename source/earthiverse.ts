@@ -13,9 +13,9 @@ import { Config, constructHelperSetups, constructSetups, Setups } from "./strate
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
 import { getHalloweenMonsterPriority, getHolidaySeasonMonsterPriority, getLunarNewYearMonsterPriority, getServerHopMonsterPriority } from "./base/serverhop.js"
 import { randomIntFromInterval, sleep } from "./base/general.js"
-import { SellStrategy, SellStrategyOptions } from "./strategy_pattern/strategies/sell.js"
+import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
-import { DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "./base/defaults.js"
+import { DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "./base/defaults.js"
 
 import bodyParser from "body-parser"
 import cors from "cors"
@@ -178,41 +178,11 @@ const elixirStrategy = new ElixirStrategy("elixirluck")
 const homeServerStrategy = new HomeServerStrategy(DEFAULT_REGION, DEFAULT_IDENTIFIER)
 const privateItemStrategy = new OptimizeItemsStrategy({
     contexts: PRIVATE_CONTEXTS,
-    itemsToUpgradeOrCompound: new Map([
-        ["cring", 0],
-        ["cearring", 0],
-        ["dexamulet", 0],
-        ["dexring", 0],
-        ["intamulet", 0],
-        ["intring", 0],
-        ["ringsj", 0],
-        ["strring", 0],
-        ["wattire", 4],
-        ["wbook0", 1],
-        ["wbreeches", 4],
-        ["wcap", 4],
-        ["wgloves", 4],
-        ["wshoes", 4],
-    ])
+    itemsToUpgradeOrCompound: DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND
 })
 const publicItemStrategy = new OptimizeItemsStrategy({
     contexts: PUBLIC_CONTEXTS,
-    itemsToUpgradeOrCompound: new Map([
-        ["cring", 0],
-        ["cearring", 0],
-        ["dexamulet", 0],
-        ["dexring", 0],
-        ["intamulet", 0],
-        ["intring", 0],
-        ["ringsj", 0],
-        ["strring", 0],
-        ["wattire", 4],
-        ["wbook0", 1],
-        ["wbreeches", 4],
-        ["wcap", 4],
-        ["wgloves", 4],
-        ["wshoes", 4],
-    ])
+    itemsToUpgradeOrCompound: DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND
 })
 
 let OVERRIDE_MONSTERS: MonsterName[]

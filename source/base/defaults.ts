@@ -78,7 +78,29 @@ export const EXCESS_ITEMS_SELL = new Map<ItemName, number>([
     ["snowball", 10],
     ["spookyamulet", 5],
 ])
-export const TOO_FULL_FALLBACK_ITEMS_TO_SELL: ItemName[] = ["ringsj", "wbook0", "pants", "coat", "shoes", "gloves"]
+export const TOO_FULL_FALLBACK_ITEMS_TO_SELL: ItemName[] = ["ringsj", "wbook0", "pants", "coat", "shoes", "gloves", "vitring"]
+
+export const DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND = new Map<ItemName, number>([
+    ["cearring", 0],
+    ["cring", 0],
+    ["dexamulet", 1],
+    ["dexbelt", 1],
+    ["dexring", 1],
+    ["intamulet", 1],
+    ["intbelt", 1],
+    ["intring", 1],
+    ["ringsj", 1],
+    ["stramulet", 1],
+    ["strbelt", 1],
+    ["strring", 1],
+    ["vitring", 2],
+    ["wattire", 4],
+    ["wbook0", 1],
+    ["wbreeches", 4],
+    ["wcap", 4],
+    ["wgloves", 4],
+    ["wshoes", 4]
+])
 
 /**
  * Prices set < 0 will be set to `G.items[itemName].g * (-price)`
@@ -145,6 +167,7 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["goldingot", -AL.Constants.PONTY_MARKUP],
     ["goldnugget", -AL.Constants.PONTY_MARKUP],
     ["goldring", -AL.Constants.PONTY_MARKUP],
+    ["gslime", -AL.Constants.PONTY_MARKUP], // We can craft them in to wcap
     ["gstaff", -AL.Constants.PONTY_MARKUP],
     ["harbringer", -AL.Constants.PONTY_MARKUP],
     ["harmor", -AL.Constants.PONTY_MARKUP],
@@ -194,7 +217,6 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["rod", -AL.Constants.PONTY_MARKUP],
     ["sanguine", -AL.Constants.PONTY_MARKUP],
     ["sbelt", -AL.Constants.PONTY_MARKUP],
-    ["gslime", -AL.Constants.PONTY_MARKUP], // We can craft them in to wcap
     ["scroll3", -AL.Constants.PONTY_MARKUP],
     ["scroll4", -AL.Constants.PONTY_MARKUP],
     ["scythe", -AL.Constants.PONTY_MARKUP],
