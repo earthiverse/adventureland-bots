@@ -5,6 +5,8 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy, KiteInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export function constructBScorpionSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const spawn = AL.Pathfinder.locateMonster("bscorpion")[0]
@@ -35,6 +37,7 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
+                            enableAbsorbToTank: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
                                 attributes: ["attack", "int"]
@@ -56,6 +59,95 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             type: "bscorpion"
                         }),
                         move: moveStrategy
+                    }
+                ]
+            },
+        ]
+    }
+}
+
+export function constructBScorpionHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const spawn = AL.Pathfinder.locateMonster("bscorpion")[0]
+    const kiteStrategy = new KiteInCircleMoveStrategy({ center: spawn, type: "bscorpion", radius: 110 })
+
+    const priestStrategy = new PriestAttackStrategy({
+        contexts: contexts,
+        disableEnergize: true,
+        enableAbsorbToTank: true,
+        enableGreedyAggro: true,
+        generateEnsureEquipped: {
+            attributes: ["range", "int"]
+        },
+        type: "bscorpion",
+    })
+    const rangerStrategy = new RangerAttackStrategy({
+        contexts: contexts,
+        disableZapper: true,
+        generateEnsureEquipped: {
+            attributes: ["range", "dex"]
+        },
+        targetingPartyMember: true,
+        type: "bscorpion"
+    })
+    const rogueStrategy = new RogueAttackStrategy({
+        contexts: contexts,
+        disableZapper: true,
+        generateEnsureEquipped: {
+            attributes: ["range", "dex"]
+        },
+        targetingPartyMember: true,
+        type: "bscorpion"
+    })
+
+    return {
+        configs: [
+            {
+                id: "bscorpion_helper_priest,rogue,rogue",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: priestStrategy,
+                        move: kiteStrategy
+                    },
+                    {
+                        ctype: "rogue",
+                        attack: rogueStrategy,
+                        move: kiteStrategy
+                    },
+                    {
+                        ctype: "rogue",
+                        attack: rogueStrategy,
+                        move: kiteStrategy
+                    }
+                ]
+            },
+            {
+                id: "bscorpion_helper_priest,rogue",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: priestStrategy,
+                        move: kiteStrategy
+                    },
+                    {
+                        ctype: "rogue",
+                        attack: rogueStrategy,
+                        move: kiteStrategy
+                    }
+                ]
+            },
+            {
+                id: "bscorpion_helper_priest,ranger",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: priestStrategy,
+                        move: kiteStrategy
+                    },
+                    {
+                        ctype: "ranger",
+                        attack: rangerStrategy,
+                        move: kiteStrategy
                     }
                 ]
             },

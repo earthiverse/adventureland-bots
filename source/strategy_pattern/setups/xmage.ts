@@ -6,7 +6,6 @@ import { bankingPosition, getClosestBotToPosition } from "../../base/locations.j
 import { NodeData } from "alclient/build/definitions/pathfinder.js";
 import { goAndWithdrawItem, locateItemsInBank } from "../../base/banking.js";
 import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js";
-import { RETURN_HIGHEST } from "./equipment.js";
 import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategies/attack_priest.js";
 import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategies/attack_warrior.js";
 import { Setup } from "./base.js";
@@ -244,14 +243,20 @@ export function constructXMageSetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new MageXMageAttackStrategy({
                             contexts: contexts,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
+                        require: {
+                            items: ["jacko", "test_orb"]
+                        }
                     },
                     {
                         ctype: "priest",
                         attack: new PriestXMageAttackStrategy({
                             contexts: contexts,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
+                        require: {
+                            items: ["jacko", "test_orb"]
+                        }
                     },
                     {
                         ctype: "warrior",
@@ -260,7 +265,10 @@ export function constructXMageSetup(contexts: Strategist<PingCompensatedCharacte
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
+                        require: {
+                            items: ["jacko", "test_orb"]
+                        }
                     }
                 ]
             }
