@@ -216,7 +216,8 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
                 const ourItem = bot.items[ourPosition]
                 if (!ourItem) continue // We no longer have this item
                 if (ourItem.v && !item.v) continue // One is PvP marked, the other isn't
-                if (ourItem.q >= item.q) continue // We have more, don't transfer
+                if (ourItem.q > item.q) continue // We have more, don't transfer
+                if (ourItem.q === item.q && bot.id > friend.id) continue // If we have the same amount, send to the bot whose name comes first alphabetically
                 const gItem: GItem = AL.Game.G.items[item.name]
 
                 // Send our stacks to combine them
