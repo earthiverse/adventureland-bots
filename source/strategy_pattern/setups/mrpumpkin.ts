@@ -17,11 +17,11 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
         super.onApply(bot)
         if (bot.isPVP() || !(bot.hasItem("gstaff") || bot.isEquipped("gstaff"))) {
             // No splash damage
-            this.options.generateEnsureEquipped.ensure.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
-            this.options.generateEnsureEquipped.ensure.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
         } else {
             // Splash damage & additional monsters
-            this.options.generateEnsureEquipped.ensure.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
             this.options.ensureEquipped.offhand = UNEQUIP
         }
 
