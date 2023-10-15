@@ -14,15 +14,15 @@ const NON_PVP_MONSTERS: MonsterName[] = ["mrpumpkin", "phoenix", "xscorpion", "m
 
 class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
-        super.onApply(bot)
+        this.options.generateEnsureEquipped.ensure = this.options.generateEnsureEquipped.ensure ?? {}
         if (bot.isPVP() || !(bot.hasItem("gstaff") || bot.isEquipped("gstaff"))) {
             // No splash damage
-            this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.ensure.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.ensure.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
         } else {
             // Splash damage & additional monsters
-            this.options.ensureEquipped.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.offhand = UNEQUIP
+            this.options.generateEnsureEquipped.ensure.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.ensure.offhand = UNEQUIP
         }
 
         if (bot.isPVP()) {
@@ -32,19 +32,20 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
             this.options.typeList = NON_PVP_MONSTERS
             this.options.enableGreedyAggro = true
         }
+        super.onApply(bot)
     }
 }
 
 class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
     public onApply(bot: Priest): void {
-        super.onApply(bot)
-        this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
+        this.options.generateEnsureEquipped.ensure = this.options.generateEnsureEquipped.ensure ?? {}
+        this.options.generateEnsureEquipped.ensure.orb = { name: "jacko", filters: { returnHighestLevel: true } }
 
         if (bot.serverData.name === "PVP" || !(bot.hasItem("zapper") || bot.isEquipped("zapper"))) {
-            this.options.ensureEquipped.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.ensure.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
         } else {
             // Additional monsters
-            this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.ensure.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
         }
 
         if (bot.isPVP()) {
@@ -52,20 +53,21 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
         } else {
             this.options.typeList = NON_PVP_MONSTERS
         }
+        super.onApply(bot)
     }
 }
 
 class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
-        super.onApply(bot)
+        this.options.generateEnsureEquipped.ensure = this.options.generateEnsureEquipped.ensure ?? {}
         if (bot.isPVP() || !((bot.hasItem("vhammer") || bot.isEquipped("vhammer")) && (bot.hasItem("ololipop") && bot.isEquipped("ololipop")))) {
             // No Splash Damage
-            this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.ensure.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.ensure.offhand = { name: "fireblade", filters: { returnHighestLevel: true } }
         } else {
             // Splash Damage & additional monsters
-            this.options.ensureEquipped.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.offhand = { name: "ololipop", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.ensure.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.ensure.offhand = { name: "ololipop", filters: { returnHighestLevel: true } }
         }
 
         if (bot.isPVP()) {
@@ -79,6 +81,7 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             this.options.typeList = NON_PVP_MONSTERS
             this.options.enableGreedyAggro = true
         }
+        super.onApply(bot)
     }
 }
 

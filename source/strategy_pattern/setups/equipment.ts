@@ -236,28 +236,6 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
     }
     for (const optionName in options) options[optionName as (ItemType | WeaponType)].sort(sortHighestAttributeFirst)
 
-    // const sortHighestAttributeFirstWithSlot = (a: ItemData, b: ItemData, slot: SlotType) => {
-    //     const itemDataA = new Item(a)
-    //     const itemDataB = new Item(b)
-
-    //     let sumA = 0
-    //     let sumB = 0
-    //     for (const attribute of attributes) {
-    //         sumA += (itemDataA[attribute] ?? 0) + (Game.G.classes[slot][itemDataA.type][attribute] ?? 0) + (Game.G.classes[slot][itemDataA.wtype][attribute] ?? 0)
-    //         sumB += (itemDataB[attribute] ?? 0) + (Game.G.classes[slot][itemDataB.type][attribute] ?? 0) + (Game.G.classes[slot][itemDataB.wtype][attribute] ?? 0)
-    //     }
-
-    //     for(const itemName in Game.G.classes[slot]) {
-
-    //         for(const attributeName in Game.G.classes[slot][itemName as ItemName]) {
-
-    //         }
-
-
-    //     }
-    //     return sumB - sumA
-    // }
-
     const best: { [T in SlotType]?: ItemData } = {}
     const addBest = (slot: SlotType, item: ItemData): boolean => {
         const existing = best[slot]
