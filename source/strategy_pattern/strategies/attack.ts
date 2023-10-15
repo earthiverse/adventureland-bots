@@ -340,6 +340,38 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         && bot.esize > 0
                     ) {
                         toEquip = await bot.unequip("mainhand")
+                    } else if (
+                        slotType === "ring1"
+                        // We have it equipped in the other slot
+                        && bot.slots["ring2"]?.name === ensure.name
+                        // We have enough space to unequip something
+                        && bot.esize > 0
+                    ) {
+                        toEquip = await bot.unequip("ring2")
+                    } else if (
+                        slotType === "ring2"
+                        // We have it equipped in the other slot
+                        && bot.slots["ring1"]?.name === ensure.name
+                        // We have enough space to unequip something
+                        && bot.esize > 0
+                    ) {
+                        toEquip = await bot.unequip("earring1")
+                    } else if (
+                        slotType === "earring1"
+                        // We have it equipped in the other slot
+                        && bot.slots["earring2"]?.name === ensure.name
+                        // We have enough space to unequip something
+                        && bot.esize > 0
+                    ) {
+                        toEquip = await bot.unequip("earring2")
+                    } else if (
+                        slotType === "earring2"
+                        // We have it equipped in the other slot
+                        && bot.slots["earring1"]?.name === ensure.name
+                        // We have enough space to unequip something
+                        && bot.esize > 0
+                    ) {
+                        toEquip = await bot.unequip("earring1")
                     }
                     // TODO: Add cases for earrings and rings
                     else {
