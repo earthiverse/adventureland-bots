@@ -60,7 +60,7 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
 class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
         this.options.generateEnsureEquipped.ensure = this.options.generateEnsureEquipped.ensure ?? {}
-        if (bot.isPVP() || !((bot.hasItem("vhammer") || bot.isEquipped("vhammer")) && (bot.hasItem("ololipop") && bot.isEquipped("ololipop")))) {
+        if (bot.isPVP() || !((bot.hasItem("vhammer") || bot.isEquipped("vhammer")) && (bot.hasItem("ololipop") || bot.isEquipped("ololipop")))) {
             // No Splash Damage
             this.options.generateEnsureEquipped.ensure.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } }
             this.options.generateEnsureEquipped.ensure.offhand = { name: "fireblade", filters: { returnHighestLevel: true } }
