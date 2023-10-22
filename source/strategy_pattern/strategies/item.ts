@@ -250,15 +250,25 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
             if (items.length === 0) continue // We don't have any of those items
 
             const gItem = bot.G.items[itemName]
-            if (gItem.upgrade && !bot.q.upgrade) {
+            if (
+                gItem.upgrade
+                && !bot.q.upgrade
+            ) {
                 const item = bot.items[items[0]]
                 const grade = bot.calculateItemGrade(item)
                 const scroll = `scroll${grade}` as ItemName
                 if (!bot.hasItem(scroll) && bot.canBuy(scroll)) await bot.buy(scroll)
                 if (bot.hasItem(scroll)) return bot.upgrade(items[0], bot.locateItem(scroll))
-            } else if (gItem.compound && items.length >= 3 && !bot.q.compound) {
-                const item = bot.items[items[0]]
-                const grade = bot.calculateItemGrade(item)
+            } else if (
+                gItem.compound
+                && items.length >= 3
+                && !bot.q.compound
+            ) {
+                const item0 = bot.items[items[0]]
+                const item1 = bot.items[items[1]]
+                const item2 = bot.items[items[2]]
+                if (item0.level !== item1.level || item0.level !== item2.level) continue // Can't compound different levels
+                const grade = bot.calculateItemGrade(item0)
                 const scroll = `cscroll${grade}` as ItemName
                 if (!bot.hasItem(scroll) && bot.canBuy(scroll)) await bot.buy(scroll)
                 if (bot.hasItem(scroll)) return bot.compound(items[0], items[1], items[2], bot.locateItem(scroll))
