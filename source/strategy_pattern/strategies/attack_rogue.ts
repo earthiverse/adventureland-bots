@@ -98,7 +98,9 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
 
-                return bot.mentalBurst(targets.peek().id)
+                const target = targets.peek()
+                if (bot.canKillInOneShot(target, "mentalburst")) this.preventOverkill(bot, target)
+                return bot.mentalBurst(target.id)
             }
         }
 
