@@ -30,7 +30,7 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
             delete this.options.enableGreedyAggro
         } else {
             this.options.typeList = NON_PVP_MONSTERS
-            this.options.enableGreedyAggro = true
+            this.options.enableGreedyAggro = ["minimush"]
         }
         super.onApply(bot)
     }
@@ -79,7 +79,7 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             delete this.options.disableCleave
             this.options.enableEquipForCleave = true
             this.options.typeList = NON_PVP_MONSTERS
-            this.options.enableGreedyAggro = true
+            this.options.enableGreedyAggro = ["mrpumpkin", "xscorpion"]
         }
         super.onApply(bot)
     }
