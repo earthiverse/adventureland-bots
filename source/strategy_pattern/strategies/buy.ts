@@ -65,7 +65,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
                 if (AL.Game.G.maps[map as MapName].ignore) continue
                 for (const npc of (AL.Game.G.maps[map as MapName] as GMap).npcs) {
                     if (buyableFromNPC == true) break
-                    if (AL.Game.G.npcs[npc.id].items == undefined) continue
+                    if (!AL.Game.G.npcs[npc.id].items) continue
                     buyableFromNPC = AL.Game.G.npcs[npc.id].items.includes(itemName)
                     if (buyableFromNPC) break
                 }

@@ -69,7 +69,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
         if (!strategy.loops) return
         for (const [name, loop] of strategy.loops) {
-            if (loop == undefined) {
+            if (!loop) {
                 // Stop the loop
                 this.stopLoop(name)
             } else if (this.loops.has(name)) {

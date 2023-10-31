@@ -937,7 +937,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                     // Find the lowest level item, we'll upgrade that one
                     const lowestLevelPosition = bot.locateItem(item, bot.items, { returnLowestLevel: true })
-                    if (lowestLevelPosition == undefined) return // We probably couldn't afford to buy one
+                    if (lowestLevelPosition === undefined) return // We probably couldn't afford to buy one
                     const lowestLevel = bot.items[lowestLevelPosition].level
 
                     // Don't upgrade if it's already the level we want

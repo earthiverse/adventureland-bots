@@ -29,7 +29,7 @@ AL.Game.loginJSONFile("../../credentials.json").then(async () => {
         num.merchants += 1
         for (const slotName in merchant.slots) {
             const item = merchant.slots[slotName as TradeSlotType]
-            const key = item.level == undefined ? item.name : `${item.name}_${item.level}`
+            const key = item.level === undefined ? item.name : `${item.name}_${item.level}`
 
             if (item.gift) continue
             if (item.giveaway) continue

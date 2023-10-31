@@ -55,7 +55,7 @@ export class DebugStrategy<Type extends Character> implements Strategy<Type> {
     public options: DebugOptions
 
     public constructor(options?: DebugOptions) {
-        if (options == undefined) options = {}
+        if (!options) options = {}
         if (options.logEventsSize === undefined) options.logEventsSize = 500
         this.options = options
     }

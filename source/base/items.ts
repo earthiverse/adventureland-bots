@@ -515,7 +515,7 @@ export async function getItemsToCompoundOrUpgrade(bot: PingCompensatedCharacter)
     let currentCount: number
     for (let i = 0; i < counts.length; i++) {
         const count = counts[i]
-        if (count.level == undefined) continue // Not compoundable/upgradable
+        if (count.level === undefined) continue // Not compoundable/upgradable
         if (count.name !== currentName) {
             currentName = count.name
             currentLevel = count.level
@@ -678,7 +678,7 @@ export async function upgradeOrCompoundItems(bot: Character, allIndexes: Indexes
         let offeringIndex: number
         if (offering) {
             offeringIndex = bot.locateItem(offering, bot.items)
-            if (offeringIndex == undefined) {
+            if (offeringIndex === undefined) {
                 console.debug(`We want to upgrade or compound a level ${item.level} ${item.name}, but we want to use ${offering} as an offering, and we don't have any.`)
                 continue
             }
