@@ -29,7 +29,7 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
             for (const [itemName, criteria] of options.sellMap) {
                 const GData = AL.Game.G.items[itemName]
                 const npcPrice = GData.g * 0.6
-                if (criteria === undefined) {
+                if (!criteria) {
                     // Sell it for the NPC price
                     if (GData.upgrade || GData.compound) {
                         options.sellMap.set(itemName, [[0, npcPrice]])
