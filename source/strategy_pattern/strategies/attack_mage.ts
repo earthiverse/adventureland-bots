@@ -129,7 +129,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
             const entities = bot.getEntities({
                 canDamage: "cburst",
                 hasTarget: false,
-                typeList: this.options.typeList,
+                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
                 withinRange: "cburst"
             })
             if (

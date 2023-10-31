@@ -63,7 +63,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
             const entities = bot.getEntities({
                 canDamage: "purify",
                 hasTarget: false,
-                typeList: this.options.typeList,
+                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
                 withinRange: "purify"
             })
             if (

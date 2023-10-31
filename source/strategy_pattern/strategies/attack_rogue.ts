@@ -87,7 +87,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
             const entities = bot.getEntities({
                 canDamage: "mentalburst",
                 hasTarget: false,
-                typeList: this.options.typeList,
+                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
                 withinRange: "mentalburst"
             })
             if (
@@ -151,7 +151,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
             const entities = bot.getEntities({
                 canDamage: "quickpunch",
                 hasTarget: false,
-                typeList: this.options.typeList,
+                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
                 withinRange: "quickpunch"
             })
             if (
@@ -219,7 +219,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
             const entities = bot.getEntities({
                 canDamage: "quickstab",
                 hasTarget: false,
-                typeList: this.options.typeList,
+                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
                 withinRange: "quickstab"
             })
             if (

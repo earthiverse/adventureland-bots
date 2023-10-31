@@ -150,6 +150,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
             // Absorb the sins of other players attacking coop monsters
             const entity = bot.getEntity({
                 ...this.options,
+                isCooperative: true,
                 targetingPartyMember: false,
             })
             if (entity) {

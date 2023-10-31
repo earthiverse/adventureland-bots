@@ -79,7 +79,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             if (unwantedEntity) return // Something we don't want to agitate is nearby
             const wantedEntity = bot.getEntity({
                 hasTarget: false,
-                typeList: this.options.typeList,
+                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
                 withinRange: "agitate"
             })
             if (wantedEntity) return bot.agitate()
