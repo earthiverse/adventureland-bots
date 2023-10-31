@@ -25,7 +25,7 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     disableScare?: true
     disableZapper?: true
     /** If set, we will aggro as many nearby monsters as we can */
-    enableGreedyAggro?: true
+    enableGreedyAggro?: true | MonsterName[]
     /** If set, we will check if we have the correct items equipped before and after attacking */
     ensureEquipped?: EnsureEquipped
     /** If set, we will generate a loadout */
@@ -112,6 +112,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 if (!this.options.disableZapper && bot.canUse("zapperzap")) {
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
+                        if (Array.isArray(this.options.enableGreedyAggro) && !this.options.enableGreedyAggro.includes(monster.type)) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
                         if (AL.Game.G.monsters[monster.type].immune) continue // Can't damage immune monsters with zapperzap
@@ -123,6 +124,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 if (bot.ctype == "warrior" && bot.canUse("taunt")) {
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
+                        if (Array.isArray(this.options.enableGreedyAggro) && !this.options.enableGreedyAggro.includes(monster.type)) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
                         bot.nextSkill.set("taunt", new Date(Date.now() + (bot.ping * 2)))
@@ -134,6 +136,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                     const cbursts: [string, number][] = []
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
+                        if (Array.isArray(this.options.enableGreedyAggro) && !this.options.enableGreedyAggro.includes(monster.type)) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
                         cbursts.push([monster.id, 1])
@@ -154,6 +157,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 if (bot.canUse("attack")) {
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
+                        if (Array.isArray(this.options.enableGreedyAggro) && !this.options.enableGreedyAggro.includes(monster.type)) continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > bot.range) continue
                         bot.nextSkill.set("attack", new Date(Date.now() + (bot.ping * 2)))
@@ -195,7 +199,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             const entities = bot.getEntities({
                 canDamage: "attack",
                 hasTarget: false,
-                typeList: this.options.typeList,
+                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
                 withinRange: "attack"
             })
             if (
@@ -444,7 +448,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             const entities = bot.getEntities({
                 canDamage: "zapperzap",
                 hasTarget: false,
-                typeList: this.options.typeList,
+                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
                 withinRange: "zapperzap"
             })
             if (
