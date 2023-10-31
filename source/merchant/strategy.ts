@@ -948,7 +948,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                         /** Buy a scroll if we don't have one */
                         let scrollPosition = bot.locateItem(scroll)
-                        if (scrollPosition == undefined && bot.canBuy(scroll)) {
+                        if (scrollPosition === undefined && bot.canBuy(scroll)) {
                             this.debug(bot, "BuyAndUpgrade - Buying upgrade scroll")
                             await bot.buy(scroll)
                             scrollPosition = bot.locateItem(scroll)
