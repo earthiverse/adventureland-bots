@@ -31,6 +31,7 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
         } else {
             this.options.typeList = NON_PVP_MONSTERS
             this.options.enableGreedyAggro = ["minimush"]
+            this.options.maximumTargets = 3
         }
         super.onApply(bot)
     }
@@ -50,8 +51,11 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
 
         if (bot.isPVP()) {
             this.options.typeList = ["mrpumpkin"]
+            delete this.options.enableGreedyAggro
         } else {
             this.options.typeList = NON_PVP_MONSTERS
+            this.options.enableGreedyAggro = ["minimush"]
+            this.options.maximumTargets = 5
         }
         super.onApply(bot)
     }
