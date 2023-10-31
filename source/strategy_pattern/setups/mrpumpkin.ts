@@ -1,4 +1,4 @@
-import AL, { Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
+import AL, { Mage, MonsterName, PingCompensatedCharacter, Priest, Rogue, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -45,7 +45,6 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
         if (bot.serverData.name === "PVP" || !(bot.hasItem("zapper") || bot.isEquipped("zapper"))) {
             this.options.generateEnsureEquipped.ensure.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
         } else {
-            // Additional monsters
             this.options.generateEnsureEquipped.ensure.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
         }
 
@@ -56,6 +55,26 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
             this.options.typeList = NON_PVP_MONSTERS
             this.options.enableGreedyAggro = ["minimush"]
             this.options.maximumTargets = bot.mcourage
+        }
+        super.onApply(bot)
+    }
+}
+
+class RogueMrPumpkinAttackStrategy extends RogueAttackStrategy {
+    public onApply(bot: Rogue): void {
+        this.options.generateEnsureEquipped.ensure = this.options.generateEnsureEquipped.ensure ?? {}
+        this.options.generateEnsureEquipped.ensure.orb = { name: "jacko", filters: { returnHighestLevel: true } }
+
+        if (bot.serverData.name === "PVP" || !(bot.hasItem("zapper") || bot.isEquipped("zapper"))) {
+            this.options.generateEnsureEquipped.ensure.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
+        } else {
+            this.options.generateEnsureEquipped.ensure.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
+        }
+
+        if (bot.isPVP()) {
+            this.options.typeList = ["mrpumpkin"]
+        } else {
+            this.options.typeList = NON_PVP_MONSTERS
         }
         super.onApply(bot)
     }
