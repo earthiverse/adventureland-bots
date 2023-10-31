@@ -82,7 +82,7 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
         } else {
             delete this.options.disableCleave
             this.options.enableEquipForCleave = true
-            this.options.typeList = NON_PVP_MONSTERS
+            this.options.typeList = ["mrpumpkin", "phoenix", "xscorpion", "tinyp"]
             this.options.enableGreedyAggro = ["mrpumpkin", "xscorpion"]
         }
         super.onApply(bot)
