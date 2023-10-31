@@ -15,7 +15,7 @@ async function run() {
             const identifier = sID as ServerIdentifier
             if (avoidIdentifiers.includes(identifier)) continue
             const server = servers[identifier]
-            if (lowestPlayerCount == undefined) {
+            if (lowestPlayerCount === undefined) {
                 lowestPlayerCount = server
             } else if (server.players < lowestPlayerCount.players) {
                 lowestPlayerCount = server
