@@ -1,4 +1,4 @@
-import { Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
+import AL, { Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -31,7 +31,7 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
         } else {
             this.options.typeList = NON_PVP_MONSTERS
             this.options.enableGreedyAggro = ["minimush"]
-            this.options.maximumTargets = 3
+            this.options.maximumTargets = bot.mcourage
         }
         super.onApply(bot)
     }
@@ -55,7 +55,7 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
         } else {
             this.options.typeList = NON_PVP_MONSTERS
             this.options.enableGreedyAggro = ["minimush"]
-            this.options.maximumTargets = 5
+            this.options.maximumTargets = bot.mcourage
         }
         super.onApply(bot)
     }
