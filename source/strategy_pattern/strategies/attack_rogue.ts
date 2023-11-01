@@ -165,6 +165,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
                 const target = targets.peek()
                 const canKill = bot.canKillInOneShot(target, "quickpunch")
                 if (canKill) this.preventOverkill(bot, target)
+
                 return bot.quickPunch(target.id)
             }
         }
@@ -206,7 +207,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
 
             const canKill = bot.canKillInOneShot(target, "quickpunch")
             if (canKill) this.preventOverkill(bot, target)
-            if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot).catch(suppress_errors)
+
             return bot.quickPunch(target.id)
         }
     }
@@ -232,6 +233,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
                 const target = targets.peek()
                 const canKill = bot.canKillInOneShot(target, "quickstab")
                 if (canKill) this.preventOverkill(bot, target)
+
                 return bot.quickStab(target.id)
             }
         }
@@ -273,7 +275,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
 
             const canKill = bot.canKillInOneShot(target, "quickstab")
             if (canKill) this.preventOverkill(bot, target)
-            if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot).catch(suppress_errors)
+
             return bot.quickStab(target.id)
         }
     }

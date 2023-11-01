@@ -208,10 +208,12 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 // Prioritize the entities
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
-
                 const target = targets.peek()
+
                 const canKill = bot.canKillInOneShot(target)
                 if (canKill) this.preventOverkill(bot, target)
+                if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot).catch(suppress_errors)
+
                 return bot.basicAttack(target.id)
             }
         }
@@ -251,7 +253,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
             const canKill = bot.canKillInOneShot(target)
             if (canKill) this.preventOverkill(bot, target)
-            else this.getEnergizeFromOther(bot).catch(suppress_errors)
+            if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot).catch(suppress_errors)
+
             return bot.basicAttack(target.id)
         }
     }
@@ -298,6 +301,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             const canKill = bot.canKillInOneShot(target)
             if (canKill) this.preventOverkill(bot, target)
             if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot).catch(suppress_errors)
+
             return bot.basicAttack(target.id)
         }
     }
@@ -513,6 +517,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
             const canKill = bot.canKillInOneShot(target)
             if (canKill) this.preventOverkill(bot, target)
+
             return bot.zapperZap(target.id)
         }
     }
