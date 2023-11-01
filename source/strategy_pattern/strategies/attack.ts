@@ -209,7 +209,10 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
 
-                return bot.basicAttack(targets.peek().id)
+                const target = targets.peek()
+                const canKill = bot.canKillInOneShot(target)
+                if (canKill) this.preventOverkill(bot, target)
+                return bot.basicAttack(target.id)
             }
         }
 
