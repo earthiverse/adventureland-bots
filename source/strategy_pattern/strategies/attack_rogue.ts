@@ -60,6 +60,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
             canKillInOneShot: "mentalburst",
             couldGiveCredit: true,
             notTypeList: KILL_STEAL_AVOID_MONSTERS,
+            couldDieToProjectiles: false,
             withinRange: "mentalburst"
         })
         if (entities.length) {
@@ -86,6 +87,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
             // Mental burst an entity that doesn't have a target if we can
             const entities = bot.getEntities({
                 canDamage: "mentalburst",
+                couldDieToProjectiles: false,
                 hasTarget: false,
                 typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
                 withinRange: "mentalburst"
