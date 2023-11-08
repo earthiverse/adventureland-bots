@@ -46,6 +46,7 @@ export function constructFireRoamerSetup(contexts: Strategist<PingCompensatedCha
                         attack: new PriestFireRoamerAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
+                            enableAbsorbToTank: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
                                 attributes: ["resistance", "int", "attack"]

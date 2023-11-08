@@ -49,6 +49,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                             generateEnsureEquipped: {
                                 attributes: ["resistance", "int", "attack"]
                             },
+                            enableAbsorbToTank: true,
                             enableGreedyAggro: true,
                             typeList: ["ghost", "tinyp"],
                         }),
@@ -89,6 +90,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "priest",
                         attack: new PriestGhostAttackStrategy({
                             contexts: contexts,
+                            enableAbsorbToTank: true,
                             generateEnsureEquipped: {
                                 attributes: ["resistance", "int", "attack"]
                             },
@@ -121,6 +123,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                             generateEnsureEquipped: {
                                 attributes: ["resistance", "int", "attack"]
                             },
+                            enableAbsorbToTank: true,
                             enableGreedyAggro: true,
                             typeList: ["ghost", "tinyp"],
                         }),
