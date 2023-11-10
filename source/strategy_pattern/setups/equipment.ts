@@ -1,8 +1,18 @@
-import { Attribute, Character, Game, Item, ItemData, ItemName, ItemType, LocateItemFilters, SlotType, WeaponType } from "alclient"
+import { Attribute, Character, Game, Item, ItemData, ItemName, ItemType, LocateItemFilters, SkillName, SlotType, WeaponType } from "alclient"
 import { EnsureEquipped, EnsureEquippedSlot } from "../strategies/attack"
 
 export const RETURN_HIGHEST: LocateItemFilters = { returnHighestLevel: true }
 export const UNEQUIP: EnsureEquippedSlot = { name: undefined, unequip: true }
+
+export const ZAPPER_CRING: EnsureEquipped = {
+    ring1: { name: "zapper", filters: RETURN_HIGHEST },
+    ring2: { name: "cring", filters: RETURN_HIGHEST },
+}
+
+export const ZAPPER_STRRING: EnsureEquipped = {
+    ring1: { name: "zapper", filters: RETURN_HIGHEST },
+    ring2: { name: "strring", filters: RETURN_HIGHEST },
+}
 
 export const MAGE_SPLASH: EnsureEquipped = {
     amulet: { name: "intamulet", filters: RETURN_HIGHEST },
@@ -171,6 +181,13 @@ export const UNEQUIP_EVERYTHING: EnsureEquipped = {
     shoes: UNEQUIP,
 }
 
+export type GenerateEnsureEquipped = {
+    /** Which attributes should be prioritized? */
+    attributes?: Attribute[]
+    /** If we have the given item, equip it */
+    prefer?: EnsureEquipped
+}
+
 // TODO: Combine 2nd and 3rd arguments to `options`, and add `ability` support
 // TODO: Add check for weapon type checks on classes (e.g. equipping crossbow on ranger lowers frequency)
 /**
@@ -181,7 +198,9 @@ export const UNEQUIP_EVERYTHING: EnsureEquipped = {
  * @param ensure Anything set here will be added or will override what was generated
  * @returns 
  */
-export function generateEnsureEquippedFromAttribute(bot: Character, attributes: Attribute[], ensure?: EnsureEquipped): EnsureEquipped {
+export function generateEnsureEquippedFromAttribute(bot: Character, generate: GenerateEnsureEquipped): EnsureEquipped {
+    if (!generate.attributes) generate.attributes = []
+
     const equippableMainhand = Object.keys(Game.G.classes[bot.ctype].mainhand) as WeaponType[]
     const equippableDoublehand = Object.keys(Game.G.classes[bot.ctype].doublehand) as WeaponType[]
     const equippableOffhand = Object.keys(Game.G.classes[bot.ctype].offhand) as WeaponType[]
@@ -189,7 +208,7 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
     const equippableItemTypes: (ItemType | WeaponType)[] = [...equippableMainhand, ...equippableOffhand, ...equippableDoublehand, ...equippableArmor]
 
     // Remove blast and explosion if we're on PVP
-    if (bot.isPVP()) attributes.filter(a => (a !== "blast" && a !== "explosion"))
+    if (bot.isPVP()) generate.attributes.filter(a => (a !== "blast" && a !== "explosion"))
 
     const options: {
         [T in (ItemType | WeaponType)]?: ItemData[]
@@ -228,7 +247,7 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
 
         let sumA = 0
         let sumB = 0
-        for (const attribute of attributes) {
+        for (const attribute of generate.attributes) {
             sumA += (itemDataA[attribute] ?? 0)
             sumB += (itemDataB[attribute] ?? 0)
         }
@@ -287,11 +306,19 @@ export function generateEnsureEquippedFromAttribute(bot: Character, attributes: 
         toEquip[slotType] = { name: item.name, filters: filters }
     }
 
-    if (ensure) {
+    if (generate.prefer) {
         // Add / override what was specified
-        for (const slotName in ensure) {
+        for (const slotName in generate.prefer) {
             const slotType = slotName as SlotType
-            toEquip[slotType] = ensure[slotType]
+            const ensureEquippedSlot = generate.prefer[slotType]
+            if (
+                !bot.isEquipped(ensureEquippedSlot.name)
+                || !bot.hasItem(ensureEquippedSlot.name, bot.items, ensureEquippedSlot.filters)
+            ) {
+                // We don't have the item
+                continue
+            }
+            toEquip[slotType] = ensureEquippedSlot
         }
     }
 

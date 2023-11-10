@@ -21,6 +21,9 @@ class PriestFireRoamerAttackStrategy extends PriestAttackStrategy {
     }
 }
 
+// TODO: Fire roamer move strategy based on level of monsters
+
+
 export function constructFireRoamerSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
         configs: [

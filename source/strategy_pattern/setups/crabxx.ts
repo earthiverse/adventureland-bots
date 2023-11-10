@@ -125,7 +125,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             disableEnergize: true,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "blast", "explosion"],
-                                ensure: {
+                                prefer: {
                                     mainhand: { name: "crossbow", filters: { returnHighestLevel: true } },
                                     orb: { name: "jacko", filters: { returnHighestLevel: true } }
                                 }

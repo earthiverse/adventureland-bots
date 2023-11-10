@@ -558,7 +558,7 @@ export function constructCryptHelperSetup(contexts: Strategist<PingCompensatedCh
                                 contexts: contexts,
                                 generateEnsureEquipped: {
                                     attributes: ["armor", "str"],
-                                    ensure: {
+                                    prefer: {
                                         mainhand: { name: "firestars", filters: { returnHighestLevel: true } },
                                         offhand: { name: "snowflakes", filters: { returnHighestLevel: true } },
                                         orb: { name: "jacko", filters: { returnHighestLevel: true } }

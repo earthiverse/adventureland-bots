@@ -113,7 +113,7 @@ class MageXMageAttackStrategy extends MageAttackStrategy {
 
         this.options.generateEnsureEquipped = {
             attributes: ["resistance", "int"],
-            ensure: {
+            prefer: {
                 mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
                 offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
                 orb: { name: "jacko", filters: { returnHighestLevel: true } }
@@ -152,7 +152,7 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
 
         this.options.generateEnsureEquipped = {
             attributes: ["resistance", "int"],
-            ensure: {
+            prefer: {
                 mainhand: { name: "lmace", filters: { returnHighestLevel: true } },
                 offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
                 orb: { name: "jacko", filters: { returnHighestLevel: true } }
@@ -197,7 +197,7 @@ class WarriorXMageAttackStrategy extends WarriorAttackStrategy {
 
         this.options.generateEnsureEquipped = {
             attributes: ["resistance", "str"],
-            ensure: {
+            prefer: {
                 mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
                 offhand: { name: "fireblade", filters: { returnHighestLevel: true } },
                 orb: { name: "jacko", filters: { returnHighestLevel: true } }

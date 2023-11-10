@@ -4,7 +4,7 @@ import { sleep } from "../../base/general.js"
 import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 import { suppress_errors } from "../logging.js"
-import { generateEnsureEquippedFromAttribute } from "../setups/equipment.js"
+import { GenerateEnsureEquipped, generateEnsureEquippedFromAttribute } from "../setups/equipment.js"
 
 export type EnsureEquippedSlot = {
     name: ItemName
@@ -29,10 +29,7 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     /** If set, we will check if we have the correct items equipped before and after attacking */
     ensureEquipped?: EnsureEquipped
     /** If set, we will generate a loadout */
-    generateEnsureEquipped?: {
-        attributes: Attribute[]
-        ensure?: EnsureEquipped
-    }
+    generateEnsureEquipped?: GenerateEnsureEquipped
     maximumTargets?: number
 }
 
@@ -76,7 +73,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     }
 
     public onApply(bot: Type) {
-        if (this.options.generateEnsureEquipped) this.options.ensureEquipped = generateEnsureEquippedFromAttribute(bot, this.options.generateEnsureEquipped.attributes, this.options.generateEnsureEquipped.ensure)
+        if (this.options.generateEnsureEquipped) this.options.ensureEquipped = generateEnsureEquippedFromAttribute(bot, this.options.generateEnsureEquipped)
         this.botEnsureEquipped.set(bot.id, this.options.ensureEquipped)
 
         this.botSort.set(bot.id, sortPriority(bot, this.options.typeList))

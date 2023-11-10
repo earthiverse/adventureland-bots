@@ -4,6 +4,8 @@ import { DEFAULT_ITEMS_TO_HOLD } from "../../base/defaults.js"
 import { Strategy, LoopName, Loop } from "../context.js"
 import { suppress_errors } from "../logging.js"
 
+// TODO: Improve to bank not on a specific map, but all available maps
+
 export type MoveToBankAndDepositStuffStrategyOptions = {
     invisibleRogue?: true,
     itemsToHold?: Set<ItemName>,
