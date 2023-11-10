@@ -227,7 +227,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         this.strategies.delete(strategy)
     }
 
-    public async reconnect(): Promise<void> {
+    public async reconnect(retry = true): Promise<void> {
         if (this.bot) {
             this.bot.socket.removeAllListeners("disconnect")
             this.bot.disconnect()
@@ -278,18 +278,20 @@ export class Strategist<Type extends PingCompensatedCharacter> {
             }
             console.error(`Couldn't reconnect ${this.bot.name}!`)
             console.error(e)
-            const wait = /wait_(\d+)_second/.exec(e)
-            if (wait && wait[1]) {
-                setTimeout(() => this.reconnect(), 2000 + Number.parseInt(wait[1]) * 1000)
-            } else if (/limits/.test(e)) {
-                setTimeout(() => this.reconnect(), AL.Constants.RECONNECT_TIMEOUT_MS)
-            } else if (/ingame/.test(e)) {
-                setTimeout(() => this.reconnect(), 500)
-            } else if (/nouser/.test(e)) {
-                this.stop()
-                throw new Error(`Authorization failed for ${this.bot.name}! No longer trying to reconnect...`)
-            } else {
-                setTimeout(() => this.reconnect(), 10000)
+            if (retry) {
+                const wait = /wait_(\d+)_second/.exec(e)
+                if (wait && wait[1]) {
+                    setTimeout(() => this.reconnect(), 2000 + Number.parseInt(wait[1]) * 1000)
+                } else if (/limits/.test(e)) {
+                    setTimeout(() => this.reconnect(), AL.Constants.RECONNECT_TIMEOUT_MS)
+                } else if (/ingame/.test(e)) {
+                    setTimeout(() => this.reconnect(), 500)
+                } else if (/nouser/.test(e)) {
+                    this.stop()
+                    throw new Error(`Authorization failed for ${this.bot.name}! No longer trying to reconnect...`)
+                } else {
+                    setTimeout(() => this.reconnect(), 10000)
+                }
             }
         }
     }

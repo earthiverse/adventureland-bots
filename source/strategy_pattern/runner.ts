@@ -274,7 +274,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
                     // Prevent from starting
                     return
                 }
-                await context.reconnect()
+                await context.reconnect(false)
             } catch (e) {
                 console.error(e)
             } finally {
