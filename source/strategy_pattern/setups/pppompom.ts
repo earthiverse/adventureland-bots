@@ -5,6 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
+import { ZAPPER_CRING, ZAPPER_STRRING } from "./equipment.js"
 
 export function constructPPPomPomSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -19,6 +20,7 @@ export function constructPPPomPomSetup(contexts: Strategist<PingCompensatedChara
                             disableEnergize: true,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "attack"],
+                                prefer: ZAPPER_CRING
                             },
                             maximumTargets: 1,
                             targetingPartyMember: true,
@@ -34,6 +36,7 @@ export function constructPPPomPomSetup(contexts: Strategist<PingCompensatedChara
                             enableAbsorbToTank: true,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "attack"],
+                                prefer: ZAPPER_CRING
                             },
                             maximumTargets: 1,
                             type: "pppompom",
@@ -46,6 +49,7 @@ export function constructPPPomPomSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "str", "attack"],
+                                prefer: ZAPPER_STRRING
                             },
                             maximumTargets: 1,
                             targetingPartyMember: true,
