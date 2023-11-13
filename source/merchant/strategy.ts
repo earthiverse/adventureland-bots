@@ -1,5 +1,25 @@
-import AL, { BankPackName, Character, IPosition, ItemName, LocateItemFilters, LocateItemsFilters, MapName, Merchant, NewMapData, PingCompensatedCharacter, SlotType, Tools, TradeSlotType } from "alclient"
-import { getItemsToCompoundOrUpgrade, getOfferingToUse, IndexesToCompoundOrUpgrade, withdrawItemFromBank } from "../base/items.js"
+import AL, {
+    BankPackName,
+    Character,
+    Constants,
+    IPosition,
+    ItemName,
+    LocateItemFilters,
+    LocateItemsFilters,
+    MapName,
+    Merchant,
+    NewMapData,
+    PingCompensatedCharacter,
+    SlotType,
+    Tools,
+    TradeSlotType,
+} from "alclient"
+import {
+    getItemsToCompoundOrUpgrade,
+    getOfferingToUse,
+    IndexesToCompoundOrUpgrade,
+    withdrawItemFromBank,
+} from "../base/items.js"
 import { checkOnlyEveryMS, setLastCheck, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
 import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
@@ -9,7 +29,21 @@ import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { CRYPT_WAIT_TIME, addCryptMonstersToDB, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
-import { DEFAULT_CRAFTABLES, DEFAULT_EXCHANGEABLES, DEFAULT_GOLD_TO_HOLD, DEFAULT_IDENTIFIER, DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_ITEMS_TO_LIST, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_REPLENISHABLES, DEFAULT_REGION, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO, EXCESS_ITEMS_SELL } from "../base/defaults.js"
+import {
+    DEFAULT_CRAFTABLES,
+    DEFAULT_EXCHANGEABLES,
+    DEFAULT_GOLD_TO_HOLD,
+    DEFAULT_IDENTIFIER,
+    DEFAULT_ITEMS_TO_BUY,
+    DEFAULT_ITEMS_TO_HOLD,
+    DEFAULT_ITEMS_TO_LIST,
+    DEFAULT_MERCHANT_ITEMS_TO_HOLD,
+    DEFAULT_MERCHANT_REPLENISHABLES,
+    DEFAULT_REGION,
+    DEFAULT_REPLENISHABLES,
+    DEFAULT_REPLENISH_RATIO,
+    EXCESS_ITEMS_SELL,
+} from "../base/defaults.js"
 import { BankItemPosition, goAndWithdrawItem, tidyBank } from "../base/banking.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
@@ -27,14 +61,14 @@ export type MerchantMoveStrategyOptions = {
      */
     enableBuyAndUpgrade?: {
         upgradeToLevel: number
-    },
+    }
     /** If enabled, the merchant will
      * - buy replenishables in the list for the bots running in the given contexts if they get below the replenish ratio
      */
     enableBuyReplenishables?: {
         all: Map<ItemName, number>
         merchant?: Map<ItemName, number>
-        ratio: number,
+        ratio: number
     }
     /** If enabled, the merchant will
      * - withdraw items needed to craft the items in the list from the bank
@@ -43,7 +77,7 @@ export type MerchantMoveStrategyOptions = {
      */
     enableCraft?: {
         items: Set<ItemName>
-    },
+    }
     /** If enabled, the merchant will
      * - check that instances are still available periodically
      * - open a new instance if there are no monsters in the database from that crypt and we have an item
@@ -108,16 +142,16 @@ export type MerchantMoveStrategyOptions = {
      * - take items not in the `itemsToHold` set
      */
     enableOffload?: {
-        esize: number,
-        goldToHold: number,
+        esize: number
+        goldToHold: number
         itemsToHold: Set<ItemName>
-    },
+    }
     /** If enabled, the merchant will
      * - upgrade spare items
      */
     enableUpgrade?: boolean
-    goldToHold: number,
-    itemsToHold: Set<ItemName>,
+    goldToHold: number
+    itemsToHold: Set<ItemName>
 }
 
 export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions = {
@@ -128,7 +162,7 @@ export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions
     defaultPosition: {
         map: "main",
         x: 0,
-        y: 0
+        y: 0,
     },
     enableBuyReplenishables: {
         all: DEFAULT_REPLENISHABLES,
@@ -136,10 +170,10 @@ export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions
         ratio: DEFAULT_REPLENISH_RATIO,
     },
     enableCraft: {
-        items: DEFAULT_CRAFTABLES
+        items: DEFAULT_CRAFTABLES,
     },
     enableDealFinder: {
-        itemsToBuy: DEFAULT_ITEMS_TO_BUY
+        itemsToBuy: DEFAULT_ITEMS_TO_BUY,
     },
     enableExchange: {
         items: DEFAULT_EXCHANGEABLES,
@@ -147,7 +181,7 @@ export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions
     },
     enableFishing: true,
     enableListings: {
-        itemsToList: DEFAULT_ITEMS_TO_LIST
+        itemsToList: DEFAULT_ITEMS_TO_LIST,
     },
     enableJoinGiveaways: true,
     enableMining: true,
@@ -176,30 +210,41 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
     protected toUpgrade: IndexesToCompoundOrUpgrade = []
 
-    public constructor(contexts: Strategist<PingCompensatedCharacter>[], options: MerchantMoveStrategyOptions = DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS) {
+    public constructor(
+        contexts: Strategist<PingCompensatedCharacter>[],
+        options: MerchantMoveStrategyOptions = DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS,
+    ) {
         this.contexts = contexts
         this.options = options
 
         this.loops.set("move", {
-            fn: async (bot: Merchant) => { await this.move(bot).catch(console.error) },
-            interval: 250
+            fn: async (bot: Merchant) => {
+                await this.move(bot).catch(console.error)
+            },
+            interval: 250,
         })
 
         if (this.options.enableMluck) {
             this.loops.set("mluck", {
-                fn: async (bot: Merchant) => { await this.mluck(bot).catch(console.error) },
-                interval: ["mluck"]
+                fn: async (bot: Merchant) => {
+                    await this.mluck(bot).catch(console.error)
+                },
+                interval: ["mluck"],
             })
         }
 
         if (this.options.enableUpgrade) {
             this.loops.set("compound", {
-                fn: async (bot: Merchant) => { await this.compound(bot).catch(console.error) },
-                interval: 250
+                fn: async (bot: Merchant) => {
+                    await this.compound(bot).catch(console.error)
+                },
+                interval: 250,
             })
             this.loops.set("upgrade", {
-                fn: async (bot: Merchant) => { await this.upgrade(bot).catch(console.error) },
-                interval: 250
+                fn: async (bot: Merchant) => {
+                    await this.upgrade(bot).catch(console.error)
+                },
+                interval: 250,
             })
         }
     }
@@ -215,7 +260,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 // Go to bank and get item counts
                 this.toUpgrade = []
                 await bot.smartMove(bankingPosition)
-                await tidyBank(bot, { itemsToHold: this.options.itemsToHold, itemsInExcessSell: EXCESS_ITEMS_SELL }).catch(console.error)
+                await tidyBank(bot, {
+                    itemsToHold: this.options.itemsToHold,
+                    itemsInExcessSell: EXCESS_ITEMS_SELL,
+                }).catch(console.error)
 
                 // Withdraw things that we can upgrade
                 if (this.options.enableUpgrade) {
@@ -240,9 +288,9 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
             // Do banking if we have a lot of gold, or it's been a while (10 minutes)
             if (
-                (bot.gold > (this.options.goldToHold * 2))
-                || (bot.esize < 2 && !this.toUpgrade.length)
-                || checkOnlyEveryMS(`${bot.id}_banking`, 600_000)
+                bot.gold > this.options.goldToHold * 2 ||
+                (bot.esize < 2 && !this.toUpgrade.length) ||
+                checkOnlyEveryMS(`${bot.id}_banking`, 600_000)
             ) {
                 this.debug(bot, "Normal Banking")
                 // Move to town first, to have a chance to sell unwanted items
@@ -266,8 +314,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         const gCraft = AL.Game.G.craft[itemToCraft]
                         const itemsToWithdraw: BankItemPosition[] = []
                         let foundAll = true
-                        craftItemCheck:
-                        for (const [requiredQuantity, requiredItem, requiredItemLevel] of gCraft.items) {
+                        craftItemCheck: for (const [
+                            requiredQuantity,
+                            requiredItem,
+                            requiredItemLevel,
+                        ] of gCraft.items) {
                             // If the item is compoundable or upgradable, the level needs to be 0
                             let fixedItemLevel = requiredItemLevel
                             if (fixedItemLevel === undefined) {
@@ -293,7 +344,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
                                 }
                             }
 
-                            if (!fixedItemLevel && bot.canBuy(requiredItem, { ignoreLocation: true, quantity: requiredQuantity })) continue
+                            if (
+                                !fixedItemLevel &&
+                                bot.canBuy(requiredItem, { ignoreLocation: true, quantity: requiredQuantity })
+                            )
+                                continue
 
                             // We don't have this required item
                             foundAll = false
@@ -314,13 +369,21 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     for (const item of this.options.enableExchange.items) {
                         const options: LocateItemsFilters = {
                             locked: false,
-                            quantityGreaterThan: (AL.Game.G.items[item].e ?? 1) - 1
+                            quantityGreaterThan: (AL.Game.G.items[item].e ?? 1) - 1,
                         }
-                        await withdrawItemFromBank(bot, item, options, { freeSpaces: 3, itemsToHold: this.options.itemsToHold })
+                        await withdrawItemFromBank(bot, item, options, {
+                            freeSpaces: 3,
+                            itemsToHold: this.options.itemsToHold,
+                        })
                         if (bot.hasItem(item, bot.items, options)) break // We found something to exchange
                     }
                     if (this.options.enableExchange.lostEarring !== undefined) {
-                        await withdrawItemFromBank(bot, "lostearring", { level: this.options.enableExchange.lostEarring, locked: false }, { freeSpaces: 1, itemsToHold: this.options.itemsToHold })
+                        await withdrawItemFromBank(
+                            bot,
+                            "lostearring",
+                            { level: this.options.enableExchange.lostEarring, locked: false },
+                            { freeSpaces: 1, itemsToHold: this.options.itemsToHold },
+                        )
                     }
                 }
 
@@ -352,7 +415,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             const gItem = AL.Game.G.items[item]
                             const options: LocateItemsFilters = { locked: false, special: false }
                             if (gItem.upgrade || gItem.compound) options.level = 0
-                            await withdrawItemFromBank(bot, item, options, { freeSpaces: 0, itemsToHold: this.options.itemsToHold })
+                            await withdrawItemFromBank(bot, item, options, {
+                                freeSpaces: 0,
+                                itemsToHold: this.options.itemsToHold,
+                            })
                             if (bot.hasItem(item, bot.items, options)) {
                                 this.debug(bot, `Listing ${item} in ${slotName} for ${price}...`)
                                 // We found an item to list, list it
@@ -391,7 +457,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
             if (this.options.enableBuyReplenishables) {
                 // Find own characters with low replenishables and go deliver some
-                for (const friendContext of filterContexts(this.contexts, { owner: bot.owner, serverData: bot.serverData })) {
+                for (const friendContext of filterContexts(this.contexts, {
+                    owner: bot.owner,
+                    serverData: bot.serverData,
+                })) {
                     const friend = friendContext.bot
                     for (const [item, numTotal] of this.options.enableBuyReplenishables.all) {
                         const numFriendHas = friend.countItem(item)
@@ -399,7 +468,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         if (numFriendHas > numTotal * this.options.enableBuyReplenishables.ratio) continue // They still have enough
 
                         const numWeHave = bot.countItem(item)
-                        const numToBuy = (numTotal * 2) - numFriendHas - numWeHave
+                        const numToBuy = numTotal * 2 - numFriendHas - numWeHave
                         if (!bot.canBuy(item, { ignoreLocation: true, quantity: numToBuy })) continue // We don't have enough gold to buy them all
 
                         // Go buy the item(s)
@@ -414,7 +483,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                         // Go deliver the item(s)
                         if (bot.id !== friend.id) {
-                            this.debug(bot, `Replenishables - Delivering ${numTotal - numFriendHas}x${item} to ${friend.id}`)
+                            this.debug(
+                                bot,
+                                `Replenishables - Delivering ${numTotal - numFriendHas}x${item} to ${friend.id}`,
+                            )
                             await bot.smartMove(friend, { getWithin: 25 })
                             if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
                                 // We're not near them, so they must have moved, return so we can try again next loop
@@ -441,10 +513,13 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
             // Find own characters with low inventory space and go grab some items off of them
             if (this.options.enableOffload) {
-                for (const friendContext of filterContexts(this.contexts, { owner: bot.owner, serverData: bot.serverData })) {
+                for (const friendContext of filterContexts(this.contexts, {
+                    owner: bot.owner,
+                    serverData: bot.serverData,
+                })) {
                     const friend = friendContext.bot
                     if (friend == bot) continue // Skip ourself
-                    if (friend.gold < (this.options.enableOffload.goldToHold * 2)) {
+                    if (friend.gold < this.options.enableOffload.goldToHold * 2) {
                         if (friend.esize > 3) continue // They don't have a lot to offload
 
                         // Check if they have items that we can grab
@@ -476,7 +551,13 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     } else if (bot.gold > this.options.enableOffload.goldToHold) {
                         // Send them some of our gold
                         this.debug(bot, `Giving gold from ${friend.id}.`)
-                        await bot.sendGold(friend.id, Math.min(bot.gold - this.options.enableOffload.goldToHold, this.options.enableOffload.goldToHold - friend.gold))
+                        await bot.sendGold(
+                            friend.id,
+                            Math.min(
+                                bot.gold - this.options.enableOffload.goldToHold,
+                                this.options.enableOffload.goldToHold - friend.gold,
+                            ),
+                        )
                     }
 
                     // Grab items
@@ -502,28 +583,48 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
                     this.debug(bot, "Fishing - Looking for a rod in the bank")
                     // We don't have a rod, see if there's one in our bank
-                    await withdrawItemFromBank(bot, "rod", {}, {
-                        freeSpaces: bot.esize,
-                        itemsToHold: rodItems
-                    })
+                    await withdrawItemFromBank(
+                        bot,
+                        "rod",
+                        {},
+                        {
+                            freeSpaces: bot.esize,
+                            itemsToHold: rodItems,
+                        },
+                    )
                 }
 
                 if (!bot.hasItem("rod") && !bot.isEquipped("rod") && !bot.hasItem("spidersilk")) {
                     this.debug(bot, "Fishing - Looking for spidersilk in the bank")
                     // We didn't find one in our bank, see if we spider silk to make one
-                    await withdrawItemFromBank(bot, "spidersilk", {}, {
-                        freeSpaces: bot.esize,
-                        itemsToHold: rodItems
-                    })
+                    await withdrawItemFromBank(
+                        bot,
+                        "spidersilk",
+                        {},
+                        {
+                            freeSpaces: bot.esize,
+                            itemsToHold: rodItems,
+                        },
+                    )
                 }
 
-                if (!bot.hasItem("rod") && !bot.isEquipped("rod") && bot.hasItem("spidersilk") && !bot.hasItem("staff", bot.items, { level: 0, locked: false })) {
+                if (
+                    !bot.hasItem("rod") &&
+                    !bot.isEquipped("rod") &&
+                    bot.hasItem("spidersilk") &&
+                    !bot.hasItem("staff", bot.items, { level: 0, locked: false })
+                ) {
                     this.debug(bot, "Fishing - Looking for a staff in the bank")
                     // We found spider silk, see if we have a staff, too
-                    await withdrawItemFromBank(bot, "staff", { level: 0, locked: false }, {
-                        freeSpaces: bot.esize,
-                        itemsToHold: rodItems
-                    })
+                    await withdrawItemFromBank(
+                        bot,
+                        "staff",
+                        { level: 0, locked: false },
+                        {
+                            freeSpaces: bot.esize,
+                            itemsToHold: rodItems,
+                        },
+                    )
 
                     if (!bot.hasItem("staff")) {
                         this.debug(bot, "Fishing - Buying a staff")
@@ -546,7 +647,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     await bot.craft("rod")
                 }
 
-                if (bot.isEquipped("rod") || bot.hasItem("rod") && AL.Tools.distance(bot, mainFishingSpot) > 10) {
+                if (bot.isEquipped("rod") || (bot.hasItem("rod") && AL.Tools.distance(bot, mainFishingSpot) > 10)) {
                     this.debug(bot, "Fishing - Moving to fishing spot")
                     // TODO: find closest fishing spot
                     await bot.smartMove(mainFishingSpot, { costs: { transport: 9999 } })
@@ -572,37 +673,67 @@ export class MerchantStrategy implements Strategy<Merchant> {
             // Go mining
             if (this.options.enableMining && bot.canUse("mining", { ignoreEquipped: true, ignoreLocation: true })) {
                 this.debug(bot, "Mining")
-                const pickaxeItems = new Set<ItemName>([...this.options.itemsToHold, "pickaxe", "spidersilk", "staff", "blade"])
+                const pickaxeItems = new Set<ItemName>([
+                    ...this.options.itemsToHold,
+                    "pickaxe",
+                    "spidersilk",
+                    "staff",
+                    "blade",
+                ])
 
                 if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) {
                     // We don't have a pickaxe, see if there's one in our bank
                     await bot.smartMove(bankingPosition)
-                    await withdrawItemFromBank(bot, "pickaxe", {}, {
-                        freeSpaces: bot.esize,
-                        itemsToHold: pickaxeItems
-                    })
+                    await withdrawItemFromBank(
+                        bot,
+                        "pickaxe",
+                        {},
+                        {
+                            freeSpaces: bot.esize,
+                            itemsToHold: pickaxeItems,
+                        },
+                    )
                 }
 
                 if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe") && !bot.hasItem("spidersilk")) {
                     // We didn't find one in our bank, see if we spider silk to make one
-                    await withdrawItemFromBank(bot, "spidersilk", {}, {
-                        freeSpaces: bot.esize,
-                        itemsToHold: pickaxeItems
-                    })
+                    await withdrawItemFromBank(
+                        bot,
+                        "spidersilk",
+                        {},
+                        {
+                            freeSpaces: bot.esize,
+                            itemsToHold: pickaxeItems,
+                        },
+                    )
                 }
 
-                if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe") && bot.hasItem("spidersilk")
-                    && !bot.hasItem("staff", bot.items, { level: 0, locked: false })
-                    && !bot.hasItem("blade", bot.items, { level: 0, locked: false })) {
+                if (
+                    !bot.hasItem("pickaxe") &&
+                    !bot.isEquipped("pickaxe") &&
+                    bot.hasItem("spidersilk") &&
+                    !bot.hasItem("staff", bot.items, { level: 0, locked: false }) &&
+                    !bot.hasItem("blade", bot.items, { level: 0, locked: false })
+                ) {
                     // We found spider silk, see if we have a staff and blade, too
-                    await withdrawItemFromBank(bot, "staff", { level: 0, locked: false }, {
-                        freeSpaces: bot.esize,
-                        itemsToHold: pickaxeItems
-                    })
-                    await withdrawItemFromBank(bot, "blade", { level: 0, locked: false }, {
-                        freeSpaces: bot.esize,
-                        itemsToHold: pickaxeItems
-                    })
+                    await withdrawItemFromBank(
+                        bot,
+                        "staff",
+                        { level: 0, locked: false },
+                        {
+                            freeSpaces: bot.esize,
+                            itemsToHold: pickaxeItems,
+                        },
+                    )
+                    await withdrawItemFromBank(
+                        bot,
+                        "blade",
+                        { level: 0, locked: false },
+                        {
+                            freeSpaces: bot.esize,
+                            itemsToHold: pickaxeItems,
+                        },
+                    )
 
                     if (!bot.hasItem("staff") || !bot.hasItem("blade")) {
                         // We didn't find a staff and/or a blade, but we can go buy one
@@ -619,7 +750,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     }
                 }
 
-                if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe") && bot.canCraft("pickaxe", { ignoreLocation: true })) {
+                if (
+                    !bot.hasItem("pickaxe") &&
+                    !bot.isEquipped("pickaxe") &&
+                    bot.canCraft("pickaxe", { ignoreLocation: true })
+                ) {
                     // We can make a pickaxe, let's go do that
                     if (bot.hasItem(["computer", "supercomputer"])) {
                         await bot.smartMove(miningSpot)
@@ -655,29 +790,34 @@ export class MerchantStrategy implements Strategy<Merchant> {
             const broom = bot.locateItem("broom", bot.items, { returnHighestLevel: true })
             if (broom !== undefined) {
                 if (
-                    !bot.slots.mainhand // Nothing equipped in mainhand
-                    || bot.slots.mainhand.name !== "broom" // Broom not equipped in mainhand
-                    || bot.items[broom].level > bot.slots.mainhand.level // It's higher level than the one we have equipped
+                    !bot.slots.mainhand || // Nothing equipped in mainhand
+                    bot.slots.mainhand.name !== "broom" || // Broom not equipped in mainhand
+                    bot.items[broom].level > bot.slots.mainhand.level // It's higher level than the one we have equipped
                 ) {
                     await bot.equip(broom)
                 }
             }
 
             // Go travel to mluck players
-            if (this.options.enableMluck?.travel && bot.canUse("mluck", { ignoreCooldown: true, ignoreLocation: true, ignoreMP: true })) {
+            if (
+                this.options.enableMluck?.travel &&
+                bot.canUse("mluck", { ignoreCooldown: true, ignoreLocation: true, ignoreMP: true })
+            ) {
                 if (this.options.enableMluck.contexts) {
                     for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
                         const friend = context.bot
                         if (
-                            friend.s.mluck // They have mluck
-                            && friend.s.mluck.f == bot.id // It's from us
-                            && friend.s.mluck?.ms > 900_000 // There's 15 minutes or more left
-                        ) continue // Ignore
+                            friend.s.mluck && // They have mluck
+                            friend.s.mluck.f == bot.id && // It's from us
+                            friend.s.mluck?.ms > 900_000 // There's 15 minutes or more left
+                        )
+                            continue // Ignore
                         if (
-                            friend.s.mluck // They have mluck
-                            && friend.s.mluck.f !== bot.id // It's not from us
-                            && friend.s.mluck.strong // It's strong
-                        ) continue // Ignore, because we can't override it
+                            friend.s.mluck && // They have mluck
+                            friend.s.mluck.f !== bot.id && // It's not from us
+                            friend.s.mluck.strong // It's strong
+                        )
+                            continue // Ignore, because we can't override it
                         this.debug(bot, `Moving to ${friend.name} (context) to mluck them`)
                         await bot.smartMove(friend, { getWithin: AL.Game.G.skills.mluck.range / 2 })
                         // Wait a bit if we had to enter a door
@@ -690,20 +830,22 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         {
                             $or: [
                                 { "s.mluck": undefined }, // They don't have mluck
-                                { "s.mluck.f": { "$ne": bot.id }, "s.mluck.strong": undefined } // We can steal mluck
+                                { "s.mluck.f": { $ne: bot.id }, "s.mluck.strong": undefined }, // We can steal mluck
                             ],
                             lastSeen: { $gt: Date.now() - 30000 },
                             serverIdentifier: bot.server.name,
-                            serverRegion: bot.server.region
+                            serverRegion: bot.server.region,
                         },
                         {
                             _id: 0,
                             map: 1,
                             name: 1,
                             x: 1,
-                            y: 1
-                        }
-                    ).lean().exec()
+                            y: 1,
+                        },
+                    )
+                        .lean()
+                        .exec()
                     if (player) {
                         this.debug(bot, `Moving to ${player.name} to mluck them`)
                         await bot.smartMove(player, { getWithin: AL.Game.G.skills.mluck.range / 2 })
@@ -725,7 +867,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         for (const [requiredQuantity, requiredItem] of gCraft.items) {
                             if (!bot.canBuy(requiredItem, { ignoreLocation: true, quantity: requiredQuantity })) break
                             if (!bot.hasItem(["computer", "supercomputer"])) {
-                                this.debug(bot, `Moving to NPC to buy ${requiredItem}x${requiredQuantity} to craft ${itemToCraft}`)
+                                this.debug(
+                                    bot,
+                                    `Moving to NPC to buy ${requiredItem}x${requiredQuantity} to craft ${itemToCraft}`,
+                                )
                                 await bot.smartMove(requiredItem)
                             }
                             this.debug(bot, `Buying ${requiredItem}x${requiredQuantity} to craft ${itemToCraft}`)
@@ -770,7 +915,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         const item = bot.items[i]
                         if (!item) continue // No item
                         if (item.l) continue // Item is locked
-                        if (item.name !== "lostearring" || item.level !== this.options.enableExchange.lostEarring) continue // Wrong level of earring
+                        if (item.name !== "lostearring" || item.level !== this.options.enableExchange.lostEarring)
+                            continue // Wrong level of earring
                         if (!bot.hasItem(["computer", "supercomputer"])) {
                             // Walk to the NPC
                             const npc = AL.Pathfinder.locateExchangeNPC(item.name)
@@ -788,14 +934,16 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 let lowestItemSlot: SlotType
                 let lowestItemLevel: number = Number.MAX_SAFE_INTEGER
                 let getFor: Character
-                itemSearch:
-                for (const friendContext of filterContexts(this.contexts, { owner: bot.owner, serverData: bot.serverData })) {
+                itemSearch: for (const friendContext of filterContexts(this.contexts, {
+                    owner: bot.owner,
+                    serverData: bot.serverData,
+                })) {
                     const friend = friendContext.bot
                     if (friend == bot) continue // Skip ourself
                     for (const sN in friend.slots) {
                         const slotName = sN as SlotType
                         if (slotName.startsWith("trade")) continue // Don't look at trade slots
-                        if (!(["chest", "gloves", "helmet", "mainhand", "pants", "shoes"]).includes(slotName)) continue
+                        if (!["chest", "gloves", "helmet", "mainhand", "pants", "shoes"].includes(slotName)) continue
                         const slot = friend.slots[slotName]
                         if (!slot) {
                             // We have nothing in this slot, let's get something for it
@@ -869,7 +1017,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     }
 
                     // If we have a higher level item, make sure it has the correct scroll, then go deliver and equip it
-                    const potential = bot.locateItem(item, bot.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true })
+                    const potential = bot.locateItem(item, bot.items, {
+                        levelGreaterThan: lowestItemLevel,
+                        returnHighestLevel: true,
+                    })
                     if (potential !== undefined) {
                         // Apply the correct stat scroll if we need
                         const itemData = bot.items[potential]
@@ -891,15 +1042,20 @@ export class MerchantStrategy implements Strategy<Merchant> {
                                     this.debug(bot, "BuyAndUpgrade - Buying stat scrolls")
                                     await bot.buy(statScroll, numNeeded - numHave)
                                 }
-                                const statScrollPosition = bot.locateItem(statScroll, bot.items, { quantityGreaterThan: numNeeded - 1 })
-                                if (statScrollPosition !== undefined)
-                                    await bot.upgrade(potential, statScrollPosition)
+                                const statScrollPosition = bot.locateItem(statScroll, bot.items, {
+                                    quantityGreaterThan: numNeeded - 1,
+                                })
+                                if (statScrollPosition !== undefined) await bot.upgrade(potential, statScrollPosition)
                             } catch (e) {
                                 console.error(e)
                             }
                         }
 
-                        const potentialWithScroll = bot.locateItem(item, bot.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true, statType: stat })
+                        const potentialWithScroll = bot.locateItem(item, bot.items, {
+                            levelGreaterThan: lowestItemLevel,
+                            returnHighestLevel: true,
+                            statType: stat,
+                        })
                         if (potentialWithScroll !== undefined) {
                             await bot.smartMove(getFor, { getWithin: 25 })
                             if (AL.Tools.squaredDistance(bot, getFor) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
@@ -909,7 +1065,11 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                             // Send it and equip it
                             await bot.sendItem(getFor.id, potentialWithScroll)
-                            const equipItem = getFor.locateItem(item, getFor.items, { levelGreaterThan: lowestItemLevel, returnHighestLevel: true, statType: stat })
+                            const equipItem = getFor.locateItem(item, getFor.items, {
+                                levelGreaterThan: lowestItemLevel,
+                                returnHighestLevel: true,
+                                statType: stat,
+                            })
                             await getFor.equip(equipItem, lowestItemSlot)
 
                             // Send the old item back to the merchant
@@ -920,7 +1080,12 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     if (!bot.hasItem(item)) {
                         // Go to bank and see if we have one
                         await bot.smartMove(bankingPosition)
-                        await withdrawItemFromBank(bot, item, { locked: false }, { freeSpaces: 2, itemsToHold: this.options.itemsToHold })
+                        await withdrawItemFromBank(
+                            bot,
+                            item,
+                            { locked: false },
+                            { freeSpaces: 2, itemsToHold: this.options.itemsToHold },
+                        )
                         await bot.smartMove("main")
                     }
 
@@ -1003,24 +1168,28 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         { "slots.trade29": { $ne: undefined } },
                         { "slots.trade30": { $ne: undefined } },
                     ],
-                }).lean().exec()
-                const merchantsToCheck = merchants
-                    .filter((v) => {
-                        for (const slotName in v.slots) {
-                            const slotData = v.slots[slotName as TradeSlotType]
-                            if (!slotData) continue // No data
+                })
+                    .lean()
+                    .exec()
+                const merchantsToCheck = merchants.filter((v) => {
+                    for (const slotName in v.slots) {
+                        const slotData = v.slots[slotName as TradeSlotType]
+                        if (!slotData) continue // No data
 
-                            if (slotData.giveaway && !slotData.list.includes(bot.id)) return true // There's a giveaway we want to join on this merchant
+                        if (slotData.giveaway && !slotData.list.includes(bot.id)) return true // There's a giveaway we want to join on this merchant
 
-                            if (!slotData.price) continue // Not a trade slot
-                            if (slotData.b) continue // Buying, not selling
-                            let priceToPay = DEFAULT_ITEMS_TO_BUY.get(slotData.name)
-                            if (priceToPay < 0) priceToPay = (AL.Game.G.items[slotData.name].g / AL.Game.G.items[slotData.name].markup ?? 1) * -priceToPay
-                            if (!priceToPay || slotData.price > priceToPay) continue // Not on our wishlist, or more than we want to pay
+                        if (!slotData.price) continue // Not a trade slot
+                        if (slotData.b) continue // Buying, not selling
+                        let priceToPay = DEFAULT_ITEMS_TO_BUY.get(slotData.name)
+                        if (priceToPay < 0)
+                            priceToPay =
+                                (AL.Game.G.items[slotData.name].g / AL.Game.G.items[slotData.name].markup ?? 1) *
+                                -priceToPay
+                        if (!priceToPay || slotData.price > priceToPay) continue // Not on our wishlist, or more than we want to pay
 
-                            return true // There's something we want from this merchant
-                        }
-                    })
+                        return true // There's something we want from this merchant
+                    }
+                })
                 if (merchantsToCheck.length > 0) {
                     const target = merchantsToCheck[0]
                     await bot.smartMove(target, { getWithin: 25 })
@@ -1035,17 +1204,17 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     const map = key as MapName
 
                     const instanceMonster = await AL.EntityModel.findOne({
-                        $or: [
-                            { firstSeen: null },
-                            { firstSeen: { $lt: Date.now() - CRYPT_WAIT_TIME } }
-                        ],
+                        $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - CRYPT_WAIT_TIME } }],
                         lastSeen: { $lt: Date.now() - 30_000 },
                         map: map,
                         serverIdentifier: bot.serverData.name,
                         serverRegion: bot.serverData.region,
-                    }).sort({
-                        lastSeen: -1
-                    }).lean().exec()
+                    })
+                        .sort({
+                            lastSeen: -1,
+                        })
+                        .lean()
+                        .exec()
 
                     if (instanceMonster) {
                         const cryptListener = async (data: NewMapData) => {
@@ -1059,17 +1228,20 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         bot.socket.on("new_map", cryptListener)
 
                         // Check if the instance is still valid
-                        await bot.smartMove(instanceMonster, {
-                            numAttempts: 1,
-                            stopIfTrue: async () => bot.getEntity({ type: instanceMonster.type }) && bot.in === instanceMonster.in
-                        }).catch(suppress_errors)
+                        await bot
+                            .smartMove(instanceMonster, {
+                                numAttempts: 1,
+                                stopIfTrue: async () =>
+                                    bot.getEntity({ type: instanceMonster.type }) && bot.in === instanceMonster.in,
+                            })
+                            .catch(suppress_errors)
                         if (bot.map !== instanceMonster.map) {
                             // Remove the Crypt ID from the database
                             await AL.EntityModel.deleteMany({
                                 serverIdentifier: bot.serverData.name,
                                 serverRegion: bot.serverData.region,
                                 map: map,
-                                in: instanceMonster.in
+                                in: instanceMonster.in,
                             }).catch(console.error)
                         }
                         bot.socket.off("new_map", cryptListener)
@@ -1081,7 +1253,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 if (bot.serverData.region == DEFAULT_REGION && bot.serverData.name == DEFAULT_IDENTIFIER) {
                     for (const key in this.options.enableInstanceProvider) {
                         const checkKey = `${bot.id}_instance_open_${key}`
-                        if (!checkOnlyEveryMS(checkKey, 1.8e+6, false)) continue // Open a new instance no more than once an hour
+                        if (!checkOnlyEveryMS(checkKey, 1.8e6, false)) continue // Open a new instance no more than once an hour
                         const map = key as MapName
 
                         // Open a new crypt
@@ -1090,10 +1262,31 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             // We don't have a key, check our bank for one
                             const items = new Set<ItemName>([...this.options.itemsToHold, item])
                             await bot.smartMove(bankingPosition)
-                            await withdrawItemFromBank(bot, item, {}, {
-                                freeSpaces: bot.esize,
-                                itemsToHold: items
-                            })
+                            await withdrawItemFromBank(
+                                bot,
+                                item,
+                                {},
+                                {
+                                    freeSpaces: bot.esize,
+                                    itemsToHold: items,
+                                },
+                            )
+                        }
+                        if (!bot.hasItem(item)) {
+                            // We didn't find one in the bank, see if any of our characters have one
+                            for (const context of filterContexts(this.contexts, {
+                                serverData: bot.serverData,
+                                owner: bot.owner,
+                            })) {
+                                const friend = context.bot
+                                if (friend == bot) continue // Skip ourself
+                                if (friend.hasItem(item)) {
+                                    // Go get the item from them
+                                    await bot.smartMove(friend, { getWithin: Constants.NPC_INTERACTION_DISTANCE })
+                                    await friend.sendItem(bot.id, friend.locateItem(item))
+                                    if (bot.hasItem(item)) break
+                                }
+                            }
                         }
 
                         if (bot.hasItem(item)) {
@@ -1130,15 +1323,14 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
     protected async debug(bot: Merchant, message: string) {
         if (!this.options.debug) return
-        console.debug(`[${(new Date()).toISOString()}] [${bot.id}] DEBUG: ${message}`)
+        console.debug(`[${new Date().toISOString()}] [${bot.id}] DEBUG: ${message}`)
     }
 
     protected async mluck(bot: Merchant) {
         if (!bot.canUse("mluck")) return
 
         // mluck ourself
-        if (this.options.enableMluck.self &&
-            (!bot.s.mluck || bot.s.mluck.f !== bot.id)) {
+        if (this.options.enableMluck.self && (!bot.s.mluck || bot.s.mluck.f !== bot.id)) {
             return bot.mluck(bot.id)
         }
 
@@ -1152,7 +1344,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 if (friend.s.mluck.strong && friend.s.mluck.f !== bot.id) continue // We can't steal the mluck
                 if (friend.s.mluck.f == "earthMer" && bot.id !== "earthMer" && bot.owner !== friend.owner) continue // Don't compete with earthMer
 
-                if (friend.s.mluck.f == bot.id && friend.s.mluck.ms > (AL.Game.G.skills.mluck.duration / 2)) continue // They still have a lot of time left
+                if (friend.s.mluck.f == bot.id && friend.s.mluck.ms > AL.Game.G.skills.mluck.duration / 2) continue // They still have a lot of time left
 
                 return bot.mluck(friend.id)
             }
@@ -1165,7 +1357,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 if (player.s.mluck.strong && player.s.mluck.f !== bot.id) continue // We can't steal the mluck
                 if (player.s.mluck.f == "earthMer" && bot.id !== "earthMer" && bot.owner !== player.owner) continue // Don't compete with earthMer
 
-                if (player.s.mluck.f == bot.id && player.s.mluck.ms > (AL.Game.G.skills.mluck.duration / 2)) continue // They still have a lot of time left
+                if (player.s.mluck.f == bot.id && player.s.mluck.ms > AL.Game.G.skills.mluck.duration / 2) continue // They still have a lot of time left
 
                 return bot.mluck(player.id)
             }
@@ -1188,7 +1380,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
             }
             const offering = getOfferingToUse(item)
             if (offering && !bot.hasItem(offering)) {
-                this.debug(bot, `Compound - Offering - We don't have a '${offering}' to compound ${item.name}(${item.level})`)
+                this.debug(
+                    bot,
+                    `Compound - Offering - We don't have a '${offering}' to compound ${item.name}(${item.level})`,
+                )
                 this.toUpgrade.splice(i, 1)
                 i--
                 continue
@@ -1206,7 +1401,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     this.debug(bot, `Compound - Scroll - Buying '${scroll}' to compound ${item.name}(${item.level})`)
                     return bot.buy(scroll)
                 } else {
-                    this.debug(bot, `Compound - Scroll - We don't have a '${scroll}' to compound ${item.name}(${item.level})`)
+                    this.debug(
+                        bot,
+                        `Compound - Scroll - We don't have a '${scroll}' to compound ${item.name}(${item.level})`,
+                    )
                     this.toUpgrade.splice(i, 1)
                     i--
                     continue
@@ -1216,7 +1414,13 @@ export class MerchantStrategy implements Strategy<Merchant> {
             this.toUpgrade.splice(i, 1)
             i--
             if (bot.canUse("massproduction")) await bot.massProduction()
-            return bot.compound(indexes[0], indexes[1], indexes[2], bot.locateItem(scroll), offering ? bot.locateItem(offering) : undefined)
+            return bot.compound(
+                indexes[0],
+                indexes[1],
+                indexes[2],
+                bot.locateItem(scroll),
+                offering ? bot.locateItem(offering) : undefined,
+            )
         }
     }
 
@@ -1237,7 +1441,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
             }
             const offering = getOfferingToUse(item)
             if (offering && !bot.hasItem(offering)) {
-                this.debug(bot, `Upgrade - Offering - We don't have a '${offering}' to upgrade ${item.name}(${item.level})`)
+                this.debug(
+                    bot,
+                    `Upgrade - Offering - We don't have a '${offering}' to upgrade ${item.name}(${item.level})`,
+                )
                 this.toUpgrade.splice(i, 1)
                 i--
                 continue
@@ -1255,7 +1462,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     this.debug(bot, `Upgrade - Scroll - Buying '${scroll}' to upgrade ${item.name}(${item.level})`)
                     return bot.buy(scroll)
                 } else {
-                    this.debug(bot, `Upgrade - Scroll - We don't have a '${scroll}' to upgrade ${item.name}(${item.level})`)
+                    this.debug(
+                        bot,
+                        `Upgrade - Scroll - We don't have a '${scroll}' to upgrade ${item.name}(${item.level})`,
+                    )
                     this.toUpgrade.splice(i, 1)
                     i--
                     continue
@@ -1269,12 +1479,16 @@ export class MerchantStrategy implements Strategy<Merchant> {
     }
 }
 
-export async function startMerchant(context: Strategist<Merchant>, friends: Strategist<PingCompensatedCharacter>[], options?: MerchantMoveStrategyOptions) {
+export async function startMerchant(
+    context: Strategist<Merchant>,
+    friends: Strategist<PingCompensatedCharacter>[],
+    options?: MerchantMoveStrategyOptions,
+) {
     const itemsToBuy = new Map<ItemName, number>(DEFAULT_ITEMS_TO_BUY.entries())
     for (const [itemName, price] of itemsToBuy) {
         if (price < 0) {
             const gItem = AL.Game.G.items[itemName]
-            itemsToBuy.set(itemName, gItem.g * (-price))
+            itemsToBuy.set(itemName, gItem.g * -price)
         }
     }
 
@@ -1316,23 +1530,27 @@ export async function startMerchant(context: Strategist<Merchant>, friends: Stra
         // TODO: Add more logic for things to buy
     }
 
-    context.applyStrategy(new BuyStrategy({
-        contexts: friends,
-        buyMap: itemsToBuy,
-        enableBuyForProfit: true
-    }))
+    context.applyStrategy(
+        new BuyStrategy({
+            contexts: friends,
+            buyMap: itemsToBuy,
+            enableBuyForProfit: true,
+        }),
+    )
     context.applyStrategy(new AvoidDeathStrategy())
     context.applyStrategy(new MerchantStrategy(friends, options))
     context.applyStrategy(new TrackerStrategy())
     context.applyStrategy(new AcceptPartyRequestStrategy())
-    context.applyStrategy(new BaseAttackStrategy({
-        contexts: friends,
-        disableBasicAttack: true
-    }))
-    context.applyStrategy(new ToggleStandStrategy({
-        offWhenMoving: true,
-        onWhenNear: [
-            { distance: 10, position: options.defaultPosition }
-        ]
-    }))
+    context.applyStrategy(
+        new BaseAttackStrategy({
+            contexts: friends,
+            disableBasicAttack: true,
+        }),
+    )
+    context.applyStrategy(
+        new ToggleStandStrategy({
+            offWhenMoving: true,
+            onWhenNear: [{ distance: 10, position: options.defaultPosition }],
+        }),
+    )
 }
