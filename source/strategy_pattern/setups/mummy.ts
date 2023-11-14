@@ -8,7 +8,7 @@ import { CharacterConfig, Setup } from "./base"
 import { ZAPPER_CRING, ZAPPER_STRRING } from "./equipment.js"
 
 export function constructMummySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const priestStrategy: CharacterConfig = {
+    const priestConfig: CharacterConfig = {
         ctype: "priest",
         attack: new PriestAttackStrategy({
             contexts: contexts,
@@ -22,7 +22,7 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
         move: new HoldPositionMoveStrategy({ map: "spookytown", x: 270, y: -1129 })
     }
 
-    const mageStrategy: CharacterConfig = {
+    const mageConfig: CharacterConfig = {
         ctype: "mage",
         attack: new MageAttackStrategy({
             contexts: contexts,
@@ -36,7 +36,7 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
         move: new HoldPositionMoveStrategy({ map: "spookytown", x: 250, y: -1129 })
     }
 
-    const warriorStrategy: CharacterConfig = {
+    const warriorConfig: CharacterConfig = {
         ctype: "warrior",
         attack: new WarriorAttackStrategy({
             contexts: contexts,
@@ -56,16 +56,16 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
             {
                 id: "mummy_mage,priest,warrior",
                 characters: [
-                    mageStrategy,
-                    priestStrategy,
-                    warriorStrategy
+                    mageConfig,
+                    priestConfig,
+                    warriorConfig
                 ]
             },
             {
                 id: "mummy_priest,warrior",
                 characters: [
-                    priestStrategy,
-                    warriorStrategy
+                    priestConfig,
+                    warriorConfig
                 ]
             },
         ]

@@ -4,15 +4,15 @@ import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base"
+import { CharacterConfig, Setup } from "./base"
+import { ZAPPER_CRING } from "./equipment.js"
 
 class PriestGhostAttackStrategy extends PriestAttackStrategy {
     protected async attack(bot: Priest): Promise<void> {
         if (this.shouldAttack(bot)) {
             // Heal ghost to farm life essence
             if (bot.canUse("heal")) {
-                entity:
-                for (const entity of bot.getEntities({ type: "ghost", withinRange: bot.range })) {
+                entity: for (const entity of bot.getEntities({ type: "ghost", withinRange: bot.range })) {
                     if (entity.s.healed) continue
                     for (const projectile of bot.projectiles.values()) {
                         if (projectile.type !== "heal") continue // Not a healing projectile
@@ -33,118 +33,67 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
         idlePosition: {
             map: "halloween",
             x: -80,
-            y: -1440
-        }
+            y: -1440,
+        },
     })
+
+    const priestConfig: CharacterConfig = {
+        ctype: "priest",
+        attack: new PriestGhostAttackStrategy({
+            contexts: contexts,
+            generateEnsureEquipped: {
+                attributes: ["resistance", "int", "attack"],
+                prefer: ZAPPER_CRING,
+            },
+            enableAbsorbToTank: true,
+            enableGreedyAggro: true,
+            typeList: ["ghost", "tinyp"],
+        }),
+        move: moveStrategy,
+    }
+
+    const mageConfig: CharacterConfig = {
+        ctype: "mage",
+        attack: new MageAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            generateEnsureEquipped: {
+                attributes: ["resistance", "int", "blast", "explosion"],
+            },
+            typeList: ["ghost", "tinyp"],
+        }),
+        move: moveStrategy,
+    }
+
+    const warriorConfig: CharacterConfig = {
+        ctype: "warrior",
+        attack: new WarriorAttackStrategy({
+            contexts: contexts,
+            disableAgitate: true,
+            disableZapper: true,
+            enableEquipForCleave: true,
+            generateEnsureEquipped: {
+                attributes: ["attack", "blast", "explosion"],
+            },
+            typeList: ["ghost", "tinyp"],
+        }),
+        move: moveStrategy,
+    }
 
     return {
         configs: [
             {
                 id: "ghost_priest,mage,warrior",
-                characters: [
-                    {
-                        ctype: "priest",
-                        attack: new PriestGhostAttackStrategy({
-                            contexts: contexts,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"]
-                            },
-                            enableAbsorbToTank: true,
-                            enableGreedyAggro: true,
-                            typeList: ["ghost", "tinyp"],
-                        }),
-                        move: moveStrategy
-                    },
-                    {
-                        ctype: "mage",
-                        attack: new MageAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "blast", "explosion"]
-                            },
-                            typeList: ["ghost", "tinyp"],
-                        }),
-                        move: moveStrategy
-                    },
-                    {
-                        ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
-                            contexts: contexts,
-                            disableAgitate: true,
-                            disableZapper: true,
-                            enableEquipForCleave: true,
-                            generateEnsureEquipped: {
-                                attributes: ["attack", "blast", "explosion"]
-                            },
-                            typeList: ["ghost", "tinyp"],
-                        }),
-                        move: moveStrategy
-                    }
-                ]
+                characters: [priestConfig, mageConfig, warriorConfig],
             },
             {
                 id: "ghost_priest,mage",
-                characters: [
-                    {
-                        ctype: "priest",
-                        attack: new PriestGhostAttackStrategy({
-                            contexts: contexts,
-                            enableAbsorbToTank: true,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"]
-                            },
-                            enableGreedyAggro: true,
-                            typeList: ["ghost", "tinyp"],
-                        }),
-                        move: moveStrategy
-                    },
-                    {
-                        ctype: "mage",
-                        attack: new MageAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "blast", "explosion"]
-                            },
-                            typeList: ["ghost", "tinyp"],
-                        }),
-                        move: moveStrategy
-                    }
-                ]
+                characters: [priestConfig, mageConfig],
             },
             {
                 id: "ghost_priest,warrior",
-                characters: [
-                    {
-                        ctype: "priest",
-                        attack: new PriestGhostAttackStrategy({
-                            contexts: contexts,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"]
-                            },
-                            enableAbsorbToTank: true,
-                            enableGreedyAggro: true,
-                            typeList: ["ghost", "tinyp"],
-                        }),
-                        move: moveStrategy
-                    },
-                    {
-                        ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
-                            contexts: contexts,
-                            disableAgitate: true,
-                            disableZapper: true,
-                            enableEquipForCleave: true,
-                            generateEnsureEquipped: {
-                                attributes: ["attack", "blast", "explosion"]
-                            },
-                            typeList: ["ghost", "tinyp"],
-                        }),
-                        move: moveStrategy
-                    }
-                ]
+                characters: [priestConfig, warriorConfig],
             },
-        ]
+        ],
     }
 }
