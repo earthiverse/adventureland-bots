@@ -58,7 +58,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
             contexts: contexts,
             disableEnergize: true,
             generateEnsureEquipped: {
-                attributes: ["resistance", "int", "blast", "explosion"],
+                attributes: ["resistance", "blast", "explosion"],
             },
             typeList: ["ghost", "tinyp"],
         }),
