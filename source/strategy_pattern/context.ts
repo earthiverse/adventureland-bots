@@ -18,6 +18,7 @@ export type LoopName =
     | "buy"
     | "charge"
     | "compound"
+    | "destroy"
     | "elixir"
     | "equip"
     | "heal"
@@ -78,7 +79,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                 this.loops.set(name, {
                     fn: loop.fn,
                     interval: loop.interval,
-                    started: oldLoop.started
+                    started: oldLoop.started,
                 })
             } else {
                 // Start the loop
@@ -86,7 +87,7 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                 this.loops.set(name, {
                     fn: loop.fn,
                     interval: loop.interval,
-                    started: now
+                    started: now,
                 })
 
                 const newLoop = async () => {
@@ -106,10 +107,25 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                     const loop = this.loops.get(name)
                     if (!loop || this.stopped) return // Stop the loop
                     if (loop.started.getTime() > started) return
-                    if (typeof loop.interval == "number") this.timeouts.set(name, setTimeout(async () => { newLoop() }, loop.interval)) // Continue the loop
+                    if (typeof loop.interval == "number")
+                        this.timeouts.set(
+                            name,
+                            setTimeout(async () => {
+                                newLoop()
+                            }, loop.interval),
+                        )
+                    // Continue the loop
                     else if (Array.isArray(loop.interval)) {
-                        const cooldown = Math.max(50, Math.min(...loop.interval.map((skill) => this.bot.getCooldown(skill))))
-                        this.timeouts.set(name, setTimeout(async () => { newLoop() }, cooldown)) // Continue the loop
+                        const cooldown = Math.max(
+                            50,
+                            Math.min(...loop.interval.map((skill) => this.bot.getCooldown(skill))),
+                        )
+                        this.timeouts.set(
+                            name,
+                            setTimeout(async () => {
+                                newLoop()
+                            }, cooldown),
+                        ) // Continue the loop
                     }
                 }
                 newLoop().catch(console.error)
@@ -149,31 +165,73 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                 try {
                     switch (this.bot.ctype) {
                         case "mage": {
-                            newBot = new AL.Mage(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            newBot = new AL.Mage(
+                                this.bot.owner,
+                                this.bot.userAuth,
+                                this.bot.characterID,
+                                AL.Game.G,
+                                AL.Game.servers[region][id],
+                            )
                             break
                         }
                         case "merchant": {
-                            newBot = new AL.Merchant(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            newBot = new AL.Merchant(
+                                this.bot.owner,
+                                this.bot.userAuth,
+                                this.bot.characterID,
+                                AL.Game.G,
+                                AL.Game.servers[region][id],
+                            )
                             break
                         }
                         case "paladin": {
-                            newBot = new AL.Paladin(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            newBot = new AL.Paladin(
+                                this.bot.owner,
+                                this.bot.userAuth,
+                                this.bot.characterID,
+                                AL.Game.G,
+                                AL.Game.servers[region][id],
+                            )
                             break
                         }
                         case "priest": {
-                            newBot = new AL.Priest(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            newBot = new AL.Priest(
+                                this.bot.owner,
+                                this.bot.userAuth,
+                                this.bot.characterID,
+                                AL.Game.G,
+                                AL.Game.servers[region][id],
+                            )
                             break
                         }
                         case "ranger": {
-                            newBot = new AL.Ranger(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            newBot = new AL.Ranger(
+                                this.bot.owner,
+                                this.bot.userAuth,
+                                this.bot.characterID,
+                                AL.Game.G,
+                                AL.Game.servers[region][id],
+                            )
                             break
                         }
                         case "rogue": {
-                            newBot = new AL.Rogue(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            newBot = new AL.Rogue(
+                                this.bot.owner,
+                                this.bot.userAuth,
+                                this.bot.characterID,
+                                AL.Game.G,
+                                AL.Game.servers[region][id],
+                            )
                             break
                         }
                         case "warrior": {
-                            newBot = new AL.Warrior(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[region][id])
+                            newBot = new AL.Warrior(
+                                this.bot.owner,
+                                this.bot.userAuth,
+                                this.bot.characterID,
+                                AL.Game.G,
+                                AL.Game.servers[region][id],
+                            )
                             break
                         }
                         default: {
@@ -237,31 +295,73 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         try {
             switch (this.bot.ctype) {
                 case "mage": {
-                    newBot = new AL.Mage(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
+                    newBot = new AL.Mage(
+                        this.bot.owner,
+                        this.bot.userAuth,
+                        this.bot.characterID,
+                        AL.Game.G,
+                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
+                    )
                     break
                 }
                 case "merchant": {
-                    newBot = new AL.Merchant(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
+                    newBot = new AL.Merchant(
+                        this.bot.owner,
+                        this.bot.userAuth,
+                        this.bot.characterID,
+                        AL.Game.G,
+                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
+                    )
                     break
                 }
                 case "paladin": {
-                    newBot = new AL.Paladin(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
+                    newBot = new AL.Paladin(
+                        this.bot.owner,
+                        this.bot.userAuth,
+                        this.bot.characterID,
+                        AL.Game.G,
+                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
+                    )
                     break
                 }
                 case "priest": {
-                    newBot = new AL.Priest(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
+                    newBot = new AL.Priest(
+                        this.bot.owner,
+                        this.bot.userAuth,
+                        this.bot.characterID,
+                        AL.Game.G,
+                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
+                    )
                     break
                 }
                 case "ranger": {
-                    newBot = new AL.Ranger(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
+                    newBot = new AL.Ranger(
+                        this.bot.owner,
+                        this.bot.userAuth,
+                        this.bot.characterID,
+                        AL.Game.G,
+                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
+                    )
                     break
                 }
                 case "rogue": {
-                    newBot = new AL.Rogue(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
+                    newBot = new AL.Rogue(
+                        this.bot.owner,
+                        this.bot.userAuth,
+                        this.bot.characterID,
+                        AL.Game.G,
+                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
+                    )
                     break
                 }
                 case "warrior": {
-                    newBot = new AL.Warrior(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name])
+                    newBot = new AL.Warrior(
+                        this.bot.owner,
+                        this.bot.userAuth,
+                        this.bot.characterID,
+                        AL.Game.G,
+                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
+                    )
                     break
                 }
                 default: {
@@ -326,18 +426,20 @@ export type FilterContextsOptions = {
     serverData?: ServerData
 }
 
-export function filterContexts(contexts: Strategist<PingCompensatedCharacter>[], options: FilterContextsOptions = {}): Strategist<PingCompensatedCharacter>[] {
+export function filterContexts(
+    contexts: Strategist<PingCompensatedCharacter>[],
+    options: FilterContextsOptions = {},
+): Strategist<PingCompensatedCharacter>[] {
     const filteredContexts: Strategist<PingCompensatedCharacter>[] = []
     for (const context of contexts) {
         if (!context.isReady()) continue
         if (options.owner && context.bot.owner !== options.owner) continue // Different owner
         if (
-            options.serverData
-            && (
-                context.bot.serverData.region !== options.serverData.region
-                || context.bot.serverData.name !== options.serverData.name
-            )
-        ) continue // Different server
+            options.serverData &&
+            (context.bot.serverData.region !== options.serverData.region ||
+                context.bot.serverData.name !== options.serverData.name)
+        )
+            continue // Different server
         filteredContexts.push(context)
     }
     return filteredContexts
