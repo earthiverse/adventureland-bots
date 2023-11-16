@@ -20,7 +20,7 @@ export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                attributes: ["int", "blast", "explosion"]
+                                attributes: ["frequency", "blast", "explosion"]
                             },
                             type: "bee"
                         }),
@@ -37,7 +37,7 @@ export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>
                             contexts: contexts,
                             disableCurse: true,
                             generateEnsureEquipped: {
-                                attributes: ["int", "frequency"]
+                                attributes: ["frequency"]
                             },
                             type: "bee"
                         }),
@@ -53,7 +53,7 @@ export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                attributes: ["dex", "blast", "explosion"]
+                                attributes: ["frequency", "blast", "explosion"]
                             },
                             type: "bee"
                         }),
@@ -72,7 +72,7 @@ export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                attributes: ["str", "blast", "explosion"]
+                                attributes: ["frequency", "blast", "explosion"]
                             },
                             type: "bee"
                         }),
