@@ -1282,7 +1282,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                                 if (friend == bot) continue // Skip ourself
                                 if (friend.hasItem(item)) {
                                     // Go get the item from them
-                                    await bot.smartMove(friend, { getWithin: Constants.NPC_INTERACTION_DISTANCE })
+                                    await bot.smartMove(friend)
                                     await friend.sendItem(bot.id, friend.locateItem(item))
                                     if (bot.hasItem(item)) break
                                 }
