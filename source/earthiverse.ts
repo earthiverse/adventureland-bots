@@ -505,12 +505,13 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 }
             }
 
-            for (const xmage of context.bot.getEntities({
-                couldGiveCredit: true,
-                typeList: XMAGE_MONSTERS
-            })) {
-                priority.push(xmage.type)
-            }
+            // TODO: Fix xmage strategy
+            // for (const xmage of context.bot.getEntities({
+            //     couldGiveCredit: true,
+            //     typeList: XMAGE_MONSTERS
+            // })) {
+            //     priority.push(xmage.type)
+            // }
 
             for (const cryptMonster of context.bot.getEntities({
                 couldGiveCredit: true,
@@ -520,15 +521,16 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             }
 
             if (AL.Database.connection) {
-                for (const xmage of await AL.EntityModel.find({
-                    serverIdentifier: context.bot.serverData.name,
-                    serverRegion: context.bot.serverData.region,
-                    type: { $in: XMAGE_MONSTERS }
-                }, {
-                    type: 1
-                }).lean().exec()) {
-                    priority.push(xmage.type)
-                }
+                // TODO: Fix xmage strategy
+                // for (const xmage of await AL.EntityModel.find({
+                //     serverIdentifier: context.bot.serverData.name,
+                //     serverRegion: context.bot.serverData.region,
+                //     type: { $in: XMAGE_MONSTERS }
+                // }, {
+                //     type: 1
+                // }).lean().exec()) {
+                //     priority.push(xmage.type)
+                // }
 
                 for (const cryptMonster of await AL.EntityModel.find({
                     $or: [
@@ -814,7 +816,9 @@ const startMerchantContext = async () => {
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, {
         ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS,
         debug: true,
-        enableInstanceProvider: { crypt: true, winter_instance: true },
+        // TODO: Fix xmage
+        enableInstanceProvider: { crypt: true },
+        // enableInstanceProvider: { crypt: true, winter_instance: true },
         enableUpgrade: true
     })
     CONTEXT.applyStrategy(debugStrategy)
