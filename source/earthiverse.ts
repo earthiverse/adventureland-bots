@@ -32,6 +32,7 @@ import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js
 import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
 import { CRYPT_MONSTERS, CRYPT_WAIT_TIME } from "./base/crypt.js"
+import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true, cheat: true })
@@ -504,6 +505,13 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 }
             }
 
+            for (const xmage of context.bot.getEntities({
+                couldGiveCredit: true,
+                typeList: XMAGE_MONSTERS
+            })) {
+                priority.push(xmage.type)
+            }
+
             for (const cryptMonster of context.bot.getEntities({
                 couldGiveCredit: true,
                 typeList: CRYPT_MONSTERS
@@ -512,6 +520,16 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             }
 
             if (AL.Database.connection) {
+                for (const xmage of await AL.EntityModel.find({
+                    serverIdentifier: context.bot.serverData.name,
+                    serverRegion: context.bot.serverData.region,
+                    type: { $in: XMAGE_MONSTERS }
+                }, {
+                    type: 1
+                }).lean().exec()) {
+                    priority.push(xmage.type)
+                }
+
                 for (const cryptMonster of await AL.EntityModel.find({
                     $or: [
                         { firstSeen: null },

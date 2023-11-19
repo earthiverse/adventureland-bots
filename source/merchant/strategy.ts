@@ -28,7 +28,7 @@ import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
-import { CRYPT_WAIT_TIME, addCryptMonstersToDB, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
+import { CRYPT_WAIT_TIME, addCryptMonstersToDB, getCryptWaitTime, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
 import {
     DEFAULT_CRAFTABLES,
     DEFAULT_EXCHANGEABLES,
@@ -84,6 +84,7 @@ export type MerchantMoveStrategyOptions = {
      */
     enableInstanceProvider?: {
         crypt?: true
+        xmage?: true
     }
     /** If enabled, the merchant will
      * - Look for merchants with things we want to buy and move to them
@@ -1204,7 +1205,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     const map = key as MapName
 
                     const instanceMonster = await AL.EntityModel.findOne({
-                        $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - CRYPT_WAIT_TIME } }],
+                        $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime(map) } }],
                         lastSeen: { $lt: Date.now() - 30_000 },
                         map: map,
                         serverIdentifier: bot.serverData.name,
