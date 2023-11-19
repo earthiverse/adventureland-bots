@@ -1,14 +1,24 @@
-import { Entity, GetEntityFilters, IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Tools, Warrior } from "alclient";
-import { KiteMonsterMoveStrategy } from "../strategies/move.js";
-import { Strategist, filterContexts } from "../context.js";
-import { suppress_errors } from "../logging.js";
-import { bankingPosition, getClosestBotToPosition } from "../../base/locations.js";
-import { NodeData } from "alclient/build/definitions/pathfinder.js";
-import { goAndWithdrawItem, locateItemsInBank } from "../../base/banking.js";
-import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js";
-import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategies/attack_priest.js";
-import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategies/attack_warrior.js";
-import { Setup } from "./base.js";
+import {
+    Entity,
+    GetEntityFilters,
+    IPosition,
+    Mage,
+    MonsterName,
+    PingCompensatedCharacter,
+    Priest,
+    Tools,
+    Warrior,
+} from "alclient"
+import { KiteMonsterMoveStrategy } from "../strategies/move.js"
+import { Strategist, filterContexts } from "../context.js"
+import { suppress_errors } from "../logging.js"
+import { bankingPosition, getClosestBotToPosition } from "../../base/locations.js"
+import { NodeData } from "alclient/build/definitions/pathfinder.js"
+import { goAndWithdrawItem, locateItemsInBank } from "../../base/banking.js"
+import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js"
+import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategies/attack_priest.js"
+import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategies/attack_warrior.js"
+import { Setup } from "./base.js"
 
 export const XMAGE_MONSTERS: MonsterName[] = ["xmagefz", "xmagefi", "xmagen", "xmagex"]
 
@@ -16,31 +26,36 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
     public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {
         super({
             contexts: contexts,
-            typeList: XMAGE_MONSTERS
+            typeList: XMAGE_MONSTERS,
         })
 
         // Only include winter instance map positions
-        this.spawns = this.spawns.filter(p => p.map === "winter_instance")
+        this.spawns = this.spawns.filter((p) => p.map === "winter_instance")
     }
 
     protected async move(bot: PingCompensatedCharacter): Promise<IPosition> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
-        const friends = filterContexts(this.options.contexts, { serverData: bot.serverData }).map(e => e.bot)
+        const friends = filterContexts(this.options.contexts, { serverData: bot.serverData })
+            .map((e) => e.bot)
+            .filter((c) => c.ctype !== "merchant")
 
-        // Check if we have a field generator, or if there's one in our bank
+        // Check if we have a fieldgen
         const fieldgenFilters: GetEntityFilters = { type: "fieldgen0" }
         let fieldGen: boolean | Entity = false
         for (const friend of friends) {
-            if (friend.hasItem("fieldgen0")) {
-                fieldGen = true
-                break
-            }
-
             if (friend.map !== "winter_instance") continue
             const entity = friend.getEntity(fieldgenFilters)
             if (entity) {
                 fieldGen = entity
                 break
+            }
+        }
+        if (fieldGen === false) {
+            for (const friend of friends) {
+                if (friend.hasItem("fieldgen0")) {
+                    fieldGen = true
+                    break
+                }
             }
         }
 
@@ -80,31 +95,15 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
         this.options.typeList = XMAGE_MONSTERS
 
         // If priest, and the fieldgen needs healing, move within healing range
-        if (bot.ctype === "priest" && typeof fieldGen !== "boolean" && fieldGen.hp < (fieldGen.max_hp * 0.75)) {
+        if (bot.ctype === "priest" && typeof fieldGen !== "boolean" && fieldGen.hp < fieldGen.max_hp * 0.75) {
             if (!bot.moving && Tools.distance(bot, fieldGen))
-                bot.smartMove(fieldGen, { getWithin: bot.range - 25 }).catch(suppress_errors)
+                bot.smartMove(fieldGen, { getWithin: bot.range - 25, resolveOnFinalMoveStart: true }).catch(
+                    suppress_errors,
+                )
             return
         }
 
-        for (const type of XMAGE_MONSTERS) {
-            filter.type = type as MonsterName
-
-            // Check for the entity in all of the contexts
-            let entity: Entity
-            for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
-                const friend = context.bot
-                if (friend.map !== bot.map) continue
-
-                entity = friend.getEntity(filter)
-                if (entity) break
-            }
-            if (!entity) continue
-
-            this.kite(bot, entity).catch(suppress_errors)
-            return
-        }
-
-        // Go find an xmage
+        // Go to xmage
         return super.move(bot)
     }
 }
@@ -118,10 +117,10 @@ class MageXMageAttackStrategy extends MageAttackStrategy {
             prefer: {
                 mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
                 offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
-                orb: { name: "jacko", filters: { returnHighestLevel: true } }
-            }
+                orb: { name: "jacko", filters: { returnHighestLevel: true } },
+            },
         }
-        this.options.maximumTargets = 0
+        this.options.targetingPartyMember = true
         this.options.typeList = XMAGE_MONSTERS
     }
 
@@ -157,8 +156,8 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
             prefer: {
                 mainhand: { name: "lmace", filters: { returnHighestLevel: true } },
                 offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
-                orb: { name: "jacko", filters: { returnHighestLevel: true } }
-            }
+                orb: { name: "jacko", filters: { returnHighestLevel: true } },
+            },
         }
         this.options.enableAbsorbToTank = true
         this.options.typeList = XMAGE_MONSTERS
@@ -166,8 +165,8 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
 
     protected async attack(bot: Priest): Promise<void> {
         // If there's a fieldgen and it needs healing, heal it
-        const fieldGen = bot.getEntity({ type: "fieldgen0", withinRange: "heal" })
-        if (fieldGen && fieldGen.hp < (fieldGen.max_hp * 0.75)) {
+        const fieldGen = bot.getEntity({ type: "fieldgen0", withinRange: "attack" })
+        if (fieldGen && fieldGen.hp < fieldGen.max_hp * 0.75) {
             await bot.healSkill(fieldGen.id)
         }
 
@@ -202,10 +201,10 @@ class WarriorXMageAttackStrategy extends WarriorAttackStrategy {
             prefer: {
                 mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
                 offhand: { name: "fireblade", filters: { returnHighestLevel: true } },
-                orb: { name: "jacko", filters: { returnHighestLevel: true } }
-            }
+                orb: { name: "jacko", filters: { returnHighestLevel: true } },
+            },
         }
-        this.options.maximumTargets = 0
+        this.options.targetingPartyMember = true
         this.options.typeList = XMAGE_MONSTERS
     }
 
@@ -247,8 +246,8 @@ export function constructXMageSetup(contexts: Strategist<PingCompensatedCharacte
                         }),
                         move: moveStrategy,
                         require: {
-                            items: ["jacko", "test_orb"]
-                        }
+                            items: ["jacko", "test_orb"],
+                        },
                     },
                     {
                         ctype: "priest",
@@ -257,8 +256,8 @@ export function constructXMageSetup(contexts: Strategist<PingCompensatedCharacte
                         }),
                         move: moveStrategy,
                         require: {
-                            items: ["jacko", "test_orb"]
-                        }
+                            items: ["jacko", "test_orb"],
+                        },
                     },
                     {
                         ctype: "warrior",
@@ -269,11 +268,11 @@ export function constructXMageSetup(contexts: Strategist<PingCompensatedCharacte
                         }),
                         move: moveStrategy,
                         require: {
-                            items: ["jacko", "test_orb"]
-                        }
-                    }
-                ]
-            }
-        ]
+                            items: ["jacko", "test_orb"],
+                        },
+                    },
+                ],
+            },
+        ],
     }
 }
