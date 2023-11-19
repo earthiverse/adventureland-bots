@@ -28,7 +28,7 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
             contexts: contexts,
             disableEnergize: true,
             generateEnsureEquipped: {
-                attributes: ["armor", "int", "blast", "explosion"],
+                attributes: ["armor", "blast", "explosion"],
                 prefer: ZAPPER_CRING
             },
             type: "mummy"
@@ -42,7 +42,7 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
             contexts: contexts,
             enableEquipForCleave: true,
             generateEnsureEquipped: {
-                attributes: ["armor", "str", "blast", "explosion"],
+                attributes: ["armor", "blast", "explosion"],
                 prefer: ZAPPER_STRRING
             },
             enableGreedyAggro: true,

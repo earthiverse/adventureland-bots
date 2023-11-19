@@ -33,6 +33,7 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
         for (const friend of friends) {
             if (friend.hasItem("fieldgen0")) {
                 fieldGen = true
+                break
             }
 
             if (friend.map !== "winter_instance") continue
@@ -51,7 +52,8 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
                     await bot.equip(fieldGen0)
                 } else {
                     // Move to xmage
-                    super.move(bot)
+                    this.options.typeList = XMAGE_MONSTERS
+                    await super.move(bot)
                     return
                 }
             } else {
