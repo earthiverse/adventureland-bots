@@ -84,7 +84,7 @@ export type MerchantMoveStrategyOptions = {
      */
     enableInstanceProvider?: {
         crypt?: true
-        xmage?: true
+        winter_instance?: true
     }
     /** If enabled, the merchant will
      * - Look for merchants with things we want to buy and move to them
