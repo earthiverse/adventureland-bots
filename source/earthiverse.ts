@@ -34,7 +34,7 @@ import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
 import { CRYPT_MONSTERS, CRYPT_WAIT_TIME } from "./base/crypt.js"
 import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
 
-await Promise.all([AL.Game.loginJSONFile("../credentials.json"), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true, cheat: true })
 
 // TODO: Make these configurable through /comm using a similar system to how lulz works
