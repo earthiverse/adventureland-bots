@@ -21,6 +21,7 @@ import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategi
 import { Setup } from "./base.js"
 
 export const XMAGE_MONSTERS: MonsterName[] = ["xmagefz", "xmagefi", "xmagen", "xmagex"]
+export const DOWNTIME_MONSTERS: MonsterName[] = ["snowman", "arcticbee"]
 
 class XMageMoveStrategy extends KiteMonsterMoveStrategy {
     public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {
@@ -34,77 +35,73 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
     }
 
     protected async move(bot: PingCompensatedCharacter): Promise<IPosition> {
-        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
         const friends = filterContexts(this.options.contexts, { serverData: bot.serverData })
             .map((e) => e.bot)
             .filter((c) => c.ctype !== "merchant")
 
-        // Check if we have a fieldgen
-        const fieldgenFilters: GetEntityFilters = { type: "fieldgen0" }
-        let fieldGen: boolean | Entity = false
-        for (const friend of friends) {
-            if (friend.map !== "winter_instance") continue
-            const entity = friend.getEntity(fieldgenFilters)
-            if (entity) {
-                fieldGen = entity
-                break
-            }
-        }
-        if (fieldGen === false) {
-            for (const friend of friends) {
-                if (friend.hasItem("fieldgen0")) {
-                    fieldGen = true
-                    break
-                }
-            }
-        }
+        // Ensure we have a fieldgen ready
+        const groupHasFieldgen = this.groupHasFieldgen(friends)
+        const placedFieldgen = this.getPlacedFieldgen(friends)
+        if (!groupHasFieldgen && !placedFieldgen) {
+            // Have bots idle somewhere safe
+            this.options.typeList = DOWNTIME_MONSTERS
 
-        if (typeof fieldGen === "boolean") {
-            if (bot.hasItem("fieldgen0")) {
-                if (bot.map === "winter_instance") {
-                    // Place the fieldgen0
-                    const fieldGen0 = bot.locateItem("fieldgen0")
-                    await bot.equip(fieldGen0)
-                } else {
-                    // Move to xmage
-                    this.options.typeList = XMAGE_MONSTERS
-                    await super.move(bot)
-                    return
-                }
-            } else {
-                // Have the closeest bot get a fieldgen0 from the bank
-                const closest = getClosestBotToPosition(bankingPosition as NodeData, friends)
-                if (closest === bot) {
+            if (!groupHasFieldgen) {
+                // Have a bot go get a fieldgen
+                const closestBot = getClosestBotToPosition(bankingPosition, friends)
+                if (closestBot === bot) {
                     await bot.smartMove(bankingPosition)
                     const bankFieldgens = locateItemsInBank(bot, { name: "fieldgen0" })
                     if (bankFieldgens.length) {
                         const [packName, indexes] = bankFieldgens[0]
                         await goAndWithdrawItem(bot, packName, indexes[0])
                     }
-                    return
                 }
+            }
+            return
+        }
 
-                // Wait for a fieldgen0 to be placed
-                this.options.typeList = ["snowman", "arcticbee"]
-                super.move(bot)
-                return
+        // Have priest heal the fieldgen if we've placed one
+        if (bot.ctype === "priest" && placedFieldgen && placedFieldgen.hp < placedFieldgen.max_hp * 0.75) {
+            if (Tools.distance(bot, placedFieldgen) > bot.range) {
+                return bot.smartMove(placedFieldgen, { getWithin: bot.range / 2, resolveOnFinalMoveStart: true })
             }
         }
 
-        // Reset incase we were farming arctic bees
-        this.options.typeList = XMAGE_MONSTERS
-
-        // If priest, and the fieldgen needs healing, move within healing range
-        if (bot.ctype === "priest" && typeof fieldGen !== "boolean" && fieldGen.hp < fieldGen.max_hp * 0.75) {
-            if (!bot.moving && Tools.distance(bot, fieldGen))
-                bot.smartMove(fieldGen, { getWithin: bot.range - 25, resolveOnFinalMoveStart: true }).catch(
-                    suppress_errors,
-                )
-            return
+        // Place the fieldgen if we're on xmagex
+        const xmage = bot.getEntity({ typeList: XMAGE_MONSTERS })
+        if (xmage.type === "xmagex" && groupHasFieldgen && !placedFieldgen) {
+            await this.placeFieldGen(friends)
         }
 
         // Go to xmage
         return super.move(bot)
+    }
+
+    protected groupHasFieldgen(friends: PingCompensatedCharacter[]) {
+        for (const friend of friends) {
+            if (friend.hasItem("fieldgen0")) {
+                return true
+            }
+        }
+        return false
+    }
+
+    protected getPlacedFieldgen(friends: PingCompensatedCharacter[]) {
+        for (const friend of friends) {
+            if (friend.map !== "winter_instance") continue
+            const entity = friend.getEntity({ type: "fieldgen0" })
+            if (entity) return entity
+        }
+    }
+
+    protected async placeFieldGen(friends: PingCompensatedCharacter[]) {
+        for (const friend of friends) {
+            if (friend.map !== "winter_instance") continue
+            const fieldgen = friend.locateItem("fieldgen0")
+            if (!fieldgen) continue
+            return friend.equip(fieldgen)
+        }
     }
 }
 
@@ -264,7 +261,6 @@ export function constructXMageSetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new WarriorXMageAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            enableEquipForStomp: true,
                         }),
                         move: moveStrategy,
                         require: {
