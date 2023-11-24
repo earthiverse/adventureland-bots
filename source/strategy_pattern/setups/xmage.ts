@@ -7,6 +7,7 @@ import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/att
 import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategies/attack_warrior.js"
 import { Setup } from "./base.js"
+import { sleep } from "../../base/general.js"
 
 export const XMAGE_MONSTERS: MonsterName[] = ["xmagefz", "xmagefi", "xmagen", "xmagex"]
 export const DOWNTIME_MONSTERS: MonsterName[] = ["snowman", "arcticbee"]
@@ -48,6 +49,8 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
             }
             return
         }
+
+        this.options.typeList = XMAGE_MONSTERS
 
         // Have priest heal the fieldgen if we've placed one
         if (bot.ctype === "priest" && placedFieldgen && placedFieldgen.hp < placedFieldgen.max_hp * 0.75) {
@@ -98,7 +101,7 @@ class MageXMageAttackStrategy extends MageAttackStrategy {
         super(options)
 
         this.options.generateEnsureEquipped = {
-            attributes: ["resistance", "int"],
+            attributes: ["resistance", "attack", "int"],
             prefer: {
                 mainhand: { name: "firestaff", filters: { returnHighestLevel: true } },
                 offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
@@ -137,7 +140,7 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
         super(options)
 
         this.options.generateEnsureEquipped = {
-            attributes: ["resistance", "int"],
+            attributes: ["resistance", "attack", "int"],
             prefer: {
                 mainhand: { name: "lmace", filters: { returnHighestLevel: true } },
                 offhand: { name: "wbookhs", filters: { returnHighestLevel: true } },
@@ -182,7 +185,7 @@ class WarriorXMageAttackStrategy extends WarriorAttackStrategy {
         super(options)
 
         this.options.generateEnsureEquipped = {
-            attributes: ["resistance", "str"],
+            attributes: ["resistance", "attack", "str"],
             prefer: {
                 mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
                 offhand: { name: "fireblade", filters: { returnHighestLevel: true } },
@@ -200,6 +203,7 @@ class WarriorXMageAttackStrategy extends WarriorAttackStrategy {
         switch (entity.type) {
             case "xmagefi":
                 this.options.ensureEquipped.orb = { name: "test_orb" }
+                if (await this.healPriestIfFrozen(bot)) return
                 break
             case "xmagefz":
                 this.options.ensureEquipped.orb = { name: "test_orb" }
@@ -213,6 +217,29 @@ class WarriorXMageAttackStrategy extends WarriorAttackStrategy {
         }
 
         return super.attack(bot)
+    }
+
+    protected async healPriestIfFrozen(bot: Warrior): Promise<boolean> {
+        if (!bot.hasItem("cupid") && !bot.isEquipped("cupid")) return false // We don't have a cupid to heal
+
+        const priests = filterContexts(this.options.contexts, { serverData: bot.serverData })
+            .map((e) => e.bot)
+            .filter((c) => c.in === bot.in && c.ctype === "priest")
+
+        for (const priest of priests) {
+            if (!priest.s.deepfreezed) continue
+            if (priest.hp > priest.max_hp * 0.75) continue
+
+            if (!bot.isEquipped("cupid")) {
+                // Equip cupid
+                if (bot.slots.offhand) await bot.unequip("offhand")
+                await bot.equip(bot.locateItem("cupid"))
+                await sleep(bot.s.penalty_cd.ms)
+                await bot.basicAttack(priest.id)
+                return true
+            }
+        }
+        return false
     }
 }
 
