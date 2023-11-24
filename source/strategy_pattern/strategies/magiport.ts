@@ -10,7 +10,7 @@ export const DefaultMagiportOthersSmartMovingToUsStrategyOptions: MagiportOthers
     /** Don't magiport the same bot within this interval (in ms) */
     delayMs: 5000,
     /** Offer magiports to those smart moving within this range of us */
-    range: 250
+    range: 250,
 }
 
 export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
@@ -21,18 +21,24 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
 
     protected static recentlyMagiported = new Map<string, number>()
 
-    public constructor(contexts: Strategist<PingCompensatedCharacter>[], options = DefaultMagiportOthersSmartMovingToUsStrategyOptions) {
+    public constructor(
+        contexts: Strategist<PingCompensatedCharacter>[],
+        options = DefaultMagiportOthersSmartMovingToUsStrategyOptions,
+    ) {
         this.contexts = contexts
         this.options = options
 
         this.loops.set("magiport", {
-            fn: async (bot: Mage) => { await this.magiport(bot) },
-            interval: ["magiport"]
+            fn: async (bot: Mage) => {
+                await this.magiport(bot)
+            },
+            interval: ["magiport"],
         })
     }
 
     protected async magiport(bot: Mage) {
         if (!bot.canUse("magiport")) return // We can't magiport anyone
+        if (bot.map.startsWith("bank")) return // We can't magiport others to the bank
         if (bot.smartMoving) return // We're currently moving somewhere
 
         for (const context of this.contexts) {

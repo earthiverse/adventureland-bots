@@ -58,7 +58,7 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
 
         // Place the fieldgen if we're on xmagex
         const xmage = bot.getEntity({ typeList: XMAGE_MONSTERS })
-        if (xmage.type === "xmagex" && groupHasFieldgen && !placedFieldgen) {
+        if (xmage && xmage.type === "xmagex" && groupHasFieldgen && !placedFieldgen) {
             await this.placeFieldGen(friends)
         }
 
