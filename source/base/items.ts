@@ -1,5 +1,13 @@
 /* eslint-disable sort-keys */
-import AL, { BankPackName, Character, CharacterType, ItemData, ItemName, LocateItemsFilters, MapName, PingCompensatedCharacter } from "alclient"
+import AL, {
+    BankPackName,
+    Character,
+    CharacterType,
+    ItemData,
+    ItemName,
+    LocateItemsFilters,
+    PingCompensatedCharacter,
+} from "alclient"
 import { bankingPosition } from "./locations.js"
 import { MERCHANT_ITEMS_TO_HOLD } from "../archive/base/merchant.js"
 import { checkOnlyEveryMS } from "./general.js"
@@ -14,89 +22,108 @@ export type ItemCount = {
     inventorySpaces: number
 }
 
+export type ItemConf = {
+    /** What level should we start using an offeringp at? */
+    offeringp?: number
+    /** What level should we start using an offering at? */
+    offering?: number
+    /** What level should we stop leveling the item at? */
+    stop?: number
+    /** Should we be destroying these instead? Destroying an item has a 1/1,000,000 chance to get a level 13 */
+    destroy?: true
+}
+
 /** If the length is 1, the items should be upgraded. If the length is 3, the items should be compounded. */
 export type IndexesToCompoundOrUpgrade = number[][]
 
-const DONT_UPGRADE = {
-    stop: 0
+const DESTROY: ItemConf = {
+    destroy: true,
 }
-const ULTRA_RARE = {
+
+const DONT_UPGRADE: ItemConf = {
+    stop: 0,
+}
+const ULTRA_RARE: ItemConf = {
     offeringp: 1,
-    offering: 2
+    offering: 2,
 }
-const PRETTY_RARE = {
+const PRETTY_RARE: ItemConf = {
     offeringp: 1,
-    offering: 4
+    offering: 4,
 }
-const COMMON_HIGH = {
+const COMMON_HIGH: ItemConf = {
     offeringp: 7,
-    offering: 9
+    offering: 9,
 }
 /** What we do with upgradable items that are common at level 0 */
-const DEFAULT_UPGRADE_BASE_COMMON = {
+const DEFAULT_UPGRADE_BASE_COMMON: ItemConf = {
     offeringp: 8,
-    offering: 9
+    offering: 9,
 }
 /** What we do with upgradable items that are high at level 0 */
-const DEFAULT_UPGRADE_BASE_HIGH = {
+const DEFAULT_UPGRADE_BASE_HIGH: ItemConf = {
     offeringp: 6,
-    offering: 8
+    offering: 8,
 }
 /** What we do with upgradable items that are rare at level 0 */
-const DEFAULT_UPGRADE_BASE_RARE = {
+const DEFAULT_UPGRADE_BASE_RARE: ItemConf = {
     offeringp: 4,
-    offering: 7
+    offering: 7,
 }
 /** What we do with compoundable items that are common at level 0 */
-const DEFAULT_COMPOUND_BASE_COMMON = {
+const DEFAULT_COMPOUND_BASE_COMMON: ItemConf = {
     offeringp: 3,
-    offering: 4
+    offering: 4,
 }
 /** What we do with compoundable items that are high at level 0 */
-const DEFAULT_COMPOUND_BASE_HIGH = {
+const DEFAULT_COMPOUND_BASE_HIGH: ItemConf = {
     offeringp: 2,
-    offering: 3
+    offering: 3,
 }
 /** What we do with compoundable items that are rare at level 0 */
-const DEFAULT_COMPOUND_BASE_RARE = {
+const DEFAULT_COMPOUND_BASE_RARE: ItemConf = {
     offeringp: 1,
-    offering: 2
+    offering: 2,
 }
-const PRIMLING_TO_NINE = {
+const PRIMLING_TO_NINE: ItemConf = {
     offeringp: 9,
-    offering: 10
+    offering: 10,
 }
-const PRIMLING_TO_TEN = {
-    offeringp: 10
+const PRIMLING_TO_TEN: ItemConf = {
+    offeringp: 10,
 }
 export const ITEM_UPGRADE_CONF: {
-    [T in ItemName]?: {
-        /** What level should we start using an offeringp at? */
-        "offeringp"?: number
-        /** What level should we start using an offering at? */
-        "offering"?: number
-        /** What level should we stop leveling the item at? */
-        "stop"?: number
-    }
+    [T in ItemName]?: ItemConf
 } = {
     // Crafting
     bcape: {
         // Level 7 can be used to craft things things
-        stop: 7
+        stop: 7,
     },
     lostearring: {
         // Level 2 is the best for exchanging
-        stop: 2
+        stop: 2,
     },
     stick: {
         // We craft with level 9 sticks
-        stop: 9
+        stop: 9,
     },
     throwingstars: DONT_UPGRADE,
     vitring: {
         // We craft with level 2 vit rings
-        stop: 2
+        stop: 2,
     },
+
+    // Base armor
+    coat: DESTROY,
+    gloves: DESTROY,
+    helmet: DESTROY,
+    pants: DESTROY,
+    shoes: DESTROY,
+
+    // Very common items
+    crabclaw: DESTROY,
+    stinger: DESTROY,
 
     // Crypt
     vattire: PRETTY_RARE,
@@ -144,14 +171,14 @@ export const ITEM_UPGRADE_CONF: {
     tigerhelmet: DEFAULT_UPGRADE_BASE_COMMON,
 
     // Wanderer's
-    wattire: PRIMLING_TO_TEN,
-    wbreeches: PRIMLING_TO_TEN,
-    wcap: PRIMLING_TO_TEN,
-    wgloves: PRIMLING_TO_TEN,
-    wshoes: PRIMLING_TO_TEN,
+    wattire: DESTROY,
+    wbreeches: DESTROY,
+    wcap: DESTROY,
+    wgloves: DESTROY,
+    wshoes: DESTROY,
 }
 
-let CACHED_COUNTS = new Map<string, ItemCount[]>()
+const CACHED_EVERYTHING_COUNTS = new Map<string, ItemCount[]>()
 /**
  * This function will aggregate the bank, the inventories of all characters,
  * and the items equipped on all characters so we can see how many of each item
@@ -160,16 +187,16 @@ let CACHED_COUNTS = new Map<string, ItemCount[]>()
  */
 export async function getItemCountsForEverything(owner: string): Promise<ItemCount[]> {
     if (!AL.Database.connection) return []
-    if (!checkOnlyEveryMS(`item_counts_${owner}`, 60_000)) {
-        return CACHED_COUNTS.get(owner)
+    if (!checkOnlyEveryMS(`item_everything_counts_${owner}`, 60_000)) {
+        return CACHED_EVERYTHING_COUNTS.get(owner)
     }
 
     const counts = await AL.BankModel.aggregate([
         {
             /** Find our bank **/
             $match: {
-                owner: owner
-            }
+                owner: owner,
+            },
         },
         {
             /** Find our characters **/
@@ -177,8 +204,8 @@ export async function getItemCountsForEverything(owner: string): Promise<ItemCou
                 from: "players",
                 localField: "owner",
                 foreignField: "owner",
-                as: "players"
-            }
+                as: "players",
+            },
         },
         {
             /** Add player equipment **/
@@ -204,18 +231,15 @@ export async function getItemCountsForEverything(owner: string): Promise<ItemCou
                                 { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 14] }, {}] } },
                                 { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 15] }, {}] } },
                                 { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 16] }, {}] } },
-                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 17] }, {}] } }
-                            ]
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 17] }, {}] } },
+                            ],
                         },
                         cond: {
-                            $and: [
-                                { $ne: ["$$this.v", null] },
-                                { $ne: ["$$this.b", undefined] }
-                            ]
-                        }
-                    }
-                }
-            }
+                            $and: [{ $ne: ["$$this.v", null] }, { $ne: ["$$this.b", undefined] }],
+                        },
+                    },
+                },
+            },
         },
         {
             /** Merge equipment with bank and inventories **/
@@ -290,27 +314,27 @@ export async function getItemCountsForEverything(owner: string): Promise<ItemCou
                                 { $ifNull: [{ $arrayElemAt: ["$players.items", 15] }, []] },
                                 { $ifNull: [{ $arrayElemAt: ["$players.items", 16] }, []] },
                                 { $ifNull: [{ $arrayElemAt: ["$players.items", 17] }, []] },
-                                { $ifNull: ["$equipment.v", []] }
-                            ]
+                                { $ifNull: ["$equipment.v", []] },
+                            ],
                         },
                         as: "item",
-                        cond: { $ne: ["$$item", null] }
-                    }
-                }
-            }
+                        cond: { $ne: ["$$item", null] },
+                    },
+                },
+            },
         },
         {
             $unwind: {
-                path: "$allItems"
-            }
+                path: "$allItems",
+            },
         },
         {
             /** Group by name and level **/
             $group: {
                 _id: { name: "$allItems.name", level: "$allItems.level" },
                 inventorySpaces: { $count: {} },
-                q: { $sum: "$allItems.q" }
-            }
+                q: { $sum: "$allItems.q" },
+            },
         },
         {
             /** Clean up **/
@@ -319,20 +343,63 @@ export async function getItemCountsForEverything(owner: string): Promise<ItemCou
                 name: "$_id.name",
                 level: "$_id.level",
                 inventorySpaces: "$inventorySpaces",
-                q: { $max: ["$q", "$inventorySpaces"] }
-            }
+                q: { $max: ["$q", "$inventorySpaces"] },
+            },
         },
         {
             $sort: {
                 name: 1,
                 level: -1,
                 q: -1,
-            }
-        }
+            },
+        },
     ])
 
-    CACHED_COUNTS.set(owner, counts)
+    CACHED_EVERYTHING_COUNTS.set(owner, counts)
     return counts
+}
+
+const CACHED_BANK_HAS = new Map<string, boolean>()
+export async function hasItemInBank(owner: string, itemName: ItemName) {
+    const key = `bank_has_${owner}_${itemName}`
+    if (!AL.Database.connection) return []
+    if (!checkOnlyEveryMS(key, 60_000)) {
+        return CACHED_BANK_HAS.get(key)
+    }
+
+    const check = await AL.BankModel.aggregate([
+        {
+            /** Find our bank **/
+            $match: {
+                owner: owner,
+            },
+        },
+        {
+            /** Set up easier search */
+            $addFields: {
+                doc: {
+                    $objectToArray: "$$ROOT",
+                },
+            },
+        },
+        {
+            /** Match if we have it */
+            $match: {
+                "doc.k": /^items/,
+                "doc.v.name": itemName,
+            },
+        },
+        {
+            /** We don't need to return everything */
+            $project: {
+                owner: 1,
+            },
+        },
+    ])
+
+    const has = check.length > 0
+    CACHED_BANK_HAS.set(key, has)
+    return has
 }
 
 /**
@@ -369,12 +436,17 @@ export function getOfferingToUse(item: ItemData): ItemName {
  * @param items The item(s) you wish to withdraw
  * @param options
  */
-export async function withdrawItemFromBank(bot: Character, items: ItemName | ItemName[], itemFilters: LocateItemsFilters = {
-    locked: false
-}, options: {
-    freeSpaces: number
-    itemsToHold: Set<ItemName>
-}) {
+export async function withdrawItemFromBank(
+    bot: Character,
+    items: ItemName | ItemName[],
+    itemFilters: LocateItemsFilters = {
+        locked: false,
+    },
+    options: {
+        freeSpaces: number
+        itemsToHold: Set<ItemName>
+    },
+) {
     // Move to the bank if we're not here
     if (!bot.map.startsWith("bank")) await bot.smartMove(bankingPosition)
 
@@ -435,9 +507,8 @@ export function getUnimportantInventorySlots(bot: Character, itemsToHold = MERCH
         }
         if (slot.l) continue // Hold locked items
         if (itemsToHold.has(slot.name)) continue
-        if (slot.name.startsWith("cscroll")
-            || slot.name.startsWith("scroll")
-            || slot.name.startsWith("offering")) continue // Hold items used for upgrading
+        if (slot.name.startsWith("cscroll") || slot.name.startsWith("scroll") || slot.name.startsWith("offering"))
+            continue // Hold items used for upgrading
         slots.unshift(i)
     }
 
@@ -547,7 +618,14 @@ export async function getItemsToCompoundOrUpgrade(bot: PingCompensatedCharacter)
                     if (slot.l) continue // It's locked!?
 
                     // Check if we want to upgrade it
-                    if (ITEM_UPGRADE_CONF[slot.name]?.stop !== undefined && slot.level >= ITEM_UPGRADE_CONF[slot.name].stop) continue
+                    if (
+                        ITEM_UPGRADE_CONF[slot.name]?.stop !== undefined &&
+                        slot.level >= ITEM_UPGRADE_CONF[slot.name].stop
+                    )
+                        continue
+
+                    // Check if we want to destroy it
+                    if (ITEM_UPGRADE_CONF[slot.name]?.destroy !== undefined && slot.level > 0) continue
 
                     // Check if we have an offering to upgrade this item with. If we don't, leave it.
                     const offeringToUse = getOfferingToUse(slot)
@@ -558,7 +636,7 @@ export async function getItemsToCompoundOrUpgrade(bot: PingCompensatedCharacter)
                         pack: inventoryName,
                         name: currentName,
                         level: slot.level,
-                        index: i
+                        index: i,
                     })
                 }
             }
@@ -679,7 +757,9 @@ export async function upgradeOrCompoundItems(bot: Character, allIndexes: Indexes
         if (offering) {
             offeringIndex = bot.locateItem(offering, bot.items)
             if (offeringIndex === undefined) {
-                console.debug(`We want to upgrade or compound a level ${item.level} ${item.name}, but we want to use ${offering} as an offering, and we don't have any.`)
+                console.debug(
+                    `We want to upgrade or compound a level ${item.level} ${item.name}, but we want to use ${offering} as an offering, and we don't have any.`,
+                )
                 continue
             }
         }

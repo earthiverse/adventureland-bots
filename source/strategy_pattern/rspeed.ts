@@ -20,8 +20,12 @@ async function getPlayerWithoutRSpeed(bot: PingCompensatedCharacter) {
         lastSeen: { $gt: Date.now() - 60_000 },
         name: { $ne: bot.id },
         $or: [{ "s.rspeed": undefined }, { "s.rspeed.ms": { $lt: 300_000 } }],
-        serverIdentifier: bot.server.name, serverRegion: bot.server.region,
-    }).lean().exec().catch(console.error)
+        serverIdentifier: bot.server.name,
+        serverRegion: bot.server.region,
+    })
+        .lean()
+        .exec()
+        .catch(console.error)
 }
 
 export class GoGiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Type> {
@@ -32,7 +36,7 @@ export class GoGiveRogueSpeedStrategy<Type extends Rogue> implements Strategy<Ty
             fn: async (bot: Type) => {
                 await this.goGiveRogueSpeed(bot)
             },
-            interval: 5000
+            interval: 5000,
         })
     }
 
@@ -54,9 +58,12 @@ export class GoSellThingsStrategy<Type extends PingCompensatedCharacter> impleme
     public constructor() {
         this.loops.set("move", {
             fn: async (bot: Type) => {
-                await bot.smartMove("hpot1", { avoidTownWarps: true, getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                await bot.smartMove("hpot1", {
+                    avoidTownWarps: true,
+                    getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2,
+                })
             },
-            interval: 5000
+            interval: 5000,
         })
     }
 }
@@ -89,8 +96,8 @@ const buyStrategy = new BuyStrategy({
     buyMap: undefined,
     replenishables: new Map<ItemName, number>([
         ["hpot1", 2500],
-        ["mpot1", 2500]
-    ])
+        ["mpot1", 2500],
+    ]),
 })
 const respawnStrategy = new RespawnStrategy()
 
@@ -113,7 +120,7 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
             ["stinger", undefined],
             ["wcap", undefined],
             ["wshoes", undefined],
-        ])
+        ]),
     })
 
     context.applyStrategy(moveStrategy)

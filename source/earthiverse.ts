@@ -1,9 +1,33 @@
-import AL, { ItemName, Merchant, PingCompensatedCharacter, Priest, Mage, Warrior, ServerRegion, ServerIdentifier, MonsterName, ServerInfoDataLive, CharacterType, Paladin, Ranger, Rogue, Attribute } from "alclient"
-import { DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS, MerchantMoveStrategyOptions, startMerchant } from "./merchant/strategy.js"
+import AL, {
+    ItemName,
+    Merchant,
+    PingCompensatedCharacter,
+    Priest,
+    Mage,
+    Warrior,
+    ServerRegion,
+    ServerIdentifier,
+    MonsterName,
+    ServerInfoDataLive,
+    CharacterType,
+    Paladin,
+    Ranger,
+    Rogue,
+    Attribute,
+} from "alclient"
+import {
+    DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS,
+    MerchantMoveStrategyOptions,
+    startMerchant,
+} from "./merchant/strategy.js"
 import { filterContexts, Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
-import { FinishMonsterHuntStrategy, GetHolidaySpiritStrategy, GetMonsterHuntStrategy } from "./strategy_pattern/strategies/move.js"
+import {
+    FinishMonsterHuntStrategy,
+    GetHolidaySpiritStrategy,
+    GetMonsterHuntStrategy,
+} from "./strategy_pattern/strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategy_pattern/strategies/party.js"
 import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
 import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
@@ -11,11 +35,23 @@ import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { Config, constructHelperSetups, constructSetups, Setups } from "./strategy_pattern/setups/base.js"
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
-import { getHalloweenMonsterPriority, getHolidaySeasonMonsterPriority, getLunarNewYearMonsterPriority, getServerHopMonsterPriority } from "./base/serverhop.js"
+import {
+    getHalloweenMonsterPriority,
+    getHolidaySeasonMonsterPriority,
+    getLunarNewYearMonsterPriority,
+    getServerHopMonsterPriority,
+} from "./base/serverhop.js"
 import { randomIntFromInterval, sleep } from "./base/general.js"
 import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
-import { DEFAULT_ITEMS_TO_BUY, DEFAULT_ITEMS_TO_HOLD, DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "./base/defaults.js"
+import {
+    DEFAULT_ITEMS_TO_BUY,
+    DEFAULT_ITEMS_TO_HOLD,
+    DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND,
+    DEFAULT_MERCHANT_ITEMS_TO_HOLD,
+    DEFAULT_REPLENISHABLES,
+    DEFAULT_REPLENISH_RATIO,
+} from "./base/defaults.js"
 
 import bodyParser from "body-parser"
 import cors from "cors"
@@ -33,6 +69,7 @@ import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
 import { CRYPT_MONSTERS, CRYPT_WAIT_TIME } from "./base/crypt.js"
 import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
+import { hasItemInBank } from "./base/items.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true, cheat: true })
@@ -44,7 +81,22 @@ const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 let ENABLE_MONSTERHUNTS = true
 const DEFAULT_MONSTERS: MonsterName[] = ["croc", "bat"]
-const SPECIAL_MONSTERS: MonsterName[] = ["crabxx", "cutebee", "franky", "fvampire", "goldenbat", "greenjr", "icegolem", "jr", "mvampire", "skeletor", "snowman", "stompy", "tinyp", "wabbit"]
+const SPECIAL_MONSTERS: MonsterName[] = [
+    "crabxx",
+    "cutebee",
+    "franky",
+    "fvampire",
+    "goldenbat",
+    "greenjr",
+    "icegolem",
+    "jr",
+    "mvampire",
+    "skeletor",
+    "snowman",
+    "stompy",
+    "tinyp",
+    "wabbit",
+]
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT = "earthMer"
@@ -75,12 +127,12 @@ const privateBuyStrategy = new BuyStrategy({
     contexts: PRIVATE_CONTEXTS,
     buyMap: DEFAULT_ITEMS_TO_BUY,
     enableBuyForProfit: true,
-    replenishables: DEFAULT_REPLENISHABLES
+    replenishables: DEFAULT_REPLENISHABLES,
 })
 const publicBuyStrategy = new BuyStrategy({
     contexts: PUBLIC_CONTEXTS,
     buyMap: undefined,
-    replenishables: DEFAULT_REPLENISHABLES
+    replenishables: DEFAULT_REPLENISHABLES,
 })
 
 const privateItemsToSell = new Map<ItemName, [number, number][]>([
@@ -99,20 +151,14 @@ const privateItemsToSell = new Map<ItemName, [number, number][]>([
     ["intring", undefined],
     ["intearring", undefined],
     ["maceofthedead", undefined],
-    ["monstertoken", [
-        [undefined, 300_000]
-    ]],
+    ["monstertoken", [[undefined, 300_000]]],
     ["mushroomstaff", undefined],
     ["pants1", undefined],
     ["phelmet", undefined],
-    ["pickaxe", [
-        [0, 1_000_000]
-    ]],
+    ["pickaxe", [[0, 1_000_000]]],
     ["pmaceofthedead", undefined],
     ["ringsj", undefined],
-    ["rod", [
-        [0, 1_000_000]
-    ]],
+    ["rod", [[0, 1_000_000]]],
     ["shoes1", undefined],
     ["slimestaff", undefined],
     ["snowball", undefined],
@@ -125,7 +171,7 @@ const privateItemsToSell = new Map<ItemName, [number, number][]>([
     ["xmace", undefined],
 ])
 const privateSellStrategy = new SellStrategy({
-    sellMap: privateItemsToSell
+    sellMap: privateItemsToSell,
 })
 const PUBLIC_ITEMS_TO_SELL = new Map<ItemName, [number, number][]>([
     ["cake", undefined],
@@ -149,7 +195,7 @@ const PUBLIC_ITEMS_TO_SELL = new Map<ItemName, [number, number][]>([
 const debugStrategy = new DebugStrategy({
     writeToFile: true,
     logInstances: true,
-    logLimitDCReport: true
+    logLimitDCReport: true,
 })
 // Movement
 const avoidDeathStrategy = new AvoidDeathStrategy()
@@ -158,7 +204,8 @@ const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const finishMonsterHuntStrategy = new FinishMonsterHuntStrategy()
 const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
 // Party
-const partyAcceptStrategy = new AcceptPartyRequestStrategy(/** TODO: TEMP: Allow anyone to join { allowList: PARTY_ALLOWLIST } */)
+const partyAcceptStrategy =
+    new AcceptPartyRequestStrategy(/** TODO: TEMP: Allow anyone to join { allowList: PARTY_ALLOWLIST } */)
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 // Mage
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(ALL_CONTEXTS)
@@ -179,11 +226,11 @@ const elixirStrategy = new ElixirStrategy("elixirluck")
 const homeServerStrategy = new HomeServerStrategy(DEFAULT_REGION, DEFAULT_IDENTIFIER)
 const privateItemStrategy = new OptimizeItemsStrategy({
     contexts: PRIVATE_CONTEXTS,
-    itemsToUpgradeOrCompound: DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND
+    itemsToUpgradeOrCompound: DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND,
 })
 const publicItemStrategy = new OptimizeItemsStrategy({
     contexts: PUBLIC_CONTEXTS,
-    itemsToUpgradeOrCompound: DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND
+    itemsToUpgradeOrCompound: DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND,
 })
 
 let OVERRIDE_MONSTERS: MonsterName[]
@@ -208,10 +255,10 @@ class OverrideStrategy implements Strategy<PingCompensatedCharacter> {
                     }
                     break
                 case "monsterhunt":
-                    if (!ENABLE_MONSTERHUNTS && args[1] == "on" || args[1] == "true") {
+                    if ((!ENABLE_MONSTERHUNTS && args[1] == "on") || args[1] == "true") {
                         console.log("Turning monster hunts on...")
                         ENABLE_MONSTERHUNTS = true
-                    } else if (ENABLE_MONSTERHUNTS && args[1] == "off" || args[1] == "false") {
+                    } else if ((ENABLE_MONSTERHUNTS && args[1] == "off") || args[1] == "false") {
                         console.log("Turning monster hunts off...")
                         ENABLE_MONSTERHUNTS = false
                     }
@@ -241,7 +288,7 @@ class AdminCommandStrategy implements Strategy<PingCompensatedCharacter> {
     private onCodeEval: (data: string) => Promise<void>
 
     public constructor() {
-        process.on('SIGINT', this.saveAndExit);
+        process.on("SIGINT", this.saveAndExit)
     }
 
     public onApply(bot: PingCompensatedCharacter) {
@@ -282,7 +329,7 @@ class AdminCommandStrategy implements Strategy<PingCompensatedCharacter> {
     protected saveAndExit() {
         const publicData = filterContexts(PUBLIC_CONTEXTS).reduce((acc: string, c) => {
             c.bot.characterID
-            const row = PUBLIC_FIELDS.map(field => c.bot[field]).join("🔥")
+            const row = PUBLIC_FIELDS.map((field) => c.bot[field]).join("🔥")
             return acc + row + "🔥" + JSON.stringify(SETTINGS_CACHE[c.bot.id] ?? {}) + "\n"
         }, PUBLIC_FIELDS.join(",") + "\n")
         fs.writeFileSync(PUBLIC_CSV, publicData)
@@ -293,7 +340,10 @@ class AdminCommandStrategy implements Strategy<PingCompensatedCharacter> {
 }
 const adminCommandStrategy = new AdminCommandStrategy()
 
-const currentSetups = new Map<Strategist<PingCompensatedCharacter>, { attack: Strategy<PingCompensatedCharacter>, move: Strategy<PingCompensatedCharacter> }>()
+const currentSetups = new Map<
+    Strategist<PingCompensatedCharacter>,
+    { attack: Strategy<PingCompensatedCharacter>; move: Strategy<PingCompensatedCharacter> }
+>()
 const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], setups: Setups) => {
     // Setup a list of ready contexts
     const setupContexts = filterContexts(contexts)
@@ -302,10 +352,8 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
     const isDoable = (config: Config): Strategist<PingCompensatedCharacter>[] | false => {
         const tempContexts = [...setupContexts]
         const doableWith: Strategist<PingCompensatedCharacter>[] = []
-        nextConfigCharacter:
-        for (const characterConfig of config.characters) {
-            nextContext:
-            for (let i = 0; i < tempContexts.length; i++) {
+        nextConfigCharacter: for (const characterConfig of config.characters) {
+            nextContext: for (let i = 0; i < tempContexts.length; i++) {
                 const context = tempContexts[i]
                 if (context.bot.ctype !== characterConfig.ctype) continue // Wrong character type
                 if (characterConfig.require) {
@@ -333,9 +381,8 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
 
     const applyConfig = (config: Config): boolean => {
         const doableWith = isDoable(config)
-        if (!doableWith) return false// Not doable
-        nextConfig:
-        for (const characterConfig of config.characters) {
+        if (!doableWith) return false // Not doable
+        nextConfig: for (const characterConfig of config.characters) {
             for (const context of doableWith) {
                 if (context.bot.ctype == characterConfig.ctype) {
                     const current = currentSetups.get(context)
@@ -376,16 +423,10 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
         for (const context of contexts) {
             // Goobrawl
             if (
-                (
-                    // Can join
-                    context.bot.S.goobrawl
-                    && !context.bot.s.hopsickness
-                    && !context.bot.map.startsWith("bank")
-                ) || (
-                    // Already there
-                    context.bot.map == "goobrawl"
-                    && context.bot.getEntity({ typeList: ["rgoo", "bgoo"] })
-                )
+                // Can join
+                (context.bot.S.goobrawl && !context.bot.s.hopsickness && !context.bot.map.startsWith("bank")) ||
+                // Already there
+                (context.bot.map == "goobrawl" && context.bot.getEntity({ typeList: ["rgoo", "bgoo"] }))
             ) {
                 priority.push("rgoo")
             }
@@ -394,27 +435,30 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             if (context.bot.S.lunarnewyear) {
                 if ((context.bot.S.dragold as ServerInfoDataLive)?.live) priority.push("dragold")
                 if (
-                    (context.bot.S.tiger as ServerInfoDataLive)?.live
-                    && context.bot.serverData.name == DEFAULT_IDENTIFIER
-                    && context.bot.serverData.region == DEFAULT_REGION
-                ) priority.push("tiger")
+                    (context.bot.S.tiger as ServerInfoDataLive)?.live &&
+                    context.bot.serverData.name == DEFAULT_IDENTIFIER &&
+                    context.bot.serverData.region == DEFAULT_REGION
+                )
+                    priority.push("tiger")
             }
 
             // Valentines
             if (context.bot.S.valentines) {
                 if (
-                    (context.bot.S.pinkgoo as ServerInfoDataLive)?.live
-                    && context.bot.serverData.name == DEFAULT_IDENTIFIER
-                    && context.bot.serverData.region == DEFAULT_REGION
-                ) priority.push("pinkgoo")
+                    (context.bot.S.pinkgoo as ServerInfoDataLive)?.live &&
+                    context.bot.serverData.name == DEFAULT_IDENTIFIER &&
+                    context.bot.serverData.region == DEFAULT_REGION
+                )
+                    priority.push("pinkgoo")
             }
 
             if (context.bot.S.egghunt) {
                 if (
-                    (context.bot.S.wabbit as ServerInfoDataLive)?.live
-                    && context.bot.serverData.name == DEFAULT_IDENTIFIER
-                    && context.bot.serverData.region == DEFAULT_REGION
-                ) priority.push("wabbit")
+                    (context.bot.S.wabbit as ServerInfoDataLive)?.live &&
+                    context.bot.serverData.name == DEFAULT_IDENTIFIER &&
+                    context.bot.serverData.region == DEFAULT_REGION
+                )
+                    priority.push("wabbit")
             }
 
             // Halloween
@@ -422,7 +466,10 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 if ((context.bot.S.mrgreen as ServerInfoDataLive)?.live) {
                     if ((context.bot.S.mrpumpkin as ServerInfoDataLive)?.live) {
                         // Both are alive, target the lower hp one
-                        if ((context.bot.S.mrgreen as ServerInfoDataLive).hp > (context.bot.S.mrpumpkin as ServerInfoDataLive).hp) {
+                        if (
+                            (context.bot.S.mrgreen as ServerInfoDataLive).hp >
+                            (context.bot.S.mrpumpkin as ServerInfoDataLive).hp
+                        ) {
                             priority.push("mrpumpkin")
                         } else {
                             priority.push("mrgreen")
@@ -463,12 +510,9 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
         for (const context of contexts) {
             for (const specialMonster of context.bot.getEntities({
                 couldGiveCredit: true,
-                typeList: SPECIAL_MONSTERS
+                typeList: SPECIAL_MONSTERS,
             })) {
-                if (
-                    specialMonster.s?.fullguard?.ms > 30000
-                    || specialMonster.s?.fullguardx?.ms > 30000
-                ) {
+                if (specialMonster.s?.fullguard?.ms > 30000 || specialMonster.s?.fullguardx?.ms > 30000) {
                     // Can't damage for another 30s
                     continue
                 }
@@ -476,74 +520,84 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             }
 
             if (AL.Database.connection) {
-                for (const specialMonster of await AL.EntityModel.find({
-                    $and: [{
-                        $or: [
-                            { target: undefined },
-                            { target: { $in: PARTY_ALLOWLIST } },
-                            { type: { $in: ["crabxx", "franky", "icegolem", "phoenix", "snowman", "wabbit"] } } // Coop monsters will give credit
-                        ]
-                    }, {
-                        $or: [
-                            { "s.fullguardx": undefined },
-                            { "s.fullguardx.ms": { $lt: 30_000 } }
+                for (const specialMonster of await AL.EntityModel.find(
+                    {
+                        $and: [
+                            {
+                                $or: [
+                                    { target: undefined },
+                                    { target: { $in: PARTY_ALLOWLIST } },
+                                    { type: { $in: ["crabxx", "franky", "icegolem", "phoenix", "snowman", "wabbit"] } }, // Coop monsters will give credit
+                                ],
+                            },
+                            {
+                                $or: [{ "s.fullguardx": undefined }, { "s.fullguardx.ms": { $lt: 30_000 } }],
+                            },
+                            {
+                                $or: [{ "s.fullguard": undefined }, { "s.fullguard.ms": { $lt: 30_000 } }],
+                            },
                         ],
-                    }, {
-                        $or: [
-                            { "s.fullguard": undefined },
-                            { "s.fullguard.ms": { $lt: 30_000 } }
-                        ]
-                    }],
-                    lastSeen: { $gt: Date.now() - 30_000 },
-                    serverIdentifier: context.bot.serverData.name,
-                    serverRegion: context.bot.serverData.region,
-                    type: { $in: SPECIAL_MONSTERS }
-                }, {
-                    type: 1
-                }).lean().exec()) {
+                        lastSeen: { $gt: Date.now() - 30_000 },
+                        serverIdentifier: context.bot.serverData.name,
+                        serverRegion: context.bot.serverData.region,
+                        type: { $in: SPECIAL_MONSTERS },
+                    },
+                    {
+                        type: 1,
+                    },
+                )
+                    .lean()
+                    .exec()) {
                     priority.push(specialMonster.type)
                 }
             }
 
-            // TODO: Fix xmage strategy
-            // for (const xmage of context.bot.getEntities({
-            //     couldGiveCredit: true,
-            //     typeList: XMAGE_MONSTERS
-            // })) {
-            //     priority.push(xmage.type)
-            // }
+            for (const xmage of context.bot.getEntities({
+                couldGiveCredit: true,
+                typeList: XMAGE_MONSTERS,
+            })) {
+                priority.push(xmage.type)
+            }
 
             for (const cryptMonster of context.bot.getEntities({
                 couldGiveCredit: true,
-                typeList: CRYPT_MONSTERS
+                typeList: CRYPT_MONSTERS,
             })) {
                 priority.push(cryptMonster.type)
             }
 
             if (AL.Database.connection) {
-                // TODO: Fix xmage strategy
-                // for (const xmage of await AL.EntityModel.find({
-                //     serverIdentifier: context.bot.serverData.name,
-                //     serverRegion: context.bot.serverData.region,
-                //     type: { $in: XMAGE_MONSTERS }
-                // }, {
-                //     type: 1
-                // }).lean().exec()) {
-                //     priority.push(xmage.type)
-                // }
+                if (hasItemInBank(context.bot.owner, "fieldgen0")) {
+                    for (const xmage of await AL.EntityModel.find(
+                        {
+                            serverIdentifier: context.bot.serverData.name,
+                            serverRegion: context.bot.serverData.region,
+                            type: { $in: XMAGE_MONSTERS },
+                        },
+                        {
+                            type: 1,
+                        },
+                    )
+                        .lean()
+                        .exec()) {
+                        priority.push(xmage.type)
+                    }
+                }
 
-                for (const cryptMonster of await AL.EntityModel.find({
-                    $or: [
-                        { firstSeen: null },
-                        { firstSeen: { $lt: Date.now() - CRYPT_WAIT_TIME } }
-                    ],
-                    lastSeen: { $gt: Date.now() - 30000 },
-                    serverIdentifier: context.bot.serverData.name,
-                    serverRegion: context.bot.serverData.region,
-                    type: { $in: CRYPT_MONSTERS }
-                }, {
-                    type: 1
-                }).lean().exec()) {
+                for (const cryptMonster of await AL.EntityModel.find(
+                    {
+                        $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - CRYPT_WAIT_TIME } }],
+                        lastSeen: { $gt: Date.now() - 30000 },
+                        serverIdentifier: context.bot.serverData.name,
+                        serverRegion: context.bot.serverData.region,
+                        type: { $in: CRYPT_MONSTERS },
+                    },
+                    {
+                        type: 1,
+                    },
+                )
+                    .lean()
+                    .exec()) {
                     priority.push(cryptMonster.type)
                 }
             }
@@ -680,11 +734,19 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             const bot = context.bot
 
             if (
-                context.uptime() > 60_000
-                && (bot.serverData.region !== TARGET_REGION || bot.serverData.name !== TARGET_IDENTIFIER)
+                context.uptime() > 60_000 &&
+                (bot.serverData.region !== TARGET_REGION || bot.serverData.name !== TARGET_IDENTIFIER)
             ) {
                 await sleep(1000)
-                console.log(bot.id, "is changing server from", bot.serverData.region, bot.serverData.name, "to", TARGET_REGION, TARGET_IDENTIFIER)
+                console.log(
+                    bot.id,
+                    "is changing server from",
+                    bot.serverData.region,
+                    bot.serverData.name,
+                    "to",
+                    TARGET_REGION,
+                    TARGET_IDENTIFIER,
+                )
                 context.changeServer(TARGET_REGION, TARGET_IDENTIFIER).catch(console.error)
                 continue
             }
@@ -692,14 +754,14 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             if (bot.ctype == "merchant") continue
 
             if (
-                ENABLE_MONSTERHUNTS
+                ENABLE_MONSTERHUNTS &&
                 // Only monsterhunt on our default server
-                && bot.serverData.region == DEFAULT_REGION
-                && bot.serverData.name == DEFAULT_IDENTIFIER
+                bot.serverData.region == DEFAULT_REGION &&
+                bot.serverData.name == DEFAULT_IDENTIFIER
             ) {
                 if (
-                    !bot.s.monsterhunt // We don't have a monster hunt
-                    && bot.map === bot.in // We aren't in an instance
+                    !bot.s.monsterhunt && // We don't have a monster hunt
+                    bot.map === bot.in // We aren't in an instance
                 ) {
                     // Get a new monster hunt
                     removeSetup(context)
@@ -816,10 +878,8 @@ const startMerchantContext = async () => {
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, {
         ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS,
         debug: true,
-        // TODO: Fix xmage
-        enableInstanceProvider: { crypt: true },
-        // enableInstanceProvider: { crypt: true, winter_instance: true },
-        enableUpgrade: true
+        enableInstanceProvider: { crypt: true, winter_instance: true },
+        enableUpgrade: true,
     })
     CONTEXT.applyStrategy(debugStrategy)
     CONTEXT.applyStrategy(adminCommandStrategy)
@@ -910,7 +970,14 @@ type Settings = {
 }
 
 // Allow others to join me
-const startPublicContext = async (type: CharacterType, userID: string, userAuth: string, characterID: string, settings: Settings, attemptNum = 0) => {
+const startPublicContext = async (
+    type: CharacterType,
+    userID: string,
+    userAuth: string,
+    characterID: string,
+    settings: Settings,
+    attemptNum = 0,
+) => {
     // Remove stopped contexts
     for (let i = 0; i < ALL_CONTEXTS.length; i++) {
         const context = ALL_CONTEXTS[i]
@@ -924,7 +991,8 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
     if (type == "merchant") {
         for (const context of PUBLIC_CONTEXTS) {
             const character = context.bot
-            if (character.owner == characterID) throw `There is a merchant with the ID '${characterID}' (${character.id}) already running. You can only run one merchant.`
+            if (character.owner == characterID)
+                throw `There is a merchant with the ID '${characterID}' (${character.id}) already running. You can only run one merchant.`
         }
     } else {
         let numChars = 0
@@ -933,10 +1001,12 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
             if (character.ctype == "merchant") continue // Merchants don't count
             numChars++
         }
-        if (numChars >= MAX_PUBLIC_CHARACTERS) throw `Too many characters are already running (We only support ${MAX_PUBLIC_CHARACTERS} characters simultaneously)`
+        if (numChars >= MAX_PUBLIC_CHARACTERS)
+            throw `Too many characters are already running (We only support ${MAX_PUBLIC_CHARACTERS} characters simultaneously)`
         for (const context of PUBLIC_CONTEXTS) {
             const character = context.bot
-            if (character.characterID == characterID) throw `There is a character with the ID '${characterID}' (${character.id}) already running. Stop the character first to change its settings.`
+            if (character.characterID == characterID)
+                throw `There is a character with the ID '${characterID}' (${character.id}) already running. Stop the character first to change its settings.`
         }
     }
 
@@ -944,31 +1014,73 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
     try {
         switch (type) {
             case "mage": {
-                bot = new AL.Mage(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                bot = new AL.Mage(
+                    userID,
+                    userAuth,
+                    characterID,
+                    AL.Game.G,
+                    AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER],
+                )
                 break
             }
             case "merchant": {
-                bot = new AL.Merchant(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                bot = new AL.Merchant(
+                    userID,
+                    userAuth,
+                    characterID,
+                    AL.Game.G,
+                    AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER],
+                )
                 break
             }
             case "paladin": {
-                bot = new AL.Paladin(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                bot = new AL.Paladin(
+                    userID,
+                    userAuth,
+                    characterID,
+                    AL.Game.G,
+                    AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER],
+                )
                 break
             }
             case "priest": {
-                bot = new AL.Priest(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                bot = new AL.Priest(
+                    userID,
+                    userAuth,
+                    characterID,
+                    AL.Game.G,
+                    AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER],
+                )
                 break
             }
             case "ranger": {
-                bot = new AL.Ranger(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                bot = new AL.Ranger(
+                    userID,
+                    userAuth,
+                    characterID,
+                    AL.Game.G,
+                    AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER],
+                )
                 break
             }
             case "rogue": {
-                bot = new AL.Rogue(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                bot = new AL.Rogue(
+                    userID,
+                    userAuth,
+                    characterID,
+                    AL.Game.G,
+                    AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER],
+                )
                 break
             }
             case "warrior": {
-                bot = new AL.Warrior(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER])
+                bot = new AL.Warrior(
+                    userID,
+                    userAuth,
+                    characterID,
+                    AL.Game.G,
+                    AL.Game.servers[TARGET_REGION][TARGET_IDENTIFIER],
+                )
                 break
             }
         }
@@ -1001,7 +1113,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
                 defaultPosition: {
                     map: "main",
                     x: randomIntFromInterval(-50, 50),
-                    y: randomIntFromInterval(-50, 50)
+                    y: randomIntFromInterval(-50, 50),
                 },
                 // enableBuyAndUpgrade: {
                 //     upgradeToLevel: 9
@@ -1034,7 +1146,7 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
                 merchantOptions.enableMluck = {
                     contexts: true,
                     self: true,
-                    travel: true
+                    travel: true,
                 }
             }
             startMerchant(context as Strategist<Merchant>, PUBLIC_CONTEXTS, merchantOptions)
@@ -1071,7 +1183,11 @@ const startPublicContext = async (type: CharacterType, userID: string, userAuth:
     if (PARTY_ALLOWLIST.indexOf(bot.id) < 0) PARTY_ALLOWLIST.push(bot.id)
     context.applyStrategy(disconnectOnCommandStrategy)
 
-    context.applyStrategy(new SellStrategy(settings.sell?.sellMap ? {sellMap: new Map(settings.sell.sellMap)} : { sellMap: PUBLIC_ITEMS_TO_SELL }))
+    context.applyStrategy(
+        new SellStrategy(
+            settings.sell?.sellMap ? { sellMap: new Map(settings.sell.sellMap) } : { sellMap: PUBLIC_ITEMS_TO_SELL },
+        ),
+    )
 
     SETTINGS_CACHE[bot.id] = settings
     PUBLIC_CONTEXTS.push(context)
@@ -1088,7 +1204,13 @@ if (fs.existsSync(PUBLIC_CSV)) {
     for (const line of lines) {
         const data = line.split("🔥")
         if (!data[0]) continue // empty line
-        await startPublicContext(data[0] as CharacterType, data[1], data[2], data[3], JSON.parse(data[4] ?? '{}')).catch(console.error)
+        await startPublicContext(
+            data[0] as CharacterType,
+            data[1],
+            data[2],
+            data[3],
+            JSON.parse(data[4] ?? "{}"),
+        ).catch(console.error)
     }
 
     // Delete the file after we load the players in
@@ -1121,14 +1243,18 @@ app.get("/", (_req, res) => {
     res.sendFile(path.join(path.resolve(), "/earthiverse.html"))
 })
 
-app.post("/",
+app.post(
+    "/",
     body("user").trim().isLength({ max: 16, min: 16 }).withMessage("User IDs are exactly 16 digits."),
     body("user").trim().isNumeric().withMessage("User IDs are numeric."),
     body("auth").trim().isLength({ max: 21, min: 21 }).withMessage("Auth codes are exactly 21 characters."),
     body("auth").trim().isAlphanumeric("en-US", { ignore: /\s/ }).withMessage("Auth codes are alphanumeric."),
     body("char").trim().isLength({ max: 16, min: 16 }).withMessage("Character IDs are exactly 16 digits."),
     body("char").trim().isNumeric().withMessage("Character IDs are numeric."),
-    body("char_type").trim().matches(/\b(?:mage|merchant|paladin|priest|ranger|rogue|warrior)\b/).withMessage("Character type not supported."),
+    body("char_type")
+        .trim()
+        .matches(/\b(?:mage|merchant|paladin|priest|ranger|rogue|warrior)\b/)
+        .withMessage("Character type not supported."),
     async (req, res) => {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
@@ -1148,7 +1274,8 @@ app.post("/",
             console.error(e)
             return res.status(500).send(e)
         }
-    })
+    },
+)
 
 app.listen(port, async () => {
     console.log(`Ready on port ${port}!`)
