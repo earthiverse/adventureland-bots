@@ -312,7 +312,7 @@ export function generateEnsureEquippedFromAttribute(bot: Character, generate: Ge
             const slotType = slotName as SlotType
             const ensureEquippedSlot = generate.prefer[slotType]
             if (
-                !bot.isEquipped(ensureEquippedSlot.name)
+                bot.isEquipped(ensureEquippedSlot.name)
                 || !bot.hasItem(ensureEquippedSlot.name, bot.items, ensureEquippedSlot.filters)
             ) {
                 // We don't have the item
