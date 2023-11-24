@@ -9,8 +9,10 @@ export class AvoidDeathStrategy<Type extends Character> implements Strategy<Type
 
     public constructor() {
         this.loops.set("avoid_death", {
-            fn: async (bot: Type) => { await this.checkIncomingDamage(bot) },
-            interval: 100
+            fn: async (bot: Type) => {
+                await this.checkIncomingDamage(bot)
+            },
+            interval: 100,
         })
     }
 
@@ -47,21 +49,31 @@ export class AvoidDeathStrategy<Type extends Character> implements Strategy<Type
         // If we could die due to attacks from incoming monsters
         let potentialIncomingDamage = 0
         let multiplier = bot.calculateTargets()
-        multiplier['magical'] -= bot.mcourage
-        multiplier['physical'] -= bot.courage
-        multiplier['pure'] -= bot.pcourage
+        multiplier["magical"] -= bot.mcourage
+        multiplier["physical"] -= bot.courage
+        multiplier["pure"] -= bot.pcourage
         for (const entity of bot.getEntities({ targetingMe: true })) {
             if (AL.Tools.distance(bot, entity) > entity.range + entity.speed) continue // Too far away to attack us
             let entityDamage = entity.calculateDamageRange(bot)[1]
 
             // Calculate additional mobbing damage
-            if (multiplier[entity.damage_type] > 0) entityDamage *= (1 + (0.2 * multiplier[entity.damage_type]))
+            if (multiplier[entity.damage_type] > 0) entityDamage *= 1 + 0.2 * multiplier[entity.damage_type]
 
             potentialIncomingDamage += entityDamage
         }
         if (potentialIncomingDamage < bot.hp) return // Not in immediate danger
 
-        console.info(`Warping ${bot.id} to jail to avoid death (checkIncomingDamage)!`)
-        await bot.warpToJail()
+        // TODO: Should make a "blocked" function for ALClient
+        if (bot.s.stoned || bot.s.deepfreezed) {
+            // TODO: Should make a "force disconnect" function for ALClient
+            console.info(`Force disconnecting ${bot.id} to avoid death (checkIncomingDamage)!`)
+            for(let i = 0; i < 500; i++) {
+                // @ts-ignore
+                bot.socket.emit("cruise", 999)
+            }
+        } else {
+            console.info(`Warping ${bot.id} to jail to avoid death (checkIncomingDamage)!`)
+            await bot.warpToJail()
+        }
     }
 }
