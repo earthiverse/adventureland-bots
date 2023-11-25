@@ -197,6 +197,8 @@ class WarriorXMageAttackStrategy extends WarriorAttackStrategy {
                 mainhand: { name: "fireblade", filters: { returnHighestLevel: true } },
                 offhand: { name: "fireblade", filters: { returnHighestLevel: true } },
                 orb: { name: "jacko", filters: { returnHighestLevel: true } },
+                pants: { name: "xpants", filters: { returnHighestLevel: true } },
+                shoes: { name: "vboots", filters: { returnHighestLevel: true } },
             },
         }
         this.options.targetingPartyMember = true
