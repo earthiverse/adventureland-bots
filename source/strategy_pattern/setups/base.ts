@@ -1,4 +1,16 @@
-import AL, { Attribute, ItemName, Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, Warrior } from "alclient"
+import AL, {
+    Attribute,
+    ItemName,
+    Mage,
+    Merchant,
+    MonsterName,
+    Paladin,
+    PingCompensatedCharacter,
+    Priest,
+    Ranger,
+    Rogue,
+    Warrior,
+} from "alclient"
 import { Strategist, Strategy } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -61,7 +73,7 @@ import { constructCrabSetup } from "./crab.js"
 import { constructBeeSetup } from "./bee.js"
 import { constructIceRoamerHelperSetup, constructIceRoamerSetup } from "./iceroamer.js"
 import { constructCryptHelperSetup, constructCryptSetup } from "./crypt.js"
-import { constructXMageSetup } from "./xmage.js"
+import { constructXMageSetup, constructXmageHelperSetup } from "./xmage.js"
 
 export type Requirements = {
     [T in Attribute]?: number
@@ -71,35 +83,43 @@ export type Requirements = {
 
 export type CharacterConfig = {
     require?: Requirements
-} & ({
-    ctype: "mage"
-    attack: Strategy<Mage>
-    move: Strategy<Mage>
-} | {
-    ctype: "merchant"
-    attack: Strategy<Merchant>
-    move: Strategy<Merchant>
-} | {
-    ctype: "paladin"
-    attack: Strategy<Paladin>
-    move: Strategy<Paladin>
-} | {
-    ctype: "priest"
-    attack: Strategy<Priest>
-    move: Strategy<Priest>
-} | {
-    ctype: "ranger"
-    attack: Strategy<Ranger>
-    move: Strategy<Ranger>
-} | {
-    ctype: "rogue"
-    attack: Strategy<Rogue>
-    move: Strategy<Rogue>
-} | {
-    ctype: "warrior"
-    attack: Strategy<Warrior>
-    move: Strategy<Warrior>
-})
+} & (
+    | {
+          ctype: "mage"
+          attack: Strategy<Mage>
+          move: Strategy<Mage>
+      }
+    | {
+          ctype: "merchant"
+          attack: Strategy<Merchant>
+          move: Strategy<Merchant>
+      }
+    | {
+          ctype: "paladin"
+          attack: Strategy<Paladin>
+          move: Strategy<Paladin>
+      }
+    | {
+          ctype: "priest"
+          attack: Strategy<Priest>
+          move: Strategy<Priest>
+      }
+    | {
+          ctype: "ranger"
+          attack: Strategy<Ranger>
+          move: Strategy<Ranger>
+      }
+    | {
+          ctype: "rogue"
+          attack: Strategy<Rogue>
+          move: Strategy<Rogue>
+      }
+    | {
+          ctype: "warrior"
+          attack: Strategy<Warrior>
+          move: Strategy<Warrior>
+      }
+)
 
 export type Config = {
     id: string
@@ -112,7 +132,11 @@ export type Setup = {
 
 export type Setups = { [T in MonsterName]?: Setup }
 
-export function constructGenericSetup(contexts: Strategist<PingCompensatedCharacter>[], monsters: MonsterName[], privateInstance = false): Setup {
+export function constructGenericSetup(
+    contexts: Strategist<PingCompensatedCharacter>[],
+    monsters: MonsterName[],
+    privateInstance = false,
+): Setup {
     const id_prefix = monsters.join("+")
     const moveStrategy = new SpreadOutImprovedMoveStrategy(monsters[0])
 
@@ -141,12 +165,18 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            generateEnsureEquipped: { attributes: allMagical ? ["int", "explosion", "blast"] : allPhysical ? ["int", "attack"] : ["int", "attack"] },
-                            typeList: monsters
+                            generateEnsureEquipped: {
+                                attributes: allMagical
+                                    ? ["int", "explosion", "blast"]
+                                    : allPhysical
+                                    ? ["int", "attack"]
+                                    : ["int", "attack"],
+                            },
+                            typeList: monsters,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: `${id_prefix}_paladin`,
@@ -155,11 +185,11 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({
                             contexts: contexts,
-                            typeList: monsters
+                            typeList: monsters,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: `${id_prefix}_priest`,
@@ -170,11 +200,11 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             generateEnsureEquipped: { attributes: ["int", "attack"] },
                             typeList: monsters,
-                            enableGreedyAggro: (privateInstance && allMagical) ? true : undefined
+                            enableGreedyAggro: privateInstance && allMagical ? true : undefined,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: `${id_prefix}_ranger`,
@@ -184,11 +214,11 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: { attributes: ["dex", "attack"] },
-                            typeList: monsters
+                            typeList: monsters,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: `${id_prefix}_rogue`,
@@ -198,11 +228,11 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new RogueAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: { attributes: ["dex", "attack"] },
-                            typeList: monsters
+                            typeList: monsters,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: `${id_prefix}_warrior`,
@@ -212,19 +242,28 @@ export function constructGenericSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: privateInstance ? true : undefined,
-                            enableGreedyAggro: (privateInstance && allPhysical) ? true : undefined,
-                            generateEnsureEquipped: { attributes: allMagical ? ["str", "attack"] : allPhysical ? ["str", "explosion", "blast"] : ["str", "attack"] },
+                            enableGreedyAggro: privateInstance && allPhysical ? true : undefined,
+                            generateEnsureEquipped: {
+                                attributes: allMagical
+                                    ? ["str", "attack"]
+                                    : allPhysical
+                                    ? ["str", "explosion", "blast"]
+                                    : ["str", "attack"],
+                            },
                             typeList: monsters,
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
 
-export function constructGenericWithPriestSetup(contexts: Strategist<PingCompensatedCharacter>[], monsters: MonsterName[]): Setup {
+export function constructGenericWithPriestSetup(
+    contexts: Strategist<PingCompensatedCharacter>[],
+    monsters: MonsterName[],
+): Setup {
     const id_prefix = monsters.join("+") + "_w/priest"
     const moveStrategy = new ImprovedMoveStrategy(monsters[0])
 
@@ -237,20 +276,20 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            typeList: monsters
+                            typeList: monsters,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             targetingPartyMember: true,
-                            typeList: monsters
+                            typeList: monsters,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: `${id_prefix}_priest,paladin`,
@@ -259,20 +298,20 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            typeList: monsters
+                            typeList: monsters,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({
                             contexts: contexts,
                             targetingPartyMember: true,
-                            typeList: monsters
+                            typeList: monsters,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: `${id_prefix}_priest,ranger`,
@@ -281,20 +320,20 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            typeList: monsters
+                            typeList: monsters,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
                             targetingPartyMember: true,
-                            typeList: monsters
+                            typeList: monsters,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: `${id_prefix}_priest,rogue`,
@@ -303,20 +342,20 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            typeList: monsters
+                            typeList: monsters,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({
                             contexts: contexts,
                             targetingPartyMember: true,
-                            typeList: monsters
+                            typeList: monsters,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: `${id_prefix}_priest,warrior`,
@@ -325,9 +364,9 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            typeList: monsters
+                            typeList: monsters,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "warrior",
@@ -336,11 +375,11 @@ export function constructGenericWithPriestSetup(contexts: Strategist<PingCompens
                             targetingPartyMember: true,
                             typeList: monsters,
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
 
@@ -436,6 +475,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
 export function constructHelperSetups(contexts: Strategist<PingCompensatedCharacter>[]): Setups {
     const cryptSetup = constructCryptHelperSetup(contexts)
     const osnakeSetup = constructOSnakeHelperSetup(contexts)
+    const xmageSetup = constructXMageSetup(contexts)
 
     return {
         a1: cryptSetup,
@@ -492,6 +532,10 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"]),
         wabbit: constructWabbitHelperSetup(contexts),
         wolfie: constructGenericWithPriestSetup(contexts, ["wolfie"]),
-        vbat: cryptSetup
+        vbat: cryptSetup,
+        // xmagefi: xmageSetup, NOT SAFE
+        xmagefz: xmageSetup,
+        xmagen: xmageSetup,
+        // xmagex: xmageSetup, POSSIBLY NOT SAFE
     }
 }

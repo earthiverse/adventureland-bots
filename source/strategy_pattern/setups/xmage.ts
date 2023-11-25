@@ -1,5 +1,5 @@
 import { IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Tools, Warrior } from "alclient"
-import { KiteMonsterMoveStrategy } from "../strategies/move.js"
+import { KiteMonsterMoveStrategy, SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Strategist, filterContexts } from "../context.js"
 import { bankingPosition, getClosestBotToPosition, offsetPositionParty } from "../../base/locations.js"
 import { goAndWithdrawItem, locateItemsInBank } from "../../base/banking.js"
@@ -8,6 +8,7 @@ import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategies
 import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategies/attack_warrior.js"
 import { Setup } from "./base.js"
 import { sleep } from "../../base/general.js"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 
 export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xmagefz"]
 export const DOWNTIME_MONSTERS: MonsterName[] = ["snowman", "arcticbee"]
@@ -60,7 +61,7 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
         }
 
         // Place the fieldgen if we're on xmagex
-        const xmage = await this.checkGoodData(bot)
+        const xmage = await this.checkGoodData(bot, true)
 
         if (xmage) {
             if (xmage.type === "xmagefi" && bot.ctype === "mage") {
@@ -296,6 +297,42 @@ export function constructXMageSetup(contexts: Strategist<PingCompensatedCharacte
                         require: {
                             items: ["jacko", "test_orb"],
                         },
+                    },
+                ],
+            },
+        ],
+    }
+}
+
+/**
+ * NOTE: These helpers aren't safe to use on xmagefi
+ * 
+ * TODO: Are these helpers safe to use on xmagex?
+ * 
+ * @param contexts 
+ * @returns 
+ */
+export function constructXmageHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const moveStrategy = new SpecialMonsterMoveStrategy({
+        contexts: contexts,
+        disableCheckDB: true,
+        typeList: XMAGE_MONSTERS,
+    })
+
+    return {
+        configs: [
+            {
+                id: "xmage_helper_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["resistance"],
+                            },
+                        }),
+                        move: moveStrategy,
                     },
                 ],
             },

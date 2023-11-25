@@ -1,4 +1,4 @@
-import { MonsterName, PingCompensatedCharacter, Warrior } from "alclient"
+import { MonsterName, PingCompensatedCharacter, Rogue, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -27,6 +27,21 @@ class WarriorDragoldAttackStrategy extends WarriorAttackStrategy {
     }
 }
 
+class RogueDragoldAttackStrategy extends RogueAttackStrategy {
+    protected async attack(bot: Rogue): Promise<void> {
+        const dragold = bot.getEntity({ type: "dragold" })
+        if (dragold?.s?.multi_burn?.ms < bot.ping * 4) {
+            // Go invisible to dodge the multiburn
+            if (!bot.s.invis && bot.canUse("invis")) {
+                await bot.invis()
+            }
+            if (bot.s.invis) return
+        }
+
+        super.attack(bot)
+    }
+}
+
 // TODO: Add a strategy for mages to blink if dragold's fire projectile is incoming
 // TODO: Add a move strategy to attack from the furthest position away to give mages time to blink, or other characters to run and potentially avoid the projectile
 
@@ -46,11 +61,11 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                             disableEnergize: true,
                             disableZapper: true,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "blast", "explosion"]
+                                attributes: ["resistance", "int", "blast", "explosion"],
                             },
                             typeList: types,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "priest",
@@ -59,11 +74,11 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                             disableEnergize: true,
                             enableHealStrangers: true,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"]
+                                attributes: ["resistance", "int", "attack"],
                             },
                             typeList: types,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "warrior",
@@ -72,13 +87,13 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                             disableCleave: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "str", "blast", "explosion"]
+                                attributes: ["resistance", "str", "blast", "explosion"],
                             },
                             typeList: types,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "dragold_priest,warrior",
@@ -90,11 +105,11 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                             disableEnergize: true,
                             enableHealStrangers: true,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"]
+                                attributes: ["resistance", "int", "attack"],
                             },
                             typeList: types,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "warrior",
@@ -103,15 +118,15 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                             disableCleave: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "str", "blast", "explosion"]
+                                attributes: ["resistance", "str", "blast", "explosion"],
                             },
                             typeList: types,
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
 
@@ -130,11 +145,10 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                             contexts: contexts,
                             typeList: types,
                             hasTarget: true,
-                            maximumTargets: 0
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "dragold_paladin",
@@ -145,11 +159,10 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                             contexts: contexts,
                             typeList: types,
                             hasTarget: true,
-                            maximumTargets: 0
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "dragold_priest",
@@ -162,11 +175,10 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                             enableHealStrangers: true,
                             typeList: types,
                             hasTarget: true,
-                            maximumTargets: 0
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "dragold_ranger",
@@ -177,11 +189,10 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                             contexts: contexts,
                             typeList: types,
                             hasTarget: true,
-                            maximumTargets: 0
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "dragold_rogue",
@@ -192,11 +203,10 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                             contexts: contexts,
                             typeList: types,
                             hasTarget: true,
-                            maximumTargets: 0
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "dragold_warrior",
@@ -209,12 +219,11 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                             disableCleave: true,
                             typeList: types,
                             hasTarget: true,
-                            maximumTargets: 0
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
