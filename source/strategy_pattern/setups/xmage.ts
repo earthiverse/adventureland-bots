@@ -9,7 +9,7 @@ import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategi
 import { Setup } from "./base.js"
 import { sleep } from "../../base/general.js"
 
-export const XMAGE_MONSTERS: MonsterName[] = ["xmagefz", "xmagefi", "xmagen", "xmagex"]
+export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xmagefz"]
 export const DOWNTIME_MONSTERS: MonsterName[] = ["snowman", "arcticbee"]
 
 class XMageMoveStrategy extends KiteMonsterMoveStrategy {
