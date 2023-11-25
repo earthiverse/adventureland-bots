@@ -60,9 +60,14 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
         }
 
         // Place the fieldgen if we're on xmagex
-        const xmage = bot.getEntity({ typeList: XMAGE_MONSTERS })
+        const xmage = await this.checkGoodData(bot)
 
         if (xmage) {
+            if (xmage.type === "xmagefi" && bot.ctype === "mage") {
+                // Priest can't keep up with healing with three characters, so have the mage go to arctic bees
+                await bot.smartMove("arcticbee")
+                return
+            }
             await bot.smartMove(offsetPositionParty(xmage, bot, 20))
         }
 
