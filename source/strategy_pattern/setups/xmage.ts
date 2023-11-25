@@ -306,11 +306,11 @@ export function constructXMageSetup(contexts: Strategist<PingCompensatedCharacte
 
 /**
  * NOTE: These helpers aren't safe to use on xmagefi
- * 
+ *
  * TODO: Are these helpers safe to use on xmagex?
- * 
- * @param contexts 
- * @returns 
+ *
+ * @param contexts
+ * @returns
  */
 export function constructXmageHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new SpecialMonsterMoveStrategy({
@@ -331,6 +331,7 @@ export function constructXmageHelperSetup(contexts: Strategist<PingCompensatedCh
                             generateEnsureEquipped: {
                                 attributes: ["resistance"],
                             },
+                            targetingPartyMember: true,
                         }),
                         move: moveStrategy,
                     },
