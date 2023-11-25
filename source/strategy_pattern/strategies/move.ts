@@ -551,7 +551,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
      * This function checks "good" sources of data where the entity we're trying to find could be
      * @param bot
      */
-    protected async checkGoodData(bot: Character, disableCheckDB = this.options.disableCheckDB): Promise<{ map: MapName; x: number; y: number }> {
+    protected async checkGoodData(bot: Character, disableCheckDB = this.options.disableCheckDB): Promise<{ map: MapName; x: number; y: number, type?: MonsterName }> {
         // Look for it nearby
         const target = bot.getEntity({ returnNearest: true, typeList: this.options.typeList })
         if (target) return this.returnUndefinedIfMapIgnored(target)
