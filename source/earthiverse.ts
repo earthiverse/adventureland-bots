@@ -119,7 +119,7 @@ const PRIVATE_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const PUBLIC_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 /** All contexts */
 const ALL_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
-const SETTINGS_CACHE: Record<string, Settings> = {}
+const SETTINGS_CACHE: Record<string, PublicSettings> = {}
 
 const guiStrategy = new GuiStrategy({ port: 8080 })
 const baseStrategy = new BaseStrategy(ALL_CONTEXTS)
@@ -963,10 +963,11 @@ class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> 
 }
 const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 
-type Settings = {
+export type PublicSettings = {
     sell?: {
         sellMap: [ItemName, [number, number][]][]
     }
+    buyAndUpgrade?: number
 }
 
 // Allow others to join me
@@ -975,7 +976,7 @@ const startPublicContext = async (
     userID: string,
     userAuth: string,
     characterID: string,
-    settings: Settings,
+    settings: PublicSettings,
     attemptNum = 0,
 ) => {
     // Remove stopped contexts
@@ -1115,9 +1116,7 @@ const startPublicContext = async (
                     x: randomIntFromInterval(-50, 50),
                     y: randomIntFromInterval(-50, 50),
                 },
-                // enableBuyAndUpgrade: {
-                //     upgradeToLevel: 9
-                // },
+                enableBuyAndUpgrade: settings.buyAndUpgrade ? { upgradeToLevel: settings.buyAndUpgrade } : undefined,
                 enableBuyReplenishables: {
                     all: DEFAULT_REPLENISHABLES,
                     merchant: new Map([
