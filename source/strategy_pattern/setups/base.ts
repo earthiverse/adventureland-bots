@@ -475,7 +475,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
 export function constructHelperSetups(contexts: Strategist<PingCompensatedCharacter>[]): Setups {
     const cryptSetup = constructCryptHelperSetup(contexts)
     const osnakeSetup = constructOSnakeHelperSetup(contexts)
-    const xmageSetup = constructXMageSetup(contexts)
+    const xmageSetup = constructXmageHelperSetup(contexts)
 
     return {
         a1: cryptSetup,
