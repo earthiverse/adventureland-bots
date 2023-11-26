@@ -1,7 +1,26 @@
-import AL, { IPosition, MonsterName, Pathfinder, Character, PingCompensatedCharacter, Entity, ServerInfoDataLive, MapName, GMap, SmartMoveOptions, ItemName, Tools } from "alclient"
+import AL, {
+    IPosition,
+    MonsterName,
+    Pathfinder,
+    Character,
+    PingCompensatedCharacter,
+    Entity,
+    ServerInfoDataLive,
+    MapName,
+    GMap,
+    SmartMoveOptions,
+    ItemName,
+    Tools,
+} from "alclient"
 import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
-import { sortClosestDistance, sortClosestDistancePathfinder, sortSpreadOut, sortTypeThenClosest } from "../../base/sort.js"
+import {
+    sortClosestDistance,
+    sortClosestDistancePathfinder,
+    sortSpreadOut,
+    sortType,
+    sortTypeThenClosest,
+} from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 import { suppress_errors } from "../logging.js"
 
@@ -20,19 +39,34 @@ export class BasicMoveStrategy implements Strategy<Character> {
         }
 
         this.loops.set("move", {
-            fn: async (bot: Character) => { await this.move(bot) },
-            interval: 250
+            fn: async (bot: Character) => {
+                await this.move(bot)
+            },
+            interval: 250,
         })
     }
 
     private async move(bot: Character) {
-        const nearest = bot.getEntity({ couldGiveCredit: true, returnNearest: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
+        const nearest = bot.getEntity({
+            couldGiveCredit: true,
+            returnNearest: true,
+            typeList: this.types,
+            willBurnToDeath: false,
+            willDieToProjectiles: false,
+        })
         if (!nearest) {
             if (!bot.smartMoving) {
-                bot.smartMove(this.types[0]).catch(() => { /** Suppress Error */ })
+                bot.smartMove(this.types[0]).catch(() => {
+                    /** Suppress Error */
+                })
             }
         } else if (AL.Tools.distance({ x: bot.x, y: bot.y }, { x: nearest.x, y: nearest.y }) > bot.range) {
-            bot.smartMove(nearest, { getWithin: Math.max(0, bot.range - nearest.speed), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(nearest, {
+                getWithin: Math.max(0, bot.range - nearest.speed),
+                resolveOnFinalMoveStart: true,
+            }).catch(() => {
+                /** Suppress Error */
+            })
         }
     }
 }
@@ -42,21 +76,30 @@ export class FinishMonsterHuntStrategy<Type extends Character> implements Strate
 
     public constructor() {
         this.loops.set("move", {
-            fn: async (bot: Type) => { await this.turnInMonsterHunt(bot) },
-            interval: 100
+            fn: async (bot: Type) => {
+                await this.turnInMonsterHunt(bot)
+            },
+            interval: 100,
         })
 
         // Scare if we need
         this.loops.set("attack", {
-            fn: async (bot: Type) => { await this.scare(bot) },
-            interval: 50
+            fn: async (bot: Type) => {
+                await this.scare(bot)
+            },
+            interval: 50,
         })
     }
 
     protected async turnInMonsterHunt(bot: Type) {
         if (!bot.s.monsterhunt) return // We already have a monster hunt
-        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 }).catch(suppress_errors)
-        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50, avoidTownWarps: true })
+        await bot
+            .smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+            .catch(suppress_errors)
+        await bot.smartMove("monsterhunter", {
+            getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50,
+            avoidTownWarps: true,
+        })
         await bot.finishMonsterHuntQuest()
     }
 
@@ -86,8 +129,10 @@ export class FollowFriendMoveStrategy implements Strategy<Character> {
         if (!friendContext) throw new Error("No friend specified")
 
         this.loops.set("move", {
-            fn: async (bot: Character) => { await this.move(bot) },
-            interval: 1000
+            fn: async (bot: Character) => {
+                await this.move(bot)
+            },
+            interval: 1000,
         })
     }
 
@@ -104,21 +149,30 @@ export class GetHolidaySpiritStrategy<Type extends Character> implements Strateg
 
     public constructor() {
         this.loops.set("move", {
-            fn: async (bot: Type) => { await this.getHolidaySpirit(bot) },
-            interval: 100
+            fn: async (bot: Type) => {
+                await this.getHolidaySpirit(bot)
+            },
+            interval: 100,
         })
 
         // Scare if we need
         this.loops.set("attack", {
-            fn: async (bot: Type) => { await this.scare(bot) },
-            interval: 50
+            fn: async (bot: Type) => {
+                await this.scare(bot)
+            },
+            interval: 50,
         })
     }
 
     private async getHolidaySpirit(bot: Type) {
         if (bot.s.holidayspirit) return // We already have holiday spirit
-        await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 }).catch(suppress_errors)
-        await bot.smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2, avoidTownWarps: true })
+        await bot
+            .smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+            .catch(suppress_errors)
+        await bot.smartMove("newyear_tree", {
+            getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2,
+            avoidTownWarps: true,
+        })
         await bot.getHolidaySpirit()
     }
 
@@ -139,21 +193,30 @@ export class GetMonsterHuntStrategy<Type extends Character> implements Strategy<
 
     public constructor() {
         this.loops.set("move", {
-            fn: async (bot: Type) => { await this.getMonsterHunt(bot) },
-            interval: 100
+            fn: async (bot: Type) => {
+                await this.getMonsterHunt(bot)
+            },
+            interval: 100,
         })
 
         // Scare if we need
         this.loops.set("attack", {
-            fn: async (bot: Type) => { await this.scare(bot) },
-            interval: 50
+            fn: async (bot: Type) => {
+                await this.scare(bot)
+            },
+            interval: 50,
         })
     }
 
     private async getMonsterHunt(bot: Type) {
         if (bot.s.monsterhunt) return // We already have a monster hunt
-        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 }).catch(suppress_errors)
-        await bot.smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50, avoidTownWarps: true })
+        await bot
+            .smartMove("monsterhunter", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+            .catch(suppress_errors)
+        await bot.smartMove("monsterhunter", {
+            getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50,
+            avoidTownWarps: true,
+        })
         await bot.getMonsterHuntQuest()
     }
 
@@ -189,21 +252,25 @@ export class GetReplenishablesStrategy<Type extends Character> implements Strate
         this.options = options
 
         this.loops.set("move", {
-            fn: async (bot: Type) => { await this.moveToReplenishable(bot) },
-            interval: 50
+            fn: async (bot: Type) => {
+                await this.moveToReplenishable(bot)
+            },
+            interval: 50,
         })
 
         // Scare if we need
         this.loops.set("attack", {
-            fn: async (bot: Type) => { await this.scare(bot) },
-            interval: 50
+            fn: async (bot: Type) => {
+                await this.scare(bot)
+            },
+            interval: 50,
         })
     }
 
     private async moveToReplenishable(bot: Type) {
         for (const [item, numHold] of this.options.replenishables) {
             const numHas = bot.countItem(item, bot.items)
-            if (numHas > (numHold / 4)) continue // We have more than half of the amount we want
+            if (numHas > numHold / 4) continue // We have more than half of the amount we want
             const numWant = numHold - numHas
             if (!bot.canBuy(item, { ignoreLocation: true, quantity: numWant })) continue // We can't buy enough, don't go to buy them
 
@@ -245,8 +312,10 @@ export class HoldPositionMoveStrategy implements Strategy<Character> {
         }
 
         this.loops.set("move", {
-            fn: async (bot: Character) => { await this.move(bot) },
-            interval: 1000
+            fn: async (bot: Character) => {
+                await this.move(bot)
+            },
+            interval: 1000,
         })
     }
 
@@ -285,8 +354,10 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         }
 
         this.loops.set("move", {
-            fn: async (bot: Character) => { await this.move(bot) },
-            interval: 250
+            fn: async (bot: Character) => {
+                await this.move(bot)
+            },
+            interval: 250,
         })
 
         if (options.idlePosition) {
@@ -315,17 +386,23 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
     private async move(bot: Character) {
         if (!AL.Pathfinder.canStand(bot) && bot.moving) return // We're cheating
 
-        const targets = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false })
+        const targets = bot.getEntities({
+            canDamage: true,
+            couldGiveCredit: true,
+            typeList: this.types,
+            willBurnToDeath: false,
+            willDieToProjectiles: false,
+        })
         targets.sort(this.sort.get(bot.id))
 
         if (bot.ctype === "priest") {
             // Move to heal nearby friends
             const friend = bot.getPlayer({ isDead: false, isPartyMember: true, returnLowestHP: true })
-            if (friend && friend.hp < (friend.max_hp * 0.50) && Tools.distance(bot, friend) > bot.range) {
+            if (friend && friend.hp < friend.max_hp * 0.5 && Tools.distance(bot, friend) > bot.range) {
                 bot.smartMove(friend, { getWithin: bot.range - 25 }).catch(console.error)
                 return
             }
-        } else if (bot.hp < (bot.max_hp * 0.50)) {
+        } else if (bot.hp < bot.max_hp * 0.5) {
             // Move to nearby priest to get healing
             const priest = bot.getPlayer({ isDead: false, isPartyMember: true, ctype: "priest", returnNearest: true })
             if (priest && Tools.distance(bot, priest) > priest.range) {
@@ -344,9 +421,17 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
             }
 
             if (lastD) {
-                bot.smartMove(target, { costs: AVOID_DOORS_COSTS, getWithin: d - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+                bot.smartMove(target, {
+                    costs: AVOID_DOORS_COSTS,
+                    getWithin: d - (bot.range - lastD),
+                    resolveOnFinalMoveStart: true,
+                }).catch(() => {
+                    /** Suppress Error */
+                })
             } else {
-                bot.smartMove(target, { costs: AVOID_DOORS_COSTS, resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+                bot.smartMove(target, { costs: AVOID_DOORS_COSTS, resolveOnFinalMoveStart: true }).catch(() => {
+                    /** Suppress Error */
+                })
             }
             return
         }
@@ -359,16 +444,34 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
                 useBlink: true,
                 stopIfTrue: async () => {
                     if (bot.map !== this.spawns[0].map) return false
-                    const entities = bot.getEntities({ canDamage: true, couldGiveCredit: true, typeList: this.types, willBurnToDeath: false, willDieToProjectiles: false, withinRange: "attack" })
+                    const entities = bot.getEntities({
+                        canDamage: true,
+                        couldGiveCredit: true,
+                        typeList: this.types,
+                        willBurnToDeath: false,
+                        willDieToProjectiles: false,
+                        withinRange: "attack",
+                    })
                     return entities.length > 0
-                }
+                },
             })
         } else if (lastD) {
             // Move towards center of closest spawn
-            bot.smartMove(offsetPositionParty(this.spawns[0], bot), { costs: AVOID_DOORS_COSTS, getWithin: AL.Tools.distance({ x: bot.x, y: bot.y }, this.spawns[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(this.spawns[0], bot), {
+                costs: AVOID_DOORS_COSTS,
+                getWithin: AL.Tools.distance({ x: bot.x, y: bot.y }, this.spawns[0]) - (bot.range - lastD),
+                resolveOnFinalMoveStart: true,
+            }).catch(() => {
+                /** Suppress Error */
+            })
         } else if (!bot.smartMoving) {
             // No targets nearby, move to spawn
-            bot.smartMove(offsetPositionParty(this.spawns[0], bot), { resolveOnFinalMoveStart: true, useBlink: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(this.spawns[0], bot), {
+                resolveOnFinalMoveStart: true,
+                useBlink: true,
+            }).catch(() => {
+                /** Suppress Error */
+            })
         }
     }
 }
@@ -413,7 +516,7 @@ export class KiteInCircleMoveStrategy implements Strategy<Character> {
                 if (bot.rip) return // Can't move if we're dead
                 await this.move(bot)
             },
-            interval: 250
+            interval: 250,
         })
     }
 
@@ -430,11 +533,11 @@ export class KiteInCircleMoveStrategy implements Strategy<Character> {
 
         const angleFromCenterToBot = Math.atan2(bot.y - center.y, bot.x - center.x)
 
-        const cw = angleFromCenterToBot + (Math.PI / 6)
-        const cwPoint = { x: center.x + (radius * Math.cos(cw)), y: center.y + (radius * Math.sin(cw)) }
+        const cw = angleFromCenterToBot + Math.PI / 6
+        const cwPoint = { x: center.x + radius * Math.cos(cw), y: center.y + radius * Math.sin(cw) }
         const distanceFromCwToMonster = AL.Tools.distance({ x: monster.x, y: monster.y }, cwPoint)
-        const ccw = angleFromCenterToBot - (Math.PI / 6)
-        const ccwPoint = { x: center.x + (radius * Math.cos(ccw)), y: center.y + (radius * Math.sin(ccw)) }
+        const ccw = angleFromCenterToBot - Math.PI / 6
+        const ccwPoint = { x: center.x + radius * Math.cos(ccw), y: center.y + radius * Math.sin(ccw) }
         const distanceFromCcwToMonster = AL.Tools.distance({ x: monster.x, y: monster.y }, ccwPoint)
 
         if (distanceFromCwToMonster > bot.range && distanceFromCcwToMonster > bot.range) {
@@ -481,8 +584,10 @@ export class MoveInCircleMoveStrategy implements Strategy<Character> {
         this.options = options
 
         this.loops.set("move", {
-            fn: async (bot: Character) => { await this.move(bot) },
-            interval: 250
+            fn: async (bot: Character) => {
+                await this.move(bot)
+            },
+            interval: 250,
         })
     }
 
@@ -493,8 +598,13 @@ export class MoveInCircleMoveStrategy implements Strategy<Character> {
         if (AL.Pathfinder.canWalkPath(bot, center)) {
             const angleFromCenterToCurrent = Math.atan2(bot.y - center.y, bot.x - center.x)
             const endGoalAngle = angleFromCenterToCurrent + (this.options.ccw ? -angle : angle)
-            const endGoal = { x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }
-            bot.move(endGoal.x, endGoal.y, { resolveOnStart: true }).catch(() => { /** Suppress errors */ })
+            const endGoal = {
+                x: center.x + radius * Math.cos(endGoalAngle),
+                y: center.y + radius * Math.sin(endGoalAngle),
+            }
+            bot.move(endGoal.x, endGoal.y, { resolveOnStart: true }).catch(() => {
+                /** Suppress errors */
+            })
         } else {
             // Move to where we can walk
             return bot.smartMove(center, { getWithin: radius, useBlink: true })
@@ -528,7 +638,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
         if (this.options.ignoreMaps.length) {
             // Remove all ignored maps
-            this.spawns = this.spawns.filter(p => !this.options.ignoreMaps.includes(p.map))
+            this.spawns = this.spawns.filter((p) => !this.options.ignoreMaps.includes(p.map))
         }
 
         this.loops.set("move", {
@@ -537,7 +647,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 await this.move(bot)
                 await this.kiteToNPC(bot)
             },
-            interval: 250
+            interval: 250,
         })
     }
 
@@ -551,7 +661,10 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
      * This function checks "good" sources of data where the entity we're trying to find could be
      * @param bot
      */
-    protected async checkGoodData(bot: Character, disableCheckDB = this.options.disableCheckDB): Promise<{ map: MapName; x: number; y: number, type?: MonsterName }> {
+    protected async checkGoodData(
+        bot: Character,
+        disableCheckDB = this.options.disableCheckDB,
+    ): Promise<{ map: MapName; x: number; y: number; type?: MonsterName }> {
         // Look for it nearby
         const target = bot.getEntity({ returnNearest: true, typeList: this.options.typeList })
         if (target) return this.returnUndefinedIfMapIgnored(target)
@@ -568,7 +681,8 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         // Look for it in server data
         for (const type of this.options.typeList) {
             const sInfo = bot.S?.[type] as ServerInfoDataLive
-            if (sInfo?.live && sInfo.map && sInfo.x !== undefined && sInfo.y !== undefined) return this.returnUndefinedIfMapIgnored(sInfo as { map: MapName; x: number; y: number })
+            if (sInfo?.live && sInfo.map && sInfo.x !== undefined && sInfo.y !== undefined)
+                return this.returnUndefinedIfMapIgnored(sInfo as { map: MapName; x: number; y: number })
         }
 
         if (!disableCheckDB && AL.Database.connection) {
@@ -578,17 +692,21 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 map: { $nin: this.options.ignoreMaps },
                 serverIdentifier: bot.server.name,
                 serverRegion: bot.server.region,
-                type: { $in: this.options.typeList }
-            }).sort({ lastSeen: -1 }).lean().exec()
-            targets:
-            for (const target of targets) {
+                type: { $in: this.options.typeList },
+            })
+                .sort({ lastSeen: -1 })
+                .lean()
+                .exec()
+            targets.sort(sortType(this.options.typeList))
+            targets: for (const target of targets) {
                 if (!target.map || target.x === undefined || target.y === undefined) continue
 
                 if (this.options.contexts) {
                     // Check if one of our contexts should be able to see it
                     for (const context of this.options.contexts) {
                         if (!context.isReady()) continue
-                        if (AL.Tools.distance(context.bot, target) < (AL.Constants.MAX_VISIBLE_RANGE / 2)) continue targets // We should be able to see it, the data is not valid
+                        if (AL.Tools.distance(context.bot, target) < AL.Constants.MAX_VISIBLE_RANGE / 2)
+                            continue targets // We should be able to see it, the data is not valid
                     }
                 }
                 return target
@@ -604,7 +722,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             }
         }
 
-        const maps = new Set<MapName>(this.spawns.map(s => s.map))
+        const maps = new Set<MapName>(this.spawns.map((s) => s.map))
         if (maps.size > 0 && !maps.has(bot.map)) {
             // Go to a map that has this monster
             const gInfo: GMap = AL.Game.G.maps[this.spawns[0].map]
@@ -623,7 +741,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 if (!target) return false // No target, keep looking
                 return AL.Tools.distance(target, bot.smartMoving) > bot.range // It's moved far from where we're smart moving to
             },
-            useBlink: true
+            useBlink: true,
         }
 
         const target = await this.checkGoodData(bot)
@@ -633,8 +751,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         }
 
         // Look for if there's a spawn for it
-        spawns:
-        for (const spawn of this.spawns) {
+        spawns: for (const spawn of this.spawns) {
             if (this.options.ignoreMaps && this.options.ignoreMaps.includes(spawn.map)) continue // Map is ignored
             if (this.options.contexts) {
                 for (const context of this.options.contexts) {
@@ -666,11 +783,19 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             const gMonster = bot.G.monsters[spawn.type]
             if (gMonster.aggro >= 100 || gMonster.rage >= 100) continue // Skip aggro spawns
             if (spawn.boundary) {
-                spawns.push({ map: bot.map, x: (spawn.boundary[0] + spawn.boundary[2]) / 2, y: (spawn.boundary[1] + spawn.boundary[3]) / 2 })
+                spawns.push({
+                    map: bot.map,
+                    x: (spawn.boundary[0] + spawn.boundary[2]) / 2,
+                    y: (spawn.boundary[1] + spawn.boundary[3]) / 2,
+                })
             } else if (spawn.boundaries) {
                 for (const boundary of spawn.boundaries) {
                     if (this.options.ignoreMaps && this.options.ignoreMaps.includes(boundary[0])) continue // Map is ignored
-                    spawns.push({ map: boundary[0], x: (boundary[1] + boundary[3]) / 2, y: (boundary[2] + boundary[4]) / 2 })
+                    spawns.push({
+                        map: boundary[0],
+                        x: (boundary[1] + boundary[3]) / 2,
+                        y: (boundary[2] + boundary[4]) / 2,
+                    })
                 }
             }
         }
@@ -683,8 +808,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         // Sort spawns
         spawns.sort((a, b) => a.x - b.x)
 
-        spawns:
-        for (const spawn of spawns) {
+        spawns: for (const spawn of spawns) {
             if (this.options.contexts) {
                 for (const context of this.options.contexts) {
                     if (context.bot == bot) continue // We've already checked ourselves
@@ -751,16 +875,32 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             }
 
             if (lastD) {
-                bot.smartMove(target, { costs: AVOID_DOORS_COSTS, getWithin: d - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+                bot.smartMove(target, {
+                    costs: AVOID_DOORS_COSTS,
+                    getWithin: d - (bot.range - lastD),
+                    resolveOnFinalMoveStart: true,
+                }).catch(() => {
+                    /** Suppress Error */
+                })
             } else {
-                bot.smartMove(target, { costs: AVOID_DOORS_COSTS, resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+                bot.smartMove(target, { costs: AVOID_DOORS_COSTS, resolveOnFinalMoveStart: true }).catch(() => {
+                    /** Suppress Error */
+                })
             }
             return
         }
 
         if (lastD) {
             // Move towards center of an NPC
-            bot.smartMove(offsetPositionParty(targets[1], bot), { costs: AVOID_DOORS_COSTS, getWithin: AL.Tools.distance({ x: bot.x, y: bot.y }, { x: targets[1].x, y: targets[1].y }) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(targets[1], bot), {
+                costs: AVOID_DOORS_COSTS,
+                getWithin:
+                    AL.Tools.distance({ x: bot.x, y: bot.y }, { x: targets[1].x, y: targets[1].y }) -
+                    (bot.range - lastD),
+                resolveOnFinalMoveStart: true,
+            }).catch(() => {
+                /** Suppress Error */
+            })
         }
     }
 }
@@ -774,7 +914,7 @@ export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
                 if (bot.rip) return // Can't move if we're dead
                 await this.move(bot)
             },
-            interval: 250
+            interval: 250,
         })
     }
 
@@ -798,17 +938,29 @@ export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
         const lookDistance = kiteDistance * 1.25
         const NUM_ANGLES = 40
         for (let i = 1; i < NUM_ANGLES; i++) {
-            const angle = angleFromEntityToBot + ((i % 2 ? 1 : -1) * ((Math.PI) * ((i - (i % 2)) / NUM_ANGLES)))
+            const angle = angleFromEntityToBot + (i % 2 ? 1 : -1) * (Math.PI * ((i - (i % 2)) / NUM_ANGLES))
             const angleCos = Math.cos(angle)
             const angleSin = Math.sin(angle)
-            const kitePos: IPosition = { map: bot.map, x: entity.x + (kiteDistance * angleCos), y: entity.y + (kiteDistance * angleSin) }
-            const lookPos: IPosition = { map: bot.map, x: entity.x + (lookDistance * angleCos), y: entity.y + (lookDistance * angleSin) }
+            const kitePos: IPosition = {
+                map: bot.map,
+                x: entity.x + kiteDistance * angleCos,
+                y: entity.y + kiteDistance * angleSin,
+            }
+            const lookPos: IPosition = {
+                map: bot.map,
+                x: entity.x + lookDistance * angleCos,
+                y: entity.y + lookDistance * angleSin,
+            }
             if (!(AL.Pathfinder.canStand(lookPos) && AL.Pathfinder.canStand(kitePos))) continue // Not a valid spot
             if (AL.Pathfinder.canWalkPath(bot, kitePos)) {
                 if (bot.smartMoving) bot.stopSmartMove().catch(suppress_errors)
                 bot.move(kitePos.x, kitePos.y, { resolveOnStart: true }).catch(suppress_errors)
             } else if (!bot.smartMoving) {
-                bot.smartMove(kitePos, { avoidTownWarps: true, costs: { enter: 9999, transport: 9999 }, resolveOnFinalMoveStart: true }).catch(suppress_errors)
+                bot.smartMove(kitePos, {
+                    avoidTownWarps: true,
+                    costs: { enter: 9999, transport: 9999 },
+                    resolveOnFinalMoveStart: true,
+                }).catch(suppress_errors)
             }
             break
         }

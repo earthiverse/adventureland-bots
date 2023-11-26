@@ -36,9 +36,29 @@ export function sortClosestDistancePathfinder(from: Character) {
     }
 }
 
+export function sortType(types: MonsterName[]) {
+    return (a: { type: MonsterName }, b: { type: MonsterName }) => {
+        const a_index = types.indexOf(a.type)
+        const b_index = types.indexOf(b.type)
+        return a_index - b_index
+    }
+}
+
+export function sortTypeThenHp(types: MonsterName[]) {
+    return (a: { hp?: number; type: MonsterName }, b: { hp?: number; type: MonsterName }) => {
+        const a_index = types.indexOf(a.type)
+        const b_index = types.indexOf(b.type)
+        if (a_index < b_index) return -1
+        else if (a_index > b_index) return 1
+
+        if (!a.hp || !b.hp) return 0 // Unknown HP difference
+        return a.hp - b.hp
+    }
+}
+
 /**
  * This function will prioritize monsters based on type, then which ones are closest to the character
- * 
+ *
  * This function is meant to be used with `[].sort()`
  *
  * Example: `targets.sort(sortTypeThenClosest(bot, ["osnake", "snake"]))`
@@ -47,7 +67,7 @@ export function sortClosestDistancePathfinder(from: Character) {
  * @returns A sorting function that will sort the objects closest to the position first
  */
 export function sortTypeThenClosest(to: Character, types: MonsterName[]) {
-    return (a: Entity, b: Entity) => {
+    return (a: IPosition & { type: MonsterName }, b: IPosition & { type: MonsterName }) => {
         const a_index = types.indexOf(a.type)
         const b_index = types.indexOf(b.type)
         if (a_index < b_index) return -1
@@ -62,16 +82,20 @@ export function sortTypeThenClosest(to: Character, types: MonsterName[]) {
 /**
  * This function will prioritize monsters based on type, then spread out and try to prioritize
  * ones that are further away from other party members
- * 
+ *
  * This function is meant to be used with `[].sort()`
- * 
+ *
  * Example: `targets.sort(sortTypeThenClosest(bot, ["osnake", "snake"]))`
- * 
- * @param to 
- * @param types 
- * @returns 
+ *
+ * @param to
+ * @param types
+ * @returns
  */
-export function sortSpreadOut(to: Character, types: MonsterName[], contexts: Strategist<PingCompensatedCharacter>[] = []) {
+export function sortSpreadOut(
+    to: Character,
+    types: MonsterName[],
+    contexts: Strategist<PingCompensatedCharacter>[] = [],
+) {
     return (a: Entity, b: Entity) => {
         const a_index = types.indexOf(a.type)
         const b_index = types.indexOf(b.type)
@@ -104,8 +128,8 @@ export function sortSpreadOut(to: Character, types: MonsterName[], contexts: Str
         let minDistanceToB = distanceToB
         if (players.length) {
             // Check if we're the closest to the monster
-            let weAreClosestToA = true;
-            let weAreClosestToB = true;
+            let weAreClosestToA = true
+            let weAreClosestToB = true
             for (const player of players) {
                 const playerDistanceToA = AL.Tools.squaredDistance({ x: player.x, y: player.y }, { x: a.x, y: a.y })
                 if (playerDistanceToA < distanceToA) weAreClosestToA = false
@@ -224,16 +248,20 @@ export function sortPriority(bot: Character, types?: MonsterName[]) {
         const players = bot.getPlayers({ isPartyMember: true })
         if (players.length) {
             const a_party_distance = players
-                .map(player => {
+                .map((player) => {
                     const distance = AL.Tools.squaredDistance(a, player)
-                    const moving = player.moving ? AL.Tools.squaredDistance(a, { x: player.going_x, y: player.going_y }) : 0
+                    const moving = player.moving
+                        ? AL.Tools.squaredDistance(a, { x: player.going_x, y: player.going_y })
+                        : 0
                     return distance + moving
                 })
                 .reduce((sum, distance) => sum + distance, 0)
             const b_party_distance = players
-                .map(player => {
+                .map((player) => {
                     const distance = AL.Tools.squaredDistance(b, player)
-                    const moving = player.moving ? AL.Tools.squaredDistance(b, { x: player.going_x, y: player.going_y }) : 0
+                    const moving = player.moving
+                        ? AL.Tools.squaredDistance(b, { x: player.going_x, y: player.going_y })
+                        : 0
                     return distance + moving
                 })
                 .reduce((sum, distance) => sum + distance, 0)

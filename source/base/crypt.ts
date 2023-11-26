@@ -5,8 +5,8 @@ export const CRYPT_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6"
 /** Used to wait until crypt monsters have levelled a bit (1.944e+8ms is 54 hours) */
 export const CRYPT_WAIT_TIME = 1.944e8
 
-/** Used to give us a little bit extra time to find and kill them */
-export const CRYPT_ADD_TIME = 3_600_000
+/** Used to give us extra time to find and kill them */
+export const CRYPT_ADD_TIME = 8.64e+7
 
 export async function addCryptMonstersToDB(bot: Character, map = bot.map, instance: string = bot.in) {
     if (map !== "crypt") throw "Only call this function in a crypt."
