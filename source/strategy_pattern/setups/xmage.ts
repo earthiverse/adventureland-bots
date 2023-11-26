@@ -1,5 +1,5 @@
 import { IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Tools, Warrior } from "alclient"
-import { KiteMonsterMoveStrategy, SpecialMonsterMoveStrategy } from "../strategies/move.js"
+import { KiteMonsterMoveStrategy } from "../strategies/move.js"
 import { Strategist, filterContexts } from "../context.js"
 import { bankingPosition, getClosestBotToPosition, offsetPositionParty } from "../../base/locations.js"
 import { goAndWithdrawItem, locateItemsInBank } from "../../base/banking.js"
@@ -9,14 +9,17 @@ import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategi
 import { Setup } from "./base.js"
 import { sleep } from "../../base/general.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
+import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
 
 export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xmagefz"]
 export const DOWNTIME_MONSTERS: MonsterName[] = ["snowman", "arcticbee"]
 
 class XMageMoveStrategy extends KiteMonsterMoveStrategy {
-    public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {
+    public constructor(contexts: Strategist<PingCompensatedCharacter>[], disableCheckDB?: true) {
         super({
             contexts: contexts,
+            disableCheckDB: disableCheckDB,
             typeList: XMAGE_MONSTERS,
         })
 
@@ -33,22 +36,24 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
         const groupHasFieldgen = this.groupHasFieldgen(friends)
         const placedFieldgen = this.getPlacedFieldgen(friends)
         if (!groupHasFieldgen && !placedFieldgen) {
-            // Have bots idle somewhere safe
-            this.options.typeList = DOWNTIME_MONSTERS
-
-            if (!groupHasFieldgen) {
-                // Have a bot go get a fieldgen
-                const closestBot = getClosestBotToPosition(bankingPosition, friends)
-                if (closestBot === bot) {
-                    await bot.smartMove(bankingPosition)
-                    const bankFieldgens = locateItemsInBank(bot, { name: "fieldgen0" })
-                    if (bankFieldgens.length) {
-                        const [packName, indexes] = bankFieldgens[0]
-                        await goAndWithdrawItem(bot, packName, indexes[0])
-                    }
+            // Have a bot go get a fieldgen
+            const closestBot = getClosestBotToPosition(bankingPosition, friends)
+            if (closestBot === bot) {
+                await bot.smartMove(bankingPosition)
+                const bankFieldgens = locateItemsInBank(bot, { name: "fieldgen0" })
+                if (bankFieldgens.length) {
+                    const [packName, indexes] = bankFieldgens[0]
+                    await goAndWithdrawItem(bot, packName, indexes[0])
+                } else {
+                    // Have the bot leave the bank
+                    await bot.smartMove("main")
                 }
+                return
+            } else {
+                // Have other bots farm the downtime monsters
+                this.options.typeList = DOWNTIME_MONSTERS
+                return super.move(bot)
             }
-            return
         }
 
         this.options.typeList = XMAGE_MONSTERS
@@ -69,17 +74,17 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
                 await bot.smartMove("arcticbee")
                 return
             }
+
             await bot.smartMove(offsetPositionParty(xmage, bot, 20))
-        }
 
-        if (xmage && xmage.type === "xmagex" && groupHasFieldgen && !placedFieldgen) {
-            await this.placeFieldGen(friends)
+            if (xmage.type === "xmagex" && groupHasFieldgen && !placedFieldgen) {
+                await this.placeFieldGen(friends)
+            }
+        } else if (this.options.disableCheckDB) {
+            // Have other bots farm the downtime monsters
+            this.options.typeList = DOWNTIME_MONSTERS
         }
-
-        // Go to xmage
-        if (!xmage) {
-            return super.move(bot)
-        }
+        return super.move(bot)
     }
 
     protected groupHasFieldgen(friends: PingCompensatedCharacter[]) {
@@ -313,14 +318,74 @@ export function constructXMageSetup(contexts: Strategist<PingCompensatedCharacte
  * @returns
  */
 export function constructXmageHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpecialMonsterMoveStrategy({
-        contexts: contexts,
-        disableCheckDB: true,
-        typeList: ["xmagen", "xmagefz"],
-    })
+    const moveStrategy = new XMageMoveStrategy(contexts, true)
 
     return {
         configs: [
+            {
+                id: "xmage_helper_mage",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["resistance"],
+                            },
+                            targetingPartyMember: true,
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "xmage_helper_paladin",
+                characters: [
+                    {
+                        ctype: "paladin",
+                        attack: new PaladinAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["resistance"],
+                            },
+                            targetingPartyMember: true,
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "xmage_helper_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["resistance"],
+                            },
+                            targetingPartyMember: true,
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "xmage_helper_ranger",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["resistance"],
+                            },
+                            targetingPartyMember: true,
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
+            },
             {
                 id: "xmage_helper_rogue",
                 characters: [
@@ -338,11 +403,11 @@ export function constructXmageHelperSetup(contexts: Strategist<PingCompensatedCh
                 ],
             },
             {
-                id: "xmage_helper_priest",
+                id: "xmage_helper_warrior",
                 characters: [
                     {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
                                 attributes: ["resistance"],
