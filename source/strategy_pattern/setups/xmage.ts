@@ -316,7 +316,7 @@ export function constructXmageHelperSetup(contexts: Strategist<PingCompensatedCh
     const moveStrategy = new SpecialMonsterMoveStrategy({
         contexts: contexts,
         disableCheckDB: true,
-        typeList: XMAGE_MONSTERS,
+        typeList: ["xmagen", "xmagefz"],
     })
 
     return {

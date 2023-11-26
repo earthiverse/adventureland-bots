@@ -18,8 +18,8 @@ import {
     sortClosestDistance,
     sortClosestDistancePathfinder,
     sortSpreadOut,
-    sortType,
     sortTypeThenClosest,
+    sortTypeThenHp,
 } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 import { suppress_errors } from "../logging.js"
@@ -697,7 +697,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 .sort({ lastSeen: -1 })
                 .lean()
                 .exec()
-            targets.sort(sortType(this.options.typeList))
+            targets.sort(sortTypeThenHp(this.options.typeList))
             targets: for (const target of targets) {
                 if (!target.map || target.x === undefined || target.y === undefined) continue
 

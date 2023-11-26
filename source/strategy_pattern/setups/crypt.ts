@@ -421,6 +421,7 @@ class CryptHelperMoveStratey extends KiteMonsterMoveStrategy {
     public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {
         super({
             contexts: contexts,
+            disableCheckDB: true,
             typeList: CRYPT_MONSTERS
         })
 
