@@ -337,6 +337,22 @@ export function constructXmageHelperSetup(contexts: Strategist<PingCompensatedCh
                     },
                 ],
             },
+            {
+                id: "xmage_helper_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["resistance"],
+                            },
+                            targetingPartyMember: true,
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
+            },
         ],
     }
 }
