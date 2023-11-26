@@ -67,7 +67,7 @@ import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
 import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
-import { CRYPT_MONSTERS, CRYPT_WAIT_TIME } from "./base/crypt.js"
+import { CRYPT_MONSTERS, CRYPT_WAIT_TIME, getCryptWaitTime } from "./base/crypt.js"
 import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
 import { hasItemInBank } from "./base/items.js"
 
@@ -567,9 +567,11 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             }
 
             if (AL.Database.connection) {
-                if (hasItemInBank(context.bot.owner, "fieldgen0")) {
+                if (await hasItemInBank(context.bot.owner, "fieldgen0")) {
                     for (const xmage of await AL.EntityModel.find(
                         {
+                            $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime("winter_instance") } }],
+                            lastSeen: { $gt: Date.now() - 30000 },
                             serverIdentifier: context.bot.serverData.name,
                             serverRegion: context.bot.serverData.region,
                             type: { $in: XMAGE_MONSTERS },
@@ -586,7 +588,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
 
                 for (const cryptMonster of await AL.EntityModel.find(
                     {
-                        $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - CRYPT_WAIT_TIME } }],
+                        $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime("crypt") } }],
                         lastSeen: { $gt: Date.now() - 30000 },
                         serverIdentifier: context.bot.serverData.name,
                         serverRegion: context.bot.serverData.region,
