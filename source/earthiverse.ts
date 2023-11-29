@@ -567,23 +567,26 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             }
 
             if (AL.Database.connection) {
-                if (await hasItemInBank(context.bot.owner, "fieldgen0")) {
-                    for (const xmage of await AL.EntityModel.find(
-                        {
-                            $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime("winter_instance") } }],
-                            lastSeen: { $gt: Date.now() - 30000 },
-                            serverIdentifier: context.bot.serverData.name,
-                            serverRegion: context.bot.serverData.region,
-                            type: { $in: XMAGE_MONSTERS },
-                        },
-                        {
-                            type: 1,
-                        },
-                    )
-                        .lean()
-                        .exec()) {
-                        priority.push(xmage.type)
-                    }
+                const hasFieldGen = await hasItemInBank(context.bot.owner, "fieldgen0")
+                for (const xmage of await AL.EntityModel.find(
+                    {
+                        $or: [
+                            { firstSeen: null },
+                            { firstSeen: { $lt: Date.now() - getCryptWaitTime("winter_instance") } },
+                        ],
+                        lastSeen: { $gt: Date.now() - 30000 },
+                        serverIdentifier: context.bot.serverData.name,
+                        serverRegion: context.bot.serverData.region,
+                        type: { $in: XMAGE_MONSTERS },
+                    },
+                    {
+                        type: 1,
+                    },
+                )
+                    .lean()
+                    .exec()) {
+                    if (xmage.type == "xmagex" && !hasFieldGen) continue // We can only do xmagex if we have a fieldgen0
+                    priority.push(xmage.type)
                 }
 
                 for (const cryptMonster of await AL.EntityModel.find(
