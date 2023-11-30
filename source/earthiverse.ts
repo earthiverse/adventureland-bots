@@ -878,6 +878,7 @@ const startMerchantContext = async () => {
         if (merchant) merchant.disconnect()
         console.error(e)
         setTimeout(startMerchantContext, 10_000)
+        return
     }
     const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, {
@@ -904,6 +905,7 @@ const startWarriorContext = async () => {
         if (warrior) warrior.disconnect()
         console.error(e)
         setTimeout(startWarriorContext, 10_000)
+        return
     }
     const CONTEXT = new Strategist<Warrior>(warrior, baseStrategy)
     startWarrior(CONTEXT, true).catch(console.error)
@@ -920,6 +922,7 @@ const startMageContext = async () => {
         if (mage) mage.disconnect()
         console.error(e)
         setTimeout(startMageContext, 10_000)
+        return
     }
     const CONTEXT = new Strategist<Mage>(mage, baseStrategy)
     startMage(CONTEXT, true).catch(console.error)
@@ -936,6 +939,7 @@ const startPriestContext = async () => {
         if (priest) priest.disconnect()
         console.error(e)
         setTimeout(startPriestContext, 10_000)
+        return
     }
     const CONTEXT = new Strategist<Priest>(priest, baseStrategy)
     startPriest(CONTEXT, true).catch(console.error)
