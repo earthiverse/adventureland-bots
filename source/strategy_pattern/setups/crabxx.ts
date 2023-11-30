@@ -6,8 +6,9 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { SpreadOutImprovedMoveStrategy } from "../strategies/move.js"
+import { HoldPositionMoveStrategy, SpreadOutImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
+import { mainCrabXs } from "../../base/locations.js"
 
 const types: MonsterName[] = ["crabx", "crabxx"]
 
@@ -63,7 +64,8 @@ class WarriorGigaCrabAttackStrategy extends WarriorAttackStrategy {
 }
 
 export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpreadOutImprovedMoveStrategy(types)
+    const spreadOutMoveStrategy = new SpreadOutImprovedMoveStrategy(types)
+    const holdMoveStrategy = new HoldPositionMoveStrategy(mainCrabXs)
 
     return {
         configs: [
@@ -81,7 +83,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             },
                             typeList: types
                         }),
-                        move: moveStrategy
+                        move: spreadOutMoveStrategy
                     },
                     {
                         ctype: "priest",
@@ -95,7 +97,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             },
                             typeList: types,
                         }),
-                        move: moveStrategy
+                        move: spreadOutMoveStrategy
                     },
                     {
                         ctype: "warrior",
@@ -110,7 +112,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             },
                             typeList: types
                         }),
-                        move: moveStrategy
+                        move: holdMoveStrategy
                     }
                 ]
             },
@@ -132,7 +134,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             },
                             typeList: types
                         }),
-                        move: moveStrategy,
+                        move: spreadOutMoveStrategy,
                         require: {
                             items: ["crossbow", "jacko"]
                         }
@@ -149,7 +151,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             },
                             typeList: types,
                         }),
-                        move: moveStrategy
+                        move: spreadOutMoveStrategy
                     },
                     // The warrior will prioritize crabx so that the giga crab can take damage
                     {
@@ -165,7 +167,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             },
                             typeList: types
                         }),
-                        move: moveStrategy
+                        move: holdMoveStrategy
                     }
                 ]
             },
@@ -184,7 +186,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             },
                             typeList: types,
                         }),
-                        move: moveStrategy
+                        move: spreadOutMoveStrategy
                     },
                     {
                         ctype: "warrior",
@@ -199,7 +201,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
                             },
                             typeList: types
                         }),
-                        move: moveStrategy
+                        move: holdMoveStrategy
                     }
                 ]
             },
