@@ -11,6 +11,7 @@ import { sleep } from "../../base/general.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
+import { hasItemInBank } from "../../base/items.js"
 
 export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xmagefz"]
 export const DOWNTIME_MONSTERS: MonsterName[] = ["snowman", "arcticbee"]
@@ -33,30 +34,38 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
             .filter((c) => c.ctype !== "merchant")
 
         // Ensure we have a fieldgen ready
+        const hasFieldGenInBank = await hasItemInBank(bot.owner, "fieldgen0")
         const groupHasFieldgen = this.groupHasFieldgen(friends)
         const placedFieldgen = this.getPlacedFieldgen(friends)
         if (!groupHasFieldgen && !placedFieldgen) {
-            // Have a bot go get a fieldgen
-            const closestBot = getClosestBotToPosition(bankingPosition, friends)
-            if (closestBot === bot) {
-                await bot.smartMove(bankingPosition)
-                const bankFieldgens = locateItemsInBank(bot, { name: "fieldgen0" })
-                if (bankFieldgens.length) {
-                    const [packName, indexes] = bankFieldgens[0]
-                    await goAndWithdrawItem(bot, packName, indexes[0])
+            if (hasFieldGenInBank) {
+                // Have a bot go get a fieldgen
+                const closestBot = getClosestBotToPosition(bankingPosition, friends)
+                if (closestBot === bot) {
+                    await bot.smartMove(bankingPosition)
+                    const bankFieldgens = locateItemsInBank(bot, { name: "fieldgen0" })
+                    if (bankFieldgens.length) {
+                        const [packName, indexes] = bankFieldgens[0]
+                        await goAndWithdrawItem(bot, packName, indexes[0])
+                    } else {
+                        // Have the bot leave the bank
+                        await bot.smartMove("main")
+                    }
+                    return
                 } else {
-                    // Have the bot leave the bank
-                    await bot.smartMove("main")
+                    // Have other bots farm the downtime monsters
+                    this.options.typeList = DOWNTIME_MONSTERS
+                    return super.move(bot)
                 }
-                return
-            } else {
-                // Have other bots farm the downtime monsters
-                this.options.typeList = DOWNTIME_MONSTERS
-                return super.move(bot)
             }
         }
 
-        this.options.typeList = XMAGE_MONSTERS
+        if (groupHasFieldgen || placedFieldgen) {
+            this.options.typeList = XMAGE_MONSTERS
+        } else {
+            // We don't have a fieldgen0, so we can't do xmagex
+            this.options.typeList = ["xmagen", "xmagefi", "xmagefz"]
+        }
 
         // Have priest heal the fieldgen if we've placed one
         if (bot.ctype === "priest" && placedFieldgen && placedFieldgen.hp < placedFieldgen.max_hp * 0.75) {
