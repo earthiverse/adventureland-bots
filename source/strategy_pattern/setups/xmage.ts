@@ -74,7 +74,6 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
             }
         }
 
-        // Place the fieldgen if we're on xmagex
         const xmage = await this.checkGoodData(bot, true)
 
         if (xmage) {
@@ -87,13 +86,15 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
             await bot.smartMove(offsetPositionParty(xmage, bot, 20))
 
             if (xmage.type === "xmagex" && groupHasFieldgen && !placedFieldgen) {
+                // Place the fieldgen if we're on xmagex
                 await this.placeFieldGen(friends)
             }
+            return
         } else if (this.options.disableCheckDB) {
             // Have other bots farm the downtime monsters
             this.options.typeList = DOWNTIME_MONSTERS
+            return super.move(bot)
         }
-        return super.move(bot)
     }
 
     protected groupHasFieldgen(friends: PingCompensatedCharacter[]) {
