@@ -278,5 +278,11 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
 ])
 
 export const DEFAULT_ITEMS_TO_LIST = new Map<ItemName, number>([
+    ["candycane", 999_999],
+    ["candypop", 999_999],
+    ["candy0", 9_999_999],
+    ["candy1", 999_999],
+    ["funtoken", 1_000_000],
+    ["monstertoken", 250_000],
     ["vhammer", 100_000_000]
 ])

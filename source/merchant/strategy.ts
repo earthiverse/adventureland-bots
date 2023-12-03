@@ -28,7 +28,7 @@ import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
-import { CRYPT_WAIT_TIME, addCryptMonstersToDB, getCryptWaitTime, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
+import { addCryptMonstersToDB, getCryptWaitTime, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
 import {
     DEFAULT_CRAFTABLES,
     DEFAULT_EXCHANGEABLES,
@@ -401,15 +401,14 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     // Open stand to see if we have a free trade slot
                     await bot.openMerchantStand().catch(suppress_errors)
 
+                    // Look for empty slots
                     for (const slotName in bot.slots) {
                         if (!slotName.startsWith("trade")) continue
                         const slotType = slotName as TradeSlotType
                         const slotInfo = bot.slots[slotType]
 
-                        // TODO: Check if we can stack the item
-
                         if (slotInfo) continue // Trade slot is already filled
-                        this.debug(bot, `Found an empty trade slot (${slotName}), looking for items...`)
+                        this.debug(bot, `Found an empty trade slot (${slotType}), looking for items...`)
 
                         // Look for an item to trade
                         for (const [item, price] of this.options.enableListings.itemsToList) {
@@ -421,10 +420,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                                 itemsToHold: this.options.itemsToHold,
                             })
                             if (bot.hasItem(item, bot.items, options)) {
-                                this.debug(bot, `Listing ${item} in ${slotName} for ${price}...`)
+                                this.debug(bot, `Listing ${item} for ${price}...`)
                                 // We found an item to list, list it
                                 const itemPosition = bot.locateItem(item, bot.items, options)
-                                await bot.listForSale(itemPosition, price, slotType).catch(console.error)
+                                await bot.listForSale(itemPosition, price).catch(console.error)
                                 break
                             }
                         }
