@@ -95,12 +95,12 @@ export const DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND = new Map<ItemName, number>([
     ["strbelt", 1],
     ["strring", 1],
     ["vitring", 2],
-    ["wattire", 4],
+    // ["wattire", 4],
     ["wbook0", 1],
-    ["wbreeches", 4],
-    ["wcap", 4],
-    ["wgloves", 4],
-    ["wshoes", 4]
+    // ["wbreeches", 4],
+    // ["wcap", 4],
+    // ["wgloves", 4],
+    // ["wshoes", 4]
 ])
 
 /**
