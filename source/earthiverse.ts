@@ -69,7 +69,8 @@ import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
 import { CRYPT_MONSTERS, CRYPT_WAIT_TIME, getCryptWaitTime } from "./base/crypt.js"
 import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
-import { hasItemInBank } from "./base/items.js"
+import { ITEM_UPGRADE_CONF, hasItemInBank } from "./base/items.js"
+import { DestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true, cheat: true })
@@ -222,6 +223,9 @@ const chargeStrategy = new ChargeStrategy()
 const privateSetups = constructSetups(ALL_CONTEXTS)
 const publicSetups = constructHelperSetups(ALL_CONTEXTS)
 // Etc.
+const destroyStrategy = new DestroyStrategy({
+    destroy: new Set<ItemName>(Object.entries(ITEM_UPGRADE_CONF).filter(i => i[1].destroy).map(i => i[0]) as ItemName[])
+})
 const elixirStrategy = new ElixirStrategy("elixirluck")
 const homeServerStrategy = new HomeServerStrategy(DEFAULT_REGION, DEFAULT_IDENTIFIER)
 const privateItemStrategy = new OptimizeItemsStrategy({
@@ -834,6 +838,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(elixirStrategy)
+    context.applyStrategy(destroyStrategy)
 }
 
 async function startMage(context: Strategist<Mage>, privateContext = false) {
@@ -893,6 +898,7 @@ const startMerchantContext = async () => {
     CONTEXT.applyStrategy(guiStrategy)
     CONTEXT.applyStrategy(privateSellStrategy)
     CONTEXT.applyStrategy(privateItemStrategy)
+    CONTEXT.applyStrategy(destroyStrategy)
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }

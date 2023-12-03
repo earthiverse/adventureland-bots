@@ -124,6 +124,7 @@ export const ITEM_UPGRADE_CONF: {
     // Very common items
     crabclaw: DESTROY,
     stinger: DESTROY,
+    pouchbow: DESTROY,
 
     // Crypt
     vattire: PRETTY_RARE,
@@ -625,7 +626,7 @@ export async function getItemsToCompoundOrUpgrade(bot: PingCompensatedCharacter)
                         continue
 
                     // Check if we want to destroy it
-                    if (ITEM_UPGRADE_CONF[slot.name]?.destroy !== undefined && slot.level > 0) continue
+                    if (ITEM_UPGRADE_CONF[slot.name]?.destroy && slot.level === 0) continue
 
                     // Check if we have an offering to upgrade this item with. If we don't, leave it.
                     const offeringToUse = getOfferingToUse(slot)

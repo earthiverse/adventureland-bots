@@ -1,5 +1,6 @@
 import AL, { ItemName, MonsterName } from "alclient"
 import { RunnerOptions, startCharacterFromName, startRunner } from "./strategy_pattern/runner.js"
+import { DEFAULT_ITEMS_TO_HOLD } from "./base/defaults.js"
 
 const MONSTER: MonsterName = "crab"
 const CREDENTIALS = "../credentials.nexus.json"
@@ -22,6 +23,11 @@ const options: RunnerOptions = {
     partyLeader: "earthiverse",
     sellMap: SELL_MAP,
     merchantOverrides: {
+        enableOffload: {
+            esize: 35,
+            goldToHold: 10_000,
+            itemsToHold: DEFAULT_ITEMS_TO_HOLD
+        },
         enableBuyAndUpgrade: {
             upgradeToLevel: 8,
         },
@@ -35,5 +41,3 @@ for (const character of ["earthiverse", "earthRan2", "earthRan3", "earthMer"]) {
 for (const character of ["earthPri"]) {
     startRunner(await startCharacterFromName(character, "EU", "I"), options)
 }
-
-console.log(AL.Game.characters)
