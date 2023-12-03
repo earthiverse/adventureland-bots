@@ -1,5 +1,6 @@
 import AL, { GMap, ItemName, MapName, TradeSlotType, IPosition, ItemDataTrade, PingCompensatedCharacter } from "alclient"
 import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../context.js"
+import { DEFAULT_ITEMS_TO_BUY, DEFAULT_REPLENISHABLES } from "../../base/defaults.js"
 
 export type BuyStrategyOptions = {
     contexts: Strategist<PingCompensatedCharacter>[]
@@ -18,42 +19,28 @@ export type BuyStrategyOptions = {
     replenishables?: Map<ItemName, number>
 }
 
-export const RecommendedBuyStrategyOptions: BuyStrategyOptions = {
+export const DefaultBuyStrategyOptions: BuyStrategyOptions = {
     contexts: [],
-    buyMap: new Map<ItemName, number>([
-        ["t3bow", undefined]
-    ]),
-    replenishables: new Map<ItemName, number>([
-        ["mpot1", 9999],
-        ["hpot1", 9999],
-        ["elixirluck", 1],
-        ["xptome", 1]
-    ])
+    buyMap: DEFAULT_ITEMS_TO_BUY,
+    replenishables: DEFAULT_REPLENISHABLES
 }
 
-export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuyStrategyOptions, Strategy<Type> {
+export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
 
-    public buyForProfit = false
-    public buyMap: Map<ItemName, number>
-    public contexts: Strategist<PingCompensatedCharacter>[]
-    public replenishables: Map<ItemName, number>
+    protected options: BuyStrategyOptions
 
-    public lastPontyCheck: Date
-    public pontyLocations: IPosition[]
-    public pontyItems: ItemDataTrade[] = []
+    protected lastPontyCheck: Date
+    protected pontyLocations: IPosition[]
+    protected pontyItems: ItemDataTrade[] = []
 
     public setOnSecondhands: (data: ItemDataTrade[]) => void
 
-    public constructor(options: BuyStrategyOptions = RecommendedBuyStrategyOptions) {
-        if (options.buyMap) this.buyMap = options.buyMap
-        if (options.replenishables) this.replenishables = options.replenishables
-        if (options.enableBuyForProfit) this.buyForProfit = true
-        this.contexts = options.contexts
-
+    public constructor(options: BuyStrategyOptions = DefaultBuyStrategyOptions) {
+        this.options = options
         this.pontyLocations = AL.Pathfinder.locateNPC("secondhands")
 
-        for (const [itemName, buyFor] of this.buyMap ?? []) {
+        for (const [itemName, buyFor] of this.options.buyMap ?? []) {
             const gItem = AL.Game.G.items[itemName]
             if (gItem.cash) continue // Can't buy this item with gold, only cash
             const gPrice = gItem.g * (gItem.markup ?? 1)
@@ -74,14 +61,14 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
             if (buyableFromNPC) {
                 if (buyFor === undefined) {
                     // We didn't specify a price, set it to the price from G (no markup)
-                    this.buyMap[itemName] = gItem.g
+                    this.options.buyMap[itemName] = gItem.g
                 } else if (buyFor > gPrice) {
                     console.warn(`Lowering buy price for ${itemName} to ${gPrice} to match the price the NPC sells this item for.`)
-                    this.buyMap[itemName] = gPrice
+                    this.options.buyMap[itemName] = gPrice
                 }
             } else if (!buyFor) {
                 // Pay up to G for it
-                this.buyMap[itemName] = gItem.g
+                this.options.buyMap[itemName] = gItem.g
             }
         }
 
@@ -104,15 +91,15 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
     }
 
     private async buy(bot: Type) {
-        if (this.replenishables) {
+        if (this.options.replenishables) {
             await this.buyReplenishablesFromMerchants(bot)
             await this.buyReplenishablesFromNPCs(bot)
         }
-        if (this.buyMap) {
+        if (this.options.buyMap) {
             await this.buyFromPonty(bot)
             await this.buyFromMerchants(bot)
         }
-        if (this.buyForProfit) await this.buyFromMerchantsForProfit(bot)
+        if (this.options.enableBuyForProfit) await this.buyFromMerchantsForProfit(bot)
     }
 
     private async buyReplenishablesFromMerchants(bot: Type) {
@@ -128,7 +115,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
                 if (!item.rid) continue // Not a trade item
                 if (item.b) continue // They are buying, not selling
                 if (item.giveaway) continue // They are giving it away, not selling
-                const amount = this.replenishables.get(item.name)
+                const amount = this.options.replenishables.get(item.name)
                 if (!amount) continue // We don't want it
                 if (item.price > AL.Game.G.items[item.name].g) continue // They're selling it for more than it's worth
 
@@ -142,7 +129,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
     }
 
     private async buyReplenishablesFromNPCs(bot: Type) {
-        for (const [item, amount] of this.replenishables) {
+        for (const [item, amount] of this.options.replenishables) {
             if (!bot.canBuy(item)) continue // We can't buy this item
 
             const num = bot.countItem(item)
@@ -154,13 +141,13 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
 
         // Have our friends buy us replenishables if they have a computer and we don't
         if (bot.hasItem(["computer", "supercomputer"])) return
-        for (const context of filterContexts(this.contexts, { owner: bot.owner, serverData: bot.serverData })) {
+        for (const context of filterContexts(this.options.contexts, { owner: bot.owner, serverData: bot.serverData })) {
             const friend = context.bot
             if (friend == bot) continue // Ignore ourself
             if (!friend.hasItem(["computer", "supercomputer"])) continue // They don't have a computer
             if (AL.Tools.distance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE) continue // Too far away
 
-            for (const [item, amount] of this.replenishables) {
+            for (const [item, amount] of this.options.replenishables) {
                 if (!friend.canBuy(item)) continue // They can't buy this item
 
                 const num = bot.countItem(item)
@@ -199,7 +186,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
         }
 
         for (const pontyItem of this.pontyItems) {
-            const willingToPay = this.buyMap.get(pontyItem.name)
+            const willingToPay = this.options.buyMap.get(pontyItem.name)
             if (willingToPay === undefined) continue // We don't want it
 
             // TODO: Check if we can stack it if we bought it
@@ -228,7 +215,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements BuySt
                 if (item.giveaway) continue // They are giving it away, not selling
                 if (item.price > bot.gold) continue // We can't afford it
 
-                const willingToPay = this.buyMap.get(item.name)
+                const willingToPay = this.options.buyMap.get(item.name)
                 if (willingToPay === undefined) continue // We don't want it
                 if ((item.price + (item.l ? 250_000 : 0)) > willingToPay) continue // They're selling it for more than it's worth
 

@@ -21,14 +21,15 @@ export const DEFAULT_CRAFTABLES = new Set<ItemName>([
 export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
     "armorbox",
     "basketofeggs",
-    "candy0",
-    "candy1",
-    "candycane",
+    // "candy0",
+    // "candy1",
+    // "candycane",
     "candypop",
     "gem0",
     "gem1",
     "gemfragment",
     "leather",
+    // "mistletoe",
     "seashell",
     "weaponbox",
 ])
