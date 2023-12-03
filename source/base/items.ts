@@ -121,10 +121,55 @@ export const ITEM_UPGRADE_CONF: {
     pants: DESTROY,
     shoes: DESTROY,
 
+    // Halloween armor
+    gphelmet: DESTROY,
+    phelmet: DESTROY,
+
+    // Winter armor
+    mittens: DESTROY,
+
+    // Easter armor
+    ecape: DESTROY,
+    eears: DESTROY,
+    pyjamas: DESTROY,
+
+    // Base weapons
+    blade: DESTROY,
+    bow: DESTROY,
+    cclaw: DESTROY,
+    claw: DESTROY,
+    mace: DESTROY,
+    staff: DESTROY,
+    wand: DESTROY,
+    wbasher: DESTROY,
+
+    // Halloween weapons
+    bowofthedead: DESTROY,
+    daggerofthedead: DESTROY,
+    maceofthedead: DESTROY,
+    pmaceofthedead: DESTROY,
+    staffofthedead: DESTROY,
+    swordofthedead: DESTROY,
+    
+    // Easter weapons
+    carrotsword: PRIMLING_TO_NINE,
+
     // Very common items
+    bataxe: DESTROY,
     crabclaw: DESTROY,
-    stinger: DESTROY,
+    cupid: DESTROY,
+    dagger: DESTROY,
+    fireblade: DESTROY,
+    firestaff: DESTROY,
+    firestars: DESTROY,
+    hbow: DESTROY,
+    mushroomstaff: DESTROY,
     pouchbow: DESTROY,
+    slimestaff: DESTROY,
+    stinger: DESTROY,
+    swifty: DESTROY,
+    sword: DESTROY,
+    tigerhelmet: DESTROY,
 
     // Crypt
     vattire: PRETTY_RARE,
@@ -142,23 +187,12 @@ export const ITEM_UPGRADE_CONF: {
     // Rare-ish
     crossbow: DEFAULT_UPGRADE_BASE_RARE,
 
-    // Easter
-    bataxe: COMMON_HIGH,
-    carrotsword: PRIMLING_TO_NINE,
-    ecape: PRIMLING_TO_NINE,
-    eears: PRIMLING_TO_NINE,
-    pyjamas: PRIMLING_TO_NINE,
-
     // Heavy armor
     hboots: COMMON_HIGH,
     harmor: COMMON_HIGH,
     hgloves: COMMON_HIGH,
     hhelmet: COMMON_HIGH,
     hpants: COMMON_HIGH,
-
-    // Halloween
-    gphelmet: COMMON_HIGH,
-    phelmet: COMMON_HIGH,
 
     // Legendary
     fury: ULTRA_RARE,
@@ -169,7 +203,6 @@ export const ITEM_UPGRADE_CONF: {
 
     // Useless
     test_orb: DONT_UPGRADE,
-    tigerhelmet: DEFAULT_UPGRADE_BASE_COMMON,
 
     // Wanderer's
     wattire: DESTROY,
@@ -750,6 +783,11 @@ export async function upgradeOrCompoundItems(bot: Character, allIndexes: Indexes
         const conf = ITEM_UPGRADE_CONF[item.name]
         if (item.level >= conf?.stop) {
             console.debug(`We don't want to upgrade ${item.name} past level ${conf.stop}.`)
+            continue
+        }
+
+        if (conf.destroy && item.level === 0) {
+            // We want to destroy the item, not upgrade it
             continue
         }
 
