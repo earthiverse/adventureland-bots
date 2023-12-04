@@ -179,6 +179,7 @@ export const ITEM_UPGRADE_CONF: {
     swifty: DESTROY,
     sword: DESTROY,
     tigerhelmet: DESTROY,
+    quiver: DESTROY,
 
     // Crypt
     vattire: PRETTY_RARE,

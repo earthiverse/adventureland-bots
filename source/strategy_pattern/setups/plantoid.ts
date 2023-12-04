@@ -75,7 +75,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "attack"],
                             },
-                            targetingPartyMember: true,
+                            maximumTargets: 1,
                             type: "plantoid"
                         }),
                         move: kiteMoveStrategy,
