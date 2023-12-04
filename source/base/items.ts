@@ -127,6 +127,10 @@ export const ITEM_UPGRADE_CONF: {
 
     // Winter armor
     mittens: DESTROY,
+    xmashat: DESTROY,
+    xmaspants: DESTROY,
+    xmasshoes: DESTROY,
+    xmassweater: DESTROY,
 
     // Easter armor
     ecape: DESTROY,
@@ -150,6 +154,11 @@ export const ITEM_UPGRADE_CONF: {
     pmaceofthedead: DESTROY,
     staffofthedead: DESTROY,
     swordofthedead: DESTROY,
+
+    // Winter weapons
+    candycanesword: DESTROY,
+    ornamentstaff: DESTROY,
+    xmace: DESTROY,
     
     // Easter weapons
     carrotsword: PRIMLING_TO_NINE,
