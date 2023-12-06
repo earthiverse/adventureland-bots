@@ -755,10 +755,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     !bot.isEquipped("pickaxe") &&
                     bot.canCraft("pickaxe", { ignoreLocation: true })
                 ) {
-                    // We can make a pickaxe, let's go do that
-                    if (bot.hasItem(["computer", "supercomputer"])) {
-                        await bot.smartMove(miningSpot)
-                    } else {
+                    // We can make a pickaxe, let's do that
+                    if (!bot.hasItem(["computer", "supercomputer"])) {
                         await bot.smartMove("craftsman", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
                     }
                     await bot.craft("pickaxe")
