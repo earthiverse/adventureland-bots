@@ -1,7 +1,7 @@
 import AL, { Rogue, ServerIdentifier, ServerRegion } from "alclient"
 import fs from "fs"
 import { getMsToNextMinute } from "../base/general.js"
-import { Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
+import { Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { HoldPositionMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
@@ -10,7 +10,7 @@ import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 await Promise.all([AL.Pathfinder.prepare(AL.Game.G, { cheat: true }), AL.Game.updateServersAndCharacters()])
 
-const BUFFER = 15_000
+const BUFFER = 27_500
 
 const credentials = JSON.parse(fs.readFileSync("../../credentials.json", "utf-8"))
 
@@ -19,15 +19,8 @@ const respawnStrategy = new RespawnStrategy()
 const holdStrategy = new HoldPositionMoveStrategy({ map: "cyberland", x: 0, y: 0 })
 
 export class ElectronicsStrategy implements Strategy<Rogue> {
-    public loops = new Map<LoopName, Loop<Rogue>>()
-
-    public constructor() {
-        this.loops.set("item", {
-            fn: async (bot: Rogue) => {
-                bot.socket.emit("eval", { command: "give spares" })
-            },
-            interval: 1000,
-        })
+    public onApply(bot: Rogue) {
+        bot.socket.emit("eval", { command: "give spares" })
     }
 }
 const electronicsStrategy = new ElectronicsStrategy()
@@ -69,6 +62,7 @@ const serverLoop = async () => {
 serverLoop()
 
 async function startGatherer(userId: string, userAuth: string, characterID: string) {
+    console.log(`Connecting to ${targetRegion} ${targetIdentifier}...`)
     let bot: Rogue
     try {
         bot = new AL.Rogue(userId, userAuth, characterID, AL.Game.G, AL.Game.servers[targetRegion][targetIdentifier])
@@ -89,21 +83,17 @@ async function startGatherer(userId: string, userAuth: string, characterID: stri
     const connectLoop = async () => {
         try {
             console.log(`Connecting to ${targetRegion} ${targetIdentifier}...`)
-            await context.changeServer(targetRegion, targetIdentifier)
+            await context.changeServer(targetRegion, targetIdentifier, false)
         } catch (e) {
             console.error(`${characterID} had an error (connect) on ${targetRegion}${targetIdentifier}`)
             console.error(e)
             context?.bot?.disconnect()
         } finally {
             context?.bot?.socket?.removeAllListeners("disconnect")
-            setTimeout(async () => {
-                await connectLoop()
-            }, getMsToNextMinute() + BUFFER)
+            setTimeout(connectLoop, getMsToNextMinute() + BUFFER)
         }
     }
-    setTimeout(async () => {
-        await connectLoop()
-    }, getMsToNextMinute() + BUFFER)
+    setTimeout(connectLoop, getMsToNextMinute() + BUFFER)
 
     const disconnectLoop = async () => {
         try {
@@ -115,14 +105,10 @@ async function startGatherer(userId: string, userAuth: string, characterID: stri
             console.error(`${characterID} had an error (disconnect) on ${targetRegion}${targetIdentifier}`)
             console.error(e)
         } finally {
-            setTimeout(async () => {
-                await disconnectLoop()
-            }, getMsToNextMinute() + (60_000 - BUFFER))
+            setTimeout(disconnectLoop, getMsToNextMinute() + (60_000 - BUFFER))
         }
     }
-    setTimeout(async () => {
-        await disconnectLoop()
-    }, getMsToNextMinute() - BUFFER)
+    setTimeout(disconnectLoop, getMsToNextMinute() - BUFFER)
 }
 
 setTimeout(

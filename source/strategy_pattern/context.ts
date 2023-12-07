@@ -153,8 +153,8 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         }
     }
 
-    public async changeServer(region: ServerRegion, id: ServerIdentifier) {
-        return new Promise<void>((resolve) => {
+    public async changeServer(region: ServerRegion, id: ServerIdentifier, retry = true) {
+        return new Promise<void>((resolve, reject) => {
             if (this.bot) {
                 this.bot.socket.removeAllListeners("disconnect")
                 this.bot.disconnect()
@@ -248,17 +248,25 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                         newBot = undefined
                     }
                     console.error(e)
-                    const wait = /wait_(\d+)_second/.exec(e)
-                    if (wait && wait[1]) {
-                        setTimeout(() => switchBots(), 2000 + Number.parseInt(wait[1]) * 1000)
-                    } else if (/limits/.test(e)) {
-                        setTimeout(() => switchBots(), AL.Constants.RECONNECT_TIMEOUT_MS)
-                    } else if (/ingame/.test(e)) {
-                        setTimeout(() => switchBots(), 500)
-                    } else {
-                        setTimeout(() => switchBots(), 10000)
+                    if (retry) {
+                        const wait = /wait_(\d+)_second/.exec(e)
+                        if (wait && wait[1]) {
+                            setTimeout(() => switchBots(), 2000 + Number.parseInt(wait[1]) * 1000)
+                        } else if (/limits/.test(e)) {
+                            setTimeout(() => switchBots(), AL.Constants.RECONNECT_TIMEOUT_MS)
+                        } else if (/ingame/.test(e)) {
+                            setTimeout(() => switchBots(), 500)
+                        } else if (/nouser/.test(e)) {
+                            this.stop()
+                            throw new Error(
+                                `Authorization failed for ${this.bot.name}! No longer trying to reconnect...`,
+                            )
+                        } else {
+                            setTimeout(() => switchBots(), 10000)
+                            return
+                        }
                     }
-                    return
+                    reject(new Error("Failed connecting, not retrying..."))
                 }
                 resolve()
             }
