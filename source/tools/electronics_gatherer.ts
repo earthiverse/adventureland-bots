@@ -76,6 +76,7 @@ async function startGatherer(userId: string, userAuth: string, characterID: stri
     } catch (e) {
         console.error(`${characterID} had an error (start) on ${targetRegion}${targetIdentifier}`)
         console.error(e)
+        bot.disconnect()
         setTimeout(startGatherer, getMsToNextMinute() + BUFFER, userId, userAuth, characterID)
         return
     }
