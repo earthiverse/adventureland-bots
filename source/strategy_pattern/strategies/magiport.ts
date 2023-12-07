@@ -1,5 +1,5 @@
 import AL, { Mage, PingCompensatedCharacter } from "alclient"
-import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context"
+import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 
 export class MagiportOthersSmartMovingToUsStrategyOptions {
     delayMs: number
