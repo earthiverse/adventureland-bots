@@ -1,13 +1,13 @@
-import AL, { ItemName, MonsterName } from "alclient"
+import AL, { ItemName, MonsterName, ServerRegion } from "alclient"
 import { RunnerOptions, startCharacterFromName, startRunner } from "./strategy_pattern/runner.js"
 import { DEFAULT_ITEMS_TO_HOLD } from "./base/defaults.js"
 
 const MONSTER: MonsterName = "crab"
-const CREDENTIALS = "../credentials.nexus.json"
+const CREDENTIALS = "../credentials.battleau.json"
 
-AL.Game.setServer("http://al.nexusnull.com")
+AL.Game.setServer("https://battle.au")
 
-await Promise.all([AL.Game.loginJSONFile(CREDENTIALS, false), AL.Game.getGData(false)])
+await Promise.all([AL.Game.loginJSONFile(CREDENTIALS, true), AL.Game.getGData(false)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: false })
 
 // Add a whole bunch of items to the sell list
@@ -34,10 +34,10 @@ const options: RunnerOptions = {
     },
 }
 
-for (const character of ["earthiverse", "earthRan2", "earthRan3", "earthMer"]) {
+for (const character of ["earthiverse", "earthMag", "earthPri", "earthMer"]) {
     startRunner(await startCharacterFromName(character, "US", "I"), options)
 }
 
-for (const character of ["earthPri"]) {
-    startRunner(await startCharacterFromName(character, "EU", "I"), options)
+for (const character of ["earthRog"]) {
+    startRunner(await startCharacterFromName(character, "AU" as ServerRegion, "I"), options)
 }
