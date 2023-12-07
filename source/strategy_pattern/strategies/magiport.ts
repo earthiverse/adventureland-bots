@@ -1,5 +1,5 @@
 import AL, { Mage, PingCompensatedCharacter } from "alclient"
-import { Loop, LoopName, Strategist, Strategy } from "../context"
+import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context"
 
 export class MagiportOthersSmartMovingToUsStrategyOptions {
     delayMs: number
@@ -41,8 +41,7 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
         if (bot.map.startsWith("bank")) return // We can't magiport others to the bank
         if (bot.smartMoving) return // We're currently moving somewhere
 
-        for (const context of this.contexts) {
-            if (!context.isReady()) continue
+        for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
             const friend = context.bot
             if (friend.id == bot.id) continue // It's us
             if (!friend.smartMoving) continue // They're not smart moving
