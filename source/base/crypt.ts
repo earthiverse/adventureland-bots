@@ -6,7 +6,7 @@ export const CRYPT_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6"
 export const CRYPT_WAIT_TIME = 1.944e8
 
 /** Used to give us extra time to find and kill them */
-export const CRYPT_ADD_TIME = 8.64e+7
+export const CRYPT_ADD_TIME = 8.64e7
 
 export async function addCryptMonstersToDB(bot: Character, map = bot.map, instance: string = bot.in) {
     if (map !== "crypt") throw "Only call this function in a crypt."
@@ -47,11 +47,32 @@ export function getKeyForCrypt(map: MapName): ItemName {
 }
 
 export function getCryptWaitTime(map: MapName): number {
-    switch(map) {
+    const today = new Date()
+    const month = today.getMonth()
+    const year = today.getFullYear()
+
+    if (
+        // From last week of November
+        (month >= 11 && today >= new Date(year, 10, 25)) ||
+        // To first week of January
+        (month == 0 && today <= new Date(year, 0, 7))
+    ) {
+        // No wait time during Christmas
+        return 0
+    }
+
+    // TODO: Chinese new year -> 0
+
+    // TODO: Easter -> 0
+
+    // TODO: Halloween -> 0
+    
+
+    switch (map) {
         case "crypt":
-            return CRYPT_WAIT_TIME;
+            return CRYPT_WAIT_TIME
         default:
-            return 0;
+            return 0
     }
 }
 
