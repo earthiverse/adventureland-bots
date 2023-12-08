@@ -158,6 +158,7 @@ export const ITEM_UPGRADE_CONF: {
 
     // Winter weapons
     candycanesword: DESTROY,
+    merry: DESTROY,
     ornamentstaff: DESTROY,
     xmace: DESTROY,
     
