@@ -131,6 +131,7 @@ export const ITEM_UPGRADE_CONF: {
     xmaspants: DESTROY,
     xmasshoes: DESTROY,
     xmassweater: DESTROY,
+    warmscarf: DESTROY,
 
     // Easter armor
     ecape: DESTROY,
