@@ -21,15 +21,15 @@ export const DEFAULT_CRAFTABLES = new Set<ItemName>([
 export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
     "armorbox",
     "basketofeggs",
-    // "candy0",
-    // "candy1",
-    // "candycane",
+    "candy0", // Blue candy
+    // "candy1", // Pink candy
+    "candycane",
     "candypop",
     "gem0",
     "gem1",
     "gemfragment",
     "leather",
-    // "mistletoe",
+    "mistletoe",
     "seashell",
     "weaponbox",
 ])
@@ -43,7 +43,7 @@ export const DEFAULT_ITEMS_TO_HOLD = new Set<ItemName>([
     "supercomputer",
     "tracker",
     "xpbooster",
-    "xptome"
+    "xptome",
 ])
 export const DEFAULT_MERCHANT_ITEMS_TO_HOLD = new Set<ItemName>([
     ...DEFAULT_ITEMS_TO_HOLD,
@@ -74,12 +74,24 @@ export const DEFAULT_MERCHANT_REPLENISHABLES = new Map<ItemName, number>([
 ])
 export const DEFAULT_REPLENISH_RATIO = 0.5
 export const EXCESS_ITEMS_SELL = new Map<ItemName, number>([
+    ["eggnog", 3],
     ["essenceoflife", 5],
     ["fieldgen0", 20],
+    ["hotchocolate", 3],
+    ["pumpkinspice", 3],
+    ["smoke", 2],
     ["snowball", 10],
     ["spookyamulet", 5],
 ])
-export const TOO_FULL_FALLBACK_ITEMS_TO_SELL: ItemName[] = ["ringsj", "wbook0", "pants", "coat", "shoes", "gloves", "vitring"]
+export const TOO_FULL_FALLBACK_ITEMS_TO_SELL: ItemName[] = [
+    "ringsj",
+    "wbook0",
+    "pants",
+    "coat",
+    "shoes",
+    "gloves",
+    "vitring",
+]
 
 export const DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND = new Map<ItemName, number>([
     ["cearring", 0],
@@ -95,12 +107,7 @@ export const DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND = new Map<ItemName, number>([
     ["strbelt", 1],
     ["strring", 1],
     ["vitring", 2],
-    // ["wattire", 4],
     ["wbook0", 1],
-    // ["wbreeches", 4],
-    // ["wcap", 4],
-    // ["wgloves", 4],
-    // ["wshoes", 4]
 ])
 
 /**
@@ -278,11 +285,11 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
 ])
 
 export const DEFAULT_ITEMS_TO_LIST = new Map<ItemName, number>([
-    ["candycane", 999_999],
+    // ["candycane", 999_999],
     ["candypop", 999_999],
     ["candy0", 9_999_999],
     ["candy1", 999_999],
     ["funtoken", 1_000_000],
     ["monstertoken", 250_000],
-    ["vhammer", 100_000_000]
+    ["vhammer", 100_000_000],
 ])

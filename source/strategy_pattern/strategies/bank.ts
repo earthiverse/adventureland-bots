@@ -1,4 +1,4 @@
-import { Character, ItemName, Rogue } from "alclient"
+import { BankInfo, BankPackName, Character, CharacterData, ItemName, Rogue } from "alclient"
 import { sleep } from "../../base/general.js"
 import { DEFAULT_ITEMS_TO_HOLD } from "../../base/defaults.js"
 import { Strategy, LoopName, Loop } from "../context.js"
@@ -7,9 +7,9 @@ import { suppress_errors } from "../logging.js"
 // TODO: Improve to bank not on a specific map, but all available maps
 
 export type MoveToBankAndDepositStuffStrategyOptions = {
-    invisibleRogue?: true,
-    itemsToHold?: Set<ItemName>,
-    map?: "bank_b" | "bank_u" | "bank",
+    invisibleRogue?: true
+    itemsToHold?: Set<ItemName>
+    map?: "bank_b" | "bank_u" | "bank"
 }
 
 export class MoveToBankAndDepositStuffStrategy<Type extends Character> implements Strategy<Type> {
@@ -25,14 +25,18 @@ export class MoveToBankAndDepositStuffStrategy<Type extends Character> implement
         this.options = options
 
         this.loops.set("move", {
-            fn: async (bot: Type) => { await this.moveAndBank(bot) },
-            interval: 100
+            fn: async (bot: Type) => {
+                await this.moveAndBank(bot)
+            },
+            interval: 100,
         })
 
         // Scare if we need
         this.loops.set("attack", {
-            fn: async (bot: Type) => { await this.scare(bot) },
-            interval: 50
+            fn: async (bot: Type) => {
+                await this.scare(bot)
+            },
+            interval: 50,
         })
     }
 
@@ -42,7 +46,6 @@ export class MoveToBankAndDepositStuffStrategy<Type extends Character> implement
         }
 
         await bot.smartMove(this.options.map).catch(suppress_errors)
-
 
         await sleep(2000)
 
@@ -66,5 +69,70 @@ export class MoveToBankAndDepositStuffStrategy<Type extends Character> implement
         }
         if (!bot.canUse("scare")) return // Can't use scare
         await bot.scare().catch(console.error)
+    }
+}
+
+export class BankInformationStrategy<Type extends Character> implements Strategy<Type> {
+    public checkBankInfo: (data: CharacterData) => void
+
+    /** The string is the owner ID, since banks are shared across owners */
+    public static bankData = new Map<string, BankInfo>()
+
+    public async onApply(bot: Type) {
+        this.checkBankInfo = (data: CharacterData) => {
+            if (!data.user) return // No bank info (we are probably not in the bank)
+
+            // Save the latest bank information for the owner
+            BankInformationStrategy.bankData.set(data.owner, data.user)
+        }
+        bot.socket.on("player", this.checkBankInfo)
+    }
+
+    public async onRemove(bot: Type) {
+        if (this.checkBankInfo) bot.socket.removeListener("player", this.checkBankInfo)
+    }
+
+    /**
+     * Returns whether or not we have the given item in our bank
+     *
+     * @param owner
+     * @param itemName
+     * @returns
+     */
+    public static hasItemInBank(owner: string, itemName: ItemName) {
+        const data = this.bankData.get(owner)
+        if (!data) return undefined // No bank information yet
+
+        for (const packName in data) {
+            if (packName === "gold") continue
+            for (const bankItem of data[packName as BankPackName]) {
+                if (!bankItem) continue // No item in this slot
+                if (bankItem.name === itemName) return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * Returns the number of the given item in our bank
+     *
+     * @param owner
+     * @param itemName
+     * @returns
+     */
+    public static getNumItemsInBank(owner: string, itemName: ItemName) {
+        const data = this.bankData.get(owner)
+        if (!data) return undefined // No bank information yet
+
+        let count = 0
+        for (const packName in data) {
+            if (packName === "gold") continue
+            for (const bankItem of data[packName as BankPackName]) {
+                if (!bankItem) continue // No item in this slot
+                if (bankItem.name !== itemName) continue
+                count += bankItem.q ?? 1
+            }
+        }
+        return count
     }
 }
