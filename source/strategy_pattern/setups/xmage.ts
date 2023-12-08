@@ -93,8 +93,8 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
         } else if (this.options.disableCheckDB) {
             // Have other bots farm the downtime monsters
             this.options.typeList = DOWNTIME_MONSTERS
-            return super.move(bot)
         }
+        return super.move(bot)
     }
 
     protected groupHasFieldgen(friends: PingCompensatedCharacter[]) {
