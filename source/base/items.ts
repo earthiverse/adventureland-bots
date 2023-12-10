@@ -163,12 +163,11 @@ export const ITEM_UPGRADE_CONF: {
     merry: DESTROY,
     ornamentstaff: DESTROY,
     xmace: DESTROY,
-    
-    // Easter weapons
-    carrotsword: PRIMLING_TO_NINE,
 
     // Very common items
+    basher: DESTROY,
     bataxe: DESTROY,
+    carrotsword: DESTROY,
     crabclaw: DESTROY,
     cupid: DESTROY,
     dagger: DESTROY,
@@ -177,11 +176,14 @@ export const ITEM_UPGRADE_CONF: {
     firestars: DESTROY,
     hbow: DESTROY,
     mushroomstaff: DESTROY,
+    pmace: DESTROY,
     pouchbow: DESTROY,
     slimestaff: DESTROY,
+    spear: DESTROY,
     stinger: DESTROY,
     swifty: DESTROY,
     sword: DESTROY,
+    t2bow: DESTROY,
     tigerhelmet: DESTROY,
     quiver: DESTROY,
 
