@@ -126,6 +126,8 @@ export const ITEM_UPGRADE_CONF: {
     phelmet: DESTROY,
 
     // Winter armor
+    gcape: DESTROY,
+    iceskates: DESTROY,
     mittens: DESTROY,
     xmashat: DESTROY,
     xmaspants: DESTROY,
