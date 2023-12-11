@@ -1,0 +1,17 @@
+{
+  "name": "adventureland-bots",
+  "version": "1.0.0",
+  "description": "earthiverse's adventure.land bots",
+  "main": "index.js",
+  "repository": "https://github.com/earthiverse/adventureland-bots.git",
+  "author": "Kent Rasmussen <hyprkookeez@gmail.com>",
+  "license": "MIT",
+  "packageManager": "yarn@4.0.2",
+  "workspaces": [
+    "api",
+    "ui"
+  ],
+  "dependencies": {
+    "alclient": "^0.18.2"
+  }
+}
