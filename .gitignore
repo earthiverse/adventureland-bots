@@ -4,3 +4,9 @@ node_modules
 # yarn
 .yarn/*
 !.yarn/releases
+
+# build
+build/*
+
+# credentials
+credentials*.json
