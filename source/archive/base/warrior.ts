@@ -42,7 +42,7 @@ export async function attackTheseTypesWarrior(bot: Warrior, types: MonsterName[]
             }
         }
         for (const target of bot.getEntities({
-            withinRange: bot.G.skills.cleave.range,
+            withinRange: AL.Game.G.skills.cleave.range + bot.xrange,
         })) {
             if (options.targetingPlayer && !target.target) {
                 // We don't want to aggro things
