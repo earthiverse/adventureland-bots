@@ -22,7 +22,7 @@ export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
     "armorbox",
     "basketofeggs",
     "candy0", // Blue candy
-    // "candy1", // Pink candy
+    "candy1", // Pink candy
     "candycane",
     "candypop",
     "gem0",
@@ -288,7 +288,7 @@ export const DEFAULT_ITEMS_TO_LIST = new Map<ItemName, number>([
     // ["candycane", 999_999],
     ["candypop", 999_999],
     // ["candy0", 9_999_999], // Blue candy
-    ["candy1", 999_999], // Pink candy
+    // ["candy1", 999_999], // Pink candy
     ["funtoken", 1_000_000],
     ["monstertoken", 250_000],
     ["vhammer", 100_000_000],
