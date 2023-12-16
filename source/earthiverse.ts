@@ -829,9 +829,8 @@ contextsLogic(PUBLIC_CONTEXTS, publicSetups)
 async function startShared(context: Strategist<PingCompensatedCharacter>, privateContext = false) {
     context.applyStrategy(debugStrategy)
     context.applyStrategy(guiStrategy)
-    if (context.bot.id == PARTY_LEADER) {
-        context.applyStrategy(partyAcceptStrategy)
-    } else {
+    context.applyStrategy(partyAcceptStrategy)
+    if (context.bot.id !== PARTY_LEADER) {
         context.applyStrategy(partyRequestStrategy)
     }
 
