@@ -8,7 +8,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_ARMOR, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
+import { MAGE_SPLASH, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
 
 class MageSnowmanAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {

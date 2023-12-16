@@ -720,7 +720,8 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
 
             // Christmas
             if (bot1.S.holidayseason) {
-                const monster = (await getHolidaySeasonMonsterPriority(true))[0]
+                // NOTE: We're going on PVP as of 2023-12-16
+                const monster = (await getHolidaySeasonMonsterPriority(false))[0]
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier

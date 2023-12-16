@@ -1,4 +1,4 @@
-import { MonsterName, PingCompensatedCharacter } from "alclient"
+import { Mage, MonsterName, PingCompensatedCharacter, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -11,6 +11,42 @@ import { Setup } from "./base"
 
 const typeList: MonsterName[] = ["grinch"]
 
+class MageGrinchAttackStrategy extends MageAttackStrategy {
+    public onApply(bot: Mage): void {
+        super.onApply(bot)
+        if (bot.isPVP()) {
+            // No splash damage
+            this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
+        } else {
+            // Splash damage
+            this.options.ensureEquipped.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
+            delete this.options.ensureEquipped.offhand
+        }
+    }
+}
+
+class WarriorGrinchAttackStrategy extends WarriorAttackStrategy {
+    public onApply(bot: Warrior): void {
+        super.onApply(bot)
+        if (bot.isPVP()) {
+            // No Splash Damage
+            this.options.disableCleave = true
+            this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } }
+            delete this.options.enableEquipForStomp
+            delete this.options.enableEquipForCleave
+        } else {
+            // Splash Damage
+            delete this.options.disableCleave
+            this.options.ensureEquipped.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.offhand = { name: "ololipop", filters: { returnHighestLevel: true } }
+            this.options.enableEquipForStomp = true
+            this.options.enableEquipForCleave = true
+        }
+    }
+}
+
 export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const grinchMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, ignoreMaps: ["bank", "bank_b", "bank_u", "hut", "woffice"], typeList: typeList })
 
@@ -21,7 +57,7 @@ export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharact
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({
+                        attack: new MageGrinchAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: { attributes: ["luck"] },
@@ -41,7 +77,7 @@ export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharact
                     },
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
+                        attack: new WarriorGrinchAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
@@ -68,7 +104,7 @@ export function constructGrinchSetup(contexts: Strategist<PingCompensatedCharact
                     },
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
+                        attack: new WarriorGrinchAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
