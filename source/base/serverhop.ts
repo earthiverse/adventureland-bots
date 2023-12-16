@@ -1,4 +1,4 @@
-import AL, { GData, IEntity, MonsterName, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { GData, IEntity, MonsterName, ServerIdentifier, ServerInfoDataLive, ServerRegion } from "alclient"
 
 export const SERVER_HOP_SERVERS: [ServerRegion, ServerIdentifier][] = [
     ["ASIA", "I"],
@@ -318,27 +318,8 @@ export async function getHolidaySeasonMonsterPriority(avoidPVP = false) {
     }
     if (avoidPVP) entitiesFilters["serverIdentifier"] = { $ne: "PVP" }
 
-    const entitiesP = await AL.EntityModel.find(entitiesFilters).lean().exec()
-
-    const entities = await entitiesP
-    entities.sort((a, b) => {
-        // Monster Priority
-        if (a.type !== b.type) return monsterPriority.indexOf(a.type) - monsterPriority.indexOf(b.type)
-
-        // Lower HP first
-        if (a.hp !== b.hp) return a.hp - b.hp
-
-        // PVP Priority
-        if (a.serverIdentifier !== "PVP" && b.serverIdentifier == "PVP") return -1
-        if (b.serverIdentifier !== "PVP" && a.serverIdentifier == "PVP") return 1
-
-        // Server Priority
-        if (a.serverRegion !== b.serverRegion || a.serverIdentifier !== b.serverIdentifier) {
-            const aKey = `${a.serverRegion}${a.serverIdentifier}`
-            const bKey = `${b.serverRegion}${b.serverIdentifier}`
-            return serverPriority.indexOf(aKey) - serverPriority.indexOf(bKey)
-        }
-    })
+    const entities = await AL.EntityModel.find(entitiesFilters).lean().exec()
+    const servers = await AL.ServerModel.find().lean().exec()
 
     const toReturn = []
     for (const entity of entities) {
@@ -357,6 +338,40 @@ export async function getHolidaySeasonMonsterPriority(avoidPVP = false) {
             y: entity.y
         })
     }
+    for (const server of servers) {
+        if (
+            server.S.grinch
+            && (server.S.grinch as ServerInfoDataLive).live
+            && !toReturn.some(e => e.serverIdentifier === server.serverIdentifier && e.serverRegion === server.serverRegion && e.type === "grinch")
+        ) {
+            // It's live, but we don't have it in entities, add it
+            toReturn.push({
+                hp: (server.S.grinch as ServerInfoDataLive).hp,
+                serverIdentifier: server.serverIdentifier,
+                serverRegion: server.serverRegion,
+                type: "grinch"
+            })
+        }
+    }
+
+    toReturn.sort((a, b) => {
+        // Monster Priority
+        if (a.type !== b.type) return monsterPriority.indexOf(a.type) - monsterPriority.indexOf(b.type)
+
+        // Lower HP first
+        if (a.hp !== b.hp) return a.hp - b.hp
+
+        // PVP Priority
+        if (a.serverIdentifier !== "PVP" && b.serverIdentifier == "PVP") return -1
+        if (b.serverIdentifier !== "PVP" && a.serverIdentifier == "PVP") return 1
+
+        // Server Priority
+        if (a.serverRegion !== b.serverRegion || a.serverIdentifier !== b.serverIdentifier) {
+            const aKey = `${a.serverRegion}${a.serverIdentifier}`
+            const bKey = `${b.serverRegion}${b.serverIdentifier}`
+            return serverPriority.indexOf(aKey) - serverPriority.indexOf(bKey)
+        }
+    })
 
     return toReturn
 }
