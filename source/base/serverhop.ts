@@ -301,7 +301,7 @@ export async function getHolidaySeasonMonsterPriority(avoidPVP = false) {
     const monsterPriority: MonsterName[] = ["grinch", "snowman"]
     const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
 
-    const entitiesFilters = {
+    const entityFilters = {
         $and: [{
             $or: [
                 { "s.fullguardx": undefined },
@@ -316,10 +316,14 @@ export async function getHolidaySeasonMonsterPriority(avoidPVP = false) {
         lastSeen: { $gt: Date.now() - 30000 },
         type: { $in: monsterPriority }
     }
-    if (avoidPVP) entitiesFilters["serverIdentifier"] = { $ne: "PVP" }
+    const serverFilters = {}
+    if (avoidPVP) {
+        entityFilters["serverIdentifier"] = { $ne: "PVP" }
+        serverFilters["serverIdentifier"] = { $ne: "PVP" }
+    }
 
-    const entities = await AL.EntityModel.find(entitiesFilters).lean().exec()
-    const servers = await AL.ServerModel.find().lean().exec()
+    const entities = await AL.EntityModel.find(entityFilters).lean().exec()
+    const servers = await AL.ServerModel.find(serverFilters).lean().exec()
 
     const toReturn = []
     for (const entity of entities) {
