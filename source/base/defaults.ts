@@ -94,20 +94,22 @@ export const TOO_FULL_FALLBACK_ITEMS_TO_SELL: ItemName[] = [
 ]
 
 export const DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND = new Map<ItemName, number>([
-    ["cearring", 0],
-    ["cring", 0],
+    ["cearring", 1],
+    ["cring", 1],
     ["dexamulet", 1],
     ["dexbelt", 1],
     ["dexring", 1],
     ["intamulet", 1],
     ["intbelt", 1],
     ["intring", 1],
+    ["rednose", 1],
     ["ringsj", 1],
     ["stramulet", 1],
     ["strbelt", 1],
     ["strring", 1],
     ["vitring", 2],
     ["wbook0", 1],
+    ["wbookhs", 1],
 ])
 
 /**
