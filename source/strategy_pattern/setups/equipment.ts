@@ -184,6 +184,8 @@ export const UNEQUIP_EVERYTHING: EnsureEquipped = {
 export type GenerateEnsureEquipped = {
     /** Which attributes should be prioritized? */
     attributes?: Attribute[]
+    /** Which attributes should we avoid? */
+    avoidAttributes?: Attribute[]
     /** If we have the given item, equip it */
     prefer?: EnsureEquipped
 }
@@ -198,8 +200,9 @@ export type GenerateEnsureEquipped = {
  * @param ensure Anything set here will be added or will override what was generated
  * @returns 
  */
-export function generateEnsureEquippedFromAttribute(bot: Character, generate: GenerateEnsureEquipped): EnsureEquipped {
+export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureEquipped): EnsureEquipped {
     if (!generate.attributes) generate.attributes = []
+    if (!generate.avoidAttributes) generate.avoidAttributes = []
 
     const equippableMainhand = Object.keys(Game.G.classes[bot.ctype].mainhand) as WeaponType[]
     const equippableDoublehand = Object.keys(Game.G.classes[bot.ctype].doublehand) as WeaponType[]
@@ -207,8 +210,9 @@ export function generateEnsureEquippedFromAttribute(bot: Character, generate: Ge
     const equippableArmor: ItemType[] = ["amulet", "belt", "chest", "earring", "gloves", "helmet", "orb", "ring", "shoes"]
     const equippableItemTypes: (ItemType | WeaponType)[] = [...equippableMainhand, ...equippableOffhand, ...equippableDoublehand, ...equippableArmor]
 
-    // Remove blast and explosion if we're on PVP
+    // Fix blast and explosion if we're on PVP
     if (bot.isPVP()) generate.attributes.filter(a => (a !== "blast" && a !== "explosion"))
+    if (bot.isPVP()) generate.avoidAttributes = ["blast", "explosion"]
 
     const options: {
         [T in (ItemType | WeaponType)]?: ItemData[]
@@ -241,24 +245,31 @@ export function generateEnsureEquippedFromAttribute(bot: Character, generate: Ge
         if (equippableItemTypes.includes(type)) addOption(item)
     }
 
-    const sortHighestAttributeFirst = (a: ItemData, b: ItemData) => {
+    const sortBest = (a: ItemData, b: ItemData) => {
         const itemDataA = new Item(a)
         const itemDataB = new Item(b)
 
         let sumA = 0
         let sumB = 0
+
+        for (const attribute of generate.avoidAttributes) {
+            sumA -= (itemDataA[attribute] ?? 0)
+            sumB -= (itemDataB[attribute] ?? 0)
+        }
+        if (sumA !== sumB) return sumB - sumA
+
         for (const attribute of generate.attributes) {
             sumA += (itemDataA[attribute] ?? 0)
             sumB += (itemDataB[attribute] ?? 0)
         }
         return sumB - sumA
     }
-    for (const optionName in options) options[optionName as (ItemType | WeaponType)].sort(sortHighestAttributeFirst)
+    for (const optionName in options) options[optionName as (ItemType | WeaponType)].sort(sortBest)
 
     const best: { [T in SlotType]?: ItemData } = {}
     const addBest = (slot: SlotType, item: ItemData): boolean => {
         const existing = best[slot]
-        if (existing && sortHighestAttributeFirst(existing, item) <= 0) return false // It's not better
+        if (existing && sortBest(existing, item) <= 0) return false // It's not better
         best[slot] = item
         return true
     }
