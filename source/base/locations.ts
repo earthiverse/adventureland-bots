@@ -82,9 +82,15 @@ export function offsetPosition(position: IPosition, x: number, y: number): IPosi
 }
 
 export function offsetPositionParty(position: IPosition, bot: Character, offsetAmount = 10): IPosition {
-    if (!bot.party) return position // No offset if we're not in a party
+    let offsetIndex: number
+    if (bot.party && bot.partyData?.list) {
+        // Use the party list for the offset
+        offsetIndex = bot.partyData.list.indexOf(bot.id)
+    } else {
+        // Use player names for the offset
+        offsetIndex = ([...bot.players.keys(), bot.id].sort()).indexOf(bot.id)
+    }
 
-    let offsetIndex = bot.partyData?.list?.indexOf(bot.id)
     if (offsetIndex === 0) return position // We're the leader, we stand in the middle
     offsetIndex -= 1
 

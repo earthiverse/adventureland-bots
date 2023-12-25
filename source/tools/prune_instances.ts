@@ -11,8 +11,8 @@ async function run() {
         console.debug(`Trying to fix ${instance.map} ${instance.in}...`)
 
         const data = []
-        const now = Date.now()
-        const future = now + CRYPT_ADD_TIME
+        const now = instance.firstEntered
+        const future = Date.now() + CRYPT_ADD_TIME
 
         for (const monster of (AL.Game.G.maps[instance.map] as GMap).monsters) {
             if (instance.killed?.[monster.type] >= Math.max(monster.count, 1)) continue // We've already killed them all
