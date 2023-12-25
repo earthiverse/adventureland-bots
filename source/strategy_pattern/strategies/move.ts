@@ -11,6 +11,7 @@ import AL, {
     SmartMoveOptions,
     ItemName,
     Tools,
+    Warrior,
 } from "alclient"
 import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
@@ -429,6 +430,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
                     /** Suppress Error */
                 })
             } else {
+                await this.useWarriorDash(bot, target)
                 bot.smartMove(target, { costs: AVOID_DOORS_COSTS, resolveOnFinalMoveStart: true }).catch(() => {
                     /** Suppress Error */
                 })
@@ -473,6 +475,19 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
                 /** Suppress Error */
             })
         }
+    }
+
+    protected async useWarriorDash(bot: Character, target: IPosition) {
+        if (bot.ctype !== "warrior") return // Only usable by warriors
+        if (Tools.distance(bot, target) < 50) return // It's nearby
+        if (bot.mp < bot.max_mp / 2) return // Want to save mana
+        if (bot.s.dash) return // Already dashing
+
+        const angle = Math.atan2(bot.y - target.y, bot.x - target.x)
+        return (bot as Warrior).dash({
+            x: bot.x + Math.cos(angle) * 49.9,
+            y: bot.y + Math.sin(angle) * 49.9
+        })
     }
 }
 
