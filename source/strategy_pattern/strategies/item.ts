@@ -71,6 +71,7 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
         for (let i = 0; i < bot.isize; i++) {
             const item = bot.items[i]
             if (!item) continue
+            if (item.v) continue // Don't move PVP marked items
 
             items.push({
                 ...item,
