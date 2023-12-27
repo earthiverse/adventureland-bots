@@ -1312,6 +1312,12 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 }
             }
 
+            // Holiday spirit
+            if (bot.S.holidayseason && !bot.s.holidayspirit) {
+                await bot.smartMove("newyear_tree", { getWithin: Constants.NPC_INTERACTION_DISTANCE / 2 })
+                await bot.getHolidaySpirit()
+            }
+
             // Go to our default position and wait for things to do
             await bot.smartMove(this.options.defaultPosition)
         } catch (e) {
