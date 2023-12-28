@@ -18,7 +18,10 @@ export function constructFVampireSetup(contexts: Strategist<PingCompensatedChara
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            generateEnsureEquipped: { attributes: ["resistance", "int", "attack"] },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "attack"],
+                                avoidAttributes: ["blast", "explosion"]
+                            },
                             type: "fvampire",
                         }),
                         move: moveStrategy
@@ -38,7 +41,10 @@ export function constructFVampireSetup(contexts: Strategist<PingCompensatedChara
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
-                            generateEnsureEquipped: { attributes: ["resistance", "str", "attack"] },
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "str", "attack"],
+                                avoidAttributes: ["blast", "explosion"]
+                            },
                             type: "fvampire",
                         }),
                         move: moveStrategy
