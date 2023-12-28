@@ -1,4 +1,4 @@
-import { Attribute, Character, Game, Item, ItemData, ItemName, ItemType, LocateItemFilters, SkillName, SlotType, WeaponType } from "alclient"
+import { Attribute, Character, Game, Item, ItemData, ItemType, LocateItemFilters, SlotType, WeaponType } from "alclient"
 import { EnsureEquipped, EnsureEquippedSlot } from "../strategies/attack"
 
 export const RETURN_HIGHEST: LocateItemFilters = { returnHighestLevel: true }
@@ -190,10 +190,10 @@ export type GenerateEnsureEquipped = {
     prefer?: EnsureEquipped
 }
 
-// TODO: Combine 2nd and 3rd arguments to `options`, and add `ability` support
-// TODO: Add check for weapon type checks on classes (e.g. equipping crossbow on ranger lowers frequency)
 /**
  * Generates an ensured equipped loadout for a given bot
+ * 
+ * TODO: Add `ability` support
  * 
  * @param bot The bot that we are generating a loadout for
  * @param attributes The attributes to prioritize when generating a loadout
@@ -245,6 +245,15 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
         if (equippableItemTypes.includes(type)) addOption(item)
     }
 
+    const calculateCtypeAttributes = (item: Item, attribute: Attribute) => {
+        const gInfo = Game.G.classes[bot.ctype]
+        let change = 0
+        if (item.wtype) change += gInfo.mainhand[item.wtype][attribute] ?? 0
+        if (item.wtype) change += gInfo.offhand[item.wtype][attribute] ?? 0
+        if (item.wtype) change += gInfo.doublehand[item.wtype][attribute] ?? 0
+        return change
+    }
+
     const sortBest = (a: ItemData, b: ItemData) => {
         const itemDataA = new Item(a)
         const itemDataB = new Item(b)
@@ -253,14 +262,14 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
         let sumB = 0
 
         for (const attribute of generate.avoidAttributes) {
-            sumA -= (itemDataA[attribute] ?? 0)
-            sumB -= (itemDataB[attribute] ?? 0)
+            sumA -= (itemDataA[attribute] ?? 0) + calculateCtypeAttributes(itemDataA, attribute)
+            sumB -= (itemDataB[attribute] ?? 0) + calculateCtypeAttributes(itemDataB, attribute)
         }
         if (sumA !== sumB) return sumB - sumA
 
         for (const attribute of generate.attributes) {
-            sumA += (itemDataA[attribute] ?? 0)
-            sumB += (itemDataB[attribute] ?? 0)
+            sumA += (itemDataA[attribute] ?? 0) + calculateCtypeAttributes(itemDataA, attribute)
+            sumB += (itemDataB[attribute] ?? 0) + calculateCtypeAttributes(itemDataB, attribute)
         }
         return sumB - sumA
     }
