@@ -29,7 +29,7 @@ async function run() {
                         serverRegion: instance.serverRegion,
                         type: monster.type,
                     },
-                    update: { hp: gMonster.hp, firstSeen: now, lastSeen: future, level: 1, target: null, x: x, y: y },
+                    update: { hp: gMonster.hp, firstSeen: now, lastSeen: future, target: null },
                     upsert: true,
                 },
             })
@@ -40,7 +40,8 @@ async function run() {
             await AL.EntityModel.bulkWrite(data)
         } else {
             console.debug(`Removing ${instance.map} ${instance.in}...`)
-            await AL.EntityModel.deleteOne({ _id: instance._id }).lean().exec()
+            await AL.InstanceModel.deleteOne({ _id: instance._id }).lean().exec()
+            await AL.EntityModel.deleteMany({ in: instance.in, serverIdentifier: instance.serverIdentifier, serverRegion: instance.serverRegion }).lean().exec()
         }
     }
 
