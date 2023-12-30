@@ -248,9 +248,9 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
     const calculateCtypeAttributes = (item: Item, attribute: Attribute) => {
         const gInfo = Game.G.classes[bot.ctype]
         let change = 0
-        if (item.wtype) change += gInfo.mainhand[item.wtype][attribute] ?? 0
-        if (item.wtype) change += gInfo.offhand[item.wtype][attribute] ?? 0
-        if (item.wtype) change += gInfo.doublehand[item.wtype][attribute] ?? 0
+        if (item.wtype && gInfo.mainhand[item.wtype]) change += gInfo.mainhand[item.wtype][attribute] ?? 0
+        if (item.wtype && gInfo.offhand[item.wtype]) change += gInfo.offhand[item.wtype][attribute] ?? 0
+        if (item.wtype && gInfo.doublehand[item.wtype]) change += gInfo.doublehand[item.wtype][attribute] ?? 0
         return change
     }
 
