@@ -483,10 +483,10 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         if (bot.mp < bot.max_mp / 2) return // Want to save mana
         if (bot.s.dash) return // Already dashing
 
-        const angle = Math.atan2(bot.y - target.y, bot.x - target.x)
+        const angleFromBotToTarget = Math.atan2(target.y - bot.y, target.x - bot.x)
         return (bot as Warrior).dash({
-            x: bot.x + Math.cos(angle) * 49.9,
-            y: bot.y + Math.sin(angle) * 49.9
+            x: bot.x + Math.cos(angleFromBotToTarget) * 49.9,
+            y: bot.y + Math.sin(angleFromBotToTarget) * 49.9
         })
     }
 }
