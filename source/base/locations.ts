@@ -81,7 +81,7 @@ export function offsetPosition(position: IPosition, x: number, y: number): IPosi
     return { in: position.in, map: position.map, x: position.x + x, y: position.y + y }
 }
 
-export function offsetPositionParty(position: IPosition, bot: Character, offsetAmount = 10): IPosition {
+export function offsetPositionParty(position: IPosition, bot: Character, offsetAmount = 20): IPosition {
     let offsetIndex: number
     if (bot.party && bot.partyData?.list) {
         // Use the party list for the offset
