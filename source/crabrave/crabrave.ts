@@ -28,6 +28,7 @@ import { GetHolidaySpiritStrategy, GetReplenishablesStrategy, ImprovedMoveStrate
 import { MoveToBankAndDepositStuffStrategy } from "../strategy_pattern/strategies/bank.js"
 import { getMsToNextMinute } from "../base/general.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "../base/defaults.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -35,8 +36,8 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const MAX_CHARS = 9
 const PARTY_LEADER = "earthMer"
-const SERVER_REGION: ServerRegion = "US"
-const SERVER_IDENTIFIER: ServerIdentifier = "I"
+const SERVER_REGION: ServerRegion = DEFAULT_REGION
+const SERVER_IDENTIFIER: ServerIdentifier = DEFAULT_IDENTIFIER
 const REPLENISHABLES = new Map<ItemName, number>([
     ["hpot1", 2500],
     ["mpot1", 2500],
