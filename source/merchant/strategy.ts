@@ -79,12 +79,13 @@ export type MerchantMoveStrategyOptions = {
         items: Set<ItemName>
     }
     /** If enabled, the merchant will
-     * - check that instances are still available periodically
-     * - open a new instance if there are no monsters in the database from that crypt and we have an item
+     * - check existing instances
+     * - open new instances
      */
     enableInstanceProvider?: {
-        crypt?: true
-        winter_instance?: true
+        [T in MapName]?: {
+            maxInstances?: number
+        }
     }
     /** If enabled, the merchant will
      * - Look for merchants with things we want to buy and move to them
@@ -1200,6 +1201,15 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     const checkKey = `${bot.id}_instance_check_${key}`
                     if (!checkOnlyEveryMS(checkKey, 300_000, false)) continue // Check every 5 minutes
                     const map = key as MapName
+
+                    if (this.options.enableInstanceProvider[map].maxInstances) {
+                        const numInstances = await AL.InstanceModel.count({
+                            map: map,
+                            serverIdentifier: bot.serverData.name,
+                            serverRegion: bot.serverData.region,
+                        }).exec()
+                        if (numInstances >= this.options.enableInstanceProvider[map].maxInstances) continue // Already have plenty open
+                    }
 
                     const instanceMonster = await AL.EntityModel.findOne({
                         $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime(map) } }],
