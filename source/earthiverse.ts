@@ -904,7 +904,11 @@ const startMerchantContext = async () => {
         ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS,
         debug: true,
         // enableInstanceProvider: { crypt: true, winter_instance: true },
-        enableInstanceProvider: { crypt: true },
+        enableInstanceProvider: {
+            crypt: {
+                maxInstances: 10
+            }
+        },
         enableUpgrade: true,
     })
     CONTEXT.applyStrategy(debugStrategy)
