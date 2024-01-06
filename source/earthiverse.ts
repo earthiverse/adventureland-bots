@@ -504,21 +504,19 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             }
 
             // Snowman
-            if (context.bot.S.snowman) {
-                if ((context.bot.S.snowman as ServerInfoDataLive)?.live) {
-                    const snowman = context.bot.getEntity({ type: "snowman" })
-                    if (snowman) {
-                        if (snowman.s.fullguard || snowman.s.fullguardx) {
-                            // Snowman isn't taking damage yet, farm bees
-                            priority.push("arcticbee")
-                        } else {
-                            // Snowman is taking damage
-                            priority.push("snowman")
-                        }
+            if ((context.bot.S.snowman as ServerInfoDataLive)?.live) {
+                const snowman = context.bot.getEntity({ type: "snowman" })
+                if (snowman) {
+                    if (snowman.s.fullguard || snowman.s.fullguardx) {
+                        // Snowman isn't taking damage yet, farm bees
+                        priority.push("arcticbee")
                     } else {
-                        // No snowman nearby, go to snowman
+                        // Snowman is taking damage
                         priority.push("snowman")
                     }
+                } else {
+                    // No snowman nearby, go to snowman
+                    priority.push("snowman")
                 }
             }
         }

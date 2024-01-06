@@ -705,8 +705,8 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             const targets = await AL.EntityModel.find({
                 lastSeen: { $gt: Date.now() - 60_000 },
                 map: { $nin: this.options.ignoreMaps },
-                serverIdentifier: bot.server.name,
-                serverRegion: bot.server.region,
+                serverIdentifier: bot.serverData.name,
+                serverRegion: bot.serverData.region,
                 type: { $in: this.options.typeList },
             })
                 .sort({ lastSeen: -1 })
