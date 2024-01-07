@@ -54,10 +54,10 @@ export function getCryptWaitTime(map: MapName): number {
     if (
         // From last week of November
         (month >= 11 && today >= new Date(year, 10, 25)) ||
-        // To first week of January
-        (month == 0 && today <= new Date(year, 0, 7))
+        // To second week of January
+        (month == 0 && today <= new Date(year, 0, 14))
     ) {
-        // No wait time during Christmas
+        // No wait time during Christmas event
         return 0
     }
 
@@ -66,7 +66,6 @@ export function getCryptWaitTime(map: MapName): number {
     // TODO: Easter -> 0
 
     // TODO: Halloween -> 0
-    
 
     switch (map) {
         case "crypt":
