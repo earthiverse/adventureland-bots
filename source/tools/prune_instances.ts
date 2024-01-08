@@ -1,4 +1,4 @@
-import AL, { GMap, MapName, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { GMap, MonsterName } from "alclient"
 import { CRYPT_ADD_TIME } from "../base/crypt.js"
 
 async function run() {
@@ -8,19 +8,23 @@ async function run() {
 
     const instances = await AL.InstanceModel.find().lean().exec();
     for (const instance of instances) {
-        console.debug(`Trying to fix ${instance.map} ${instance.in}...`)
+        console.debug(`Fixing ${instance.map} ${instance.in}...`)
 
-        const data = []
+        const deleteData: MonsterName[] = []
+        const updateData = []
         const now = instance.firstEntered
         const future = Date.now() + CRYPT_ADD_TIME
 
         for (const monster of (AL.Game.G.maps[instance.map] as GMap).monsters) {
-            if (instance.killed?.[monster.type] >= Math.max(monster.count, 1)) continue // We've already killed them all
+            if (instance.killed?.[monster.type] >= Math.max(monster.count, 1)) {
+                deleteData.push(monster.type)
+                continue // We've already killed them all
+            }
 
             const gMonster = AL.Game.G.monsters[monster.type]
             const x = (monster.boundary[0] + monster.boundary[2]) / 2
             const y = (monster.boundary[1] + monster.boundary[3]) / 2
-            data.push({
+            updateData.push({
                 updateOne: {
                     filter: {
                         in: instance.in,
@@ -29,15 +33,29 @@ async function run() {
                         serverRegion: instance.serverRegion,
                         type: monster.type,
                     },
-                    update: { hp: gMonster.hp, firstSeen: now, lastSeen: future, target: null },
+                    update: {
+                        $set: {
+                            hp: gMonster.hp,
+                            firstSeen: now,
+                            lastSeen: future,
+                            target: null,
+                        },
+                        $setOnInsert: {
+                            x: x,
+                            y: y
+                        }
+                    },
                     upsert: true,
                 },
             })
         }
 
-        if (data.length) {
-            console.debug(`Adding ${data.length} monsters...`)
-            await AL.EntityModel.bulkWrite(data)
+        if (updateData.length) {
+            console.debug(`  ${updateData.length} monsters remain`)
+            await AL.EntityModel.bulkWrite(updateData)
+            if (deleteData.length) {
+                await AL.EntityModel.deleteMany({ in: instance.in, serverIdentifier: instance.serverIdentifier, serverRegion: instance.serverRegion, type: { $in: [...deleteData] } }).lean().exec()
+            }
         } else {
             console.debug(`Removing ${instance.map} ${instance.in}...`)
             await AL.InstanceModel.deleteOne({ _id: instance._id }).lean().exec()

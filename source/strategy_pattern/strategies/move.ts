@@ -700,29 +700,27 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 return this.returnUndefinedIfMapIgnored(sInfo as { map: MapName; x: number; y: number })
         }
 
-        if (!disableCheckDB && AL.Database.connection) {
+        if (!disableCheckDB && AL.Database.connection && this.options.contexts) {
             // Look for it in our database
             const targets = await AL.EntityModel.find({
                 lastSeen: { $gt: Date.now() - 60_000 },
-                map: { $nin: this.options.ignoreMaps },
+                map: { $nin: this.options.ignoreMaps, $exists: true },
                 serverIdentifier: bot.serverData.name,
                 serverRegion: bot.serverData.region,
                 type: { $in: this.options.typeList },
+                x: { $exists: true },
+                y: { $exists: true }
             })
                 .sort({ lastSeen: -1 })
                 .lean()
                 .exec()
             targets.sort(sortTypeThenHp(this.options.typeList))
             targets: for (const target of targets) {
-                if (!target.map || target.x === undefined || target.y === undefined) continue
-
-                if (this.options.contexts) {
-                    // Check if one of our contexts should be able to see it
-                    for (const context of this.options.contexts) {
-                        if (!context.isReady()) continue
-                        if (AL.Tools.distance(context.bot, target) < AL.Constants.MAX_VISIBLE_RANGE / 2)
-                            continue targets // We should be able to see it, the data is not valid
-                    }
+                // Check if one of our contexts should be able to see it
+                for (const context of this.options.contexts) {
+                    if (!context.isReady()) continue
+                    if (AL.Tools.distance(context.bot, target) < AL.Constants.MAX_VISIBLE_RANGE / 2)
+                        continue targets // We should be able to see it, the data is not valid
                 }
                 return target
             }
