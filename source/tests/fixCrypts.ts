@@ -12,13 +12,6 @@ const serverIdentifier: ServerIdentifier = "III"
 async function run() {
     console.log("Connecting...")
     await Promise.all([AL.Game.loginJSONFile(credentials, false), AL.Game.getGData(true)])
-    await AL.Pathfinder.prepare(AL.Game.G, { cheat: false })
-
-    const rogue = await AL.Game.startRogue(rogueName, serverRegion, serverIdentifier)
-    const context = new Strategist<Rogue>(rogue)
-    context.applyStrategy(new AlwaysInvisStrategy())
-    context.applyStrategy(new RespawnStrategy())
-    // TODO: Add strategy to scare if we have a target
 
     const instances = await AL.InstanceModel.find({
         serverIdentifier: serverIdentifier,
@@ -28,6 +21,19 @@ async function run() {
 
     let num = 1
     const total = instances.length
+
+    if (total === 0) {
+        console.debug("No instances!")
+        AL.Database.disconnect()
+        return
+    }
+    
+    await AL.Pathfinder.prepare(AL.Game.G, { cheat: false })
+    const rogue = await AL.Game.startRogue(rogueName, serverRegion, serverIdentifier)
+    const context = new Strategist<Rogue>(rogue)
+    context.applyStrategy(new AlwaysInvisStrategy())
+    context.applyStrategy(new RespawnStrategy())
+    // TODO: Add strategy to scare if we have a target
 
     // TODO: Add support if we find all the missing entities to stop searching and go to the next one
     for (const instance of instances) {

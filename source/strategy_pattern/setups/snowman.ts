@@ -7,7 +7,7 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base"
+import { CharacterConfig, Setup } from "./base"
 import { MAGE_SPLASH, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
 
 class MageSnowmanAttackStrategy extends MageAttackStrategy {
@@ -45,15 +45,15 @@ class WarriorSnowmanAttackStrategy extends WarriorAttackStrategy {
             // No Splash Damage
             this.options.disableCleave = true
             this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
-            this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
-            this.options.ensureEquipped.ring1 = { name: "strring", filters: { returnHighestLevel: true } },
-            delete this.options.enableEquipForCleave
+                this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
+                this.options.ensureEquipped.ring1 = { name: "strring", filters: { returnHighestLevel: true } },
+                delete this.options.enableEquipForCleave
         } else {
             // Splash Damage & additional monsters
             delete this.options.disableCleave
             this.options.ensureEquipped.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } },
-            this.options.ensureEquipped.offhand = { name: "ololipop", filters: { returnHighestLevel: true } },
-            this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
+                this.options.ensureEquipped.offhand = { name: "ololipop", filters: { returnHighestLevel: true } },
+                this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
             this.options.enableEquipForCleave = true
         }
         super.onApply(bot)
@@ -63,69 +63,65 @@ class WarriorSnowmanAttackStrategy extends WarriorAttackStrategy {
 export function constructSnowmanSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const snowmanMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["snowman"] })
 
+    const mageConfig: CharacterConfig = {
+        ctype: "mage",
+        attack: new MageSnowmanAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            generateEnsureEquipped: {
+                attributes: ["blast", "explosion", "frequency"]
+            },
+            typeList: ["snowman", "arcticbee"]
+        }),
+        move: snowmanMoveStrategy
+    }
+    const priestConfig: CharacterConfig = {
+        ctype: "priest",
+        attack: new PriestSnowmanAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            generateEnsureEquipped: {
+                attributes: ["frequency"]
+            },
+            typeList: ["snowman", "arcticbee"],
+        }),
+        move: snowmanMoveStrategy
+    }
+    const warriorConfig: CharacterConfig = {
+        ctype: "warrior",
+        attack: new WarriorSnowmanAttackStrategy({
+            contexts: contexts,
+            enableEquipForCleave: true,
+            enableGreedyAggro: true,
+            generateEnsureEquipped: {
+                attributes: ["blast", "explosion", "frequency"]
+            },
+            typeList: ["snowman", "arcticbee"]
+        }),
+        move: snowmanMoveStrategy
+    }
+
     return {
         configs: [
             {
                 id: "snowman_mage,priest,warrior",
-                characters: [
-                    {
-                        ctype: "mage",
-                        attack: new MageSnowmanAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
-                            typeList: ["snowman", "arcticbee"]
-                        }),
-                        move: snowmanMoveStrategy
-                    },
-                    {
-                        ctype: "priest",
-                        attack: new PriestSnowmanAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_FAST },
-                            typeList: ["snowman", "arcticbee"],
-                        }),
-                        move: snowmanMoveStrategy
-                    },
-                    {
-                        ctype: "warrior",
-                        attack: new WarriorSnowmanAttackStrategy({
-                            contexts: contexts,
-                            enableEquipForCleave: true,
-                            enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
-                            typeList: ["snowman", "arcticbee"]
-                        }),
-                        move: snowmanMoveStrategy
-                    }
-                ]
+                characters: [mageConfig, priestConfig, warriorConfig]
             },
             {
                 id: "snowman_priest,warrior",
-                characters: [
-                    {
-                        ctype: "priest",
-                        attack: new PriestSnowmanAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_FAST },
-                            typeList: ["snowman", "arcticbee"],
-                        }),
-                        move: snowmanMoveStrategy
-                    },
-                    {
-                        ctype: "warrior",
-                        attack: new WarriorSnowmanAttackStrategy({
-                            contexts: contexts,
-                            enableEquipForCleave: true,
-                            enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
-                            typeList: ["snowman", "arcticbee"]
-                        }),
-                        move: snowmanMoveStrategy
-                    }
-                ]
+                characters: [priestConfig, warriorConfig]
+            },
+            {
+                id: "snowman_mage",
+                characters: [mageConfig]
+            },
+            {
+                id: "snowman_priest",
+                characters: [priestConfig]
+            },
+            {
+                id: "snowman_warrior",
+                characters: [warriorConfig]
             },
         ]
     }
@@ -141,7 +137,11 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({ contexts: contexts, typeList: ["snowman", "arcticbee"] }),
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["frequency"] },
+                            typeList: ["snowman", "arcticbee"]
+                        }),
                         move: snowmanMoveStrategy
                     }
                 ]
@@ -151,7 +151,11 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "paladin",
-                        attack: new PaladinAttackStrategy({ contexts: contexts, typeList: ["snowman", "arcticbee"] }),
+                        attack: new PaladinAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["frequency"] },
+                            typeList: ["snowman", "arcticbee"]
+                        }),
                         move: snowmanMoveStrategy
                     }
                 ]
@@ -161,7 +165,12 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, typeList: ["snowman", "arcticbee"] }),
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["frequency"] },
+                            disableAbsorb: true,
+                            typeList: ["snowman", "arcticbee"]
+                        }),
                         move: snowmanMoveStrategy
                     }
                 ]
@@ -171,7 +180,11 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: ["snowman", "arcticbee"] }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["frequency"] },
+                            typeList: ["snowman", "arcticbee"]
+                        }),
                         move: snowmanMoveStrategy
                     }
                 ]
@@ -181,7 +194,11 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "rogue",
-                        attack: new RogueAttackStrategy({ contexts: contexts, typeList: ["snowman", "arcticbee"] }),
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["frequency"] },
+                            typeList: ["snowman", "arcticbee"]
+                        }),
                         move: snowmanMoveStrategy
                     }
                 ]
@@ -191,7 +208,12 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, typeList: ["snowman", "arcticbee"] }),
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["frequency"] },
+                            disableAgitate: true,
+                            typeList: ["snowman", "arcticbee"]
+                        }),
                         move: snowmanMoveStrategy
                     }
                 ]
