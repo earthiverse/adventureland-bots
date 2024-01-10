@@ -12,6 +12,7 @@ const serverIdentifier: ServerIdentifier = "III"
 async function run() {
     console.log("Connecting...")
     await Promise.all([AL.Game.loginJSONFile(credentials, false), AL.Game.getGData(true)])
+    await AL.Database.connect()
 
     const instances = await AL.InstanceModel.find({
         serverIdentifier: serverIdentifier,
