@@ -3,6 +3,7 @@ import { Strategist } from "../strategy_pattern/context.js"
 import { AlwaysInvisStrategy } from "../strategy_pattern/strategies/invis.js"
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { CRYPT_MONSTERS } from "../base/crypt.js"
+import { sleep } from "../base/general.js"
 
 const credentials = "../../credentials.json"
 const rogueName = "earthRog"
@@ -32,6 +33,7 @@ async function run() {
 
     if (total === 0) {
         console.debug("No instances!")
+        await sleep(5000)
         context.stop()
         AL.Database.disconnect()
         return
