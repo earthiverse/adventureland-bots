@@ -32,6 +32,7 @@ async function run() {
 
     if (total === 0) {
         console.debug("No instances!")
+        context.stop()
         AL.Database.disconnect()
         return
     }
