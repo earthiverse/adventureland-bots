@@ -26,9 +26,9 @@ import { RogueAttackStrategy } from "../strategy_pattern/strategies/attack_rogue
 import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
 import { GetHolidaySpiritStrategy, GetReplenishablesStrategy, ImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { MoveToBankAndDepositStuffStrategy } from "../strategy_pattern/strategies/bank.js"
-import { getMsToNextMinute } from "../base/general.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "../base/defaults.js"
+import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
@@ -44,6 +44,7 @@ const REPLENISHABLES = new Map<ItemName, number>([
 ])
 
 const avoidStackingStrategy = new AvoidStackingStrategy()
+const avoidDeathStrategy = new AvoidDeathStrategy()
 const bankStrategy = new MoveToBankAndDepositStuffStrategy({ map: "bank" })
 const baseStrategy = new BaseStrategy(CONTEXTS)
 const buyStrategy = new BuyStrategy({
@@ -61,6 +62,14 @@ const getReplenishablesStrategy = new GetReplenishablesStrategy({
 const itemStrategy = new OptimizeItemsStrategy({ contexts: CONTEXTS })
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(CONTEXTS)
 const moveStrategy = new ImprovedMoveStrategy("crab")
+const attackStrategies: { [T in Exclude<CharacterType, "merchant">]: BaseAttackStrategy<PingCompensatedCharacter> } = {
+    mage: new MageAttackStrategy({ contexts: CONTEXTS, type: "crab" }),
+    paladin: new PaladinAttackStrategy({ contexts: CONTEXTS, type: "crab" }),
+    priest: new PriestAttackStrategy({ contexts: CONTEXTS, disableCurse: true, type: "crab" }),
+    ranger: new RangerAttackStrategy({ contexts: CONTEXTS, disableHuntersMark: true, type: "crab" }),
+    rogue: new RogueAttackStrategy({ contexts: CONTEXTS, type: "crab" }),
+    warrior: new WarriorAttackStrategy({ contexts: CONTEXTS, disableAgitate: true, type: "crab" })
+}
 const partyHealStrategy = new PartyHealStrategy(CONTEXTS)
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 const respawnStrategy = new RespawnStrategy()
@@ -97,121 +106,106 @@ class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> 
 }
 const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 
-async function startShared(context: Strategist<PingCompensatedCharacter>, attackStrategy: BaseAttackStrategy<PingCompensatedCharacter>) {
-    context.applyStrategy(partyRequestStrategy)
+const currentSetups = new Map<
+    Strategist<PingCompensatedCharacter>,
+    Strategy<PingCompensatedCharacter>[]
+>()
+const swapStrategies = (context: Strategist<PingCompensatedCharacter>, strategies: Strategy<PingCompensatedCharacter>[]) => {
+    // Remove old strategies that aren't in the list
+    for (const strategy of currentSetups.get(context) ?? []) {
+        if (strategies.includes(strategy)) continue // Keep it
+        context.removeStrategy(strategy)
+    }
 
-    context.applyStrategy(buyStrategy)
-    context.applyStrategy(sellStrategy)
-    context.applyStrategy(avoidStackingStrategy)
-    context.applyStrategy(respawnStrategy)
-    context.applyStrategy(elixirStrategy)
-    context.applyStrategy(itemStrategy)
+    // Add strategies that aren't applied yet
+    for (const strategy of strategies) {
+        if (context.hasStrategy(strategy)) continue // Already have it
+        context.applyStrategy(strategy)
+    }
 
-    let lastMoveStrategy: Strategy<PingCompensatedCharacter>
-    let lastAttackStrategy: Strategy<PingCompensatedCharacter>
-    const logicLoop = async () => {
-        try {
+    // Save strategy list
+    currentSetups.set(context, strategies)
+}
+
+const contextsLogic = async () => {
+    try {
+        for (const context of CONTEXTS) {
             if (!context.isReady() || !context.bot.ready || context.bot.rip) {
-                setTimeout(async () => { logicLoop() }, 1000)
-                return // Not ready
+                continue
             }
+
+            // Holiday Spirit
             if (context.bot.S.holidayseason && !context.bot.s.holidayspirit) {
-                if (moveStrategy) {
-                    context.removeStrategy(moveStrategy)
-                    lastMoveStrategy = undefined
-                }
-                context.applyStrategy(getHolidaySpiritStrategy)
-                setTimeout(async () => { logicLoop() }, 1000)
-                return
+                swapStrategies(context, [getHolidaySpiritStrategy])
+                continue
             }
-            if (context.hasStrategy(getHolidaySpiritStrategy)) context.removeStrategy(getHolidaySpiritStrategy)
 
-            if (context.bot.ctype !== "merchant" && context.bot.esize <= 0) {
-                // We're full, go deposit items in the bank
-                if (attackStrategy) {
-                    context.removeStrategy(attackStrategy)
-                    lastAttackStrategy = undefined
-                }
-                if (moveStrategy) {
-                    context.removeStrategy(moveStrategy)
-                    lastMoveStrategy = undefined
-                }
-
-                context.applyStrategy(bankStrategy)
-                setTimeout(async () => { logicLoop() }, getMsToNextMinute() + 60_000)
-                return
+            // Full of items
+            if (context.bot.esize <= 0) {
+                swapStrategies(context, [bankStrategy])
+                continue
             }
-            if (context.hasStrategy(bankStrategy)) context.removeStrategy(bankStrategy)
 
-            // Check if we need to go get replenishables
+            // Need replenishables
             for (const [item, numHold] of REPLENISHABLES) {
                 const numHas = context.bot.countItem(item, context.bot.items)
                 if (numHas > (numHold / 4)) continue // We have more 25% of the amount we want
                 const numWant = numHold - numHas
                 if (!context.bot.canBuy(item, { ignoreLocation: true, quantity: numWant })) continue // We can't buy enough, don't go to buy them
 
-                if (attackStrategy) {
-                    context.removeStrategy(attackStrategy)
-                    lastAttackStrategy = undefined
-                }
-                if (moveStrategy) {
-                    context.removeStrategy(moveStrategy)
-                    lastMoveStrategy = undefined
-                }
+                swapStrategies(context, [getReplenishablesStrategy])
+                continue
+            }
 
-                context.applyStrategy(getReplenishablesStrategy)
-                setTimeout(async () => { logicLoop() }, 1000)
-                return
-            }
-            if (context.hasStrategy(getReplenishablesStrategy)) context.removeStrategy(getReplenishablesStrategy)
-
-            // Defaults
-            if (moveStrategy && moveStrategy !== lastMoveStrategy) {
-                context.applyStrategy(moveStrategy)
-                lastMoveStrategy = moveStrategy
-            }
-            if (attackStrategy && attackStrategy !== lastAttackStrategy) {
-                context.applyStrategy(attackStrategy)
-                lastAttackStrategy = attackStrategy
-            }
-        } catch (e) {
-            console.error(e)
+            // Farm
+            swapStrategies(context, [moveStrategy, attackStrategies[context.bot.ctype]])
         }
-        setTimeout(async () => { logicLoop() }, 1000)
+    } catch (e) {
+        console.error(e)
+    } finally {
+        setTimeout(contextsLogic, 1000)
     }
-    logicLoop()
+}
+contextsLogic()
 
+async function startShared(context: Strategist<PingCompensatedCharacter>) {
+    context.applyStrategy(partyRequestStrategy)
+    context.applyStrategy(buyStrategy)
+    context.applyStrategy(sellStrategy)
+    context.applyStrategy(avoidStackingStrategy)
+    context.applyStrategy(avoidDeathStrategy)
+    context.applyStrategy(respawnStrategy)
+    context.applyStrategy(elixirStrategy)
+    context.applyStrategy(itemStrategy)
     context.applyStrategy(disconnectOnCommandStrategy)
-
     CONTEXTS.push(context)
 }
 
 async function startMage(context: Strategist<Mage>) {
-    startShared(context, new MageAttackStrategy({ contexts: CONTEXTS, type: "crab" }))
+    startShared(context)
     context.applyStrategy(magiportStrategy)
 }
 
 async function startPaladin(context: Strategist<Paladin>) {
-    startShared(context, new PaladinAttackStrategy({ contexts: CONTEXTS, type: "crab" }))
+    startShared(context)
 }
 
 async function startPriest(context: Strategist<Priest>) {
-    startShared(context, new PriestAttackStrategy({ contexts: CONTEXTS, disableCurse: true, type: "crab" }))
+    startShared(context)
     context.applyStrategy(partyHealStrategy)
 }
 
 async function startRanger(context: Strategist<Ranger>) {
-    startShared(context, new RangerAttackStrategy({ contexts: CONTEXTS, disableHuntersMark: true, type: "crab" }))
+    startShared(context)
 }
 
 async function startRogue(context: Strategist<Rogue>) {
-    startShared(context, new RogueAttackStrategy({ contexts: CONTEXTS, type: "crab" }))
+    startShared(context)
     context.applyStrategy(rspeedStrategy)
 }
 
-// Warrior setup
 async function startWarrior(context: Strategist<Warrior>) {
-    startShared(context, new WarriorAttackStrategy({ contexts: CONTEXTS, disableAgitate: true, type: "crab" }))
+    startShared(context)
     context.applyStrategy(chargeStrategy)
 }
 
