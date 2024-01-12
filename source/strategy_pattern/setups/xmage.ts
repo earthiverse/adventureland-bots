@@ -77,7 +77,10 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
         const xmage = await this.checkGoodData(bot, true)
 
         if (xmage) {
-            if (xmage.type === "xmagefi" && bot.ctype === "mage") {
+            if (xmage.type === "xmagefi" && (
+                bot.ctype === "mage"
+                || this.options.disableCheckDB // We set this on our helpers, don't have helpers attack xmagefi
+            )) {
                 // Priest can't keep up with healing with three characters, so have the mage go to arctic bees
                 await bot.smartMove("arcticbee")
                 return
