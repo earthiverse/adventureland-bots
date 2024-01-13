@@ -838,6 +838,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         {
                             _id: 0,
                             map: 1,
+                            in: 1,
                             name: 1,
                             x: 1,
                             y: 1,
