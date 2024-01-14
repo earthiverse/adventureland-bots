@@ -82,7 +82,12 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
                 || this.options.disableCheckDB // We set this on our helpers, don't have helpers attack xmagefi
             )) {
                 // Priest can't keep up with healing with three characters, so have the mage go to arctic bees
-                await bot.smartMove("arcticbee")
+                const arcticBee = bot.getEntity({ type: "arcticbee" })
+                if (!arcticBee) {
+                    await bot.smartMove("arcticbee", { resolveOnFinalMoveStart: true })
+                } else if (Tools.distance(bot, arcticBee) > bot.range) {
+                    await bot.smartMove(arcticBee, { getWithin: bot.range, resolveOnFinalMoveStart: true })
+                }
                 return
             }
 
