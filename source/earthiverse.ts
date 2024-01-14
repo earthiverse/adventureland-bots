@@ -590,7 +590,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                             { firstSeen: null },
                             { firstSeen: { $lt: Date.now() - getCryptWaitTime("winter_instance") } },
                         ],
-                        lastSeen: { $gt: Date.now() - 30000 },
+                        lastSeen: { $gt: Date.now() - 60000 },
                         serverIdentifier: context.bot.serverData.name,
                         serverRegion: context.bot.serverData.region,
                         type: { $in: XMAGE_MONSTERS },
@@ -901,15 +901,14 @@ const startMerchantContext = async () => {
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, {
         ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS,
         debug: true,
-        // enableInstanceProvider: { crypt: true, winter_instance: true },
-        enableInstanceProvider: {
-            crypt: {
-                maxInstances: 10
-            },
-            winter_instance: {
-                maxInstances: 1
-            }
-        },
+        // enableInstanceProvider: {
+        //     crypt: {
+        //         maxInstances: 10
+        //     },
+        //     winter_instance: {
+        //         maxInstances: 1
+        //     }
+        // },
         enableUpgrade: true,
     })
     CONTEXT.applyStrategy(debugStrategy)
