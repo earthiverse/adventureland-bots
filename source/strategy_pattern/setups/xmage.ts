@@ -413,6 +413,9 @@ export function constructXmageHelperSetup(contexts: Strategist<PingCompensatedCh
                             contexts: contexts,
                             generateEnsureEquipped: {
                                 attributes: ["resistance"],
+                                prefer: {
+                                    mainhand: { name: "claw", filters: { returnHighestLevel: true } },
+                                }
                             },
                             targetingPartyMember: true,
                         }),
