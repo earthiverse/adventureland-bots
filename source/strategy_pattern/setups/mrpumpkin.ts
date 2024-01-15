@@ -25,6 +25,7 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
             this.options.generateEnsureEquipped.prefer.offhand = UNEQUIP
         }
 
+        super.onApply(bot)
         if (bot.isPVP()) {
             this.options.typeList = ["mrpumpkin"]
             delete this.options.enableGreedyAggro
@@ -33,7 +34,6 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
             this.options.enableGreedyAggro = ["minimush"]
             this.options.maximumTargets = bot.mcourage
         }
-        super.onApply(bot)
     }
 }
 
@@ -48,6 +48,7 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
             this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
         }
 
+        super.onApply(bot)
         if (bot.isPVP()) {
             this.options.typeList = ["mrpumpkin"]
             delete this.options.enableGreedyAggro
@@ -56,7 +57,6 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
             this.options.enableGreedyAggro = ["minimush"]
             this.options.maximumTargets = bot.mcourage
         }
-        super.onApply(bot)
     }
 }
 
@@ -71,12 +71,12 @@ class RogueMrPumpkinAttackStrategy extends RogueAttackStrategy {
             this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
         }
 
+        super.onApply(bot)
         if (bot.isPVP()) {
             this.options.typeList = ["mrpumpkin"]
         } else {
             this.options.typeList = NON_PVP_MONSTERS
         }
-        super.onApply(bot)
     }
 }
 
@@ -93,6 +93,7 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             this.options.generateEnsureEquipped.prefer.offhand = { name: "ololipop", filters: { returnHighestLevel: true } }
         }
 
+        super.onApply(bot)
         if (bot.isPVP()) {
             this.options.disableCleave = true
             delete this.options.enableEquipForCleave
@@ -104,7 +105,6 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             this.options.typeList = ["mrpumpkin", "phoenix", "xscorpion", "tinyp"]
             this.options.enableGreedyAggro = ["mrpumpkin", "xscorpion"]
         }
-        super.onApply(bot)
     }
 }
 

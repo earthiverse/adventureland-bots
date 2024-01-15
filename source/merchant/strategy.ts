@@ -428,7 +428,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                                 break
                             }
                         }
-                        break
+                        if (bot.esize <= 1) break
                     }
 
                     // Close stand

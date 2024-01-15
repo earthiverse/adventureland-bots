@@ -8,10 +8,10 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
 
 class MageSnowmanAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
+        super.onApply(bot)
         if (bot.isPVP()) {
             // No splash damage
             this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
@@ -21,12 +21,12 @@ class MageSnowmanAttackStrategy extends MageAttackStrategy {
             this.options.ensureEquipped.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
             delete this.options.ensureEquipped.offhand
         }
-        super.onApply(bot)
     }
 }
 
 class PriestSnowmanAttackStrategy extends PriestAttackStrategy {
     public onApply(bot: Priest): void {
+        super.onApply(bot)
         if (bot.isPVP()) {
             this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
             this.options.ensureEquipped.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
@@ -35,12 +35,12 @@ class PriestSnowmanAttackStrategy extends PriestAttackStrategy {
             this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
             this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
         }
-        super.onApply(bot)
     }
 }
 
 class WarriorSnowmanAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
+        super.onApply(bot)
         if (bot.isPVP()) {
             // No Splash Damage
             this.options.disableCleave = true
@@ -56,7 +56,6 @@ class WarriorSnowmanAttackStrategy extends WarriorAttackStrategy {
                 this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
             this.options.enableEquipForCleave = true
         }
-        super.onApply(bot)
     }
 }
 

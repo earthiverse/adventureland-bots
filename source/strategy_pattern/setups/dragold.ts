@@ -12,6 +12,7 @@ import { Setup } from "./base"
 // TODO: Better PVP setup
 class WarriorDragoldAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
+        super.onApply(bot)
         if (bot.isPVP()) {
             // No Splash Damage
             this.options.disableCleave = true
@@ -23,7 +24,6 @@ class WarriorDragoldAttackStrategy extends WarriorAttackStrategy {
             this.options.enableEquipForCleave = true
             this.options.enableGreedyAggro = true
         }
-        super.onApply(bot)
     }
 }
 

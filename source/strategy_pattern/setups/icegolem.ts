@@ -11,6 +11,7 @@ import { Setup } from "./base"
 
 class WarriorIceGolemAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
+        super.onApply(bot)
         if (bot.serverData.name === "PVP") {
             // No Splash Damage
             this.options.disableCleave = true
@@ -22,7 +23,6 @@ class WarriorIceGolemAttackStrategy extends WarriorAttackStrategy {
             this.options.enableEquipForCleave = true
             this.options.enableGreedyAggro = true
         }
-        super.onApply(bot)
     }
 }
 

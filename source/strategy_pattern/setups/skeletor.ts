@@ -9,10 +9,10 @@ import { Setup } from "./base"
 class WarriorSkeletorAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
         // No Splash Damage
+        super.onApply(bot)
         this.options.disableCleave = true
         delete this.options.enableEquipForCleave
         delete this.options.enableGreedyAggro
-        super.onApply(bot)
     }
 }
 

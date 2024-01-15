@@ -5,7 +5,6 @@ async function run() {
     console.log("Connecting...")
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 
-
     const instances = await AL.InstanceModel.find().lean().exec();
     for (const instance of instances) {
         console.debug(`Fixing ${instance.map} ${instance.in}...`)
