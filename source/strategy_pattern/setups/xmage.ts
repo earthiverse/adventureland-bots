@@ -191,6 +191,9 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
         // If there's a fieldgen and it needs healing, heal it
         const fieldGen = bot.getEntity({ type: "fieldgen0", withinRange: "attack" })
         if (fieldGen && fieldGen.hp < fieldGen.max_hp * 0.75) {
+            // Wait for heal if we need
+            const healCooldown = bot.getCooldown("heal")
+            if (healCooldown) await sleep(healCooldown)
             await bot.healSkill(fieldGen.id)
         }
 
