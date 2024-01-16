@@ -24,8 +24,8 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
             typeList: XMAGE_MONSTERS,
         })
 
-        // Only include winter instance map positions
-        this.spawns = this.spawns.filter((p) => p.map === "winter_instance")
+        // Only include winter instance or winterland positions
+        this.spawns = this.spawns.filter((p) => p.map === "winter_instance" || p.map === "winterland")
     }
 
     protected async move(bot: PingCompensatedCharacter): Promise<IPosition> {
