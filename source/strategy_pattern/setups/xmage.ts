@@ -417,6 +417,7 @@ export function constructXmageHelperSetup(contexts: Strategist<PingCompensatedCh
                             generateEnsureEquipped: {
                                 attributes: ["resistance"],
                                 prefer: {
+                                    // Stab for extra stacked damage
                                     mainhand: { name: "claw", filters: { returnHighestLevel: true } },
                                 }
                             },

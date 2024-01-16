@@ -239,6 +239,12 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({
                             contexts: contexts,
+                            generateEnsureEquipped: {
+                                prefer: {
+                                    // Stab for extra stacked damage
+                                    mainhand: { name: "claw", filters: { returnHighestLevel: true } },
+                                }
+                            },
                             typeList: ["nerfedmummy", "franky"],
                             hasTarget: true
                         }),
