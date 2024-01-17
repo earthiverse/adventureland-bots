@@ -901,14 +901,14 @@ const startMerchantContext = async () => {
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, {
         ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS,
         debug: true,
-        // enableInstanceProvider: {
-        //     crypt: {
-        //         maxInstances: 10
-        //     },
-        //     winter_instance: {
-        //         maxInstances: 1
-        //     }
-        // },
+        enableInstanceProvider: {
+            crypt: {
+                maxInstances: 25
+            },
+            // winter_instance: {
+            //     maxInstances: 1
+            // }
+        },
         enableUpgrade: true,
     })
     CONTEXT.applyStrategy(debugStrategy)
