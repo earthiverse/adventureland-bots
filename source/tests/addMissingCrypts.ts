@@ -5,12 +5,12 @@ async function run() {
     console.log("Connecting...")
     await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 
-    const map: MapName = "crypt"
+    const map: MapName = "winter_instance"
     const serverRegion: ServerRegion = "US"
-    const serverIdentifier: ServerIdentifier = "I"
+    const serverIdentifier: ServerIdentifier = "III"
 
     for (const instance of [
-        "kr5lzGSsiPNppQWN11gwXaxV",
+        "SRKR0hON2KVPhMigxlqV3ybP"
         "gTWcioF4znyz7IN7u6WV50cU",
         "QcDlD8AnDMlDNTFt2eIPkGhQ",
         "h2u5w9pVqR8kuVuDZGsvk7oW",
@@ -18,7 +18,7 @@ async function run() {
     ]) {
         console.debug(`Trying to fix ${instance}...`)
         const data = []
-        const now = Date.now() + CRYPT_ADD_TIME
+        const now = Date.now()
         for (const monster of AL.Game.G.maps[map].monsters) {
             const gMonster = AL.Game.G.monsters[monster.type]
             const x = (monster.boundary[0] + monster.boundary[2]) / 2
@@ -26,12 +26,25 @@ async function run() {
             data.push({
                 updateOne: {
                     filter: { in: instance, map: map, serverIdentifier: serverIdentifier, serverRegion: serverRegion, type: monster.type },
-                    update: { hp: gMonster.hp, firstSeen: now, lastSeen: now, target: null, x: x, y: y },
+                    update: { hp: gMonster.hp, firstSeen: now, lastSeen: future, target: null, x: x, y: y },
                     upsert: true
                 }
             })
         }
         console.debug(`Adding ${data.length} monsters...`)
+        await AL.InstanceModel.updateOne({
+            in: instance,
+            map: map,
+            serverIdentifier: serverIdentifier,
+            serverRegion: serverRegion,
+        }, {
+            $max: {
+                lastEntered: now
+            },
+            $min: {
+                firstEntered: now
+            }
+        }, { upsert: true }).lean().exec().catch(() => { /* Suppress errors */ })
         await AL.EntityModel.bulkWrite(data)
     }
 
