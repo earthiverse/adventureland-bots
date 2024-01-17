@@ -72,6 +72,27 @@ export type RunnerOptions = {
     merchantOverrides?: Partial<MerchantMoveStrategyOptions>
 }
 
+const currentSetups = new Map<
+    Strategist<PingCompensatedCharacter>,
+    Strategy<PingCompensatedCharacter>[]
+>()
+const swapStrategies = (context: Strategist<PingCompensatedCharacter>, strategies: Strategy<PingCompensatedCharacter>[]) => {
+    // Remove old strategies that aren't in the list
+    for (const strategy of currentSetups.get(context) ?? []) {
+        if (strategies.includes(strategy)) continue // Keep it
+        context.removeStrategy(strategy)
+    }
+
+    // Add strategies that aren't applied yet
+    for (const strategy of strategies) {
+        if (context.hasStrategy(strategy)) continue // Already have it
+        context.applyStrategy(strategy)
+    }
+
+    // Save strategy list
+    currentSetups.set(context, strategies)
+}
+
 export async function startRunner(character: PingCompensatedCharacter, options: RunnerOptions): Promise<Strategist<PingCompensatedCharacter>> {
     if (options.ephemeral && options.ephemeral.buffer >= 30_000) {
         throw new Error("Please choose a buffer time for `options.ephemeral.buffer` less than 30_000")
@@ -194,77 +215,47 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
         }))
     }
 
-    let lastMoveStrategy: Strategy<PingCompensatedCharacter>
-    let lastAttackStrategy: Strategy<PingCompensatedCharacter>
     const logicLoop = async () => {
         try {
             if (!context.isReady() || !context.bot.ready || context.bot.rip) {
-                setTimeout(async () => { logicLoop() }, 1000)
-                return // Not ready
+                return
             }
+
+            // Holiday Spirit
             if (context.bot.S.holidayseason && !context.bot.s.holidayspirit) {
-                if (moveStrategy) {
-                    context.removeStrategy(moveStrategy)
-                    lastMoveStrategy = undefined
-                }
-                context.applyStrategy(getHolidaySpiritStrategy)
-                setTimeout(async () => { logicLoop() }, 1000)
+                swapStrategies(context, [getHolidaySpiritStrategy])
                 return
             }
-            if (context.hasStrategy(getHolidaySpiritStrategy)) context.removeStrategy(getHolidaySpiritStrategy)
 
-            if (context.bot.ctype !== "merchant" && context.bot.esize <= 0) {
-                // We're full, go deposit items in the bank
-                if (attackStrategy) {
-                    context.removeStrategy(attackStrategy)
-                    lastAttackStrategy = undefined
-                }
-                if (moveStrategy) {
-                    context.removeStrategy(moveStrategy)
-                    lastMoveStrategy = undefined
-                }
-
-                context.applyStrategy(bankStrategy)
-                setTimeout(async () => { logicLoop() }, getMsToNextMinute() + 60_000)
+            // Full of items
+            if (context.bot.esize <= 0) {
+                swapStrategies(context, [bankStrategy])
                 return
             }
-            if (context.hasStrategy(bankStrategy)) context.removeStrategy(bankStrategy)
 
-            // Check if we need to go get replenishables
+            // Need replenishables
             for (const [item, numHold] of REPLENISHABLES) {
                 const numHas = context.bot.countItem(item, context.bot.items)
                 if (numHas > (numHold / 4)) continue // We have more 25% of the amount we want
                 const numWant = numHold - numHas
                 if (!context.bot.canBuy(item, { ignoreLocation: true, quantity: numWant })) continue // We can't buy enough, don't go to buy them
 
-                if (attackStrategy) {
-                    context.removeStrategy(attackStrategy)
-                    lastAttackStrategy = undefined
-                }
-                if (moveStrategy) {
-                    context.removeStrategy(moveStrategy)
-                    lastMoveStrategy = undefined
-                }
-
-                context.applyStrategy(getReplenishablesStrategy)
-                setTimeout(async () => { logicLoop() }, 1000)
-                return
+                swapStrategies(context, [getReplenishablesStrategy])
+                continue
             }
-            if (context.hasStrategy(getReplenishablesStrategy)) context.removeStrategy(getReplenishablesStrategy)
 
-            // Defaults
-            if (moveStrategy && moveStrategy !== lastMoveStrategy) {
-                context.applyStrategy(moveStrategy)
-                lastMoveStrategy = moveStrategy
-            }
-            if (attackStrategy && attackStrategy !== lastAttackStrategy) {
-                context.applyStrategy(attackStrategy)
-                lastAttackStrategy = attackStrategy
+            if (context.bot.ctype === "merchant") {
+                // Idle
+                swapStrategies(context, [moveStrategy])
+            } else {
+                // Farm
+                swapStrategies(context, [moveStrategy, attackStrategy])
             }
         } catch (e) {
             console.error(e)
+        } finally {
+            setTimeout(async () => { logicLoop() }, 1000)
         }
-        setTimeout(async () => { logicLoop() }, 1000)
     }
     logicLoop()
 
