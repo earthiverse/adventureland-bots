@@ -11,8 +11,8 @@ await Promise.all([AL.Game.loginJSONFile(CREDENTIALS, true), AL.Game.getGData(fa
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: false })
 
 // Hack to fix URLs
-for(const region in AL.Game.servers) {
-    for(const id in AL.Game.servers[region]) {
+for (const region in AL.Game.servers) {
+    for (const id in AL.Game.servers[region]) {
         AL.Game.servers[region][id].addr = AL.Game.servers[region][id].addr.replace('aud1.', '')
     }
 }
@@ -23,6 +23,7 @@ const SELL_MAP: Map<ItemName, [number, number][]> = new Map([
     ["hpamulet", undefined],
     ["hpbelt", undefined],
     ["stinger", undefined],
+    ["cring", undefined],
 ])
 
 const options: RunnerOptions = {
