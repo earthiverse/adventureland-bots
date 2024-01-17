@@ -110,7 +110,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
             this.options.maximumTargets = 1
         }
 
-        const nearbyPriest = bot.getPlayer({ ctype: "priest", isPartyMember: true, withinRange: "heal", withinRangeOf: bot })
+        const nearbyPriest = bot.getPlayer({ ctype: "priest", isPartyMember: true, withinRange: 250 })
 
         // Reset options
         delete this.options.type
@@ -323,7 +323,7 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
             this.options.ensureEquipped.offhand = { name: "fireblade", filters: RETURN_HIGHEST }
         }
 
-        const nearbyPriest = bot.getPlayer({ ctype: "priest", isPartyMember: true, withinRange: "heal", withinRangeOf: bot })
+        const nearbyPriest = bot.getPlayer({ ctype: "priest", isPartyMember: true, withinRange: 250 })
 
         // Reset options
         delete this.options.type
@@ -477,7 +477,7 @@ class RogueCryptHelperAttackStrategy extends RogueAttackStrategy {
     }
 
     protected async attack(bot: Rogue): Promise<void> {
-        const nearbyPriest = bot.getPlayer({ ctype: "priest", isPartyMember: true, withinRange: "heal", withinRangeOf: bot })
+        const nearbyPriest = bot.getPlayer({ ctype: "priest", isPartyMember: true, withinRange: 250 })
 
         // Reset options
         delete this.options.type
