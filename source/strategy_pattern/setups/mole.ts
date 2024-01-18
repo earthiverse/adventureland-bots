@@ -4,6 +4,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
+import { RETURN_HIGHEST } from "./equipment.js"
 
 export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("mole", {
@@ -37,7 +38,10 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
                             contexts: contexts,
                             enableEquipForCleave: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "str", "blast", "explosion"]
+                                attributes: ["armor", "str", "blast", "explosion"],
+                                prefer: {
+                                    ring1: { name: "zapper", filters: RETURN_HIGHEST },
+                                }
                             },
                             enableGreedyAggro: true,
                             type: "mole"
