@@ -1,14 +1,26 @@
+process.env.DEBUG="*"
+
 import AL, { ItemName, MonsterName } from "alclient"
-import { RunnerOptions, startCharacterFromName, startRunner } from "./strategy_pattern/runner.js"
+import { RunnerOptions, startRunner } from "./strategy_pattern/runner.js"
 import { DEFAULT_ITEMS_TO_HOLD } from "./base/defaults.js"
 
-const MONSTER: MonsterName = "crab"
-const CREDENTIALS = "../credentials.nexus.json"
+const MONSTER: MonsterName = "goo"
+const CREDENTIALS = "../credentials.thmsn.json"
 
-AL.Game.setServer("http://al.nexusnull.com")
+AL.Game.setServer("http://thmsn.adventureland.community")
 
 await Promise.all([AL.Game.loginJSONFile(CREDENTIALS, false), AL.Game.getGData(false)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: false })
+await AL.Game.updateServersAndCharacters()
+
+// Hack to fix URLs
+for (const region in AL.Game.servers) {
+    for (const id in AL.Game.servers[region]) {
+        console.debug(`before: ${AL.Game.servers[region][id].addr}`)
+        AL.Game.servers[region][id].addr = 'thmsn.adventureland.community'
+        console.debug(`after: ${AL.Game.servers[region][id].addr}`)
+    }
+}
 
 // Add a whole bunch of items to the sell list
 const SELL_MAP: Map<ItemName, [number, number][]> = new Map([
@@ -34,10 +46,6 @@ const options: RunnerOptions = {
     },
 }
 
-for (const character of ["earthiverse", "earthRan2", "earthRan3", "earthMer"]) {
-    startRunner(await AL.Game.startCharacter(character, "US", "I"), options)
-}
-
-for (const character of ["earthPri"]) {
+for (const character of ["earthiverse", "earthPri", "earthMag", "earthMer"]) {
     startRunner(await AL.Game.startCharacter(character, "EU", "I"), options)
 }
