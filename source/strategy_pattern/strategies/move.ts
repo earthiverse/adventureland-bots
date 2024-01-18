@@ -484,10 +484,12 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         if (bot.s.dash) return // Already dashing
 
         const angleFromBotToTarget = Math.atan2(target.y - bot.y, target.x - bot.x)
-        return (bot as Warrior).dash({
+        const destination: IPosition = {
             x: bot.x + Math.cos(angleFromBotToTarget) * 49.9,
             y: bot.y + Math.sin(angleFromBotToTarget) * 49.9
-        })
+        }
+        if (!Pathfinder.canWalkPath(destination, target)) return // Something is in the way
+        return (bot as Warrior).dash(destination)
     }
 }
 
