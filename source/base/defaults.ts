@@ -25,9 +25,10 @@ export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
     "candy1", // Pink candy
     "candycane",
     "candypop",
-    "gem0",
-    "gem1",
+    "gem0", // Green gem
+    "gem1", // Red gem
     "gemfragment",
+    "greenenvelope",
     "leather",
     "mistletoe",
     "seashell",
