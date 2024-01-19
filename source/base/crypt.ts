@@ -52,20 +52,14 @@ export function getCryptWaitTime(map: MapName): number {
     const year = today.getFullYear()
 
     if (
-        // From last week of November
-        (month >= 11 && today >= new Date(year, 10, 25)) ||
-        // To second week of January
-        (month == 0 && today <= new Date(year, 0, 14))
+        // From the beginning of October
+        (month >= 9) ||
+        // To the end of April
+        (month <= 3)
     ) {
-        // No wait time during Christmas event
+        // Anytime the server resets, 
         return 0
     }
-
-    // TODO: Chinese new year -> 0
-
-    // TODO: Easter -> 0
-
-    // TODO: Halloween -> 0
 
     switch (map) {
         case "crypt":
