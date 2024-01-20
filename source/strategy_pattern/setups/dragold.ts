@@ -27,21 +27,6 @@ class WarriorDragoldAttackStrategy extends WarriorAttackStrategy {
     }
 }
 
-class RogueDragoldAttackStrategy extends RogueAttackStrategy {
-    protected async attack(bot: Rogue): Promise<void> {
-        const dragold = bot.getEntity({ type: "dragold" })
-        if (dragold?.s?.multi_burn?.ms < bot.ping * 4) {
-            // Go invisible to dodge the multiburn
-            if (!bot.s.invis && bot.canUse("invis")) {
-                await bot.invis()
-            }
-            if (bot.s.invis) return
-        }
-
-        super.attack(bot)
-    }
-}
-
 // TODO: Add a strategy for mages to blink if dragold's fire projectile is incoming
 // TODO: Add a move strategy to attack from the furthest position away to give mages time to blink, or other characters to run and potentially avoid the projectile
 
@@ -199,7 +184,7 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "rogue",
-                        attack: new RogueDragoldAttackStrategy({
+                        attack: new RogueAttackStrategy({
                             contexts: contexts,
                             typeList: types,
                             hasTarget: true,

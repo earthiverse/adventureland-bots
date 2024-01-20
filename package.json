@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
+    "@pyroscope/nodejs": "^0.2.6",
     "@types/cors": "^2.8.13",
     "alclient": "^0.19.9",
     "algui": "^0.1.22",
