@@ -48,6 +48,7 @@ export class PartyHealStrategy implements Strategy<Priest> {
         if (!bot.canUse("partyheal")) return
         if (!bot.party) return // Not in a party
 
+        // Heal bots we're running (this will work across maps)
         for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
             const friend = context.bot
             if (friend.rip) continue
@@ -57,6 +58,17 @@ export class PartyHealStrategy implements Strategy<Priest> {
                 (this.options.healWhenLessThan.hp !== undefined && friend.hp < this.options.healWhenLessThan.hp)
                 || (this.options.healWhenLessThan.hpRatio !== undefined && (friend.hp / friend.max_hp) < this.options.healWhenLessThan.hpRatio)
                 || (this.options.healWhenLessThan.hpMissing !== undefined && (friend.max_hp - friend.hp > this.options.healWhenLessThan.hpMissing))
+            ) {
+                return bot.partyHeal().catch(console.error)
+            }
+        }
+
+        // Heal those that are in our party that we see nearby
+        for (const player of bot.getPlayers({ isPartyMember: true })) {
+            if (
+                (this.options.healWhenLessThan.hp !== undefined && player.hp < this.options.healWhenLessThan.hp)
+                || (this.options.healWhenLessThan.hpRatio !== undefined && (player.hp / player.max_hp) < this.options.healWhenLessThan.hpRatio)
+                || (this.options.healWhenLessThan.hpMissing !== undefined && (player.max_hp - player.hp > this.options.healWhenLessThan.hpMissing))
             ) {
                 return bot.partyHeal().catch(console.error)
             }
