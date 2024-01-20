@@ -4,6 +4,7 @@ import { AlwaysInvisStrategy } from "../strategy_pattern/strategies/invis.js"
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { CRYPT_MONSTERS } from "../base/crypt.js"
 import { sleep } from "../base/general.js"
+import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
 
 const credentials = "../../credentials.json"
 const rogueName = "earthRog"
@@ -13,7 +14,7 @@ const serverIdentifier: ServerIdentifier = "III"
 async function run() {
     console.log("Connecting...")
     await Promise.all([AL.Game.loginJSONFile(credentials, false), AL.Game.getGData(true)])
-    
+
     await AL.Pathfinder.prepare(AL.Game.G, { cheat: false })
     const rogue = await AL.Game.startRogue(rogueName, serverRegion, serverIdentifier)
 
@@ -22,10 +23,11 @@ async function run() {
         serverRegion: serverRegion,
         map: "crypt"
     }).lean().exec();
-    
+
     const context = new Strategist<Rogue>(rogue)
     context.applyStrategy(new AlwaysInvisStrategy())
     context.applyStrategy(new RespawnStrategy())
+    context.applyStrategy(new AvoidDeathStrategy())
     // TODO: Add strategy to scare if we have a target
 
     let num = 1
