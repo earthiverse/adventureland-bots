@@ -38,7 +38,9 @@ export function constructPinkGooSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_FAST },
+                            generateEnsureEquipped: {
+                                prefer: { ...MAGE_FAST }
+                            },
                             typeList: typeList,
                         }),
                         move: pinkgooMoveStrategy
@@ -78,7 +80,9 @@ export function constructPinkGooSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...PRIEST_FAST },
+                            generateEnsureEquipped: {
+                                prefer: { ...PRIEST_FAST }
+                            },
                             typeList: typeList,
                         }),
                         move: pinkgooMoveStrategy

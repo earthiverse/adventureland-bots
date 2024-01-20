@@ -25,7 +25,9 @@ export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharact
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_FAST },
+                            generateEnsureEquipped: {
+                                prefer: { ...MAGE_FAST }
+                            },
                             typeList: typeList,
                         }),
                         move: wabbitMoveStrategy
@@ -52,7 +54,9 @@ export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharact
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: {
+                                prefer: { ...PRIEST_LUCK }
+                            },
                             typeList: typeList,
                         }),
                         move: wabbitMoveStrategy
@@ -92,9 +96,11 @@ export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharact
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: {
-                                earring2: { name: "dexearringx" },
-                                orb: { name: "jacko" },
+                            generateEnsureEquipped: {
+                                prefer: {
+                                    earring2: { name: "dexearringx" },
+                                    orb: { name: "jacko" },
+                                }
                             },
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,

@@ -13,37 +13,41 @@ const typeList: MonsterName[] = ["grinch"]
 
 class MageGrinchAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
-        super.onApply(bot)
+        this.options.generateEnsureEquipped = this.options.generateEnsureEquipped ?? {}
+        this.options.generateEnsureEquipped.prefer = this.options.generateEnsureEquipped.prefer ?? {}
         if (bot.isPVP()) {
             // No splash damage
-            this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
         } else {
             // Splash damage
-            this.options.ensureEquipped.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
-            delete this.options.ensureEquipped.offhand
+            this.options.generateEnsureEquipped.prefer.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
+            delete this.options.generateEnsureEquipped.prefer.offhand
         }
+        super.onApply(bot)
     }
 }
 
 class WarriorGrinchAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
-        super.onApply(bot)
+        this.options.generateEnsureEquipped = this.options.generateEnsureEquipped ?? {}
+        this.options.generateEnsureEquipped.prefer = this.options.generateEnsureEquipped.prefer ?? {}
         if (bot.isPVP()) {
             // No Splash Damage
             this.options.disableCleave = true
-            this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.offhand = { name: "fireblade", filters: { returnHighestLevel: true } }
             delete this.options.enableEquipForStomp
             delete this.options.enableEquipForCleave
         } else {
             // Splash Damage
             delete this.options.disableCleave
-            this.options.ensureEquipped.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.offhand = { name: "ololipop", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.offhand = { name: "ololipop", filters: { returnHighestLevel: true } }
             this.options.enableEquipForStomp = true
             this.options.enableEquipForCleave = true
         }
+        super.onApply(bot)
     }
 }
 

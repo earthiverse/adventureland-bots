@@ -25,9 +25,9 @@ export function constructCGooSetup(contexts: Strategist<PingCompensatedCharacter
                             contexts: contexts,
                             enableEquipForCleave: true,
                             generateEnsureEquipped: { attributes: ["armor", "str", "attack"] },
-                            typeList: typeList
+                            typeList: typeList,
                         }),
-                        move: cgooMoveStrategy
+                        move: cgooMoveStrategy,
                     }
                 ]
             },

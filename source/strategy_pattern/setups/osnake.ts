@@ -26,7 +26,9 @@ export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharact
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_FAST },
+                            generateEnsureEquipped: {
+                                prefer: { ...MAGE_FAST }
+                            },
                             typeList: attackMonsters
                         }),
                         move: moveStrategy
@@ -38,7 +40,13 @@ export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharact
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, ensureEquipped: { ...PRIEST_FAST }, typeList: attackMonsters }),
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                prefer: { ...PRIEST_FAST }
+                            },
+                            typeList: attackMonsters
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -48,7 +56,10 @@ export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharact
                 characters: [
                     {
                         ctype: "ranger",
-                        attack: new RangerAttackStrategy({ contexts: contexts, typeList: attackMonsters }),
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            typeList: attackMonsters
+                        }),
                         move: moveStrategy
                     }
                 ]
@@ -61,7 +72,9 @@ export function constructOSnakeSetup(contexts: Strategist<PingCompensatedCharact
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                prefer: { ...WARRIOR_SPLASH }
+                            },
                             typeList: attackMonsters
                         }),
                         move: moveStrategy

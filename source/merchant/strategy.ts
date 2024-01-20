@@ -412,6 +412,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         this.debug(bot, `Found an empty trade slot (${slotType}), looking for items...`)
 
                         // Look for an item to trade
+                        let found = false
                         for (const [item, price] of this.options.enableListings.itemsToList) {
                             const gItem = AL.Game.G.items[item]
                             const options: LocateItemsFilters = { locked: false, special: false }
@@ -424,11 +425,12 @@ export class MerchantStrategy implements Strategy<Merchant> {
                                 this.debug(bot, `Listing ${item} for ${price}...`)
                                 // We found an item to list, list it
                                 const itemPosition = bot.locateItem(item, bot.items, options)
+                                found = true
                                 await bot.listForSale(itemPosition, price).catch(console.error)
                                 break
                             }
                         }
-                        if (bot.esize <= 1) break
+                        if (!found || bot.esize <= 1) break
                     }
 
                     // Close stand

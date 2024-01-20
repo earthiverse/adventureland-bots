@@ -18,7 +18,9 @@ export function constructWolfSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                prefer: { ...MAGE_SPLASH }
+                            },
                             targetingPartyMember: true,
                             type: "wolf"
                         }),
@@ -29,7 +31,9 @@ export function constructWolfSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                prefer: { ...PRIEST_ARMOR }
+                            },
                             type: "wolf",
                         }),
                         move: new ImprovedMoveStrategy("wolf")
@@ -40,7 +44,9 @@ export function constructWolfSetup(contexts: Strategist<PingCompensatedCharacter
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                prefer: { ...WARRIOR_SPLASH }
+                            },
                             targetingPartyMember: true,
                             typeList: ["wolf", "stompy"]
                         }),

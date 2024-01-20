@@ -23,7 +23,9 @@ export function constructSquigToadSetup(contexts: Strategist<PingCompensatedChar
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_FAST },
+                            generateEnsureEquipped: {
+                                prefer: { ...MAGE_FAST },
+                            },
                             typeList: attackTypes
                         }),
                         move: moveStrategy
@@ -58,7 +60,9 @@ export function constructSquigToadSetup(contexts: Strategist<PingCompensatedChar
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                prefer: { ...WARRIOR_SPLASH },
+                            },
                             typeList: attackTypes
                         }),
                         move: moveStrategy

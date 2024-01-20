@@ -15,7 +15,9 @@ export function constructTinyPSetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...WARRIOR_STOMP },
+                            generateEnsureEquipped: {
+                                prefer: { ...WARRIOR_STOMP }
+                            },
                             isDisabled: true,
                             type: "tinyp",
                         }),

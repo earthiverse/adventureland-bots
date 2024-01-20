@@ -32,7 +32,10 @@ export function constructJrSetup(contexts: Strategist<PingCompensatedCharacter>[
                             generateEnsureEquipped: { attributes: ["luck"] },
                             type: "jr"
                         }),
-                        move: new ImprovedMoveStrategy("jr")
+                        move: new ImprovedMoveStrategy("jr"),
+                        require: {
+                            items: ["jacko"]
+                        }
                     }
                 ]
             }

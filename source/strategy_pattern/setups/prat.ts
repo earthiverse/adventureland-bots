@@ -19,7 +19,9 @@ export function constructPRatSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_ARMOR },
+                            generateEnsureEquipped: {
+                                prefer: { ...PRIEST_ARMOR }
+                            },
                             type: "prat",
                         }),
                         move: new HoldPositionMoveStrategy(spawn)
@@ -29,7 +31,9 @@ export function constructPRatSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                prefer: { ...WARRIOR_SPLASH }
+                            },
                             enableGreedyAggro: true,
                             type: "prat"
                         }),

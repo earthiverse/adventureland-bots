@@ -18,7 +18,9 @@ export function constructWolfieSetup(contexts: Strategist<PingCompensatedCharact
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                prefer: { ...MAGE_SPLASH }
+                            },
                             type: "wolfie"
                         }),
                         move: new ImprovedMoveStrategy("wolfie")
@@ -28,7 +30,9 @@ export function constructWolfieSetup(contexts: Strategist<PingCompensatedCharact
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: {
+                                prefer: { ...PRIEST_LUCK }
+                            },
                             type: "wolfie",
                         }),
                         move: new ImprovedMoveStrategy("wolfie")
@@ -38,7 +42,9 @@ export function constructWolfieSetup(contexts: Strategist<PingCompensatedCharact
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                prefer: { ...WARRIOR_SPLASH }
+                            },
                             enableGreedyAggro: true,
                             type: "wolfie"
                         }),

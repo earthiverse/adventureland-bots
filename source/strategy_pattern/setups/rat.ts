@@ -20,7 +20,9 @@ export function constructRatSetup(contexts: Strategist<PingCompensatedCharacter>
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: { ...MAGE_FAST },
+                            generateEnsureEquipped: {
+                                prefer: { ...MAGE_FAST }
+                            },
                             type: "rat"
                         }),
                         move: moveStrategy
@@ -35,7 +37,9 @@ export function constructRatSetup(contexts: Strategist<PingCompensatedCharacter>
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableCurse: true,
-                            ensureEquipped: { ...PRIEST_FAST },
+                            generateEnsureEquipped: {
+                                prefer: { ...PRIEST_FAST }
+                            },
                             type: "rat"
                         }),
                         move: moveStrategy
@@ -62,7 +66,9 @@ export function constructRatSetup(contexts: Strategist<PingCompensatedCharacter>
                             disableAgitate: true,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                prefer: { ...WARRIOR_SPLASH }
+                            },
                             type: "rat"
                         }),
                         move: moveStrategy

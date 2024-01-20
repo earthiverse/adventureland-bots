@@ -87,10 +87,13 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
-                            ensureEquipped: {
-                                ...UNEQUIP_EVERYTHING,
-                                earring2: { name: "dexearringx" },
-                                orb: { name: "jacko" },
+                            generateEnsureEquipped: {
+                                prefer: {
+                                    // TODO: Will this work?
+                                    ...UNEQUIP_EVERYTHING,
+                                    earring2: { name: "dexearringx" },
+                                    orb: { name: "jacko" },
+                                }
                             },
                             typeList: typeList
                         }),

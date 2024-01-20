@@ -17,7 +17,10 @@ export function constructGreenJrSetup(contexts: Strategist<PingCompensatedCharac
                             generateEnsureEquipped: { attributes: ["int", "attack"] },
                             typeList: ["greenjr", "osnake", "snake"]
                         }),
-                        move: new ImprovedMoveStrategy("greenjr")
+                        move: new ImprovedMoveStrategy("greenjr"),
+                        require: {
+                            items: ["jacko"]
+                        }
                     }
                 ]
             }

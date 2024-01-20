@@ -11,51 +11,56 @@ import { CharacterConfig, Setup } from "./base"
 
 class MageSnowmanAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
-        super.onApply(bot)
+        this.options.generateEnsureEquipped = this.options.generateEnsureEquipped ?? {}
+        this.options.generateEnsureEquipped.prefer = this.options.generateEnsureEquipped.prefer ?? {}
         if (bot.isPVP()) {
             // No splash damage
-            this.options.ensureEquipped.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
         } else {
             // Splash damage & additional monsters
-            this.options.ensureEquipped.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
-            delete this.options.ensureEquipped.offhand
+            this.options.generateEnsureEquipped.prefer.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
+            delete this.options.generateEnsureEquipped.prefer.offhand
         }
+        super.onApply(bot)
     }
 }
 
 class PriestSnowmanAttackStrategy extends PriestAttackStrategy {
     public onApply(bot: Priest): void {
-        super.onApply(bot)
+        this.options.generateEnsureEquipped = this.options.generateEnsureEquipped ?? {}
+        this.options.generateEnsureEquipped.prefer = this.options.generateEnsureEquipped.prefer ?? {}
+        this.options.generateEnsureEquipped.prefer.orb = { name: "jacko", filters: { returnHighestLevel: true } }
         if (bot.isPVP()) {
-            this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
         } else {
             // Additional monsters
-            this.options.ensureEquipped.orb = { name: "jacko", filters: { returnHighestLevel: true } }
-            this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
         }
+        super.onApply(bot)
     }
 }
 
 class WarriorSnowmanAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
-        super.onApply(bot)
+        this.options.generateEnsureEquipped = this.options.generateEnsureEquipped ?? {}
+        this.options.generateEnsureEquipped.prefer = this.options.generateEnsureEquipped.prefer ?? {}
         if (bot.isPVP()) {
             // No Splash Damage
             this.options.disableCleave = true
-            this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
-                this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
-                this.options.ensureEquipped.ring1 = { name: "strring", filters: { returnHighestLevel: true } },
-                delete this.options.enableEquipForCleave
+            delete this.options.enableEquipForCleave
+            this.options.generateEnsureEquipped.prefer.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.offhand = { name: "fireblade", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "strring", filters: { returnHighestLevel: true } }
         } else {
             // Splash Damage & additional monsters
             delete this.options.disableCleave
-            this.options.ensureEquipped.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } },
-                this.options.ensureEquipped.offhand = { name: "ololipop", filters: { returnHighestLevel: true } },
-                this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
             this.options.enableEquipForCleave = true
+            this.options.generateEnsureEquipped.prefer.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.offhand = { name: "ololipop", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
         }
+        super.onApply(bot)
     }
 }
 

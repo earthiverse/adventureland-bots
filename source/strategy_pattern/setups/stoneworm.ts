@@ -21,7 +21,9 @@ export function constructStoneWormSetup(contexts: Strategist<PingCompensatedChar
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...MAGE_SPLASH },
+                            generateEnsureEquipped: {
+                                prefer: { ...MAGE_SPLASH }
+                            },
                             type: "stoneworm"
                         }),
                         move: moveStrategy
@@ -31,7 +33,9 @@ export function constructStoneWormSetup(contexts: Strategist<PingCompensatedChar
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            ensureEquipped: { ...PRIEST_LUCK },
+                            generateEnsureEquipped: {
+                                prefer: { ...PRIEST_LUCK }
+                            },
                             type: "stoneworm",
                         }),
                         move: moveStrategy
@@ -42,7 +46,9 @@ export function constructStoneWormSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
-                            ensureEquipped: { ...WARRIOR_SPLASH },
+                            generateEnsureEquipped: {
+                                prefer: { ...WARRIOR_SPLASH }
+                            },
                             type: "stoneworm"
                         }),
                         move: moveStrategy
