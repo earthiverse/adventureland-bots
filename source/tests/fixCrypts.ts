@@ -22,6 +22,8 @@ async function run() {
         serverIdentifier: serverIdentifier,
         serverRegion: serverRegion,
         map: "crypt"
+    }).sort({
+        map: 1
     }).lean().exec();
 
     const context = new Strategist<Rogue>(rogue)
@@ -65,6 +67,15 @@ async function run() {
         }
         context.bot.socket.on("entities", listener)
 
+        const prepareNext = async function (removeEntities = false) {
+            context.bot.socket.off("entities", listener)
+            if (removeEntities) {
+                await AL.InstanceModel.deleteOne({ _id: instance._id }).lean().exec()
+                await AL.EntityModel.deleteMany({ in: instance.in, serverIdentifier: instance.serverIdentifier, serverRegion: instance.serverRegion }).lean().exec()
+            }
+            num += 1
+        }
+
         // Top right of map
         await rogue.smartMove({
             in: instance.in,
@@ -75,6 +86,18 @@ async function run() {
             console.error(e)
             error = true
         })
+
+        if (rogue.map !== instance.map) {
+            try {
+                await rogue.enter(instance.map, instance.in)
+            } catch (e) {
+                if (e.message?.startsWith("We don't have the required item to enter")) {
+                    console.debug("Instance expired! Deleting...")
+                    prepareNext(true)
+                    continue
+                }
+            }
+        }
 
         // Near crypt bats
         await rogue.smartMove({
@@ -98,13 +121,12 @@ async function run() {
             error = true
         })
 
-        context.bot.socket.off("entities", listener)
         if (found.size === 0 && !error) {
             console.debug(`No monsters were found on ${instance.map} ${instance.in}, deleting...`)
-            await AL.InstanceModel.deleteOne({ _id: instance._id }).lean().exec()
-            await AL.EntityModel.deleteMany({ in: instance.in, serverIdentifier: instance.serverIdentifier, serverRegion: instance.serverRegion }).lean().exec()
+            prepareNext(true)
+        } else {
+            prepareNext()
         }
-        num += 1
     }
 
     console.debug("Disconnecting...")
