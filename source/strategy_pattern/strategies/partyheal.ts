@@ -49,7 +49,8 @@ export class PartyHealStrategy implements Strategy<Priest> {
         if (!bot.party) return // Not in a party
 
         // Heal bots we're running (this will work across maps)
-        for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
+        const contexts = filterContexts(this.contexts, { serverData: bot.serverData })
+        for (const context of contexts) {
             const friend = context.bot
             if (friend.rip) continue
             if (friend.party !== bot.party) continue // They're in a different party
@@ -63,14 +64,18 @@ export class PartyHealStrategy implements Strategy<Priest> {
             }
         }
 
-        // Heal those that are in our party that we see nearby
-        for (const player of bot.getPlayers({ isPartyMember: true })) {
-            if (
-                (this.options.healWhenLessThan.hp !== undefined && player.hp < this.options.healWhenLessThan.hp)
-                || (this.options.healWhenLessThan.hpRatio !== undefined && (player.hp / player.max_hp) < this.options.healWhenLessThan.hpRatio)
-                || (this.options.healWhenLessThan.hpMissing !== undefined && (player.max_hp - player.hp > this.options.healWhenLessThan.hpMissing))
-            ) {
-                return bot.partyHeal().catch(console.error)
+        for (const context of contexts) {
+            const friend = context.bot
+            // Heal those that are in our party that we see nearby
+            for (const player of friend.getPlayers({ isDead: false })) {
+                if (bot.party !== player.party) continue // They're in a different party
+                if (
+                    (this.options.healWhenLessThan.hp !== undefined && player.hp < this.options.healWhenLessThan.hp)
+                    || (this.options.healWhenLessThan.hpRatio !== undefined && (player.hp / player.max_hp) < this.options.healWhenLessThan.hpRatio)
+                    || (this.options.healWhenLessThan.hpMissing !== undefined && (player.max_hp - player.hp > this.options.healWhenLessThan.hpMissing))
+                ) {
+                    return bot.partyHeal().catch(console.error)
+                }
             }
         }
     }
