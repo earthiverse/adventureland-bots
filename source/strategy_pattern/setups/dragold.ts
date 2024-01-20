@@ -199,7 +199,7 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                 characters: [
                     {
                         ctype: "rogue",
-                        attack: new RogueAttackStrategy({
+                        attack: new RogueDragoldAttackStrategy({
                             contexts: contexts,
                             typeList: types,
                             hasTarget: true,
