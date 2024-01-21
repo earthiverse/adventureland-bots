@@ -109,7 +109,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
             }
 
             if (bot.canKillInOneShot(target)) this.preventOverkill(bot, target)
-            
+
             // Only energize if there are more targets around
             if (targets.size > 0) this.getEnergizeFromOther(bot).catch(suppress_errors)
 
@@ -182,6 +182,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
 
     protected async applyCurse(bot: Priest, entity: Entity) {
         if (!entity) return // No entity
+        if (entity.s.curse) return // Already cursed
         if (entity.immune && !AL.Game.G.skills.curse.pierces_immunity) return // Can't curse
         if (!bot.canUse("curse")) return
         if (bot.canKillInOneShot(entity) || entity.willBurnToDeath() || entity.willDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)) return // Would be a waste to use if we can kill it right away
