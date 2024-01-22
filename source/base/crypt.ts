@@ -9,8 +9,6 @@ export const CRYPT_WAIT_TIME = 1.944e8
 export const CRYPT_ADD_TIME = 8.64e7
 
 export async function addCryptMonstersToDB(bot: Character, map = bot.map, instance: string = bot.in) {
-    if (map !== "crypt") throw "Only call this function in a crypt."
-
     const data = []
     const now = Date.now()
 
