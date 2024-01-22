@@ -106,8 +106,8 @@ export const PRIEST_LUCK: EnsureEquipped = {
 export const PRIEST_FAST: EnsureEquipped = {
     ...PRIEST_NORMAL,
     mainhand: { name: "wand", filters: RETURN_HIGHEST },
+    offhand: UNEQUIP
 }
-delete PRIEST_FAST.offhand
 
 export const WARRIOR_NORMAL: EnsureEquipped = {
     amulet: { name: "snring", filters: RETURN_HIGHEST },
