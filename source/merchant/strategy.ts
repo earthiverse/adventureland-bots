@@ -886,9 +886,12 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         // Walk to the NPC
                         const npc = AL.Pathfinder.locateCraftNPC(itemToCraft)
                         this.debug(bot, `Moving to NPC to craft ${itemToCraft}`)
-                        await bot.smartMove(npc, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+                        await bot.smartMove(npc, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 }).catch(console.error)
                     }
-                    bot.craft(itemToCraft).catch(console.error)
+                    if (bot.canCraft(itemToCraft)) {
+                        this.debug(bot, `Crafting ${itemToCraft}`)
+                        await bot.craft(itemToCraft).catch(console.error)
+                    }
                     break
                 }
             }
@@ -1203,6 +1206,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 for (const key in this.options.enableInstanceProvider) {
                     const checkKey = `${bot.id}_instance_check_${key}`
                     if (!checkOnlyEveryMS(checkKey, 300_000, false)) continue // Check every 5 minutes
+                    this.debug(bot, `InstanceProvider - checking for ${key}`)
                     const map = key as MapName
 
                     if (this.options.enableInstanceProvider[map].maxInstances) {
@@ -1211,7 +1215,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
                             serverIdentifier: bot.serverData.name,
                             serverRegion: bot.serverData.region,
                         }).exec()
-                        if (numInstances >= this.options.enableInstanceProvider[map].maxInstances) continue // Already have plenty open
+                        if (numInstances >= this.options.enableInstanceProvider[map].maxInstances) {
+                            this.debug(bot, `InstanceProvider - reached maxInstances for ${key} (${numInstances})`)
+                            continue // Already have plenty open
+                        }
                     }
 
                     const instanceMonster = await AL.EntityModel.findOne({
@@ -1228,6 +1235,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         .exec()
 
                     if (instanceMonster) {
+                        this.debug(bot, `InstanceProvider - looking for ${instanceMonster.type} in ${map} ${instanceMonster.in}`)
                         const cryptListener = async (data: NewMapData) => {
                             if (data.name !== map) return
                             if (data.in == instanceMonster.in) {
@@ -1265,11 +1273,13 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     for (const key in this.options.enableInstanceProvider) {
                         const checkKey = `${bot.id}_instance_open_${key}`
                         if (!checkOnlyEveryMS(checkKey, 1.8e6, false)) continue // Open a new instance no more than once an hour
+                        this.debug(bot, `InstanceProvider - checking if we can open a new ${key} instance`)
                         const map = key as MapName
 
                         // Open a new crypt
                         const item = getKeyForCrypt(map)
                         if (!bot.hasItem(item)) {
+                            this.debug(bot, `InstanceProvider - looking for a key for ${key}`)
                             // We don't have a key, check our bank for one
                             const items = new Set<ItemName>([...this.options.itemsToHold, item])
                             await bot.smartMove(bankingPosition)
@@ -1301,6 +1311,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         }
 
                         if (bot.hasItem(item)) {
+                            this.debug(bot, `InstanceProvider - opening a new ${key} instance`)
                             const cryptListener = async (data: NewMapData) => {
                                 if (data.name !== map) return
                                 await addCryptMonstersToDB(bot, map, data.in)
