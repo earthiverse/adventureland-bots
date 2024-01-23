@@ -331,6 +331,13 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
         for (const slotName in generate.prefer) {
             const slotType = slotName as SlotType
             const ensureEquippedSlot = generate.prefer[slotType]
+
+            if (ensureEquippedSlot.unequip) {
+                // We don't want anything in this slot
+                toEquip[slotType] = ensureEquippedSlot
+                continue
+            }
+
             if (
                 bot.isEquipped(ensureEquippedSlot.name)
                 || !bot.hasItem(ensureEquippedSlot.name, bot.items, ensureEquippedSlot.filters)
