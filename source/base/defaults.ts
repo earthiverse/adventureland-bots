@@ -79,6 +79,7 @@ export const DEFAULT_MERCHANT_REPLENISHABLES = new Map<ItemName, number>([
 ])
 export const DEFAULT_REPLENISH_RATIO = 0.5
 export const EXCESS_ITEMS_SELL = new Map<ItemName, number>([
+    ["beekey" as ItemName, 1],
     ["cdragon", 5],
     ["eggnog", 3],
     ["essenceoflife", 5],
