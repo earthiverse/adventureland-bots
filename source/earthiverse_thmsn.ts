@@ -81,7 +81,6 @@ for (const region in AL.Game.servers) {
 
 // Toggles
 const ENABLE_EVENTS = true
-const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 let ENABLE_MONSTERHUNTS = true
 const DEFAULT_MONSTERS: MonsterName[] = ["bee"]
@@ -582,91 +581,9 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
     try {
         const freeContexts: Strategist<PingCompensatedCharacter>[] = []
 
-        // Check for server hop
-        const bot1 = contexts[0]?.bot
-        if (!bot1) return
-
-        if (ENABLE_SERVER_HOPS) {
-            // Default
-            TARGET_REGION = DEFAULT_REGION
-            TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
-
-            // Lunar New Year
-            if (bot1.S.lunarnewyear) {
-                const monster = (await getLunarNewYearMonsterPriority(true))[0]
-                if (monster) {
-                    // We want to switch servers
-                    TARGET_IDENTIFIER = monster.serverIdentifier
-                    TARGET_REGION = monster.serverRegion
-                }
-            }
-
-            // Halloween
-            if (bot1.S.halloween) {
-                const monster = (await getHalloweenMonsterPriority(true))[0]
-                if (monster) {
-                    // We want to switch servers
-                    TARGET_IDENTIFIER = monster.serverIdentifier
-                    TARGET_REGION = monster.serverRegion
-                }
-            }
-
-            // Christmas
-            if (bot1.S.holidayseason) {
-                // NOTE: We're going on PVP as of 2023-12-16
-                const monster = (await getHolidaySeasonMonsterPriority(false))[0]
-                if (monster) {
-                    // We want to switch servers
-                    TARGET_IDENTIFIER = monster.serverIdentifier
-                    TARGET_REGION = monster.serverRegion
-                }
-            }
-
-            // Other servers
-            if (TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
-                const monster = (await getServerHopMonsterPriority(true))[0]
-                if (monster) {
-                    // We want to switch servers
-                    TARGET_IDENTIFIER = monster.serverIdentifier
-                    TARGET_REGION = monster.serverRegion
-                }
-            }
-
-            // Goobrawl
-            if (bot1.S.goobrawl && !bot1.s?.hopsickness) {
-                // Goobrawl is active, stay on the current server
-                TARGET_IDENTIFIER = bot1.serverData.name
-                TARGET_REGION = bot1.serverData.region
-            }
-        }
-
-        // Override
-        if (OVERRIDE_REGION && OVERRIDE_IDENTIFIER) {
-            TARGET_REGION = OVERRIDE_REGION
-            TARGET_IDENTIFIER = OVERRIDE_IDENTIFIER
-        }
-
         for (const context of contexts) {
             if (!context.isReady()) continue
             const bot = context.bot
-
-            if (
-                context.uptime() > 60_000 &&
-                (bot.serverData.region !== TARGET_REGION || bot.serverData.name !== TARGET_IDENTIFIER)
-            ) {
-                await sleep(1000)
-                console.log(
-                    bot.id,
-                    "is changing server from",
-                    bot.serverData.region,
-                    bot.serverData.name,
-                    "to",
-                    TARGET_REGION,
-                    TARGET_IDENTIFIER,
-                )
-                context.changeServer(TARGET_REGION, TARGET_IDENTIFIER).catch(console.error)
-                continue
-            }
 
             if (bot.ctype == "merchant") continue
 
