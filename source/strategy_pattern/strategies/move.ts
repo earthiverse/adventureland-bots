@@ -943,7 +943,7 @@ export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
     protected async kite(bot: Character, entity: Entity) {
         if (bot.map !== entity.map || bot.in !== entity.in) {
             // We're on different maps
-            if (!bot.smartMoving) bot.smartMove(entity, { getWithin: bot.range })
+            if (!bot.smartMoving) bot.smartMove(entity, { getWithin: bot.range, useBlink: true })
             return
         }
 
