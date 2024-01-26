@@ -115,7 +115,7 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
             if (!criteria) continue // We don't want to sell this item
             if (!criteria.some((a) => {
                 const level = a[0]
-                if (level != item.level) return false // Not the same level
+                if (level !== item.level) return false // Not the same level
 
                 const sellFor = a[1]
                 if (sellFor !== undefined && sellFor > AL.Game.G.items[item.name].g * AL.Constants.NPC_SELL_TAX) return false // We want more for this item than we can get from an NPC

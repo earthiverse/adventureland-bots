@@ -152,6 +152,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         // We can craft other capes at level 7
         upgradeUntilLevel: 7
     },
+    "beekey": {
+        sellExcess: 10
+    },
+    "beewings": {
+        sell: true,
+        sellPrice: "npc"
+    },
     "bfangamulet": {
         buy: true,
         buyPrice: "ponty",
@@ -366,6 +373,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
         usePrimlingFromLevel: 7,
         useOfferingFromLevel: 9,
+    },
+    "honeypot": {
+        craft: true
     },
     "hotchocolate": {
         sellExcess: 9999 * 3
@@ -736,7 +746,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "xpbooster": {
         hold: true
     }
-}
+} as ItemConfig
 
 export function wantToDestroy(itemConfig: ItemConfig, item: ItemData): boolean {
     if (item.l) return false // Locked
