@@ -540,7 +540,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
 
                     // Go find them
                     this.debug(bot, `Moving to ${friend.id} to offload things`)
-                    await bot.smartMove(friend, { getWithin: 25 })
+                    await bot.smartMove(friend, { getWithin: 25 }).catch(console.error)
                     if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
                         // We're not near them, so they must have moved, return so we can try again next loop
                         return
