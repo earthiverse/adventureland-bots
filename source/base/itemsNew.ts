@@ -153,7 +153,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         upgradeUntilLevel: 7,
         usePrimlingFromLevel: 5,
     },
-    bfangamulet: {
+    "beekey": {
+        sellExcess: 10
+    },
+    "beewings": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "bfangamulet": {
         buy: true,
         buyPrice: "ponty",
         craft: true,
@@ -381,8 +388,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         usePrimlingFromLevel: 7,
         useOfferingFromLevel: 9,
     },
-    hotchocolate: {
-        sellExcess: 9999 * 3,
+    "honeypot": {
+        craft: true
+    },
+    "hotchocolate": {
+        sellExcess: 9999 * 3
     },
     hpamulet: {
         sell: true,
@@ -834,7 +844,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: 500_000_000,
         useOfferingFromLevel: 0,
     },
-}
+} as ItemConfig
 
 export function wantToDestroy(itemConfig: ItemConfig, item: ItemData): boolean {
     if (item.l) return false // Locked
