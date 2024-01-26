@@ -1213,18 +1213,6 @@ export class MerchantStrategy implements Strategy<Merchant> {
                     this.debug(bot, `InstanceProvider - checking for ${key}`)
                     const map = key as MapName
 
-                    if (this.options.enableInstanceProvider[map].maxInstances) {
-                        const numInstances = await AL.InstanceModel.count({
-                            map: map,
-                            serverIdentifier: bot.serverData.name,
-                            serverRegion: bot.serverData.region,
-                        }).exec()
-                        if (numInstances >= this.options.enableInstanceProvider[map].maxInstances) {
-                            this.debug(bot, `InstanceProvider - reached maxInstances for ${key} (${numInstances})`)
-                            continue // Already have plenty open
-                        }
-                    }
-
                     const instanceMonster = await AL.EntityModel.findOne({
                         $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime(map) } }],
                         lastSeen: { $lt: Date.now() - 30_000 },
@@ -1279,6 +1267,18 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         if (!checkOnlyEveryMS(checkKey, 1.8e6, false)) continue // Open a new instance no more than once an hour
                         this.debug(bot, `InstanceProvider - checking if we can open a new ${key} instance`)
                         const map = key as MapName
+
+                        if (this.options.enableInstanceProvider[map].maxInstances) {
+                            const numInstances = await AL.InstanceModel.count({
+                                map: map,
+                                serverIdentifier: bot.serverData.name,
+                                serverRegion: bot.serverData.region,
+                            }).exec()
+                            if (numInstances >= this.options.enableInstanceProvider[map].maxInstances) {
+                                this.debug(bot, `InstanceProvider - reached maxInstances for ${key} (${numInstances})`)
+                                continue // Already have plenty open
+                            }
+                        }
 
                         // Open a new crypt
                         const item = getKeyForCrypt(map)
