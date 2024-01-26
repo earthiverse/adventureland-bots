@@ -712,9 +712,7 @@ const startMerchantContext = async () => {
             }
         },
         enableUpgrade: true,
-        // enableBuyAndUpgrade: {
-        //     upgradeToLevel: 8
-        // }
+        defaultPosition: { map: "main", x: -250, y: -125 }
     })
     CONTEXT.applyStrategy(debugStrategy)
     CONTEXT.applyStrategy(adminCommandStrategy)
