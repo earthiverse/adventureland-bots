@@ -122,6 +122,15 @@ const privateBuyStrategy = new BuyStrategy({
 })
 
 const privateItemsToSell = new Map<ItemName, [number, number][]>([
+    // Comment these out if upgrading them on our characters
+    ["coat", undefined],
+    ["helmet", undefined],
+    ["gloves", undefined],
+    ["pants", undefined],
+    ["shoes", undefined],
+
+    ["beekey" as ItemName, undefined],
+    ["beewings", undefined],
     ["cake", undefined],
     ["carrotsword", undefined],
     ["cclaw", undefined],
@@ -160,6 +169,7 @@ const privateItemsToSell = new Map<ItemName, [number, number][]>([
     ["rod", [[0, 1_000_000]]],
     ["shoes1", undefined],
     ["slimestaff", undefined],
+    ["smush", undefined],
     ["snowball", undefined],
     ["stand0", undefined],
     ["stinger", undefined],
@@ -168,10 +178,12 @@ const privateItemsToSell = new Map<ItemName, [number, number][]>([
     ["vboots", undefined],
     ["vgloves", undefined],
     ["vitearring", undefined],
+    ["vitring", undefined],
     ["warmscarf", undefined],
     ["wattire", undefined],
     ["wbreeches", undefined],
     ["wcap", undefined],
+    ["wgloves", undefined],
     ["wshoes", undefined],
     ["xmace", undefined],
     ["xmashat", undefined],

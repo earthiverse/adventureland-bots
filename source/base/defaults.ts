@@ -11,6 +11,7 @@ export const DEFAULT_CRAFTABLES = new Set<ItemName>([
     "carrotsword",
     "cclaw",
     "firestars",
+    "honeypot" as ItemName,
     "pouchbow",
     "resistancering",
     "snakeoil",
