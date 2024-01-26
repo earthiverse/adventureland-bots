@@ -158,6 +158,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         upgradeUntilLevel: 7,
         usePrimlingFromLevel: 5
     },
+    "beekey": {
+        sellExcess: 10
+    },
+    "beewings": {
+        sell: true,
+        sellPrice: "npc"
+    },
     "bfangamulet": {
         buy: true,
         buyPrice: "ponty",
@@ -383,6 +390,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
         usePrimlingFromLevel: 7,
         useOfferingFromLevel: 9,
+    },
+    "honeypot": {
+        craft: true
     },
     "hotchocolate": {
         sellExcess: 9999 * 3
@@ -791,7 +801,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "xpbooster": {
         hold: true
     }
-}
+} as ItemConfig
 
 export function wantToDestroy(itemConfig: ItemConfig, item: ItemData): boolean {
     if (item.l) return false // Locked
