@@ -1,4 +1,4 @@
-import AL, { Character, ItemName, MapName, MonsterName } from "alclient"
+import AL, { Character, GMap, ItemName, MapName, MonsterName } from "alclient"
 
 export const CRYPT_MONSTERS: MonsterName[] = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "vbat"]
 
@@ -81,4 +81,30 @@ export async function refreshCryptMonsters(bot: Character, map = bot.map, instan
     )
         .lean()
         .exec()
+}
+
+/**
+ * Removes the instance and monsters from the DB if we've killed all the monsters in it
+ */
+export async function cleanInstances() {
+    if (!AL.Database.connection) return
+
+    const instances = await AL.InstanceModel.find().lean().exec();
+    for (const instance of instances) {
+        let deleteInstance = true
+
+        for (const monster of (AL.Game.G.maps[instance.map] as GMap).monsters) {
+            const mtype = monster.type
+            if (!AL.Constants.SPECIAL_MONSTERS.includes(mtype) || instance.killed?.[mtype] >= Math.max(monster.count, 1)) {
+                continue // We've already killed them all
+            }
+            deleteInstance = false
+        }
+
+        if (deleteInstance) {
+            console.debug(`Removing ${instance.map} ${instance.in}...`)
+            await AL.InstanceModel.deleteOne({ _id: instance._id }).lean().exec()
+            await AL.EntityModel.deleteMany({ in: instance.in, serverIdentifier: instance.serverIdentifier, serverRegion: instance.serverRegion }).lean().exec()
+        }
+    }
 }

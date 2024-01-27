@@ -28,7 +28,7 @@ import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
-import { addCryptMonstersToDB, getCryptWaitTime, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
+import { addCryptMonstersToDB, cleanInstances, getCryptWaitTime, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
 import {
     DEFAULT_CRAFTABLES,
     DEFAULT_EXCHANGEABLES,
@@ -1203,6 +1203,10 @@ export class MerchantStrategy implements Strategy<Merchant> {
             }
 
             if (this.options.enableInstanceProvider && AL.Database.connection) {
+                if (checkOnlyEveryMS("cleanInstances", 300_000, true)) {
+                    await cleanInstances()
+                }
+
                 for (const key in this.options.enableInstanceProvider) {
                     const checkKey = `${bot.id}_instance_check_${key}`
                     if (!checkOnlyEveryMS(checkKey, 300_000, false)) continue // Check every 5 minutes
