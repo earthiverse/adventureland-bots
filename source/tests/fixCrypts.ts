@@ -5,6 +5,8 @@ import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { CRYPT_MONSTERS } from "../base/crypt.js"
 import { sleep } from "../base/general.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
+import { caveCryptEntrance } from "../base/locations.js"
+import { suppress_errors } from "../strategy_pattern/logging.js"
 
 const credentials = "../../credentials.json"
 const rogueName = "earthRog"
@@ -21,7 +23,6 @@ async function run() {
     const instances = await AL.InstanceModel.find({
         serverIdentifier: serverIdentifier,
         serverRegion: serverRegion,
-        map: "crypt"
     }).sort({
         map: 1
     }).lean().exec();
@@ -120,6 +121,9 @@ async function run() {
             console.error(e)
             error = true
         })
+        
+        // Exit the crypt
+        await rogue.smartMove(caveCryptEntrance).catch(suppress_errors)
 
         if (found.size === 0 && !error) {
             console.debug(`No monsters were found on ${instance.map} ${instance.in}, deleting...`)
