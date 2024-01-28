@@ -74,6 +74,7 @@ import { constructBeeSetup } from "./bee.js"
 import { constructIceRoamerHelperSetup, constructIceRoamerSetup } from "./iceroamer.js"
 import { constructCryptHelperSetup, constructCryptSetup } from "./crypt.js"
 import { constructXMageSetup, constructXmageHelperSetup } from "./xmage.js"
+import { constructBeeDungeonSetup } from "./beedungeon.js"
 
 export type Requirements = {
     [T in Attribute]?: number
@@ -385,6 +386,7 @@ export function constructGenericWithPriestSetup(
 
 export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]): Setups {
     const cryptSetup = constructCryptSetup(contexts)
+    const beeDungeonSetup = constructBeeDungeonSetup(contexts)
     const osnakeSetup = constructOSnakeSetup(contexts)
     const xmageSetup = constructXMageSetup(contexts)
 
@@ -402,6 +404,9 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         bat: constructGenericSetup(contexts, ["bat", "goldenbat", "phoenix", "mvampire"], true),
         bbpompom: constructBBPomPomSetup(contexts),
         bee: constructBeeSetup(contexts),
+        bee_drone: beeDungeonSetup,
+        bee_worker: beeDungeonSetup,
+        bee_queen: beeDungeonSetup,
         bgoo: constructRGooSetup(contexts),
         bigbird: constructBigBirdSetup(contexts),
         boar: constructBoarSetup(contexts),
@@ -470,7 +475,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         xmagen: xmageSetup,
         xmagex: xmageSetup,
         xscorpion: constructXScorpionSetup(contexts),
-    }
+    } as Setups
 }
 
 export function constructHelperSetups(contexts: Strategist<PingCompensatedCharacter>[]): Setups {
