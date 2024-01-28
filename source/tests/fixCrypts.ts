@@ -127,7 +127,7 @@ async function run() {
 
         if (found.size === 0 && !error) {
             console.debug(`No monsters were found on ${instance.map} ${instance.in}, deleting...`)
-            prepareNext(true)
+            await prepareNext(true)
         } else {
             prepareNext()
         }
