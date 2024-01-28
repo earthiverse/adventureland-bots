@@ -37,6 +37,8 @@ export async function addCryptMonstersToDB(bot: Character, map = bot.map, instan
 
 export function getKeyForCrypt(map: MapName): ItemName {
     switch (map) {
+        case "bee_dungeon" as MapName:
+            return "beekey" as ItemName
         case "crypt":
             return "cryptkey"
         case "winter_instance":
