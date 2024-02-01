@@ -58,6 +58,7 @@ export const miningSpot: NodeData = { map: "tunnel", x: -280, y: -10 }
 // Winterland
 export const winterlandArcticBees: NodeData = { map: "winterland", x: 1082, y: -873 }
 export const winterlandBoars: NodeData = { map: "winterland", x: 19.5, y: -1109 }
+export const winterlandXmageEntrance: NodeData = { map: "winterland", x: 1060, y: -2000 }
 
 // Winter Cave
 export const winterCaveBBPomPomsNearDoor: NodeData = { map: "winter_cave", x: 51, y: -164 }

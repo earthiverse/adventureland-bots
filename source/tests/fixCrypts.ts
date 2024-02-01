@@ -5,8 +5,9 @@ import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { CRYPT_MONSTERS } from "../base/crypt.js"
 import { sleep } from "../base/general.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
-import { caveCryptEntrance } from "../base/locations.js"
+import { caveCryptEntrance, winterlandXmageEntrance } from "../base/locations.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
+import { XMAGE_MONSTERS } from "../strategy_pattern/setups/xmage.js"
 
 const credentials = "../../credentials.json"
 const rogueName = "earthRog"
@@ -53,7 +54,7 @@ async function run() {
 
         const listener = (data: EntitiesData) => {
             for (const monster of data.monsters) {
-                if (CRYPT_MONSTERS.includes(monster.type)) {
+                if (CRYPT_MONSTERS.includes(monster.type) || XMAGE_MONSTERS.includes(monster.type)) {
                     if (found.has(monster.type)) {
                         // Make sure the ID is in the set
                         const ids = found.get(monster.type)
@@ -77,53 +78,68 @@ async function run() {
             num += 1
         }
 
-        // Top right of map
-        await rogue.smartMove({
-            in: instance.in,
-            map: instance.map,
-            x: 2750,
-            y: -1750
-        }).catch((e) => {
-            console.error(e)
-            error = true
-        })
+        if (instance.map === 'crypt') {
+            // Top right of map
+            await rogue.smartMove({
+                in: instance.in,
+                map: instance.map,
+                x: 2750,
+                y: -1750
+            }).catch((e) => {
+                console.error(e)
+                error = true
+            })
 
-        if (rogue.map !== instance.map) {
-            try {
-                await rogue.enter(instance.map, instance.in)
-            } catch (e) {
-                if (e.message?.startsWith("We don't have the required item to enter")) {
-                    console.debug("Instance expired! Deleting...")
-                    prepareNext(true)
-                    continue
+            if (rogue.map !== instance.map) {
+                try {
+                    await rogue.enter(instance.map, instance.in)
+                } catch (e) {
+                    if (e.message?.startsWith("We don't have the required item to enter")) {
+                        console.debug("Instance expired! Deleting...")
+                        prepareNext(true)
+                        continue
+                    }
                 }
             }
+
+            // Near crypt bats
+            await rogue.smartMove({
+                in: instance.in,
+                map: instance.map,
+                x: 1450,
+                y: -550
+            }).catch((e) => {
+                console.error(e)
+                error = true
+            })
+
+            // End of crypt
+            await rogue.smartMove({
+                in: instance.in,
+                map: instance.map,
+                x: 2500,
+                y: 450
+            }).catch((e) => {
+                console.error(e)
+                error = true
+            })
+
+            // Exit the crypt
+            await rogue.smartMove(caveCryptEntrance).catch(suppress_errors)
+        } else if (instance.map === 'winter_instance') {
+            await rogue.smartMove({
+                in: instance.in,
+                map: instance.map,
+                x: -10,
+                y: 200
+            }).catch((e) => {
+                console.error(e)
+                error = true
+            })
+
+            // Exit the lair
+            await rogue.smartMove(winterlandXmageEntrance).catch(suppress_errors)
         }
-
-        // Near crypt bats
-        await rogue.smartMove({
-            in: instance.in,
-            map: instance.map,
-            x: 1450,
-            y: -550
-        }).catch((e) => {
-            console.error(e)
-            error = true
-        })
-
-        // End of crypt
-        await rogue.smartMove({
-            in: instance.in,
-            map: instance.map,
-            x: 2500,
-            y: 450
-        }).catch((e) => {
-            console.error(e)
-            error = true
-        })
-        
-        // Exit the crypt
-        await rogue.smartMove(caveCryptEntrance).catch(suppress_errors)
 
         if (found.size === 0 && !error) {
             console.debug(`No monsters were found on ${instance.map} ${instance.in}, deleting...`)
