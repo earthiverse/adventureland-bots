@@ -9,13 +9,17 @@ export const DEFAULT_CRAFTABLES = new Set<ItemName>([
     "bfangamulet",
     "cake",
     "carrotsword",
+    "cclaw",
     "firestars",
     "pouchbow",
     "resistancering",
+    "snakeoil",
     "snowflakes",
+    "wattire",
     "wbreeches",
     "wcap",
     "wgloves",
+    "wshoes"
 ])
 
 export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
