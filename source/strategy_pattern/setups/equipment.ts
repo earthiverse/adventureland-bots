@@ -24,6 +24,7 @@ export const MAGE_SPLASH: EnsureEquipped = {
     gloves: { name: "hgloves", filters: RETURN_HIGHEST },
     helmet: { name: "hhelmet", filters: RETURN_HIGHEST },
     mainhand: { name: "gstaff", filters: RETURN_HIGHEST },
+    offhand: UNEQUIP,
     orb: { name: "jacko", filters: RETURN_HIGHEST },
     pants: { name: "hpants", filters: RETURN_HIGHEST },
     ring1: { name: "zapper", filters: RETURN_HIGHEST },
@@ -393,6 +394,12 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
             toEquip["mainhand"] = toEquip["offhand"]
             toEquip["offhand"] = temp
         }
+    }
+
+    // Make sure offhand is `unequip` if our mainhand is `doublehand`
+    if (toEquip["mainhand"]) {
+        const mainhandType = Game.G.items[toEquip["mainhand"].name].wtype
+        if (equippableDoublehand.includes(mainhandType)) toEquip["offhand"] = UNEQUIP
     }
 
     return toEquip
