@@ -1516,59 +1516,6 @@ export async function startMerchant(
     friends: Strategist<PingCompensatedCharacter>[],
     options?: MerchantMoveStrategyOptions,
 ) {
-    const itemsToBuy = new Map<ItemName, number>(DEFAULT_ITEMS_TO_BUY.entries())
-    for (const [itemName, price] of itemsToBuy) {
-        if (price < 0) {
-            const gItem = AL.Game.G.items[itemName]
-            itemsToBuy.set(itemName, gItem.g * -price)
-        }
-    }
-
-    for (const iN in AL.Game.G.items) {
-        const itemName = iN as ItemName
-        const gItem = AL.Game.G.items[itemName]
-        if (itemsToBuy.has(itemName)) continue // Price is already set
-
-        if (gItem.e) {
-            // Buy all exchangables
-            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
-            continue
-        }
-
-        if (gItem.type == "token") {
-            // Buy all tokens
-            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
-            continue
-        }
-
-        if (gItem.type == "bank_key" || gItem.type == "dungeon_key") {
-            // Buy all keys
-            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
-            continue
-        }
-
-        if (gItem.tier >= 4) {
-            // Buy all super high tier items
-            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
-            continue
-        }
-
-        if (gItem.name.includes("Darkforge")) {
-            // Buy all darkforge items
-            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
-            continue
-        }
-
-        // TODO: Add more logic for things to buy
-    }
-
-    context.applyStrategy(
-        new BuyStrategy({
-            contexts: friends,
-            buyMap: itemsToBuy,
-            enableBuyForProfit: true,
-        }),
-    )
     context.applyStrategy(new AvoidDeathStrategy())
     context.applyStrategy(new MerchantStrategy(friends, options))
     context.applyStrategy(new TrackerStrategy())
