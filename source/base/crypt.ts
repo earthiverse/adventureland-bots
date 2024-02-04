@@ -91,14 +91,18 @@ export async function cleanInstances() {
 
     const instances = await AL.InstanceModel.find().lean().exec();
     for (const instance of instances) {
+        if (!instance.killed) continue // Nothing has been killed yet
+
         let deleteInstance = true
 
         for (const monster of (AL.Game.G.maps[instance.map] as GMap).monsters) {
             const mtype = monster.type
-            if (!AL.Constants.SPECIAL_MONSTERS.includes(mtype) || instance.killed?.[mtype] >= Math.max(monster.count, 1)) {
-                continue // We've already killed them all
-            }
+            if (!AL.Constants.SPECIAL_MONSTERS.includes(mtype)) continue // It's not special
+            if (instance.killed[mtype] >= Math.max(monster.count, 1)) continue // We've already killed them all
+
+            // There's something we haven't killed yet
             deleteInstance = false
+            break
         }
 
         if (deleteInstance) {
