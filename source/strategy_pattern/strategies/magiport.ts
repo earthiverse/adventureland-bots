@@ -40,6 +40,7 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
         if (!bot.canUse("magiport")) return // We can't magiport anyone
         if (bot.map.startsWith("bank")) return // We can't magiport others to the bank
         if (bot.smartMoving) return // We're currently moving somewhere
+        if (bot.getEntity({ type: "fieldgen0", withinRange: 400 })) return // They won't be able to magiport here
 
         for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
             const friend = context.bot
