@@ -209,7 +209,11 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
                 const canKill = bot.canKillInOneShot(target)
                 if (canKill) this.preventOverkill(bot, target)
-                if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot).catch(suppress_errors)
+                if (
+                    !canKill
+                    || targets.size > 0
+                    || bot.mp < bot.max_mp * 0.25 // Energize if we are low on MP
+                ) this.getEnergizeFromOther(bot).catch(suppress_errors)
 
                 return bot.basicAttack(target.id)
             }
@@ -533,9 +537,10 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             if (char == bot) continue // Can't energize ourselves
             if (AL.Tools.distance(bot, char) > bot.G.skills.energize.range) continue // Too far away
             if (!char.canUse("energize")) continue // Friend can't use energize
+            if (char.mp < char.max_mp * 0.25) continue // Don't use energize if mage is low on MP
 
             // Energize!
-            return (char as Mage).energize(bot.id, Math.min(100, Math.max(1, bot.max_mp - bot.mp)))
+            return (char as Mage).energize(bot.id, Math.min(char.mp * 0.25, Math.max(1, bot.max_mp - bot.mp)))
         }
     }
 

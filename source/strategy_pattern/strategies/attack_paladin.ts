@@ -14,7 +14,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
 
     public constructor(options?: PaladinAttackStrategyOptions) {
         super(options)
-        
+
         if (!this.options.disablePurify) this.interval.push("purify")
         if (!this.options.disableSelfHeal) this.interval.push("selfheal")
         if (!this.options.disableSmash) this.interval.push("smash")
@@ -178,7 +178,11 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
 
             const canKill = bot.canKillInOneShot(target, "smash")
             if (canKill) this.preventOverkill(bot, target)
-            if (!canKill || targets.size > 0) this.getEnergizeFromOther(bot).catch(suppress_errors)
+            if (
+                !canKill
+                || targets.size > 0 // Energize if there are more targets around
+                || bot.mp < bot.max_mp * 0.25 // Energize if we are low on MP
+            ) this.getEnergizeFromOther(bot).catch(suppress_errors)
             return bot.smash(target.id)
         }
     }

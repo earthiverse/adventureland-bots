@@ -108,10 +108,14 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
                 }
             }
 
+            const canKill = bot.canKillInOneShot(target)
             if (bot.canKillInOneShot(target)) this.preventOverkill(bot, target)
 
-            // Only energize if there are more targets around
-            if (targets.size > 0) this.getEnergizeFromOther(bot).catch(suppress_errors)
+            if (
+                !canKill
+                || targets.size > 0 // Energize if there are more targets around
+                || bot.mp < bot.max_mp * 0.25 // Energize if we are low on MP
+            ) this.getEnergizeFromOther(bot).catch(suppress_errors)
 
             return bot.basicAttack(target.id)
         }
