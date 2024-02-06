@@ -1,4 +1,4 @@
-import AL, { EntitiesData, MonsterName, Rogue, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { EntitiesData, MonsterName, NewMapData, Rogue, ServerIdentifier, ServerRegion } from "alclient"
 import { Strategist } from "../strategy_pattern/context.js"
 import { AlwaysInvisStrategy } from "../strategy_pattern/strategies/invis.js"
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
@@ -67,10 +67,28 @@ async function run() {
                 }
             }
         }
+        const listener2 = (data: NewMapData) => {
+            if (!data.entities?.monsters) return
+            for (const monster of data.entities.monsters) {
+                if (CRYPT_MONSTERS.includes(monster.type) || XMAGE_MONSTERS.includes(monster.type)) {
+                    if (found.has(monster.type)) {
+                        // Make sure the ID is in the set
+                        const ids = found.get(monster.type)
+                        ids.add(monster.id)
+                    } else {
+                        // Create the set with the ID
+                        console.debug(`We found a ${monster.type} in ${instance.map} ${instance.in}`)
+                        found.set(monster.type, new Set([monster.id]))
+                    }
+                }
+            }
+        }
         context.bot.socket.on("entities", listener)
+        context.bot.socket.on("new_map", listener2)
 
         const prepareNext = async function (removeEntities = false) {
             context.bot.socket.off("entities", listener)
+            context.bot.socket.off("new_map", listener2)
             if (removeEntities) {
                 await AL.InstanceModel.deleteOne({ _id: instance._id }).lean().exec()
                 await AL.EntityModel.deleteMany({ in: instance.in, serverIdentifier: instance.serverIdentifier, serverRegion: instance.serverRegion }).lean().exec()
