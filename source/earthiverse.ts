@@ -105,9 +105,10 @@ const MERCHANT = "earthMer"
 const WARRIOR = "earthWar"
 const MAGE = "earthMag"
 const PRIEST = "earthPri"
+const RANGER = "earthiverse"
 
-const PARTY_LEADER = "earthWar"
-const PARTY_ALLOWLIST = ["earthiverse", "earthMag", "earthPri", "earthWar"]
+const PARTY_LEADER = RANGER
+const PARTY_ALLOWLIST = [RANGER, MAGE, PRIEST, WARRIOR]
 
 let TARGET_REGION: ServerRegion = DEFAULT_REGION
 let TARGET_IDENTIFIER: ServerIdentifier = DEFAULT_IDENTIFIER
@@ -987,22 +988,22 @@ const startMerchantContext = async () => {
 }
 startMerchantContext()
 
-const startWarriorContext = async () => {
-    let warrior: Warrior
-    try {
-        warrior = await AL.Game.startWarrior(WARRIOR, TARGET_REGION, TARGET_IDENTIFIER)
-    } catch (e) {
-        if (warrior) warrior.disconnect()
-        console.error(e)
-        setTimeout(startWarriorContext, 10_000)
-        return
-    }
-    const CONTEXT = new Strategist<Warrior>(warrior, baseStrategy)
-    startWarrior(CONTEXT, true).catch(console.error)
-    PRIVATE_CONTEXTS.push(CONTEXT)
-    ALL_CONTEXTS.push(CONTEXT)
-}
-startWarriorContext()
+// const startWarriorContext = async () => {
+//     let warrior: Warrior
+//     try {
+//         warrior = await AL.Game.startWarrior(WARRIOR, TARGET_REGION, TARGET_IDENTIFIER)
+//     } catch (e) {
+//         if (warrior) warrior.disconnect()
+//         console.error(e)
+//         setTimeout(startWarriorContext, 10_000)
+//         return
+//     }
+//     const CONTEXT = new Strategist<Warrior>(warrior, baseStrategy)
+//     startWarrior(CONTEXT, true).catch(console.error)
+//     PRIVATE_CONTEXTS.push(CONTEXT)
+//     ALL_CONTEXTS.push(CONTEXT)
+// }
+// startWarriorContext()
 
 const startMageContext = async () => {
     let mage: Mage
@@ -1037,6 +1038,23 @@ const startPriestContext = async () => {
     ALL_CONTEXTS.push(CONTEXT)
 }
 startPriestContext()
+
+const startRangerContext = async () => {
+    let ranger: Ranger
+    try {
+        ranger = await AL.Game.startRanger(RANGER, TARGET_REGION, TARGET_IDENTIFIER)
+    } catch (e) {
+        if (ranger) ranger.disconnect()
+        console.error(e)
+        setTimeout(startRangerContext, 10_000)
+        return
+    }
+    const CONTEXT = new Strategist<Ranger>(ranger, baseStrategy)
+    startRanger(CONTEXT, true).catch(console.error)
+    PRIVATE_CONTEXTS.push(CONTEXT)
+    ALL_CONTEXTS.push(CONTEXT)
+}
+startRangerContext()
 
 class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> {
     private onCodeEval: (data: string) => Promise<void>
