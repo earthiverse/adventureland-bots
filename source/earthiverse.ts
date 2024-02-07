@@ -40,6 +40,7 @@ import {
     getHolidaySeasonMonsterPriority,
     getLunarNewYearMonsterPriority,
     getServerHopMonsterPriority,
+    getValentinesMonsterPriority,
 } from "./base/serverhop.js"
 import { randomIntFromInterval, sleep } from "./base/general.js"
 import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
@@ -696,28 +697,36 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             TARGET_REGION = DEFAULT_REGION
             TARGET_IDENTIFIER = DEFAULT_IDENTIFIER
 
-            // Lunar New Year
             if (bot1.S.lunarnewyear) {
+                // Lunar New Year
                 const monster = (await getLunarNewYearMonsterPriority(true))[0]
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier
                     TARGET_REGION = monster.serverRegion
                 }
-            }
-
-            // Halloween
-            if (bot1.S.halloween) {
+            } else if (
+                // Valentines event can overlap with lunar new year
+                TARGET_REGION == DEFAULT_REGION
+                && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER
+                && bot1.S.valentines) {
+                // Valentines
+                const monster = (await getValentinesMonsterPriority(true))[0]
+                if (monster) {
+                    // We want to switch servers
+                    TARGET_IDENTIFIER = monster.serverIdentifier
+                    TARGET_REGION = monster.serverRegion
+                }
+            } else if (bot1.S.halloween) {
+                // Halloween
                 const monster = (await getHalloweenMonsterPriority(true))[0]
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier
                     TARGET_REGION = monster.serverRegion
                 }
-            }
-
-            // Christmas
-            if (bot1.S.holidayseason) {
+            } else if (bot1.S.holidayseason) {
+                // Christmas
                 // NOTE: We're going on PVP as of 2023-12-16
                 const monster = (await getHolidaySeasonMonsterPriority(false))[0]
                 if (monster) {
