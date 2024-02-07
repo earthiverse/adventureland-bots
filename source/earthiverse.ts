@@ -107,7 +107,7 @@ const MAGE = "earthMag"
 const PRIEST = "earthPri"
 const RANGER = "earthiverse"
 
-const PARTY_LEADER = RANGER
+const PARTY_LEADER = WARRIOR
 const PARTY_ALLOWLIST = [RANGER, MAGE, PRIEST, WARRIOR]
 
 let TARGET_REGION: ServerRegion = DEFAULT_REGION
