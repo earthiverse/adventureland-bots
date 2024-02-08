@@ -128,8 +128,6 @@ const privateItemsToSell = new Map<ItemName, [number, number][]>([
     ["gloves", undefined],
     ["pants", undefined],
     ["shoes", undefined],
-
-    ["beekey" as ItemName, undefined],
     ["beewings", undefined],
     ["cake", undefined],
     ["carrotsword", undefined],
