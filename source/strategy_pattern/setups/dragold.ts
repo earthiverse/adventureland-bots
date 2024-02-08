@@ -7,7 +7,8 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base"
+import { CharacterConfig, Setup } from "./base"
+import { RETURN_HIGHEST } from "./equipment.js"
 
 // TODO: Better PVP setup
 class WarriorDragoldAttackStrategy extends WarriorAttackStrategy {
@@ -34,82 +35,62 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
     const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["dragold"] })
     const types: MonsterName[] = ["goldenbat", "dragold", "bat"]
 
+    const mageConfig: CharacterConfig = {
+        ctype: "mage",
+        attack: new MageAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            disableZapper: true,
+            generateEnsureEquipped: {
+                attributes: ["resistance", "int", "blast", "explosion"],
+                prefer: {
+                    mainhand: { name: "gstaff", filters: RETURN_HIGHEST },
+                }
+            },
+            typeList: types,
+        }),
+        move: moveStrategy,
+    }
+    const priestConfig: CharacterConfig = {
+        ctype: "priest",
+        attack: new PriestAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            enableHealStrangers: true,
+            generateEnsureEquipped: {
+                attributes: ["resistance", "int", "attack"],
+            },
+            typeList: types,
+        }),
+        move: moveStrategy,
+    }
+    const warriorConfig: CharacterConfig = {
+        ctype: "warrior",
+        attack: new WarriorDragoldAttackStrategy({
+            contexts: contexts,
+            disableCleave: true,
+            enableGreedyAggro: true,
+            generateEnsureEquipped: {
+                attributes: ["resistance", "str", "blast", "explosion"],
+                prefer: {
+                    mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
+                    offhand: { name: "ololipop", filters: RETURN_HIGHEST }
+                }
+            },
+            typeList: types,
+        }),
+        move: moveStrategy,
+    }
+
     return {
         configs: [
             {
                 id: "dragold_mage,priest,warrior",
-                characters: [
-                    {
-                        ctype: "mage",
-                        attack: new MageAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            disableZapper: true,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "blast", "explosion"],
-                            },
-                            typeList: types,
-                        }),
-                        move: moveStrategy,
-                    },
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            enableHealStrangers: true,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"],
-                            },
-                            typeList: types,
-                        }),
-                        move: moveStrategy,
-                    },
-                    {
-                        ctype: "warrior",
-                        attack: new WarriorDragoldAttackStrategy({
-                            contexts: contexts,
-                            disableCleave: true,
-                            enableGreedyAggro: true,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "str", "blast", "explosion"],
-                            },
-                            typeList: types,
-                        }),
-                        move: moveStrategy,
-                    },
-                ],
+                characters: [mageConfig, priestConfig, warriorConfig,],
             },
             {
                 id: "dragold_priest,warrior",
-                characters: [
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            enableHealStrangers: true,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"],
-                            },
-                            typeList: types,
-                        }),
-                        move: moveStrategy,
-                    },
-                    {
-                        ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
-                            contexts: contexts,
-                            disableCleave: true,
-                            enableGreedyAggro: true,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "str", "blast", "explosion"],
-                            },
-                            typeList: types,
-                        }),
-                        move: moveStrategy,
-                    },
-                ],
+                characters: [priestConfig, warriorConfig,],
             },
         ],
     }
@@ -122,7 +103,7 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
     return {
         configs: [
             {
-                id: "dragold_mage",
+                id: "dragold_mage_helper",
                 characters: [
                     {
                         ctype: "mage",
@@ -136,7 +117,7 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                 ],
             },
             {
-                id: "dragold_paladin",
+                id: "dragold_paladin_helper",
                 characters: [
                     {
                         ctype: "paladin",
@@ -150,7 +131,7 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                 ],
             },
             {
-                id: "dragold_priest",
+                id: "dragold_priest_helper",
                 characters: [
                     {
                         ctype: "priest",
@@ -166,7 +147,7 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                 ],
             },
             {
-                id: "dragold_ranger",
+                id: "dragold_ranger_helper",
                 characters: [
                     {
                         ctype: "ranger",
@@ -180,7 +161,7 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                 ],
             },
             {
-                id: "dragold_rogue",
+                id: "dragold_rogue_helper",
                 characters: [
                     {
                         ctype: "rogue",
@@ -194,7 +175,7 @@ export function constructDragoldHelperSetup(contexts: Strategist<PingCompensated
                 ],
             },
             {
-                id: "dragold_warrior",
+                id: "dragold_warrior_helper",
                 characters: [
                     {
                         ctype: "warrior",
