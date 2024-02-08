@@ -13,7 +13,7 @@ type BuyConfig = {
      * 
      * TODO: How should we go about buying the item at higher levels?
      */
-    buy_price?: number | "ponty"
+    buyPrice?: number | "ponty"
 }
 
 type CraftConfig = {
@@ -50,7 +50,7 @@ type HoldConfig = {
      * 
      * We should only organize it in this slot if "hold" is true, or set to our character type
      * */
-    hold_slot?: number
+    holdSlot?: number
 }
 
 // TODO: Figure out how to require sell_price if sell is set
@@ -58,9 +58,9 @@ type SellConfig = {
     /** If set, we should sell it to other players or NPCs */
     sell?: true
     /** Minimum price to sell it for */
-    sell_price?: number
+    sellPrice?: number
     /** If we have more than this number of this item, we should sell the excess */
-    sell_excess?: number
+    sellExcess?: number
 }
 
 type UpgradeConfig = {
@@ -86,24 +86,24 @@ type ItemConfig = Partial<Record<ItemName, CombinedConfig>>;
 export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "5bucks": {
         buy: true,
-        buy_price: 100_000_000
+        buyPrice: 100_000_000
     },
     "amuletofm": {
         buy: true,
-        buy_price: 500_000_000
+        buyPrice: 500_000_000
     },
     "angelwings": {
         buy: true,
-        buy_price: "ponty"
+        buyPrice: "ponty"
     },
     "armorbox": {
         buy: true,
-        buy_price: "ponty",
+        buyPrice: "ponty",
         exchange: true
     },
     "armorring": {
         buy: true,
-        buy_price: 1_000_000,
+        buyPrice: 1_000_000,
         craft: true,
         exchange: true
     },
@@ -117,7 +117,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     "bfangamulet": {
         buy: true,
-        buy_price: "ponty",
+        buyPrice: "ponty",
         craft: true
     },
     "cake": {
@@ -144,7 +144,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         craft: true
     },
     "cdragon": {
-        sell_excess: 5
+        sellExcess: 5
     },
     "computer": {
         hold: true
@@ -162,7 +162,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         // TODO: What slot?
     },
     "eggnog": {
-        sell_excess: 9999 * 3
+        sellExcess: 9999 * 3
     },
     "elixirdex1": {
         craft: true
@@ -189,10 +189,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         craft: true
     },
     "essenceoflife": {
-        sell_excess: 9999 * 5
+        sellExcess: 9999 * 5
     },
     "fieldgen0": {
-        sell_excess: 20
+        sellExcess: 20
     },
     "firestars": {
         craft: true
@@ -218,7 +218,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         exchange: true
     },
     "hotchocolate": {
-        sell_excess: 9999 * 3
+        sellExcess: 9999 * 3
     },
     "hpot1": {
         hold: true,
@@ -258,7 +258,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         craft: true
     },
     "pumpkinspice": {
-        sell_excess: 9999 * 3
+        sellExcess: 9999 * 3
     },
     "resistancering": {
         craft: true
@@ -282,19 +282,19 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         exchange: true
     },
     "smoke": {
-        sell_excess: 200
+        sellExcess: 200
     },
     "snakeoil": {
         exchange: true
     },
     "snowball": {
-        sell_excess: 200 * 3
+        sellExcess: 200 * 3
     },
     "snowflakes": {
         craft: true
     },
     "spookyamulet": {
-        sell_excess: 5
+        sellExcess: 5
     },
     "stick": {
         // We can craft sticks at level 9
@@ -363,7 +363,7 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
         // TODO: Check if an NPC sells it, and how much they sell it for
 
         if (config.buy) {
-            if (config.buy_price === undefined) {
+            if (config.buyPrice === undefined) {
                 console.warn(`${itemName} has no buy price, removing 'buy: true'`)
                 delete config.buy
             }
@@ -388,16 +388,16 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
         }
 
         if (config.hold) {
-            if (config.hold_slot !== undefined) {
-                if (config.hold_slot > 41) {
-                    console.warn(`${itemName} cannot be put in to slot ${config.hold_slot}, removing 'slot: ${config.hold_slot}'`)
-                    delete config.hold_slot
+            if (config.holdSlot !== undefined) {
+                if (config.holdSlot > 41) {
+                    console.warn(`${itemName} cannot be put in to slot ${config.holdSlot}, removing 'slot: ${config.holdSlot}'`)
+                    delete config.holdSlot
                 } else {
-                    if (holdSlots.has(config.hold_slot)) {
-                        console.warn(`${itemName} overlaps with ${holdSlots.get(config.hold_slot)} hold_slot, removing '${config.hold_slot}'`)
-                        delete config.hold_slot
+                    if (holdSlots.has(config.holdSlot)) {
+                        console.warn(`${itemName} overlaps with ${holdSlots.get(config.holdSlot)} hold_slot, removing '${config.holdSlot}'`)
+                        delete config.holdSlot
                     } else {
-                        holdSlots.set(config.hold_slot, itemName)
+                        holdSlots.set(config.holdSlot, itemName)
                     }
                 }
             }
@@ -405,7 +405,7 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
 
         if (config.sell) {
             // TODO: Check if an NPC sells it, and how much they sell it for
-            if (config.sell_price === undefined) {
+            if (config.sellPrice === undefined) {
                 console.warn(`${itemName} has no sell price, removing 'sell: true'`)
                 delete config.sell
             }
