@@ -57,6 +57,7 @@ import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stack
 import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
 import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
+import { BEE_DUNGEON_MONSTERS } from "./strategy_pattern/setups/beedungeon.js"
 import { DEFAULT_ITEM_CONFIG } from "./base/itemsNew.js"
 
 AL.Game.setServer("http://thmsn.adventureland.community")
@@ -67,7 +68,7 @@ await AL.Game.updateServersAndCharacters()
 
 //// ALClient Hacks
 // Hack to add bee_queen as a special monster
-AL.Constants.SPECIAL_MONSTERS.push("bee_queen" as MonsterName)
+AL.Constants.SPECIAL_MONSTERS.push(...BEE_DUNGEON_MONSTERS)
 
 //// Game Hacks
 // Hack to fix URLs
@@ -86,7 +87,7 @@ let ENABLE_MONSTERHUNTS = true
 const DEFAULT_MONSTERS: MonsterName[] = ["bee"]
 const SPECIAL_MONSTERS: MonsterName[] = [
     "cutebee",
-    "bee_queen" as MonsterName,
+    ...BEE_DUNGEON_MONSTERS,
     "fvampire",
     "goldenbat",
     "greenjr",

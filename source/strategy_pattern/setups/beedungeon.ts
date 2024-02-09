@@ -7,7 +7,7 @@ import { Setup } from "./base.js"
 import { suppress_errors } from "../logging.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
-const BEE_DUNGEON_MONSTERS: (MonsterName)[] = ["bee_worker" as MonsterName, "bee_drone" as MonsterName, "bee_queen" as MonsterName]
+export const BEE_DUNGEON_MONSTERS: MonsterName[] = ["bee_worker" as MonsterName, "bee_drone" as MonsterName, "bee_queen" as MonsterName]
 
 class BeeDungeonMoveStratey extends KiteMonsterMoveStrategy {
     public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {
