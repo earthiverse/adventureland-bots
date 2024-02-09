@@ -14,6 +14,8 @@ import { UNEQUIP } from "./equipment.js"
 // TODO: Improve PVP
 class MageFrankyAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
+        if (!this.options.generateEnsureEquipped) this.options.generateEnsureEquipped = {}
+        if (!this.options.generateEnsureEquipped.prefer) this.options.generateEnsureEquipped.prefer = {}
         if (bot.isPVP()) {
             // No splash damage
             this.options.generateEnsureEquipped.prefer.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
@@ -29,6 +31,8 @@ class MageFrankyAttackStrategy extends MageAttackStrategy {
 
 class PriestFrankyAttackStrategy extends PriestAttackStrategy {
     public onApply(bot: Priest): void {
+        if (!this.options.generateEnsureEquipped) this.options.generateEnsureEquipped = {}
+        if (!this.options.generateEnsureEquipped.prefer) this.options.generateEnsureEquipped.prefer = {}
         if (bot.isPVP()) {
             this.options.generateEnsureEquipped.prefer.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
         } else {
@@ -41,6 +45,8 @@ class PriestFrankyAttackStrategy extends PriestAttackStrategy {
 
 class WarriorFrankyAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
+        if (!this.options.generateEnsureEquipped) this.options.generateEnsureEquipped = {}
+        if (!this.options.generateEnsureEquipped.prefer) this.options.generateEnsureEquipped.prefer = {}
         if (bot.isPVP()) {
             // No Splash Damage
             this.options.disableCleave = true
