@@ -450,12 +450,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
 
             // Valentines
             if (context.bot.S.valentines) {
-                if (
-                    (context.bot.S.pinkgoo as ServerInfoDataLive)?.live &&
-                    context.bot.serverData.name == DEFAULT_IDENTIFIER &&
-                    context.bot.serverData.region == DEFAULT_REGION
-                )
-                    priority.push("pinkgoo")
+                if ((context.bot.S.pinkgoo as ServerInfoDataLive)?.live) priority.push("pinkgoo")
             }
 
             if (context.bot.S.egghunt) {
