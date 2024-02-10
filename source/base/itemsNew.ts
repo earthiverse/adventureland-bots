@@ -43,13 +43,13 @@ type HoldConfig = {
      * If set, we should try to always have this many of the item in our inventory at any time 
      * 
      * We should only replenish if "hold" is true, or set to our character type
-     **/
+     */
     replenish?: number
     /** 
      * If set, we should try to place it in this slot in in our inventory
      * 
      * We should only organize it in this slot if "hold" is true, or set to our character type
-     * */
+     */
     holdSlot?: number
 }
 
@@ -64,7 +64,11 @@ type SellConfig = {
 }
 
 type UpgradeConfig = {
-    /** If true, we should destroy the item if it's below the specified level */
+    /** 
+     * If set, we should destroy the item if it's below the specified level
+     * 
+     * If set, we should NOT upgrade the item
+     */
     destroyBelowLevel?: number
     /** If set, we should stop upgrading the item at the specified level */
     upgradeUntilLevel?: number
@@ -146,6 +150,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "cdragon": {
         sellExcess: 5
     },
+    "coat": {
+        destroyBelowLevel: 1
+    },
     "computer": {
         hold: true
     },
@@ -211,11 +218,17 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "gemfragment": {
         exchange: true
     },
+    "gloves": {
+        destroyBelowLevel: 1
+    },
     "goldbooster": {
         hold: true
     },
     "greenenvelope": {
         exchange: true
+    },
+    "helmet": {
+        destroyBelowLevel: 1
     },
     "hotchocolate": {
         sellExcess: 9999 * 3
@@ -230,7 +243,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     "lostearring": {
         exchange: true,
-        exchangeAtLevel: 2
+        exchangeAtLevel: 2,
+        upgradeUntilLevel: 2
     },
     "luckbooster": {
         hold: true
@@ -250,6 +264,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "offeringp": {
         hold: ["merchant"],
         // TODO: What slot?
+    },
+    "pants": {
+        destroyBelowLevel: 1
     },
     "pickaxe": {
         hold: ["merchant"]
@@ -281,6 +298,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "seashell": {
         exchange: true
     },
+    "shoes": {
+        destroyBelowLevel: 1
+    },
     "smoke": {
         sellExcess: 200
     },
@@ -309,6 +329,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "throwingstars": {
         // We use level 0 to craft other stars
         upgradeUntilLevel: 0
+    },
+    "vitring": {
+        // We use level 2 to craft other rings
+        upgradeUntilLevel: 2
     },
     "wattire": {
         craft: true

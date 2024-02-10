@@ -706,7 +706,9 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
                     TARGET_IDENTIFIER = monster.serverIdentifier
                     TARGET_REGION = monster.serverRegion
                 }
-            } else if (
+            }
+
+            if (
                 // Valentines event can overlap with lunar new year
                 TARGET_REGION == DEFAULT_REGION
                 && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER
