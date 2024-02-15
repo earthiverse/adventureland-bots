@@ -18,7 +18,7 @@ async function run() {
 
     // Look through bank for better item
     const addToItems = (itemData: ItemData, location: string) => {
-        const item = new Item(itemData)
+        const item = new Item(itemData, AL.Game.G)
         if (item[attribute] <= 0) return
         if (!items[item.type]) items[item.type] = []
         items[item.type].push([item, location])

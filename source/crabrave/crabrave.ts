@@ -11,7 +11,7 @@ import { RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
 import { PartyHealStrategy } from "../strategy_pattern/strategies/partyheal.js"
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { GiveRogueSpeedStrategy } from "../strategy_pattern/strategies/rspeed.js"
-import { SellStrategy } from "../strategy_pattern/strategies/sell.js"
+import { NewSellStrategy } from "../strategy_pattern/strategies/sell.js"
 
 import bodyParser from "body-parser"
 import cors from "cors"
@@ -29,9 +29,41 @@ import { MoveToBankAndDepositStuffStrategy } from "../strategy_pattern/strategie
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "../base/defaults.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
+import { ItemConfig } from "../base/itemsNew.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
+
+const CRABRAVE_ITEM_CONFIG: ItemConfig = {
+    "cclaw": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "crabclaw": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "ringsj": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "hpamulet": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "hpbelt": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "wcap": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "wshoes": {
+        sell: true,
+        sellPrice: "npc"
+    }
+}
 
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const MAX_CHARS = 9
@@ -74,16 +106,8 @@ const partyHealStrategy = new PartyHealStrategy(CONTEXTS)
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 const respawnStrategy = new RespawnStrategy()
 const rspeedStrategy = new GiveRogueSpeedStrategy()
-const sellStrategy = new SellStrategy({
-    sellMap: new Map<ItemName, [number, number][]>([
-        ["cclaw", undefined],
-        ["crabclaw", undefined],
-        ["ringsj", undefined],
-        ["hpamulet", undefined],
-        ["hpbelt", undefined],
-        ["wcap", undefined],
-        ["wshoes", undefined],
-    ])
+const sellStrategy = new NewSellStrategy({
+    itemConfig: CRABRAVE_ITEM_CONFIG
 })
 
 class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> {

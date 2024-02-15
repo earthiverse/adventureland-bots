@@ -1,4 +1,4 @@
-import { Attribute, Character, Game, Item, ItemData, ItemType, LocateItemFilters, SlotType, WeaponType } from "alclient"
+import { Attribute, Character, Game, Item, ItemData, ItemType, LocateItemFilters, SkillName, SlotType, WeaponType } from "alclient"
 import { EnsureEquipped, EnsureEquippedSlot } from "../strategies/attack"
 
 export const RETURN_HIGHEST: LocateItemFilters = { returnHighestLevel: true }
@@ -189,12 +189,17 @@ export type GenerateEnsureEquipped = {
     avoidAttributes?: Attribute[]
     /** If we have the given item, equip it */
     prefer?: EnsureEquipped
+    /** 
+     * If set, we will try to generate a layout that gives access to the given skill
+     * 
+     * TODO: If we have `skills: ["quickstab", "freeze"], we might equip two items that both give quickstab instead of 1 of each
+     *       ["burn", "quickstab"] might equip two fireblades, etc.
+     */
+    skills?: (SkillName | "burn" | "freeze" | "poke" | "posion" | "restore_mp" | "secondchance" | "sugarrush" | "weave")[]
 }
 
 /**
  * Generates an ensured equipped loadout for a given bot
- * 
- * TODO: Add `ability` support
  * 
  * @param bot The bot that we are generating a loadout for
  * @param attributes The attributes to prioritize when generating a loadout
@@ -202,6 +207,7 @@ export type GenerateEnsureEquipped = {
  * @returns 
  */
 export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureEquipped): EnsureEquipped {
+    if (!generate.skills) generate.skills = []
     if (!generate.attributes) generate.attributes = []
     if (!generate.avoidAttributes) generate.avoidAttributes = []
 
@@ -256,11 +262,33 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
     }
 
     const sortBest = (a: ItemData, b: ItemData) => {
-        const itemDataA = new Item(a)
-        const itemDataB = new Item(b)
+        const itemDataA = new Item(a, Game.G)
+        const itemDataB = new Item(b, Game.G)
 
         let sumA = 0
         let sumB = 0
+
+        if (generate.skills) {
+            // Prefer the items that give us the skills we want
+            let itemAGivesSkill = generate.skills.includes(itemDataA.ability)
+            let itemBGivesSkill = generate.skills.includes(itemDataB.ability)
+            if (itemDataA.wtype !== itemDataB.wtype) {
+                for (const skill of generate.skills) {
+                    const gAbility = Game.G.skills[skill]
+                    if (Array.isArray(gAbility.wtype)) {
+                        for (const wtype of gAbility.wtype) {
+                            if (wtype === itemDataA.wtype) itemAGivesSkill = true
+                            if (wtype === itemDataB.wtype) itemBGivesSkill = true
+                        }
+                    } else {
+                        if (gAbility.wtype === itemDataA.wtype) itemAGivesSkill = true
+                        if (gAbility.wtype === itemDataB.wtype) itemBGivesSkill = true
+                    }
+                }
+            }
+            if (itemAGivesSkill && !itemBGivesSkill) return -1
+            if (itemBGivesSkill && !itemAGivesSkill) return 1
+        }
 
         for (const attribute of generate.avoidAttributes) {
             sumA -= (itemDataA[attribute] ?? 0) + calculateCtypeAttributes(itemDataA, attribute)
@@ -272,7 +300,11 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
             sumA += (itemDataA[attribute] ?? 0) + calculateCtypeAttributes(itemDataA, attribute)
             sumB += (itemDataB[attribute] ?? 0) + calculateCtypeAttributes(itemDataB, attribute)
         }
-        return sumB - sumA
+        if (sumA !== sumB) return sumB - sumA
+
+        if (itemDataA.level && itemDataB.level) return itemDataB.level - itemDataA.level
+
+        return 0
     }
     for (const optionName in options) options[optionName as (ItemType | WeaponType)].sort(sortBest)
 

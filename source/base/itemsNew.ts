@@ -1,7 +1,7 @@
-import AL, { CharacterType, GData, ItemName } from "alclient"
+import AL, { CharacterType, Item, ItemName, NPCName } from "alclient"
 
 // TODO: Figure out how to require buy_price if buy is set
-type BuyConfig = {
+export type BuyConfig = {
     /** If set, we should try to buy it from other players or NPCs */
     buy?: true
     /** 
@@ -9,19 +9,19 @@ type BuyConfig = {
      * 
      * If set to a number, we should buy it for that much at level 0.
      * 
-     * If set to 'ponty', we should buy it for as much as ponty is selling it for.
+     * If set to 'ponty', we should buy it for as much as ponty is selling it for (G * multipliers.secondhands_mult).
      * 
      * TODO: How should we go about buying the item at higher levels?
      */
     buyPrice?: number | "ponty"
 }
 
-type CraftConfig = {
+export type CraftConfig = {
     /** If set, we should try to craft it */
     craft?: true
 }
 
-type ExchangeConfig = {
+export type ExchangeConfig = {
     /** If set, we should try to exchange it. */
     exchange?: true
     /** 
@@ -32,7 +32,7 @@ type ExchangeConfig = {
     exchangeAtLevel?: number
 }
 
-type HoldConfig = {
+export type HoldConfig = {
     /** 
      * If set to true, we will have all bots hold on to these items
      * 
@@ -54,16 +54,25 @@ type HoldConfig = {
 }
 
 // TODO: Figure out how to require sell_price if sell is set
-type SellConfig = {
+export type SellConfig = {
     /** If set, we should sell it to other players or NPCs */
     sell?: true
-    /** Minimum price to sell it for */
-    sellPrice?: number
+    /**
+     * Minimum price to sell it for
+     * 
+     * If it's a number, we should sell it at that price if 
+     * it's an item without a level, or an item at level 0
+     * 
+     * If it's "npc", sell it at `G * G.multipliers.buy_to_sell`
+     * 
+     * If it's an object, treat it as sellPrice[level] is sellPrice
+     */
+    sellPrice?: number | "npc" | { [T in number]: number }
     /** If we have more than this number of this item, we should sell the excess */
     sellExcess?: number
 }
 
-type UpgradeConfig = {
+export type UpgradeConfig = {
     /** 
      * If set, we should destroy the item if it's below the specified level
      * 
@@ -85,7 +94,7 @@ type CombinedConfig =
     & HoldConfig
     & SellConfig
     & UpgradeConfig;
-type ItemConfig = Partial<Record<ItemName, CombinedConfig>>;
+export type ItemConfig = Partial<Record<ItemName, CombinedConfig>>;
 
 export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "5bucks": {
@@ -108,8 +117,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "armorring": {
         buy: true,
         buyPrice: 1_000_000,
-        craft: true,
-        exchange: true
+        craft: true
     },
     "basketofeggs": {
         craft: true,
@@ -125,7 +133,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         craft: true
     },
     "cake": {
-        craft: true
+        craft: true,
+        sell: true,
+        sellPrice: "npc"
     },
     /** Blue Candy */
     "candy0": {
@@ -142,10 +152,12 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         exchange: true
     },
     "carrotsword": {
-        craft: true
+        craft: true,
+        destroyBelowLevel: 1
     },
     "cclaw": {
-        craft: true
+        craft: true,
+        destroyBelowLevel: 1
     },
     "cdragon": {
         sellExcess: 5
@@ -153,20 +165,28 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "coat": {
         destroyBelowLevel: 1
     },
+    "coat1": {
+        destroyBelowLevel: 1
+    },
     "computer": {
-        hold: true
+        hold: true,
+        holdSlot: 40
     },
     "cscroll0": {
-        hold: ["merchant"]
-        // TODO: What slot?
+        hold: ["merchant"],
+        holdSlot: 28
     },
     "cscroll1": {
-        hold: ["merchant"]
-        // TODO: What slot?
+        hold: ["merchant"],
+        holdSlot: 29
     },
     "cscroll2": {
-        hold: ["merchant"]
-        // TODO: What slot?
+        hold: ["merchant"],
+        holdSlot: 30
+    },
+    "dexring": {
+        sell: true,
+        sellPrice: "npc"
     },
     "eggnog": {
         sellExcess: 9999 * 3
@@ -204,6 +224,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "firestars": {
         craft: true
     },
+    "frankypants": {
+        destroyBelowLevel: 1
+    },
     "frostbow": {
         craft: true
     },
@@ -221,8 +244,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "gloves": {
         destroyBelowLevel: 1
     },
+    "gloves1": {
+        destroyBelowLevel: 1
+    },
     "goldbooster": {
         hold: true
+    },
+    "gphelmet": {
+        destroyBelowLevel: 1
     },
     "greenenvelope": {
         exchange: true
@@ -230,13 +259,38 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "helmet": {
         destroyBelowLevel: 1
     },
+    "helmet1": {
+        destroyBelowLevel: 1
+    },
     "hotchocolate": {
         sellExcess: 9999 * 3
     },
+    "hpamulet": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "hpbelt": {
+        upgradeUntilLevel: 2
+    },
     "hpot1": {
         hold: true,
-        replenish: 1000
+        holdSlot: 39,
+        replenish: 1000,
         // TODO: What slot?
+    },
+    "iceskates": {
+        destroyBelowLevel: 1
+    },
+    "intearring": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "intring": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "lbelt": {
+        craft: true
     },
     "leather": {
         exchange: true
@@ -249,13 +303,23 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "luckbooster": {
         hold: true
     },
+    "maceofthedead": {
+        destroyBelowLevel: 1
+    },
     "mistletoe": {
         exchange: true
     },
+    "monstertoken": {
+        sell: true,
+        sellPrice: 300_000
+    },
     "mpot1": {
         hold: true,
+        holdSlot: 38,
         replenish: 1000
-        // TODO: What slot?
+    },
+    "mushroomstaff": {
+        destroyBelowLevel: 1
     },
     "offering": {
         hold: ["merchant"],
@@ -268,8 +332,19 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "pants": {
         destroyBelowLevel: 1
     },
+    "pants1": {
+        destroyBelowLevel: 1
+    },
+    "phelmet": {
+        destroyBelowLevel: 1
+    },
     "pickaxe": {
-        hold: ["merchant"]
+        hold: ["merchant"],
+        sell: true,
+        sellPrice: 1_000_000
+    },
+    "pmaceofthedead": {
+        destroyBelowLevel: 1
     },
     "pouchbow": {
         craft: true
@@ -280,20 +355,26 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "resistancering": {
         craft: true
     },
+    "ringsj": {
+        sell: true,
+        sellPrice: "npc"
+    },
     "rod": {
-        hold: ["merchant"]
+        hold: ["merchant"],
+        sell: true,
+        sellPrice: 1_000_000
     },
     "scroll0": {
-        hold: ["merchant"]
-        // TODO: What slot?
+        hold: ["merchant"],
+        holdSlot: 35
     },
     "scroll1": {
-        hold: ["merchant"]
-        // TODO: What slot?
+        hold: ["merchant"],
+        holdSlot: 36
     },
     "scroll2": {
-        hold: ["merchant"]
-        // TODO: What slot?
+        hold: ["merchant"],
+        holdSlot: 37
     },
     "seashell": {
         exchange: true
@@ -301,11 +382,17 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "shoes": {
         destroyBelowLevel: 1
     },
+    "shoes1": {
+        destroyBelowLevel: 1
+    },
+    "slimestaff": {
+        destroyBelowLevel: 1
+    },
     "smoke": {
         sellExcess: 200
     },
     "snakeoil": {
-        exchange: true
+        craft: true
     },
     "snowball": {
         sellExcess: 200 * 3
@@ -316,19 +403,42 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "spookyamulet": {
         sellExcess: 5
     },
+    "stand0": {
+        sell: true,
+        sellPrice: "npc"
+    },
     "stick": {
         // We can craft sticks at level 9
         upgradeUntilLevel: 9
+    },
+    "stramulet": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "strearring": {
+        sell: true,
+        sellPrice: "npc"
     },
     "supercomputer": {
         hold: true
     },
     "tracker": {
-        hold: true
+        hold: true,
+        holdSlot: 41
     },
     "throwingstars": {
         // We use level 0 to craft other stars
         upgradeUntilLevel: 0
+    },
+    "vboots": {
+        destroyBelowLevel: 1
+    },
+    "vgloves": {
+        destroyBelowLevel: 1
+    },
+    "vitearring": {
+        sell: true,
+        sellPrice: "npc"
     },
     "vitring": {
         // We use level 2 to craft other rings
@@ -358,6 +468,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "xbox": {
         craft: true
     },
+    "xmace": {
+        destroyBelowLevel: 1
+    },
     "xpbooster": {
         hold: true
     },
@@ -384,29 +497,39 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
         const gItem = AL.Game.G.items[itemName]
         const gCraft = AL.Game.G.craft[itemName]
 
-        // TODO: Check if an NPC sells it, and how much they sell it for
-
         if (config.buy) {
             if (config.buyPrice === undefined) {
-                console.warn(`${itemName} has no buy price, removing 'buy: true'`)
+                console.warn(`${itemName} has no buy price, removing 'buy'`)
                 delete config.buy
+            } else {
+                // Check if an NPC sells it
+                for (const npc in AL.Game.G.npcs) {
+                    const gNpc = AL.Game.G.npcs[npc as NPCName]
+                    if (gNpc.items?.includes(itemName)) {
+                        const npcPrice = gItem.g * (gItem.markup ?? 1)
+                        if (config.buyPrice === "ponty" || config.buyPrice > npcPrice) {
+                            console.warn(`We can buy ${itemName} from ${npc} for ${npcPrice}, reducing from ${config.buyPrice} to ${npcPrice}`)
+                            config.buyPrice = npcPrice
+                            break
+                        }
+                    }
+                }
             }
         }
 
         if (config.craft) {
             if (gCraft === undefined) {
-                console.warn(`${itemName} is not craftable, removing 'craft: true'`)
+                console.warn(`${itemName} is not craftable, removing 'craft'`)
                 delete config.craft
             }
         }
 
         if (config.exchange) {
-            // TODO: If it's upgradable, make sure exchangeAtLevel is set
             if (gItem.e === undefined) {
-                console.warn(`${itemName} is not exchangable, removing 'exchange: true'`)
-                delete config.craft
+                console.warn(`${itemName} is not exchangable, removing 'exchange'`)
+                delete config.exchange
             } else if ((gItem.upgrade || gItem.compound) && config.exchangeAtLevel === undefined) {
-                console.warn(`${itemName} is compoundable / upgradable, but is missing exchangeAtLevevl, removing 'exchange: true'`)
+                console.warn(`${itemName} is compoundable / upgradable, but is missing exchangeAtLevevl, removing 'exchange'`)
                 delete config.exchange
             }
         }
@@ -428,10 +551,40 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
         }
 
         if (config.sell) {
-            // TODO: Check if an NPC sells it, and how much they sell it for
             if (config.sellPrice === undefined) {
                 console.warn(`${itemName} has no sell price, removing 'sell: true'`)
                 delete config.sell
+            } else if (typeof config.sellPrice === "number") {
+                if (config.sellPrice < gItem.g) {
+                    console.warn(`${itemName} has a lower sell price than G, increasing from ${config.sellPrice} to ${gItem.g}`)
+                    config.sellPrice = gItem.g
+                }
+                if (config.destroyBelowLevel) {
+                    console.warn(`${itemName} has both 'sell' and 'destroyBelowLevel' set, removing 'sell: true'`)
+                    delete config.sell
+                }
+            } else if (config.sellPrice == "npc") {
+                if (config.destroyBelowLevel) {
+                    console.warn(`${itemName} has both 'sell' and 'destroyBelowLevel' set, removing 'sell: true'`)
+                    delete config.sell
+                }
+            } else if (Array.isArray(config.sellPrice)) {
+                for (const level in config.sellPrice) {
+                    const sellPrice = config.sellPrice[level]
+                    const itemInfo = new Item({ name: itemName, level: parseInt(level) }, AL.Game.G)
+                    const npcValue = itemInfo.calculateNpcValue()
+                    if (sellPrice < npcValue) {
+                        console.warn(`${itemName} @ level ${level} has a lower sell price than NPC, increasing from ${sellPrice} to ${npcValue}`)
+                        config.sellPrice = npcValue
+                    }
+                }
+                if (config.destroyBelowLevel) {
+                    for (let level = 0; level < config.destroyBelowLevel; level++) {
+                        if (config.sellPrice[level] === undefined) continue
+                        console.warn(`${itemName} has both 'sell' and 'destroyBelowLevel' set, removing 'config.sellPrice[${level}]'`)
+                        delete config.sellPrice[level]
+                    }
+                }
             }
         }
 
@@ -449,9 +602,12 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
                 delete config.usePrimlingFromLevel
             }
         }
+
+        if (config.destroyBelowLevel) {
+            if (!gItem.upgrade) {
+                console.warn(`${itemName} has 'destroyBelowLevel' but is not upgradable, removing 'destroyBelowLevel'`)
+                delete config.destroyBelowLevel
+            }
+        }
     }
-
-    // TODO: If we are selling it for less than G, bump it up to minimum NPC price
-
-    // TODO: If we are buying it for more than G, make sure no NPC sells it
 }

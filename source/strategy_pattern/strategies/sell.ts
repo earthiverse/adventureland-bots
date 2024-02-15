@@ -1,5 +1,6 @@
-import AL, { ItemName, Character, TradeSlotType } from "alclient"
+import AL, { ItemName, Character, TradeSlotType, CharacterType, SlotInfo, Item } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, SellConfig } from "../../base/itemsNew.js"
 
 export type SellStrategyOptions = {
     /**
@@ -117,12 +118,97 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
                 if (level != item.level) return false // Not the same level
 
                 const sellFor = a[1]
-                if (sellFor !== undefined && sellFor > AL.Game.G.items[item.name].g * 0.6) return false // We want more for this item than we can get from an NPC
+                if (sellFor !== undefined && sellFor > AL.Game.G.items[item.name].g * AL.Constants.NPC_SELL_TAX) return false // We want more for this item than we can get from an NPC
 
                 return true
             })) continue // We don't want to sell this item
 
             await bot.sell(i, item.q ?? 1).catch(console.error)
+        }
+    }
+}
+
+export type NewSellStrategyOptions = {
+    itemConfig: ItemConfig
+}
+
+const defaultNewSellStrategyOptions: NewSellStrategyOptions = {
+    itemConfig: DEFAULT_ITEM_CONFIG
+}
+
+export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
+    protected options: NewSellStrategyOptions
+
+    public loops = new Map<LoopName, Loop<Type>>()
+
+    public constructor(options: NewSellStrategyOptions = defaultNewSellStrategyOptions) {
+        this.options = options
+
+        this.loops.set("sell", {
+            fn: async (bot: Type) => { await this.sell(bot) },
+            interval: 1000
+        })
+    }
+
+    protected async sell(bot: Type) {
+        await this.sellToPlayers(bot)
+        await this.sellToNPCs(bot)
+    }
+
+    protected async sellToPlayers(bot: Type) {
+        const players = bot.getPlayers({
+            withinRange: AL.Constants.NPC_INTERACTION_DISTANCE
+        })
+        for (const player of players) {
+            for (const [tradeSlot, wantedItem] of player.getWantedItems()) {
+                const config: SellConfig = this.options.itemConfig[wantedItem.name]
+                if (!config) continue // Not in config
+                // TODO: We may want to sell our excess items
+                if (!config.sell) continue // We don't want to sell
+
+                if (typeof config.sellPrice === "number") {
+                    if ((wantedItem.level ?? 0) > 0) continue // We're not selling this item if leveled
+                    if (config.sellPrice > wantedItem.price) continue // We want more for it
+                } else if (config.sellPrice === "npc") {
+                    if ((wantedItem.level ?? 0) > 0) continue // We're not selling this item if leveled
+                    if ((AL.Game.G.items[wantedItem.name].g * AL.Game.G.multipliers.buy_to_sell) > wantedItem.price) continue // We want more for it
+                } else {
+                    if (!config.sellPrice[wantedItem.level ?? 0]) continue // We're not selling this item at this level
+                    if (config.sellPrice[wantedItem.level ?? 0] > wantedItem.price) continue // We want more for it
+                }
+
+                const ourItemIndex = bot.locateItem(
+                    wantedItem.name,
+                    bot.items,
+                    { level: wantedItem.level, locked: false, special: false }
+                )
+                if (ourItemIndex === undefined) continue // We don't have any to sell
+                const ourItem = bot.items[ourItemIndex]
+
+                // Sell it
+                await bot.sellToMerchant(player.id, tradeSlot, wantedItem.rid, Math.min(ourItem.q ?? 1, wantedItem.q ?? 1)).catch(console.error)
+            }
+        }
+    }
+
+    protected async sellToNPCs(bot: Type) {
+        if (!bot.canSell()) return
+
+        for (const [i, item] of bot.getItems()) {
+            const config: SellConfig = this.options.itemConfig[item.name]
+            if (!config) continue // Not in config
+            if (!config.sell) continue // We don't want to sell
+            const npcOffer = item.calculateNpcValue()
+
+            if (typeof config.sellPrice === "number") {
+                if (item.level ?? 0) continue // We're not selling this item if leveled
+                if (config.sellPrice > npcOffer) continue // We want more than NPC price
+            } else if (Array.isArray(config.sellPrice)) {
+                if (!config.sellPrice[item.level ?? 0]) continue // We're not selling this item at this level
+                if (config.sellPrice[item.level ?? 0] > npcOffer) continue // We want more than NPC price
+            }
+
+            await bot.sell(i, item.q ?? 1)
         }
     }
 }
