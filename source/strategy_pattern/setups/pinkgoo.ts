@@ -8,7 +8,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_FAST, PRIEST_FAST } from "./equipment.js"
+import { MAGE_FAST, PRIEST_FAST, RETURN_HIGHEST, UNEQUIP } from "./equipment.js"
 
 const typeList: MonsterName[] = ["pinkgoo"]
 
@@ -25,6 +25,13 @@ export function constructPinkGooSetup(contexts: Strategist<PingCompensatedCharac
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
+                            generateEnsureEquipped: {
+                                attributes: ["frequency"],
+                                prefer: {
+                                    mainhand: { name: "rapier", filters: RETURN_HIGHEST },
+                                    offhand: UNEQUIP
+                                }
+                            },
                             typeList: typeList
                         }),
                         move: pinkgooMoveStrategy
