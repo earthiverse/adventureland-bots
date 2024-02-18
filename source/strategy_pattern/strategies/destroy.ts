@@ -27,6 +27,7 @@ export class DestroyStrategy<Type extends Character> implements Strategy<Type> {
     }
 
     private async destroy(bot: Type) {
+        const destroyPromises = []
         for (let i = 0; i < bot.isize; i++) {
             const item = bot.items[i]
             if (!item) continue
@@ -43,8 +44,8 @@ export class DestroyStrategy<Type extends Character> implements Strategy<Type> {
                 }
             }
 
-            // @ts-ignore TODO: Move to ALClient
-            bot.socket.emit("destroy", { num: i, q: 1, statue: true })
+            destroyPromises.push(bot.destroy(i))
         }
+        await Promise.allSettled(destroyPromises)
     }
 }
