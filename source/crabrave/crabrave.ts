@@ -5,7 +5,7 @@ import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { ChargeStrategy } from "../strategy_pattern/strategies/charge.js"
 import { Strategist, Strategy } from "../strategy_pattern/context.js"
 import { ElixirStrategy } from "../strategy_pattern/strategies/elixir.js"
-import { OptimizeItemsStrategy } from "../strategy_pattern/strategies/item.js"
+import { ItemStrategy } from "../strategy_pattern/strategies/item.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "../strategy_pattern/strategies/magiport.js"
 import { RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
 import { PartyHealStrategy } from "../strategy_pattern/strategies/partyheal.js"
@@ -39,6 +39,10 @@ const CRABRAVE_ITEM_CONFIG: ItemConfig = {
         sell: true,
         sellPrice: "npc"
     },
+    "computer": {
+        hold: true,
+        holdSlot: 40
+    },
     "crabclaw": {
         sell: true,
         sellPrice: "npc"
@@ -54,6 +58,20 @@ const CRABRAVE_ITEM_CONFIG: ItemConfig = {
     "hpbelt": {
         sell: true,
         sellPrice: "npc"
+    },
+    "hpot1": {
+        hold: true,
+        holdSlot: 39,
+        replenish: 1000
+    },
+    "mpot1": {
+        hold: true,
+        holdSlot: 38,
+        replenish: 1000
+    },
+    "tracker": {
+        hold: true,
+        holdSlot: 41
     },
     "wcap": {
         sell: true,
@@ -91,7 +109,7 @@ const getReplenishablesStrategy = new GetReplenishablesStrategy({
     contexts: CONTEXTS,
     replenishables: REPLENISHABLES
 })
-const itemStrategy = new OptimizeItemsStrategy({ contexts: CONTEXTS })
+const itemStrategy = new ItemStrategy({ contexts: CONTEXTS, itemConfig: CRABRAVE_ITEM_CONFIG })
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(CONTEXTS)
 const moveStrategy = new ImprovedMoveStrategy("crab")
 const attackStrategies: { [T in Exclude<CharacterType, "merchant">]: BaseAttackStrategy<PingCompensatedCharacter> } = {

@@ -11,7 +11,7 @@ export type SellStrategyOptions = {
     sellMap?: Map<ItemName, [number, number][]>
 }
 
-export const RecommendedSellStrategyOptions: SellStrategyOptions = {
+export const defaultSellStrategyOptions: SellStrategyOptions = {
     sellMap: new Map([
         // TODO: Add more things to sell
         ["bow", [[0, undefined]]],
@@ -23,7 +23,7 @@ export class SellStrategy<Type extends Character> implements SellStrategyOptions
 
     public sellMap: Map<ItemName, [number, number][]>
 
-    public constructor(options: SellStrategyOptions = RecommendedSellStrategyOptions) {
+    public constructor(options: SellStrategyOptions = defaultSellStrategyOptions) {
         if (options.sellMap) {
             this.sellMap = options.sellMap
 

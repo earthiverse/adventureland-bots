@@ -62,7 +62,7 @@ import path from "path"
 import { body, validationResult } from "express-validator"
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
 import { GuiStrategy } from "./strategy_pattern/strategies/gui.js"
-import { OptimizeItemsStrategy } from "./strategy_pattern/strategies/item.js"
+import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
 import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
@@ -72,6 +72,7 @@ import { CRYPT_MONSTERS, CRYPT_WAIT_TIME, getCryptWaitTime } from "./base/crypt.
 import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
 import { ITEM_UPGRADE_CONF, hasItemInBank } from "./base/items.js"
 import { DestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
+import { DEFAULT_ITEM_CONFIG } from "./base/itemsNew.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true, cheat: true })
@@ -230,14 +231,11 @@ const destroyStrategy = new DestroyStrategy({
 })
 const elixirStrategy = new ElixirStrategy("elixirluck")
 const homeServerStrategy = new HomeServerStrategy(DEFAULT_REGION, DEFAULT_IDENTIFIER)
-const privateItemStrategy = new OptimizeItemsStrategy({
+const privateItemStrategy = new ItemStrategy({
     contexts: PRIVATE_CONTEXTS,
-    itemsToUpgradeOrCompound: DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND,
+    itemConfig: DEFAULT_ITEM_CONFIG,
 })
-const publicItemStrategy = new OptimizeItemsStrategy({
-    contexts: PUBLIC_CONTEXTS,
-    itemsToUpgradeOrCompound: DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND,
-})
+const publicItemStrategy = new ItemStrategy({ contexts: PUBLIC_CONTEXTS, itemConfig: DEFAULT_ITEM_CONFIG })
 
 let OVERRIDE_MONSTERS: MonsterName[]
 let OVERRIDE_REGION: ServerRegion

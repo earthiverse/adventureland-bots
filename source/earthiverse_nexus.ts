@@ -1,6 +1,7 @@
-import AL, { ItemName, MonsterName } from "alclient"
-import { RunnerOptions, startCharacterFromName, startRunner } from "./strategy_pattern/runner.js"
+import AL, { MonsterName } from "alclient"
+import { RunnerOptions, startRunner } from "./strategy_pattern/runner.js"
 import { DEFAULT_ITEMS_TO_HOLD } from "./base/defaults.js"
+import { ItemConfig } from "./base/itemsNew.js"
 
 const MONSTER: MonsterName = "crab"
 const CREDENTIALS = "../credentials.nexus.json"
@@ -10,18 +11,29 @@ AL.Game.setServer("http://al.nexusnull.com")
 await Promise.all([AL.Game.loginJSONFile(CREDENTIALS, false), AL.Game.getGData(false)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: false })
 
-// Add a whole bunch of items to the sell list
-const SELL_MAP: Map<ItemName, [number, number][]> = new Map([
-    ["wbreeches", undefined],
-    ["hpamulet", undefined],
-    ["hpbelt", undefined],
-    ["stinger", undefined],
-])
+const ITEM_CONFIG: ItemConfig = {
+    "hpamulet": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "hpbelt": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "stinger": {
+        sell: true,
+        sellPrice: "npc"
+    },
+    "wbreeches": {
+        sell: true,
+        sellPrice: "npc"
+    }
+}
 
 const options: RunnerOptions = {
     monster: MONSTER,
     partyLeader: "earthiverse",
-    sellMap: SELL_MAP,
+    itemConfig: ITEM_CONFIG,
     merchantOverrides: {
         enableOffload: {
             esize: 35,

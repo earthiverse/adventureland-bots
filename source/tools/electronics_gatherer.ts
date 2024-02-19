@@ -5,7 +5,7 @@ import { Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { HoldPositionMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
-import { OptimizeItemsStrategy } from "../strategy_pattern/strategies/item.js"
+import { ItemStrategy } from "../strategy_pattern/strategies/item.js"
 
 // Login, prepare, and get game data
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
@@ -18,7 +18,7 @@ const credentials = JSON.parse(fs.readFileSync("../../credentials.json", "utf-8"
 const baseStrategy = new BaseStrategy()
 const respawnStrategy = new RespawnStrategy()
 const holdStrategy = new HoldPositionMoveStrategy({ map: "cyberland", x: 0, y: 0 })
-const itemStrategy = new OptimizeItemsStrategy()
+const itemStrategy = new ItemStrategy()
 
 export class ElectronicsStrategy implements Strategy<Rogue> {
     public onApply(bot: Rogue) {

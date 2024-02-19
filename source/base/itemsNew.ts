@@ -275,8 +275,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "hpot1": {
         hold: true,
         holdSlot: 39,
-        replenish: 1000,
-        // TODO: What slot?
+        replenish: 1000
     },
     "iceskates": {
         destroyBelowLevel: 1
@@ -547,6 +546,11 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
                         holdSlots.set(config.holdSlot, itemName)
                     }
                 }
+            }
+
+            if (config.sell && config.sellPrice == "npc") {
+                console.warn(`${itemName} has 'hold' and 'sellPrice' set to 'npc', removing 'sell: true'`)
+                delete config.sell
             }
         }
 

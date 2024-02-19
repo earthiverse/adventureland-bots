@@ -1,4 +1,4 @@
-import AL, { Character, CharacterType, IPosition, ItemName, Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import AL, { CharacterType, IPosition, ItemName, Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { getMsToNextMinute, randomIntFromInterval } from "../base/general.js"
 import { MerchantMoveStrategyOptions, MerchantStrategy } from "../merchant/strategy.js"
 import { Strategist, Strategy } from "./context.js"
@@ -14,17 +14,18 @@ import { MoveToBankAndDepositStuffStrategy } from "./strategies/bank.js"
 import { BaseStrategy } from "./strategies/base.js"
 import { BuyStrategy } from "./strategies/buy.js"
 import { ChargeStrategy } from "./strategies/charge.js"
-import { OptimizeItemsStrategy, OptimizeItemsStrategyOptions } from "./strategies/item.js"
+import { ItemStrategy } from "./strategies/item.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategies/magiport.js"
 import { GetHolidaySpiritStrategy, GetReplenishablesStrategy, ImprovedMoveStrategy, ImprovedMoveStrategyOptions } from "./strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategies/party.js"
 import { PartyHealStrategy } from "./strategies/partyheal.js"
 import { RespawnStrategy } from "./strategies/respawn.js"
 import { GiveRogueSpeedStrategy } from "./strategies/rspeed.js"
-import { SellStrategy } from "./strategies/sell.js"
+import { NewSellStrategy } from "./strategies/sell.js"
 import { ToggleStandStrategy } from "./strategies/stand.js"
 import { TrackerStrategy } from "./strategies/tracker.js"
 import { DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "../base/defaults.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig } from "../base/itemsNew.js"
 
 // Variables
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
@@ -55,8 +56,8 @@ const trackerStrategy = new TrackerStrategy()
 
 export type RunnerOptions = {
     monster: MonsterName
+    itemConfig?: ItemConfig
     buyMap?: Map<ItemName, number>
-    sellMap?: Map<ItemName, [number, number][]>
     partyLeader?: string
     ephemeral?: {
         buffer: number
@@ -68,7 +69,6 @@ export type RunnerOptions = {
     moveStrategy?: Strategy<PingCompensatedCharacter>
     moveOverrides?: Partial<ImprovedMoveStrategyOptions>
 
-    itemOverrides?: Partial<OptimizeItemsStrategyOptions>
     merchantOverrides?: Partial<MerchantMoveStrategyOptions>
 }
 
@@ -152,15 +152,8 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
     }))
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(respawnStrategy)
-    context.applyStrategy(new OptimizeItemsStrategy({
-        contexts: CONTEXTS,
-        itemsToHold: context.bot.ctype == "merchant" ? DEFAULT_MERCHANT_ITEMS_TO_HOLD : DEFAULT_ITEMS_TO_HOLD,
-        itemsToSell: new Set<ItemName>(options.sellMap.keys()),
-        ...(options.itemOverrides ?? {})
-    }))
-    context.applyStrategy(new SellStrategy({
-        sellMap: options.sellMap
-    }))
+    context.applyStrategy(new ItemStrategy({ contexts: CONTEXTS, itemConfig: DEFAULT_ITEM_CONFIG }))
+    context.applyStrategy(new NewSellStrategy({ itemConfig: options.itemConfig }))
 
     let moveStrategy: Strategy<PingCompensatedCharacter>
     if (character.ctype !== "merchant") {

@@ -50,13 +50,14 @@ import {
 } from "./base/defaults.js"
 
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
-import { OptimizeItemsStrategy } from "./strategy_pattern/strategies/item.js"
+import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
 import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
 import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
 import { CRYPT_MONSTERS, getCryptWaitTime } from "./base/crypt.js"
 import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
+import { DEFAULT_ITEM_CONFIG } from "./base/itemsNew.js"
 
 AL.Game.setServer("http://thmsn.adventureland.community")
 
@@ -200,10 +201,7 @@ const chargeStrategy = new ChargeStrategy()
 const privateSetups = constructSetups(CONTEXTS)
 const elixirStrategy = new ElixirStrategy("elixirluck")
 const homeServerStrategy = new HomeServerStrategy(DEFAULT_REGION, DEFAULT_IDENTIFIER)
-const privateItemStrategy = new OptimizeItemsStrategy({
-    contexts: CONTEXTS,
-    itemsToUpgradeOrCompound: DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND,
-})
+const privateItemStrategy = new ItemStrategy({ contexts: CONTEXTS, itemConfig: DEFAULT_ITEM_CONFIG })
 
 let OVERRIDE_MONSTERS: MonsterName[]
 let OVERRIDE_REGION: ServerRegion

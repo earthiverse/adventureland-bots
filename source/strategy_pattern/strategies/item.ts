@@ -1,234 +1,43 @@
-import AL, { GItem, ItemName, PingCompensatedCharacter, Player } from "alclient"
-import { DEFAULT_ITEMS_TO_HOLD } from "../../base/defaults.js"
+import AL, { PingCompensatedCharacter, Player } from "alclient"
 import { Strategy, LoopName, Loop, Strategist, filterContexts } from "../context.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig } from "../../base/itemsNew.js"
 
-export type OptimizeItemsStrategyOptions = {
+export type ItemStrategyOptions = {
+    itemConfig: ItemConfig
+    /** If available, we can do things like stacking items on one character instead of across three */
     contexts?: Strategist<PingCompensatedCharacter>[]
-    itemsToHold?: Set<ItemName>
-    itemsToSell?: Set<ItemName>
-
-    /** If set, we will upgrade or compound these items up to the level specified */
-    itemsToUpgradeOrCompound?: Map<ItemName, number>
-
     /** If set, we will transfer items to this player if we see them and they have space */
     transferItemsTo?: string
 }
 
-export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
+export const defaultNewItemStrategyOptions: ItemStrategyOptions = {
+    itemConfig: DEFAULT_ITEM_CONFIG
+}
+
+export class ItemStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
 
-    protected options: OptimizeItemsStrategyOptions
+    protected options: ItemStrategyOptions
 
-    public constructor(options?: OptimizeItemsStrategyOptions) {
-        // Set default options
-        if (!options) options = {}
-        if (!options.contexts) options.contexts = []
-        if (!options.itemsToHold) options.itemsToHold = DEFAULT_ITEMS_TO_HOLD
+    public constructor(options: ItemStrategyOptions = defaultNewItemStrategyOptions) {
         this.options = options
 
         this.loops.set("item", {
             fn: async (bot: Type) => {
-                await this.stackItems(bot)
-                await this.organizeItems(bot)
-                await this.moveOverflowItems(bot)
-                await this.transferItems(bot)
-                await this.transferSellableItems(bot)
-                await this.transferStackableItems(bot)
-                await this.upgradeOrCompoundItems(bot).catch(console.error)
+                await this.moveOverflowItems(bot).catch(console.error)
+                await this.stackItems(bot).catch(console.error)
+                await this.organizeItems(bot).catch(console.error)
+                await this.transferItems(bot).catch(console.error)
+                await this.transferSellableItems(bot).catch(console.error)
+                await this.transferStackableItems(bot).catch(console.error)
             },
             interval: 5_000
         })
     }
 
     /**
-     * Sort items how I like them to be sorted
-     */
-    private async organizeItems(bot: Type) {
-        // Sort locked items first
-        for (let i = 0; i < bot.isize - 1; i++) {
-            const item = bot.items[i]
-            if (!item) continue // No item
-            if (item.l) continue // Locked item is already here
-
-            let foundLocked = false
-            for (let j = i + 1; j < bot.isize; j++) {
-                const item2 = bot.items[j]
-                if (!item2) continue
-                if (!item2.l) continue // Item isn't locked
-                if (["computer", "supercomputer", "tracker"].includes(item2.name)) continue // We sort these differently
-                console.debug(`swapping ${i} (${bot.items[i].name}) and ${j} (${bot.items[j].name}) (locked first)`)
-                await bot.swapItems(i, j)
-                foundLocked = true
-                break
-            }
-            if (!foundLocked) break
-        }
-
-        const items: {
-            name: ItemName
-            num: number
-        }[] = []
-        for (let i = 0; i < bot.isize; i++) {
-            const item = bot.items[i]
-            if (!item) continue
-            if (item.v) continue // Don't move PVP marked items
-
-            items.push({
-                ...item,
-                num: i
-            })
-        }
-
-        /**
-         * Swaps the item to the given slot if it isn't there
-         */
-        const fixNum = async (find: ItemName[], num: number) => {
-            const item = items.find(i => find.includes(i.name))
-            if (item === undefined) return
-            if (item?.num && item.num !== num) await bot.swapItems(item.num, num)
-        }
-
-        // Put things in certain slots
-        await fixNum(["cscroll0"], 28)
-        await fixNum(["cscroll1"], 29)
-        await fixNum(["cscroll2"], 30)
-        await fixNum(["scroll0"], 35)
-        await fixNum(["scroll1"], 36)
-        await fixNum(["scroll2"], 37)
-        await fixNum(["mpot0"], 38)
-        await fixNum(["hpot0"], 39)
-        await fixNum(["computer", "supercomputer"], 40)
-        await fixNum(["tracker"], 41)
-    }
-
-    /**
-     * Look for items that can be stacked and stack them
-     */
-    private async stackItems(bot: Type) {
-        for (let i = 0; i < bot.isize - 1; i++) {
-            const item1 = bot.items[i]
-            if (!item1) continue // No item
-            if (!item1.q) continue // Not stackable
-            for (let j = i + 1; j < bot.isize; j++) {
-                const item2 = bot.items[j]
-                if (!item2) continue // No item
-                if (!item2.q) continue // Not stackable
-                if (item1.name !== item2.name) continue // Different items
-                if (item1.p !== item2.p) continue // Item is a different kind of special
-                if (item1.v && !item2.v) continue // One is PVP marked
-
-                const gInfo = AL.Game.G.items[item1.name]
-                if (item1.q + item2.q > gInfo.s) continue // Too many to stack
-
-                // Stack the items!
-                await bot.swapItems(j, i).catch(console.error)
-            }
-        }
-    }
-
-    private async transferItems(bot: Type) {
-        if (!this.options.transferItemsTo) return // The player to transfer items to isn't set
-        if (bot.id == this.options.transferItemsTo) return // We'd be transferring items to ourself
-
-        const player: PingCompensatedCharacter | Player = bot.players.get(this.options.transferItemsTo)
-        if (!player) return // They're too far away
-        if (AL.Tools.squaredDistance(bot, player) >= AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return // They're too far away
-
-        for (const context of filterContexts(this.options.contexts, { owner: bot.owner, serverData: bot.serverData })) {
-            if (context.bot.id == this.options.transferItemsTo) continue // Not the player we want to transfer items to
-            if (context.bot.esize <= 0) return // They're full
-            break
-        }
-
-        // Transfer items
-        for (let i = 0; i < bot.isize; i++) {
-            const item = bot.items[i]
-            if (!item) continue // No item in this slot
-            if (item.l) continue // Item is locked
-            if (this.options.itemsToHold.has(item.name)) continue // We want to hold this item
-            try {
-                // Send them the item
-                await bot.sendItem(this.options.transferItemsTo, i, item.q ?? 1)
-            } catch {
-                // Don't send any more items if something went wrong
-                break
-            }
-        }
-    }
-
-    private async transferSellableItems(bot: Type) {
-        if (!this.options.contexts || this.options.contexts.length <= 1) return // No contexts
-        if (!this.options.itemsToSell) return // No items to sell
-        if (bot.hasItem(["computer", "supercomputer"])) return // We already have a computer, we can sell it ourself
-
-        for (const context of filterContexts(this.options.contexts, { owner: bot.owner, serverData: bot.serverData })) {
-            const friend = context.bot
-            if (friend.esize <= 0) continue // They have no space
-            if (AL.Tools.distance(bot, friend)) continue // They're too far away
-            if (!friend.hasItem(["computer", "supercomputer"])) continue // They don't have a computer to sell the item
-
-            for (let i = 0; i < bot.isize; i++) {
-                const item = bot.items[i]
-                if (!item) continue // No item
-                if (item.l) continue // Item is locked
-                if (!this.options.itemsToSell.has(item.name)) continue // We don't want to sell it
-                try {
-                    // Send them the item so they can sell it
-                    await bot.sendItem(friend.id, i, item.q ?? 1)
-                } catch {
-                    break
-                }
-            }
-        }
-    }
-
-    /**
-     * Transfer items to others
-     * @param bot
-     */
-    private async transferStackableItems(bot: Type) {
-        if (!this.options.contexts || this.options.contexts.length <= 1) return // No contexts
-
-        // Look for items that we both have that are stackable
-        const ourStackables = new Map<ItemName, number>()
-        for (let i = 0; i < bot.isize; i++) {
-            const item = bot.items[i]
-            if (!item) continue // No item
-            if (!item.q) continue // It's not stackable
-            if (item.l) continue // It's locked
-            if (this.options.itemsToHold.has(item.name)) continue // We want to hold it
-            ourStackables.set(item.name, i)
-        }
-        if (ourStackables.size == 0) return // No stackables
-
-        for (const context of filterContexts(this.options.contexts, { owner: bot.owner, serverData: bot.serverData })) {
-            const friend = context.bot
-            if (friend == bot) continue // Skip ourself
-            if (AL.Tools.squaredDistance(bot, friend) >= AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // Too far away
-
-            for (let i = 0; i < friend.isize; i++) {
-                const item = friend.items[i]
-                if (!item) continue // No item
-                if (!item.q) continue // It's not stackable
-                if (item.l) continue // It's locked
-                if (!ourStackables.has(item.name)) continue // We don't have any
-
-                const ourPosition = ourStackables.get(item.name)
-                const ourItem = bot.items[ourPosition]
-                if (!ourItem) continue // We no longer have this item
-                if (ourItem.v && !item.v) continue // One is PvP marked, the other isn't
-                if (ourItem.q > item.q) continue // We have more, don't transfer
-                if (ourItem.q === item.q && bot.id > friend.id) continue // If we have the same amount, send to the bot whose name comes first alphabetically
-                const gItem: GItem = AL.Game.G.items[item.name]
-
-                // Send our stacks to combine them
-                await bot.sendItem(friend.id, ourPosition, Math.min(ourItem.q, gItem.s as number - ourItem.q)).catch(console.error)
-            }
-        }
-    }
-
-    /**
-     * Look for items that are in the overflow area of the items, and swap them to normal inventory spaces
+     * Moves items that are outside of the normal inventory bounds back in
+     * if there is space
      */
     private async moveOverflowItems(bot: Type) {
         for (let i = bot.isize; i < bot.items.length; i++) {
@@ -236,43 +45,161 @@ export class OptimizeItemsStrategy<Type extends PingCompensatedCharacter> implem
             if (!item) continue // No item in overflow slot
             for (let j = 0; j < bot.isize; j++) {
                 const item2 = bot.items[j]
-                if (item2) continue // Item in normal inventory slot
-                await bot.swapItems(i, j).catch(console.error) // Swap the item from overflow in to our normal inventory
-                break
+                if (item2) continue // Not empty
+                return bot.swapItems(i, j)
             }
         }
     }
 
-    private async upgradeOrCompoundItems(bot: Type) {
-        if (!this.options.itemsToUpgradeOrCompound) return
+    /**
+     * Organize inventory
+     */
+    private async organizeItems(bot: Type) {
+        for (let i = 0; i < bot.isize; i++) {
+            const item = bot.items[i]
+            if (!item) continue // No item
 
-        for (const [itemName, level] of this.options.itemsToUpgradeOrCompound) {
-            const items = bot.locateItems(itemName, bot.items, { levelLessThan: level + 1 })
-            if (items.length === 0) continue // We don't have any of those items
+            // Check if we want to hold it in a specific slot
+            const itemConfig = this.options.itemConfig[item.name]
+            if (itemConfig.hold && itemConfig.holdSlot !== i) {
+                await bot.swapItems(i, itemConfig.holdSlot)
+                continue
+            }
 
-            const gItem = bot.G.items[itemName]
-            if (
-                gItem.upgrade
-                && !bot.q.upgrade
-            ) {
-                const item = bot.items[items[0]]
-                const grade = bot.calculateItemGrade(item)
-                const scroll = `scroll${grade}` as ItemName
-                if (!bot.hasItem(scroll) && bot.canBuy(scroll)) await bot.buy(scroll)
-                if (bot.hasItem(scroll)) return bot.upgrade(items[0], bot.locateItem(scroll))
-            } else if (
-                gItem.compound
-                && items.length >= 3
-                && !bot.q.compound
-            ) {
-                const item0 = bot.items[items[0]]
-                const item1 = bot.items[items[1]]
-                const item2 = bot.items[items[2]]
-                if (item0.level !== item1.level || item0.level !== item2.level) continue // Can't compound different levels
-                const grade = bot.calculateItemGrade(item0)
-                const scroll = `cscroll${grade}` as ItemName
-                if (!bot.hasItem(scroll) && bot.canBuy(scroll)) await bot.buy(scroll)
-                if (bot.hasItem(scroll)) return bot.compound(items[0], items[1], items[2], bot.locateItem(scroll))
+            // Sort locked items first
+            if (!item.l) continue
+            for (let j = 0; j < i; j++) {
+                const item2 = bot.items[j]
+                if (!item2 || !item2.l) {
+                    await bot.swapItems(i, j)
+                    break
+                }
+            }
+        }
+    }
+
+    /**
+     * Optimize stacks of items
+     */
+    private async stackItems(bot: Type) {
+        for (let i = 0; i < bot.isize - 1; i++) {
+            const item1 = bot.items[i]
+            if (!item1) continue // No item
+            if (!item1.q) continue // Not stackable
+
+            const gItem = AL.Game.G.items[item1.name]
+            if (item1.q === gItem.s) continue // Full stack
+
+            for (let j = i + 1; j < bot.isize; j++) {
+                const item2 = bot.items[j]
+                if (!item2) continue // No item
+                if (item2.name !== item1.name) continue // Different item
+                if (item2.p !== item1.p) continue // Different title
+                if (item2.v !== item1.v) continue // Different PVP marking
+                if (item2.q === gItem.s) continue // Full stack
+
+                if (item1.q + item2.q <= gItem.s) {
+                    // We can stack one on the other
+                    await bot.swapItems(j, i)
+                } else if (bot.esize) {
+                    // We can optimize them so one is fully stacked
+                    const newSlot = await bot.splitItem(j, gItem.s - item1.q)
+                    await bot.swapItems(newSlot, i)
+                }
+            }
+        }
+    }
+
+    /**
+     * If the `transferItemsTo` option is set, transfer items to that player
+     */
+    private async transferItems(bot: Type) {
+        if (!this.options.transferItemsTo) return // Option isn't set
+        if (bot.id === this.options.transferItemsTo) return // Option is set to ourself
+
+        let player: PingCompensatedCharacter | Player = bot.players.get(this.options.transferItemsTo)
+        if (!player) return // Couldn't find them
+        if (AL.Tools.squaredDistance(bot, player) >= AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return // They're too far away
+
+        // If we have the context of the player we want to send items to, we can perform extra checks to see if we can send the item
+        if (this.options.contexts) {
+            for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
+                if (context.bot.id !== this.options.transferItemsTo) continue // Not the player we want to transfer items to
+                player = context.bot
+                break
+            }
+        }
+
+        for (const [slot, item] of bot.getItems()) {
+            if (item.l) continue // Can't send locked items
+            const itemConfig = this.options.itemConfig[item.name]
+            if (itemConfig) {
+                if (itemConfig.hold === true || itemConfig.hold.includes(bot.ctype)) continue
+                if (itemConfig.sell && bot.canSell()) continue // We'll sell it soon
+                if (itemConfig.destroyBelowLevel && item.level < itemConfig.destroyBelowLevel) continue // We'll destroy it soon
+            }
+
+            if (player instanceof PingCompensatedCharacter && player.esize === 0) {
+                if (!item.q) continue // It's not stackable, and they have no space
+                if (!player.hasItem(item.name, player.items, { quantityLessThan: AL.Game.G.items[item.name].s + 1 - item.q })) continue // We can't stack it
+            }
+
+            await bot.sendItem(this.options.transferItemsTo, slot, item.q ?? 1)
+        }
+    }
+
+    /**
+     * Send sellable items to a nearby context if we can't sell, but they can
+     */
+    private async transferSellableItems(bot: Type) {
+        if (!this.options.contexts) return // No context information
+        if (bot.canSell()) return // We can sell from where we currently are
+
+        for (const context of filterContexts(this.options.contexts, { owner: bot.owner, serverData: bot.serverData })) {
+            const friend = context.bot
+            if (friend.esize <= 0) continue // They have no space
+            if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // They're too far away
+            if (!friend.canSell()) continue // They can't sell it either
+
+            for (const [slot, item] of bot.getItems()) {
+                if (item.l) continue // Can't send locked items
+
+                const itemConfig = this.options.itemConfig[item.name]
+                if (!itemConfig) continue // No item config, assume we don't want to sell it
+                if (itemConfig.hold === true || itemConfig.hold.includes(bot.ctype)) continue // 
+                if (!itemConfig.sell) continue // We don't want to sell it
+
+                await bot.sendItem(friend.id, slot, item.q ?? 1)
+            }
+        }
+    }
+
+    /**
+     * Transfer stackable items to the other players to reduce the number of stacks in total
+     */
+    private async transferStackableItems(bot: Type) {
+        if (!this.options.contexts) return // No context information
+
+        for (const context of filterContexts(this.options.contexts, { owner: bot.owner, serverData: bot.serverData })) {
+            const friend = context.bot
+            if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // They're too far away
+            for (const [slot, item] of bot.getItems()) {
+                if (item.l) continue // Can't send locked items
+                if (!item.q) continue // Don't send non-stackable items
+
+                const itemConfig = this.options.itemConfig[item.name]
+                if (itemConfig) {
+                    if (itemConfig.sell) continue // We want to sell this item
+                    if (itemConfig.hold === true || itemConfig.hold.includes(bot.ctype)) continue // We want to hold this item
+                }
+
+                const friendSlot = friend.locateItem(item.name, friend.items, { quantityLessThan: AL.Game.G.items[item.name].s + 1 - item.q }) // We can't stack it
+                if (friendSlot === undefined) continue // They don't have this item to stack
+                const friendItem = friend.items[friendSlot]
+                if (friendItem.q < item.q) continue // We have more
+                if (friendItem.q === item.q && friend.id > bot.id) continue // If they're the same amount, only transfer if our name is sorted before theirs alphabetically
+
+                await bot.sendItem(friend.id, slot, item.q ?? 1)
             }
         }
     }
