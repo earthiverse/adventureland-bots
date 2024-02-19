@@ -272,6 +272,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "hpbelt": {
         upgradeUntilLevel: 2
     },
+    "hpot0": {
+        sell: true,
+        sellPrice: "npc"
+    },
     "hpot1": {
         hold: true,
         holdSlot: 39,
@@ -310,7 +314,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     "monstertoken": {
         sell: true,
-        sellPrice: 300_000
+        sellPrice: 250_000
+    },
+    "mpot0": {
+        sell: true,
+        sellPrice: "npc"
     },
     "mpot1": {
         hold: true,

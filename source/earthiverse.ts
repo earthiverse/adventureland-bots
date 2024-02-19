@@ -43,12 +43,11 @@ import {
     getValentinesMonsterPriority,
 } from "./base/serverhop.js"
 import { randomIntFromInterval, sleep } from "./base/general.js"
-import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
+import { NewSellStrategy, SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
 import {
     DEFAULT_ITEMS_TO_BUY,
     DEFAULT_ITEMS_TO_HOLD,
-    DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND,
     DEFAULT_MERCHANT_ITEMS_TO_HOLD,
     DEFAULT_REPLENISHABLES,
     DEFAULT_REPLENISH_RATIO,
@@ -68,10 +67,10 @@ import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
 import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
-import { CRYPT_MONSTERS, CRYPT_WAIT_TIME, getCryptWaitTime } from "./base/crypt.js"
+import { CRYPT_MONSTERS, getCryptWaitTime } from "./base/crypt.js"
 import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
-import { ITEM_UPGRADE_CONF, hasItemInBank } from "./base/items.js"
-import { DestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
+import { hasItemInBank } from "./base/items.js"
+import { DestroyStrategy, MerchantDestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
 import { DEFAULT_ITEM_CONFIG } from "./base/itemsNew.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
@@ -139,44 +138,7 @@ const publicBuyStrategy = new BuyStrategy({
     replenishables: DEFAULT_REPLENISHABLES,
 })
 
-const privateItemsToSell = new Map<ItemName, [number, number][]>([
-    ["cake", undefined],
-    ["carrotsword", undefined],
-    ["cclaw", undefined],
-    ["coat1", undefined],
-    ["dexring", undefined],
-    ["frankypants", undefined],
-    ["gloves1", undefined],
-    ["gphelmet", undefined],
-    ["helmet1", undefined],
-    ["hpamulet", undefined],
-    ["hpbelt", undefined],
-    ["iceskates", undefined],
-    ["intring", undefined],
-    ["intearring", undefined],
-    ["maceofthedead", undefined],
-    ["monstertoken", [[undefined, 300_000]]],
-    ["mushroomstaff", undefined],
-    ["pants1", undefined],
-    ["phelmet", undefined],
-    ["pickaxe", [[0, 1_000_000]]],
-    ["pmaceofthedead", undefined],
-    ["ringsj", undefined],
-    ["rod", [[0, 1_000_000]]],
-    ["shoes1", undefined],
-    ["slimestaff", undefined],
-    ["snowball", undefined],
-    ["stand0", undefined],
-    ["stramulet", undefined],
-    ["strearring", undefined],
-    ["vboots", undefined],
-    ["vgloves", undefined],
-    ["vitearring", undefined],
-    ["xmace", undefined],
-])
-const privateSellStrategy = new SellStrategy({
-    sellMap: privateItemsToSell,
-})
+const privateSellStrategy = new NewSellStrategy()
 const PUBLIC_ITEMS_TO_SELL = new Map<ItemName, [number, number][]>([
     ["cake", undefined],
     ["carrotsword", undefined],
@@ -226,9 +188,7 @@ const chargeStrategy = new ChargeStrategy()
 const privateSetups = constructSetups(ALL_CONTEXTS)
 const publicSetups = constructHelperSetups(ALL_CONTEXTS)
 // Etc.
-const destroyStrategy = new DestroyStrategy({
-    destroy: new Set<ItemName>(Object.entries(ITEM_UPGRADE_CONF).filter(i => i[1].destroy).map(i => i[0]) as ItemName[])
-})
+const destroyStrategy = new DestroyStrategy()
 const elixirStrategy = new ElixirStrategy("elixirluck")
 const homeServerStrategy = new HomeServerStrategy(DEFAULT_REGION, DEFAULT_IDENTIFIER)
 const privateItemStrategy = new ItemStrategy({
@@ -921,7 +881,7 @@ const startMerchantContext = async () => {
     CONTEXT.applyStrategy(guiStrategy)
     CONTEXT.applyStrategy(privateSellStrategy)
     CONTEXT.applyStrategy(privateItemStrategy)
-    CONTEXT.applyStrategy(destroyStrategy)
+    CONTEXT.applyStrategy(new MerchantDestroyStrategy())
     CONTEXT.applyStrategy(avoidDeathStrategy)
 
     const itemsToBuy = new Map<ItemName, number>(DEFAULT_ITEMS_TO_BUY.entries())

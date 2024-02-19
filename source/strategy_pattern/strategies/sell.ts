@@ -163,7 +163,6 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
             for (const [tradeSlot, wantedItem] of player.getWantedItems()) {
                 const config: SellConfig = this.options.itemConfig[wantedItem.name]
                 if (!config) continue // Not in config
-                // TODO: We may want to sell our excess items
                 if (!config.sell) continue // We don't want to sell
 
                 if (typeof config.sellPrice === "number") {
@@ -171,7 +170,7 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
                     if (config.sellPrice > wantedItem.price) continue // We want more for it
                 } else if (config.sellPrice === "npc") {
                     if ((wantedItem.level ?? 0) > 0) continue // We're not selling this item if leveled
-                    if ((AL.Game.G.items[wantedItem.name].g * AL.Game.G.multipliers.buy_to_sell) > wantedItem.price) continue // We want more for it
+                    if (wantedItem.calculateNpcValue() > wantedItem.price) continue // We want more for it
                 } else {
                     if (!config.sellPrice[wantedItem.level ?? 0]) continue // We're not selling this item at this level
                     if (config.sellPrice[wantedItem.level ?? 0] > wantedItem.price) continue // We want more for it
@@ -187,6 +186,29 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
 
                 // Sell it
                 await bot.sellToMerchant(player.id, tradeSlot, wantedItem.rid, Math.min(ourItem.q ?? 1, wantedItem.q ?? 1)).catch(console.error)
+            }
+        }
+
+        // Sell excess
+        for (const player of players) {
+            for (const [tradeSlot, wantedItem] of player.getWantedItems()) {
+                const config: SellConfig = this.options.itemConfig[wantedItem.name]
+                if (!config) continue // Not in config
+                if (config.sellExcess === undefined) continue // We don't want to sell
+                if (wantedItem.calculateNpcValue() > wantedItem.price) continue // We could get more selling it to an NPC
+                const numWeHave = bot.countItem(wantedItem.name)
+                if (numWeHave <= config.sellExcess) continue // We don't have an excess
+
+                const ourItemIndex = bot.locateItem(
+                    wantedItem.name,
+                    bot.items,
+                    { level: wantedItem.level, locked: false, special: false }
+                )
+                if (ourItemIndex === undefined) continue // We don't have any to sell
+                const ourItem = bot.items[ourItemIndex]
+
+                // Sell it
+                await bot.sellToMerchant(player.id, tradeSlot, wantedItem.rid, ourItem.q ? Math.min(numWeHave - config.sellExcess, ourItem.q) : 1).catch(console.error)
             }
         }
     }
@@ -209,6 +231,17 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
             }
 
             await bot.sell(i, item.q ?? 1)
+        }
+
+        // Sell excess
+        for (const [i, item] of bot.getItems()) {
+            const config: SellConfig = this.options.itemConfig[item.name]
+            if (!config) continue // Not in config
+            if (config.sellExcess === undefined) continue // We don't want to sell
+            const numWeHave = bot.countItem(item.name)
+            if (numWeHave <= config.sellExcess) continue // We don't have an excess
+
+            await bot.sell(i, item.q ? Math.min(numWeHave - config.sellExcess, item.q) : 1)
         }
     }
 }
