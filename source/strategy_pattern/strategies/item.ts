@@ -157,6 +157,7 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
         for (const context of filterContexts(this.options.contexts, { owner: bot.owner, serverData: bot.serverData })) {
             const friend = context.bot
+            if (bot === friend) continue // Ourself
             if (friend.esize <= 0) continue // They have no space
             if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // They're too far away
             if (!friend.canSell()) continue // They can't sell it either
@@ -182,6 +183,7 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
         for (const context of filterContexts(this.options.contexts, { owner: bot.owner, serverData: bot.serverData })) {
             const friend = context.bot
+            if (bot === friend) continue // Ourself
             if (AL.Tools.squaredDistance(bot, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // They're too far away
             for (const [slot, item] of bot.getItems()) {
                 if (item.l) continue // Can't send locked items
