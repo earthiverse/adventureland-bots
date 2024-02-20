@@ -61,7 +61,7 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
             // Check if we want to hold it in a specific slot
             const itemConfig = this.options.itemConfig[item.name]
-            if (itemConfig.hold && itemConfig.holdSlot !== i) {
+            if (itemConfig && itemConfig.hold && itemConfig.holdSlot !== i) {
                 await bot.swapItems(i, itemConfig.holdSlot)
                 continue
             }
