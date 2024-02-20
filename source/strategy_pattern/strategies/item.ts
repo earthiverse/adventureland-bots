@@ -190,7 +190,7 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
                 const itemConfig = this.options.itemConfig[item.name]
                 if (itemConfig) {
                     if (itemConfig.sell) continue // We want to sell this item
-                    if (itemConfig.hold === true || itemConfig.hold.includes(bot.ctype)) continue // We want to hold this item
+                    if (itemConfig.hold === true || itemConfig.hold?.includes(bot.ctype)) continue // We want to hold this item
                 }
 
                 const friendSlot = friend.locateItem(item.name, friend.items, { quantityLessThan: AL.Game.G.items[item.name].s + 1 - item.q }) // We can't stack it
