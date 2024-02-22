@@ -488,6 +488,39 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
 }
 
 /**
+ * Programatically adds some additional items to buy
+ */
+export async function adjustItemConfig(itemConfig: ItemConfig) {
+    for (const iN in AL.Game.G.items) {
+        const itemName = iN as ItemName
+        const gItem = AL.Game.G.items[itemName]
+        const config = itemConfig[itemName]
+        if (
+            config
+            && (
+                config.buy
+                || config.sell
+            )
+        ) continue // Buy (or sell) is already set, don't change it
+
+        // TODO: Add more logic for things to buy
+
+        if (
+            gItem.e // Buy all exchangables
+            || gItem.type === "token" // Buy all tokens
+            || gItem.type === "bank_key"
+            || gItem.type === "dungeon_key" // Buy all keys
+            || gItem.tier >= 4 // Buy all super high tier items
+            || gItem.name.includes("Darkforge") // Buy all darkforge items
+        ) {
+            config.buy = true
+            config.buyPrice = "ponty"
+            continue
+        }
+    }
+}
+
+/**
  * This function will perform some sanity checks on the item config to help minimize
  * potential errors
  */

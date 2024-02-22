@@ -1,6 +1,6 @@
-import AL, { ItemName, Character, TradeSlotType, CharacterType, SlotInfo, Item } from "alclient"
+import AL, { ItemName, Character, TradeSlotType } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, SellConfig } from "../../base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, SellConfig, runSanityCheckOnItemConfig } from "../../base/itemsNew.js"
 
 export type SellStrategyOptions = {
     /**
@@ -150,6 +150,11 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
         })
     }
 
+    public onApply(bot: Type) {
+        // Ensure that we don't sell for less than we can get from an NPC
+        runSanityCheckOnItemConfig(this.options.itemConfig)
+    };
+
     protected async sell(bot: Type) {
         await this.sellToPlayers(bot)
         await this.sellToNPCs(bot)
@@ -217,6 +222,9 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
         if (!bot.canSell()) return
 
         for (const [i, item] of bot.getItems()) {
+            if (item.l) continue // Can't sell locked items
+            if (item.p) continue // Don't sell special items
+
             const config: SellConfig = this.options.itemConfig[item.name]
             if (!config) continue // Not in config
             if (!config.sell) continue // We don't want to sell
@@ -228,6 +236,8 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
             } else if (Array.isArray(config.sellPrice)) {
                 if (!config.sellPrice[item.level ?? 0]) continue // We're not selling this item at this level
                 if (config.sellPrice[item.level ?? 0] > npcOffer) continue // We want more than NPC price
+            } else if (config.sellPrice === "npc") {
+                if (item.level ?? 0) continue // We're not selling this item if leveled
             }
 
             await bot.sell(i, item.q ?? 1)
