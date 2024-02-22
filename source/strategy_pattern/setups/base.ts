@@ -84,42 +84,42 @@ export type Requirements = {
 export type CharacterConfig = {
     require?: Requirements
 } & (
-    | {
-          ctype: "mage"
-          attack: Strategy<Mage>
-          move: Strategy<Mage>
-      }
-    | {
-          ctype: "merchant"
-          attack: Strategy<Merchant>
-          move: Strategy<Merchant>
-      }
-    | {
-          ctype: "paladin"
-          attack: Strategy<Paladin>
-          move: Strategy<Paladin>
-      }
-    | {
-          ctype: "priest"
-          attack: Strategy<Priest>
-          move: Strategy<Priest>
-      }
-    | {
-          ctype: "ranger"
-          attack: Strategy<Ranger>
-          move: Strategy<Ranger>
-      }
-    | {
-          ctype: "rogue"
-          attack: Strategy<Rogue>
-          move: Strategy<Rogue>
-      }
-    | {
-          ctype: "warrior"
-          attack: Strategy<Warrior>
-          move: Strategy<Warrior>
-      }
-)
+        | {
+            ctype: "mage"
+            attack: Strategy<Mage>
+            move: Strategy<Mage>
+        }
+        | {
+            ctype: "merchant"
+            attack: Strategy<Merchant>
+            move: Strategy<Merchant>
+        }
+        | {
+            ctype: "paladin"
+            attack: Strategy<Paladin>
+            move: Strategy<Paladin>
+        }
+        | {
+            ctype: "priest"
+            attack: Strategy<Priest>
+            move: Strategy<Priest>
+        }
+        | {
+            ctype: "ranger"
+            attack: Strategy<Ranger>
+            move: Strategy<Ranger>
+        }
+        | {
+            ctype: "rogue"
+            attack: Strategy<Rogue>
+            move: Strategy<Rogue>
+        }
+        | {
+            ctype: "warrior"
+            attack: Strategy<Warrior>
+            move: Strategy<Warrior>
+        }
+    )
 
 export type Config = {
     id: string
@@ -169,8 +169,8 @@ export function constructGenericSetup(
                                 attributes: allMagical
                                     ? ["int", "explosion", "blast"]
                                     : allPhysical
-                                    ? ["int", "attack"]
-                                    : ["int", "attack"],
+                                        ? ["int", "attack"]
+                                        : ["int", "attack"],
                             },
                             typeList: monsters,
                         }),
@@ -247,8 +247,8 @@ export function constructGenericSetup(
                                 attributes: allMagical
                                     ? ["str", "attack"]
                                     : allPhysical
-                                    ? ["str", "explosion", "blast"]
-                                    : ["str", "attack"],
+                                        ? ["str", "explosion", "blast"]
+                                        : ["str", "attack"],
                             },
                             typeList: monsters,
                         }),
@@ -424,6 +424,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         goo: constructGooSetup(contexts),
         greenjr: constructGreenJrSetup(contexts),
         grinch: constructGrinchSetup(contexts),
+        gscorpion: constructGenericSetup(contexts, ["gscorpion"], true),
         harpy: constructHarpySetup(contexts),
         icegolem: constructIceGolemSetup(contexts),
         iceroamer: constructIceRoamerSetup(contexts),
@@ -506,6 +507,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         goo: constructGenericSetup(contexts, ["goo"]),
         greenjr: constructGenericWithPriestSetup(contexts, ["greenjr", "osnake", "snake"]),
         grinch: constructGrinchHelperSetup(contexts),
+        gscorpion: constructGenericSetup(contexts, ["gscorpion"]),
         icegolem: constructIceGolemHelperSetup(contexts),
         iceroamer: constructIceRoamerHelperSetup(contexts),
         jr: constructGenericWithPriestSetup(contexts, ["jr"]),
