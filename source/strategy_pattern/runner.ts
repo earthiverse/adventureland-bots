@@ -12,7 +12,7 @@ import { WarriorAttackStrategy } from "./strategies/attack_warrior.js"
 import { AvoidStackingStrategy } from "./strategies/avoid_stacking.js"
 import { MoveToBankAndDepositStuffStrategy } from "./strategies/bank.js"
 import { BaseStrategy } from "./strategies/base.js"
-import { NewBuyStrategy } from "./strategies/buy.js"
+import { BuyStrategy } from "./strategies/buy.js"
 import { ChargeStrategy } from "./strategies/charge.js"
 import { ItemStrategy } from "./strategies/item.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategies/magiport.js"
@@ -144,7 +144,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
     }
 
     context.applyStrategy(avoidStackingStrategy)
-    context.applyStrategy(new NewBuyStrategy({ contexts: CONTEXTS, itemConfig: options.itemConfig }))
+    context.applyStrategy(new BuyStrategy({ contexts: CONTEXTS, itemConfig: options.itemConfig }))
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(new ItemStrategy({ contexts: CONTEXTS, itemConfig: options.itemConfig }))

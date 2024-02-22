@@ -96,7 +96,25 @@ type CombinedConfig =
     & UpgradeConfig;
 export type ItemConfig = Partial<Record<ItemName, CombinedConfig>>;
 
+export const REPLENISH_ITEM_CONFIG: ItemConfig = {
+    "hpot1": {
+        hold: true,
+        holdSlot: 39,
+        replenish: 1000
+    },
+    "mpot1": {
+        hold: true,
+        holdSlot: 38,
+        replenish: 1000
+    },
+    "xptome": {
+        hold: true,
+        replenish: 1
+    }
+}
+
 export const DEFAULT_ITEM_CONFIG: ItemConfig = {
+    ...REPLENISH_ITEM_CONFIG,
     "5bucks": {
         buy: true,
         buyPrice: 100_000_000
@@ -276,11 +294,6 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sell: true,
         sellPrice: "npc"
     },
-    "hpot1": {
-        hold: true,
-        holdSlot: 39,
-        replenish: 1000
-    },
     "iceskates": {
         destroyBelowLevel: 1
     },
@@ -319,11 +332,6 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "mpot0": {
         sell: true,
         sellPrice: "npc"
-    },
-    "mpot1": {
-        hold: true,
-        holdSlot: 38,
-        replenish: 1000
     },
     "mushroomstaff": {
         destroyBelowLevel: 1
@@ -480,10 +488,6 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     "xpbooster": {
         hold: true
-    },
-    "xptome": {
-        hold: true,
-        replenish: 1
     }
 }
 

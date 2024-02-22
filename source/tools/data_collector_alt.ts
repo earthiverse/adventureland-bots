@@ -3,7 +3,7 @@ import fs from "fs"
 import { getMsToNextMinute } from "../base/general.js"
 import { Strategist } from "../strategy_pattern/context.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
-import { NewBuyStrategy } from "../strategy_pattern/strategies/buy.js"
+import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { AlwaysInvisStrategy } from "../strategy_pattern/strategies/invis.js"
 import { HoldPositionMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
@@ -17,7 +17,7 @@ const BUFFER = 15_000
 const credentials = JSON.parse(fs.readFileSync("../../credentials_attack.json", "utf-8"))
 
 const baseStrategy = new BaseStrategy()
-const buyStrategy = new NewBuyStrategy({
+const buyStrategy = new BuyStrategy({
     itemConfig: {},
     enableBuyForProfit: true
 })

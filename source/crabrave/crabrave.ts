@@ -1,7 +1,7 @@
 import AL, { CharacterType, ItemName, Mage, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { AvoidStackingStrategy } from "../strategy_pattern/strategies/avoid_stacking.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
-import { NewBuyStrategy } from "../strategy_pattern/strategies/buy.js"
+import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { ChargeStrategy } from "../strategy_pattern/strategies/charge.js"
 import { Strategist, Strategy } from "../strategy_pattern/context.js"
 import { ElixirStrategy } from "../strategy_pattern/strategies/elixir.js"
@@ -97,7 +97,7 @@ const avoidStackingStrategy = new AvoidStackingStrategy()
 const avoidDeathStrategy = new AvoidDeathStrategy()
 const bankStrategy = new MoveToBankAndDepositStuffStrategy({ map: "bank" })
 const baseStrategy = new BaseStrategy(CONTEXTS)
-const buyStrategy = new NewBuyStrategy({
+const buyStrategy = new BuyStrategy({
     contexts: CONTEXTS,
     itemConfig: CRABRAVE_ITEM_CONFIG
 })

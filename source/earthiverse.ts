@@ -22,7 +22,7 @@ import {
 } from "./merchant/strategy.js"
 import { filterContexts, Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
-import { BuyStrategy, NewBuyStrategy } from "./strategy_pattern/strategies/buy.js"
+import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
 import {
     FinishMonsterHuntStrategy,
     GetHolidaySpiritStrategy,
@@ -46,7 +46,6 @@ import { randomIntFromInterval, sleep } from "./base/general.js"
 import { NewSellStrategy, SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
 import {
-    DEFAULT_ITEMS_TO_BUY,
     DEFAULT_ITEMS_TO_HOLD,
     DEFAULT_MERCHANT_ITEMS_TO_HOLD,
     DEFAULT_REPLENISHABLES,
@@ -71,7 +70,7 @@ import { CRYPT_MONSTERS, getCryptWaitTime } from "./base/crypt.js"
 import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
 import { hasItemInBank } from "./base/items.js"
 import { DestroyStrategy, MerchantDestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
-import { DEFAULT_ITEM_CONFIG } from "./base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, REPLENISH_ITEM_CONFIG, adjustItemConfig } from "./base/itemsNew.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true, cheat: true })
@@ -126,15 +125,15 @@ const SETTINGS_CACHE: Record<string, PublicSettings> = {}
 
 const guiStrategy = new GuiStrategy({ port: 8080 })
 const baseStrategy = new BaseStrategy(ALL_CONTEXTS)
-const privateBuyStrategy = new NewBuyStrategy({
+const privateBuyStrategy = new BuyStrategy({
     contexts: PRIVATE_CONTEXTS,
     itemConfig: DEFAULT_ITEM_CONFIG,
     enableBuyForProfit: true
 })
+adjustItemConfig(DEFAULT_ITEM_CONFIG)
 const publicBuyStrategy = new BuyStrategy({
     contexts: PUBLIC_CONTEXTS,
-    buyMap: undefined,
-    replenishables: DEFAULT_REPLENISHABLES,
+    itemConfig: REPLENISH_ITEM_CONFIG,
 })
 
 const privateSellStrategy = new NewSellStrategy()
@@ -174,6 +173,8 @@ const partyAcceptStrategy =
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 // Mage
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(ALL_CONTEXTS)
+// Merchant
+const merchantDestroyStrategy = new MerchantDestroyStrategy()
 // Priest
 const privatePartyHealStrategy = new PartyHealStrategy(PRIVATE_CONTEXTS)
 const publicPartyHealStrategy = new PartyHealStrategy(ALL_CONTEXTS)
@@ -880,62 +881,9 @@ const startMerchantContext = async () => {
     CONTEXT.applyStrategy(guiStrategy)
     CONTEXT.applyStrategy(privateSellStrategy)
     CONTEXT.applyStrategy(privateItemStrategy)
-    CONTEXT.applyStrategy(new MerchantDestroyStrategy())
+    CONTEXT.applyStrategy(merchantDestroyStrategy)
     CONTEXT.applyStrategy(avoidDeathStrategy)
-
-    const itemsToBuy = new Map<ItemName, number>(DEFAULT_ITEMS_TO_BUY.entries())
-    for (const [itemName, price] of itemsToBuy) {
-        if (price < 0) {
-            const gItem = AL.Game.G.items[itemName]
-            itemsToBuy.set(itemName, gItem.g * -price)
-        }
-    }
-
-    for (const iN in AL.Game.G.items) {
-        const itemName = iN as ItemName
-        const gItem = AL.Game.G.items[itemName]
-        if (itemsToBuy.has(itemName)) continue // Price is already set
-
-        if (gItem.e) {
-            // Buy all exchangables
-            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
-            continue
-        }
-
-        if (gItem.type == "token") {
-            // Buy all tokens
-            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
-            continue
-        }
-
-        if (gItem.type == "bank_key" || gItem.type == "dungeon_key") {
-            // Buy all keys
-            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
-            continue
-        }
-
-        if (gItem.tier >= 4) {
-            // Buy all super high tier items
-            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
-            continue
-        }
-
-        if (gItem.name.includes("Darkforge")) {
-            // Buy all darkforge items
-            itemsToBuy.set(itemName, gItem.g * AL.Constants.PONTY_MARKUP)
-            continue
-        }
-
-        // TODO: Add more logic for things to buy
-    }
-
-    CONTEXT.applyStrategy(
-        new BuyStrategy({
-            contexts: PRIVATE_CONTEXTS,
-            buyMap: itemsToBuy,
-            enableBuyForProfit: true,
-        }),
-    )
+    CONTEXT.applyStrategy(privateBuyStrategy)
 
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
