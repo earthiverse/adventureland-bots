@@ -4,7 +4,6 @@ import AL, {
     Constants,
     IPosition,
     ItemName,
-    LocateItemFilters,
     LocateItemsFilters,
     MapName,
     Merchant,
@@ -24,7 +23,6 @@ import { checkOnlyEveryMS, setLastCheck, sleep } from "../base/general.js"
 import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
 import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
-import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"

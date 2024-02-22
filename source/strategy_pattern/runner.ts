@@ -12,7 +12,7 @@ import { WarriorAttackStrategy } from "./strategies/attack_warrior.js"
 import { AvoidStackingStrategy } from "./strategies/avoid_stacking.js"
 import { MoveToBankAndDepositStuffStrategy } from "./strategies/bank.js"
 import { BaseStrategy } from "./strategies/base.js"
-import { BuyStrategy } from "./strategies/buy.js"
+import { NewBuyStrategy } from "./strategies/buy.js"
 import { ChargeStrategy } from "./strategies/charge.js"
 import { ItemStrategy } from "./strategies/item.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategies/magiport.js"
@@ -56,8 +56,7 @@ const trackerStrategy = new TrackerStrategy()
 
 export type RunnerOptions = {
     monster: MonsterName
-    itemConfig?: ItemConfig
-    buyMap?: Map<ItemName, number>
+    itemConfig: ItemConfig
     partyLeader?: string
     ephemeral?: {
         buffer: number
@@ -145,14 +144,10 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
     }
 
     context.applyStrategy(avoidStackingStrategy)
-    context.applyStrategy(new BuyStrategy({
-        contexts: CONTEXTS,
-        buyMap: options.buyMap,
-        replenishables: REPLENISHABLES
-    }))
+    context.applyStrategy(new NewBuyStrategy({ contexts: CONTEXTS, itemConfig: options.itemConfig }))
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(respawnStrategy)
-    context.applyStrategy(new ItemStrategy({ contexts: CONTEXTS, itemConfig: DEFAULT_ITEM_CONFIG }))
+    context.applyStrategy(new ItemStrategy({ contexts: CONTEXTS, itemConfig: options.itemConfig }))
     context.applyStrategy(new NewSellStrategy({ itemConfig: options.itemConfig }))
 
     let moveStrategy: Strategy<PingCompensatedCharacter>

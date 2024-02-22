@@ -22,7 +22,7 @@ import {
 } from "./merchant/strategy.js"
 import { filterContexts, Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
-import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
+import { BuyStrategy, NewBuyStrategy } from "./strategy_pattern/strategies/buy.js"
 import {
     FinishMonsterHuntStrategy,
     GetHolidaySpiritStrategy,
@@ -126,11 +126,10 @@ const SETTINGS_CACHE: Record<string, PublicSettings> = {}
 
 const guiStrategy = new GuiStrategy({ port: 8080 })
 const baseStrategy = new BaseStrategy(ALL_CONTEXTS)
-const privateBuyStrategy = new BuyStrategy({
+const privateBuyStrategy = new NewBuyStrategy({
     contexts: PRIVATE_CONTEXTS,
-    buyMap: DEFAULT_ITEMS_TO_BUY,
-    enableBuyForProfit: true,
-    replenishables: DEFAULT_REPLENISHABLES,
+    itemConfig: DEFAULT_ITEM_CONFIG,
+    enableBuyForProfit: true
 })
 const publicBuyStrategy = new BuyStrategy({
     contexts: PUBLIC_CONTEXTS,
