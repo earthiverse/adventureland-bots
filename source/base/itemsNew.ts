@@ -137,9 +137,15 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: 1_000_000,
         craft: true
     },
+    "basher": {
+        destroyBelowLevel: 1
+    },
     "basketofeggs": {
         craft: true,
         exchange: true
+    },
+    "bataxe": {
+        destroyBelowLevel: 1
     },
     "bcape": {
         // We can craft other capes at level 7
@@ -149,6 +155,15 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: "ponty",
         craft: true
+    },
+    "blade": {
+        destroyBelowLevel: 1
+    },
+    "bow": {
+        destroyBelowLevel: 1
+    },
+    "bowofthedead": {
+        destroyBelowLevel: 1
     },
     "cake": {
         craft: true,
@@ -166,6 +181,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "candycane": {
         exchange: true
     },
+    "candycanesword": {
+        destroyBelowLevel: 1
+    },
     "candypop": {
         exchange: true
     },
@@ -180,6 +198,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "cdragon": {
         sellExcess: 5
     },
+    "claw": {
+        destroyBelowLevel: 1
+    },
     "coat": {
         destroyBelowLevel: 1
     },
@@ -189,6 +210,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "computer": {
         hold: true,
         holdSlot: 40
+    },
+    "crossbow": {
+        usePrimlingFromLevel: 4,
+        useOfferingFromLevel: 7
     },
     "cscroll0": {
         hold: ["merchant"],
@@ -202,9 +227,24 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: ["merchant"],
         holdSlot: 30
     },
+    "cupid": {
+        destroyBelowLevel: 1
+    },
+    "dagger": {
+        destroyBelowLevel: 1
+    },
+    "daggerofthedead": {
+        destroyBelowLevel: 1
+    },
     "dexring": {
         sell: true,
         sellPrice: "npc"
+    },
+    "ecape": {
+        destroyBelowLevel: 1
+    },
+    "eears": {
+        destroyBelowLevel: 1
     },
     "eggnog": {
         sellExcess: 9999 * 3
@@ -239,6 +279,12 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "fieldgen0": {
         sellExcess: 20
     },
+    "fireblade": {
+        destroyBelowLevel: 1
+    },
+    "firestaff": {
+        destroyBelowLevel: 1
+    },
     "firestars": {
         craft: true
     },
@@ -247,6 +293,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     "frostbow": {
         craft: true
+    },
+    "fury": {
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 2
+    },
+    "gcape": {
+        destroyBelowLevel: 1
     },
     /** Green Gem */
     "gem0": {
@@ -274,11 +327,38 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "greenenvelope": {
         exchange: true
     },
+    "harmor": {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 9,
+    },
+    "hboots": {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 9,
+    },
+    "hbow": {
+        destroyBelowLevel: 1
+    },
     "helmet": {
         destroyBelowLevel: 1
     },
     "helmet1": {
         destroyBelowLevel: 1
+    },
+    "hgloves": {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 9,
+    },
+    "hhelmet": {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 9,
     },
     "hotchocolate": {
         sellExcess: 9999 * 3
@@ -286,6 +366,12 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "hpamulet": {
         sell: true,
         sellPrice: "npc"
+    },
+    "hpants": {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 9,
     },
     "hpbelt": {
         upgradeUntilLevel: 2
@@ -319,11 +405,20 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "luckbooster": {
         hold: true
     },
+    "mace": {
+        destroyBelowLevel: 1
+    },
     "maceofthedead": {
+        destroyBelowLevel: 1
+    },
+    "merry": {
         destroyBelowLevel: 1
     },
     "mistletoe": {
         exchange: true
+    },
+    "mittens": {
+        destroyBelowLevel: 1
     },
     "monstertoken": {
         sell: true,
@@ -344,6 +439,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: ["merchant"],
         // TODO: What slot?
     },
+    "ornamentstaff": {
+        destroyBelowLevel: 1
+    },
     "pants": {
         destroyBelowLevel: 1
     },
@@ -358,14 +456,24 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sell: true,
         sellPrice: 1_000_000
     },
+    "pmace": {
+        destroyBelowLevel: 1
+    },
     "pmaceofthedead": {
         destroyBelowLevel: 1
     },
     "pouchbow": {
-        craft: true
+        craft: true,
+        destroyBelowLevel: 1
     },
     "pumpkinspice": {
         sellExcess: 9999 * 3
+    },
+    "pyjamas": {
+        destroyBelowLevel: 1
+    },
+    "quiver": {
+        destroyBelowLevel: 1
     },
     "resistancering": {
         craft: true
@@ -415,16 +523,32 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "snowflakes": {
         craft: true
     },
+    "spear": {
+        destroyBelowLevel: 1
+    },
     "spookyamulet": {
         sellExcess: 5
+    },
+    "staff": {
+        destroyBelowLevel: 1
+    },
+    "staffofthedead": {
+        destroyBelowLevel: 1
     },
     "stand0": {
         sell: true,
         sellPrice: "npc"
     },
+    "starkillers": {
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 2
+    },
     "stick": {
         // We can craft sticks at level 9
         upgradeUntilLevel: 9
+    },
+    "stinger": {
+        destroyBelowLevel: 1
     },
     "stramulet": {
         sell: true,
@@ -434,8 +558,38 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sell: true,
         sellPrice: "npc"
     },
+    "suckerpunch": {
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 2
+    },
     "supercomputer": {
         hold: true
+    },
+    "supermittens": {
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 2
+    },
+    "swifty": {
+        destroyBelowLevel: 1
+    },
+    "sword": {
+        destroyBelowLevel: 1
+    },
+    "swordofthedead": {
+        destroyBelowLevel: 1
+    },
+    "t2bow": {
+        destroyBelowLevel: 1
+    },
+    "t3bow": {
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 2
+    },
+    "test_orb": {
+        upgradeUntilLevel: 0
+    },
+    "tigerhelmet": {
+        destroyBelowLevel: 1
     },
     "tracker": {
         hold: true,
@@ -445,11 +599,36 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         // We use level 0 to craft other stars
         upgradeUntilLevel: 0
     },
+    "vattire": {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 4
+    },
     "vboots": {
         destroyBelowLevel: 1
     },
+    "vcape": {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 4
+    },
+    "vdagger": {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 4
+    },
     "vgloves": {
         destroyBelowLevel: 1
+    },
+    "vhammer": {
+        buy: true,
+        buyPrice: "ponty",
+        sell: true,
+        sellPrice: 100_000_000,
+        upgradeUntilLevel: 0
     },
     "vitearring": {
         sell: true,
@@ -459,32 +638,88 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         // We use level 2 to craft other rings
         upgradeUntilLevel: 2
     },
+    "wand": {
+        destroyBelowLevel: 1
+    },
+    "warmscarf": {
+        destroyBelowLevel: 1
+    },
     "wattire": {
-        craft: true
+        craft: true,
+        destroyBelowLevel: 1
+    },
+    "wbasher": {
+        destroyBelowLevel: 1
     },
     "wbreeches": {
-        craft: true
+        craft: true,
+        destroyBelowLevel: 1
     },
     "wcap": {
-        craft: true
+        craft: true,
+        destroyBelowLevel: 1
     },
     "weaponbox": {
         exchange: true
     },
     "wgloves": {
-        craft: true
+        craft: true,
+        destroyBelowLevel: 1
     },
     "wingedboots": {
         craft: true
     },
     "wshoes": {
-        craft: true
+        craft: true,
+        destroyBelowLevel: 1
+    },
+    "xarmor": {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 4
+    },
+    "xboots": {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 4
     },
     "xbox": {
         craft: true
     },
+    "xgloves": {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 4
+    },
+    "xhelmet": {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 4
+    },
     "xmace": {
         destroyBelowLevel: 1
+    },
+    "xmashat": {
+        destroyBelowLevel: 1
+    },
+    "xmaspants": {
+        destroyBelowLevel: 1
+    },
+    "xmasshoes": {
+        destroyBelowLevel: 1
+    },
+    "xmassweater": {
+        destroyBelowLevel: 1
+    },
+    "xpants": {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 4
     },
     "xpbooster": {
         hold: true
@@ -498,7 +733,7 @@ export async function adjustItemConfig(itemConfig: ItemConfig) {
     for (const iN in AL.Game.G.items) {
         const itemName = iN as ItemName
         const gItem = AL.Game.G.items[itemName]
-        const config = itemConfig[itemName]
+        let config = itemConfig[itemName]
         if (
             config
             && (
@@ -506,6 +741,8 @@ export async function adjustItemConfig(itemConfig: ItemConfig) {
                 || config.sell
             )
         ) continue // Buy (or sell) is already set, don't change it
+
+        if (!config) config = {}
 
         // TODO: Add more logic for things to buy
 
@@ -521,7 +758,21 @@ export async function adjustItemConfig(itemConfig: ItemConfig) {
             config.buyPrice = "ponty"
             continue
         }
+
+        if (Object.keys(config).length === 0) {
+            // Remove it from our config
+            delete itemConfig[itemName]
+        } else {
+            // Make sure it's in our config
+            itemConfig[itemName] = config
+        }
     }
+
+    // TODO: If we are selling things for more than ponty price,
+    //       Add buy with buyPrice: "ponty" unless "buy" is already set
+
+    // TODO: If we are using primlings on things,
+    //       Add buy with buyPrice: "ponty" unless "buy" is already set
 }
 
 /**

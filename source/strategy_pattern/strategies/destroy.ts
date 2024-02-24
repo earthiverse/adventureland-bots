@@ -32,16 +32,13 @@ export class DestroyStrategy<Type extends Character> implements Strategy<Type> {
 
     protected async destroy(bot: Type) {
         const destroyPromises = []
-        for (let i = 0; i < bot.isize; i++) {
-            const item = bot.items[i]
-            if (!item) continue
-
+        for (const [slot, item] of bot.getItems()) {
             const config = this.options.itemConfig[item.name]
             if (!config) continue // No config -> don't destroy
             if (config.destroyBelowLevel === undefined) continue // Don't want to destroy
-            if (config.destroyBelowLevel <= item.level) continue // The item is too high level
+            if (item.level >= config.destroyBelowLevel) continue // The item is too high level
 
-            destroyPromises.push(bot.destroy(i))
+            destroyPromises.push(bot.destroy(slot))
         }
         await Promise.allSettled(destroyPromises)
     }
@@ -53,10 +50,8 @@ export class DestroyStrategy<Type extends Character> implements Strategy<Type> {
 export class MerchantDestroyStrategy extends DestroyStrategy<Merchant> {
     protected async destroy(bot: Merchant): Promise<void> {
         const destroyPromises = []
-        for (let i = 0; i < bot.isize; i++) {
-            const item = bot.items[i]
-            if (!item) continue
 
+        for (let [slot, item] of bot.getItems()) {
             const config = this.options.itemConfig[item.name]
             if (!config) continue // No config -> don't destroy
             if (config.destroyBelowLevel === undefined) continue // Don't want to destroy
@@ -70,7 +65,7 @@ export class MerchantDestroyStrategy extends DestroyStrategy<Merchant> {
                 continue // We need the item to craft
             }
 
-            destroyPromises.push(bot.destroy(i))
+            destroyPromises.push(bot.destroy(slot))
         }
         await Promise.allSettled(destroyPromises)
     }
