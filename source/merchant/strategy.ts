@@ -28,7 +28,6 @@ import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { addCryptMonstersToDB, cleanInstances, getCryptWaitTime, getKeyForCrypt, refreshCryptMonsters } from "../base/crypt.js"
 import {
-    DEFAULT_CRAFTABLES,
     DEFAULT_EXCHANGEABLES,
     DEFAULT_GOLD_TO_HOLD,
     DEFAULT_IDENTIFIER,
@@ -45,6 +44,7 @@ import {
 import { BankItemPosition, goAndWithdrawItem, tidyBank } from "../base/banking.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig } from "../base/itemsNew.js"
 
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
@@ -170,7 +170,7 @@ export const DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS: MerchantMoveStrategyOptions
         ratio: DEFAULT_REPLENISH_RATIO,
     },
     enableCraft: {
-        items: DEFAULT_CRAFTABLES,
+        items: new Set(Object.keys(DEFAULT_ITEM_CONFIG).filter((i => DEFAULT_ITEM_CONFIG[i as ItemName].craft)) as ItemName[]),
     },
     enableDealFinder: {
         itemsToBuy: DEFAULT_ITEMS_TO_BUY,
