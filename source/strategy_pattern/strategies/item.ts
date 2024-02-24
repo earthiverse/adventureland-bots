@@ -55,25 +55,23 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
      * Organize inventory
      */
     private async organizeItems(bot: Type) {
-        for (let i = 0; i < bot.isize; i++) {
-            const item = bot.items[i]
-            if (!item) continue // No item
+        for (const [slot, item] of bot.getItems()) {
+            const itemConfig = this.options.itemConfig[item.name]
 
             // Check if we want to hold it in a specific slot
-            const itemConfig = this.options.itemConfig[item.name]
-            if (itemConfig && itemConfig.hold && itemConfig.holdSlot !== undefined && itemConfig.holdSlot !== i) {
-                await bot.swapItems(i, itemConfig.holdSlot)
+            if (itemConfig && itemConfig.hold && itemConfig.holdSlot !== undefined) {
+                if (itemConfig.holdSlot === slot) continue // It's already in its correct slot
+                await bot.swapItems(slot, itemConfig.holdSlot)
                 continue
             }
 
             // Sort locked items first
             if (!item.l) continue
-            for (let j = 0; j < i; j++) {
-                const item2 = bot.items[j]
-                if (!item2 || !item2.l) {
-                    await bot.swapItems(i, j)
-                    break
-                }
+            for (let slot2 = 0; slot2 < slot; slot2++) {
+                const item2 = bot.items[slot2]
+                if (item2 && item2.l) continue // Different locked item
+                await bot.swapItems(slot, slot2)
+                break
             }
         }
     }
