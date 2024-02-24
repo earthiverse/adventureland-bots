@@ -105,7 +105,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
             return AL.Tools.squaredDistance(bot, location) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED
         })) return // We're not close to Ponty
 
-        let [lastChecked, pontyItems] = BuyStrategy.pontyData.get(`${bot.server.region}${bot.server.name}`)
+        let [lastChecked, pontyItems] = BuyStrategy.pontyData.get(`${bot.server.region}${bot.server.name}`) ?? [null, []]
 
         if (
             bot.cc < 100
