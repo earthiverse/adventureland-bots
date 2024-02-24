@@ -1,5 +1,4 @@
 import AL, {
-    ItemName,
     Merchant,
     PingCompensatedCharacter,
     Priest,
@@ -33,24 +32,9 @@ import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { Config, constructSetups, Setups } from "./strategy_pattern/setups/base.js"
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
-import {
-    getHalloweenMonsterPriority,
-    getHolidaySeasonMonsterPriority,
-    getLunarNewYearMonsterPriority,
-    getServerHopMonsterPriority,
-} from "./base/serverhop.js"
-import { sleep } from "./base/general.js"
-import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
+import { NewSellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
-import {
-    DEFAULT_IDENTIFIER,
-    DEFAULT_ITEMS_TO_BUY,
-    DEFAULT_ITEMS_TO_HOLD,
-    DEFAULT_ITEMS_TO_UPGRADE_OR_COMPOUND,
-    DEFAULT_REGION,
-    DEFAULT_REPLENISHABLES,
-} from "./base/defaults.js"
-
+import { DEFAULT_IDENTIFIER, DEFAULT_ITEMS_TO_HOLD, DEFAULT_REGION } from "./base/defaults.js"
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
 import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
@@ -117,80 +101,11 @@ const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const baseStrategy = new BaseStrategy(CONTEXTS)
 const privateBuyStrategy = new BuyStrategy({
     contexts: CONTEXTS,
-    buyMap: DEFAULT_ITEMS_TO_BUY,
-    enableBuyForProfit: true,
-    replenishables: DEFAULT_REPLENISHABLES,
+    itemConfig: DEFAULT_ITEM_CONFIG
 })
 
-const privateItemsToSell = new Map<ItemName, [number, number][]>([
-    // Comment these out if upgrading them on our characters
-    ["coat", undefined],
-    ["helmet", undefined],
-    ["gloves", undefined],
-    ["pants", undefined],
-    ["shoes", undefined],
-    ["beewings", undefined],
-    ["cake", undefined],
-    ["carrotsword", undefined],
-    ["cclaw", undefined],
-    ["coat1", undefined],
-    ["dexring", undefined],
-    ["elixirdex0", undefined],
-    ["elixirdex1", undefined],
-    ["elixirdex2", undefined],
-    ["elixirint0", undefined],
-    ["elixirint1", undefined],
-    ["elixirint2", undefined],
-    ["elixirstr0", undefined],
-    ["elixirstr1", undefined],
-    ["elixirstr2", undefined],
-    ["elixirvit0", undefined],
-    ["elixirvit1", undefined],
-    ["elixirvit2", undefined],
-    ["frankypants", undefined],
-    ["gloves1", undefined],
-    ["gphelmet", undefined],
-    ["helmet1", undefined],
-    ["hpamulet", undefined],
-    ["hpbelt", undefined],
-    ["iceskates", undefined],
-    ["intring", undefined],
-    ["intearring", undefined],
-    ["maceofthedead", undefined],
-    ["mittens", undefined],
-    ["monstertoken", [[undefined, 300_000]]],
-    ["mushroomstaff", undefined],
-    ["pants1", undefined],
-    ["phelmet", undefined],
-    ["pickaxe", [[0, 1_000_000]]],
-    ["pmaceofthedead", undefined],
-    ["ringsj", undefined],
-    ["rod", [[0, 1_000_000]]],
-    ["shoes1", undefined],
-    ["slimestaff", undefined],
-    ["smush", undefined],
-    ["snowball", undefined],
-    ["stand0", undefined],
-    ["stinger", undefined],
-    ["stramulet", undefined],
-    ["strearring", undefined],
-    ["vboots", undefined],
-    ["vgloves", undefined],
-    ["vitearring", undefined],
-    ["vitring", undefined],
-    ["warmscarf", undefined],
-    ["wattire", undefined],
-    ["wbreeches", undefined],
-    ["wcap", undefined],
-    ["wgloves", undefined],
-    ["wshoes", undefined],
-    ["xmace", undefined],
-    ["xmashat", undefined],
-    ["xmasshoes", undefined],
-    ["xmassweater", undefined],
-])
-const privateSellStrategy = new SellStrategy({
-    sellMap: privateItemsToSell,
+const privateSellStrategy = new NewSellStrategy({
+    itemConfig: DEFAULT_ITEM_CONFIG
 })
 
 //// Strategies
