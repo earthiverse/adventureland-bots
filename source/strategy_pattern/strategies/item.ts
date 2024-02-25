@@ -227,12 +227,12 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
             const gItem = AL.Game.G.items[item.name]
             if (!gItem.compound) continue // Not compoundable
 
-            if (!wantToUpgrade(item, itemCounts)) continue
+            const itemConfig: UpgradeConfig = this.options.itemConfig[item.name]
+            if (!wantToUpgrade(item, itemConfig, itemCounts)) continue
 
             const items = bot.locateItems(item.name, bot.items, { level: item.level, locked: false })
             if (items.length < 3) continue // Not enough to compound
 
-            const itemConfig: UpgradeConfig = this.options.itemConfig[item.name]
             let offering: ItemName
             if (itemConfig) {
                 if (itemConfig.useOfferingFromLevel >= item.level) offering = "offering"
@@ -261,9 +261,10 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
         for (const [slot, item] of bot.getItems()) {
             if (!item.upgrade) continue // Not upgradable
-            if (!wantToUpgrade(item, itemCounts)) continue
 
             const itemConfig: UpgradeConfig = this.options.itemConfig[item.name]
+            if (!wantToUpgrade(item, itemConfig, itemCounts)) continue
+
             let offering: ItemName
             if (itemConfig) {
                 if (itemConfig.useOfferingFromLevel >= item.level) offering = "offering"
@@ -287,12 +288,11 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
     }
 }
 
-export function wantToUpgrade(item: Item, itemCounts: ItemCounts): boolean {
+export function wantToUpgrade(item: Item, itemConfig: UpgradeConfig, itemCounts: ItemCounts): boolean {
     if (item.l) return false // Locked
 
     if (!item.upgrade && !item.compound) return false // Not upgradable or compoundable
 
-    const itemConfig: UpgradeConfig = this.options.itemConfig[item.name]
     if (itemConfig) {
         if (item.level < itemConfig.destroyBelowLevel) return false // We want to destroy it
         if (itemConfig.upgradeUntilLevel !== undefined && item.level >= itemConfig.upgradeUntilLevel) return false // We don't want to upgrade it any further
