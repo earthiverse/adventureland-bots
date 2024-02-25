@@ -637,7 +637,6 @@ const startMerchantContext = async () => {
                 maxInstances: 1
             }
         },
-        enableUpgrade: true,
         defaultPosition: { map: "main", x: -250, y: -125 }
     })
     CONTEXT.applyStrategy(debugStrategy)
