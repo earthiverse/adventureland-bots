@@ -195,7 +195,10 @@ const privateItemStrategy = new ItemStrategy({
     contexts: PRIVATE_CONTEXTS,
     itemConfig: DEFAULT_ITEM_CONFIG,
 })
-const publicItemStrategy = new ItemStrategy({ contexts: PUBLIC_CONTEXTS, itemConfig: DEFAULT_ITEM_CONFIG })
+const publicItemStrategy = new ItemStrategy({
+    contexts: PUBLIC_CONTEXTS,
+    itemConfig: DEFAULT_ITEM_CONFIG
+})
 
 let OVERRIDE_MONSTERS: MonsterName[]
 let OVERRIDE_REGION: ServerRegion
@@ -874,7 +877,6 @@ const startMerchantContext = async () => {
                 maxInstances: 1
             }
         },
-        enableUpgrade: true,
     })
     CONTEXT.applyStrategy(debugStrategy)
     CONTEXT.applyStrategy(adminCommandStrategy)
@@ -1156,7 +1158,6 @@ const startPublicContext = async (
                     goldToHold: 1_000_000,
                     itemsToHold: DEFAULT_ITEMS_TO_HOLD,
                 },
-                enableUpgrade: true,
                 goldToHold: 50_000_000,
                 itemsToHold: DEFAULT_MERCHANT_ITEMS_TO_HOLD,
             }

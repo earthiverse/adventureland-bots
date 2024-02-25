@@ -190,7 +190,6 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
                 goldToHold: 1_000_000,
                 itemsToHold: DEFAULT_ITEMS_TO_HOLD,
             },
-            enableUpgrade: true,
             goldToHold: 50_000_000,
             itemsToHold: DEFAULT_MERCHANT_ITEMS_TO_HOLD,
             ...(options.merchantOverrides ?? {})

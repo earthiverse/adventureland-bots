@@ -9,6 +9,7 @@ import AL, {
     Merchant,
     NewMapData,
     PingCompensatedCharacter,
+    Player,
     SlotType,
     Tools,
     TradeSlotType,
@@ -146,10 +147,6 @@ export type MerchantMoveStrategyOptions = {
         goldToHold: number
         itemsToHold: Set<ItemName>
     }
-    /** If enabled, the merchant will
-     * - upgrade spare items
-     */
-    enableUpgrade?: boolean
     goldToHold: number
     itemsToHold: Set<ItemName>
 }
@@ -232,21 +229,6 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 interval: ["mluck"],
             })
         }
-
-        if (this.options.enableUpgrade) {
-            this.loops.set("compound", {
-                fn: async (bot: Merchant) => {
-                    await this.compound(bot).catch(console.error)
-                },
-                interval: 250,
-            })
-            this.loops.set("upgrade", {
-                fn: async (bot: Merchant) => {
-                    await this.upgrade(bot).catch(console.error)
-                },
-                interval: 250,
-            })
-        }
     }
 
     protected async move(bot: Merchant) {
@@ -266,9 +248,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 }).catch(console.error)
 
                 // Withdraw things that we can upgrade
-                if (this.options.enableUpgrade) {
-                    this.toUpgrade = await getItemsToCompoundOrUpgrade(bot)
-                }
+                this.toUpgrade = await getItemsToCompoundOrUpgrade(bot)
 
                 // Withdraw extra gold
                 if (bot.bank.gold > this.options.goldToHold) await bot.withdrawGold(this.options.goldToHold)
@@ -302,10 +282,8 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 await tidyBank(bot, { itemsToHold: this.options.itemsToHold }).catch(console.error)
 
                 // Withdraw things that we can upgrade
-                if (this.options.enableUpgrade) {
-                    this.debug(bot, "Looking for items to compound or upgrade...")
-                    this.toUpgrade = await getItemsToCompoundOrUpgrade(bot)
-                }
+                this.debug(bot, "Looking for items to compound or upgrade...")
+                this.toUpgrade = await getItemsToCompoundOrUpgrade(bot)
 
                 // Withdraw an item we want to craft
                 if (this.options.enableCraft && bot.esize >= 3) {
@@ -1393,120 +1371,6 @@ export class MerchantStrategy implements Strategy<Merchant> {
             }
         }
     }
-
-    protected async compound(bot: Merchant) {
-        if (bot.map.startsWith("bank")) return // Can't compound in bank
-        if (this.toUpgrade === undefined || this.toUpgrade.length == 0) return // Nothing to compound
-        if (bot.s.penalty_cd && bot.map == "main") return // We recently moved through a door to main, we potentially just came out of the bank, and that's pretty glitchy
-
-        for (let i = 0; i < this.toUpgrade.length; i++) {
-            const indexes = this.toUpgrade[i]
-            if (indexes.length !== 3) continue
-            const item = bot.items[indexes[0]]
-            if (!item) {
-                this.toUpgrade.splice(i, 1)
-                i--
-                continue
-            }
-            const offering = getOfferingToUse(item)
-            if (offering && !bot.hasItem(offering)) {
-                this.debug(
-                    bot,
-                    `Compound - Offering - We don't have a '${offering}' to compound ${item.name}(${item.level})`,
-                )
-                this.toUpgrade.splice(i, 1)
-                i--
-                continue
-            }
-            const grade = bot.calculateItemGrade(item)
-            if (grade === undefined) {
-                this.debug(bot, `Compound - Couldn't compute grade for ${item.name}`)
-                this.toUpgrade.splice(i, 1)
-                i--
-                continue
-            }
-            const scroll = `cscroll${grade}` as ItemName
-            if (!bot.hasItem(scroll)) {
-                if (bot.canBuy(scroll)) {
-                    this.debug(bot, `Compound - Scroll - Buying '${scroll}' to compound ${item.name}(${item.level})`)
-                    return bot.buy(scroll)
-                } else {
-                    this.debug(
-                        bot,
-                        `Compound - Scroll - We don't have a '${scroll}' to compound ${item.name}(${item.level})`,
-                    )
-                    this.toUpgrade.splice(i, 1)
-                    i--
-                    continue
-                }
-            }
-            this.debug(bot, `Compounding ${item.name}(${item.level})`)
-            this.toUpgrade.splice(i, 1)
-            i--
-            if (bot.canUse("massproduction")) await bot.massProduction()
-            return bot.compound(
-                indexes[0],
-                indexes[1],
-                indexes[2],
-                bot.locateItem(scroll),
-                offering ? bot.locateItem(offering) : undefined,
-            )
-        }
-    }
-
-    protected async upgrade(bot: Merchant) {
-        if (bot.map.startsWith("bank")) return // Can't upgrade in bank
-        if (this.toUpgrade === undefined || this.toUpgrade.length == 0) return // Nothing to upgrade
-        if (bot.s.penalty_cd && bot.map == "main") return // We recently moved through a door to main, we potentially just came out of the bank, and that's pretty glitchy
-
-        for (let i = 0; i < this.toUpgrade.length; i++) {
-            const indexes = this.toUpgrade[i]
-            if (indexes.length !== 1) continue
-            const item = bot.items[indexes[0]]
-            if (!item) {
-                this.debug(bot, "Upgrade - Item went missing")
-                this.toUpgrade.splice(i, 1)
-                i--
-                continue
-            }
-            const offering = getOfferingToUse(item)
-            if (offering && !bot.hasItem(offering)) {
-                this.debug(
-                    bot,
-                    `Upgrade - Offering - We don't have a '${offering}' to upgrade ${item.name}(${item.level})`,
-                )
-                this.toUpgrade.splice(i, 1)
-                i--
-                continue
-            }
-            const grade = bot.calculateItemGrade(item)
-            if (grade === undefined) {
-                this.debug(bot, `Upgrade - Couldn't compute grade for ${item.name}`)
-                this.toUpgrade.splice(i, 1)
-                i--
-                continue
-            }
-            const scroll = `scroll${grade}` as ItemName
-            if (!bot.hasItem(scroll)) {
-                if (bot.canBuy(scroll)) {
-                    this.debug(bot, `Upgrade - Scroll - Buying '${scroll}' to upgrade ${item.name}(${item.level})`)
-                    return bot.buy(scroll)
-                } else {
-                    this.debug(
-                        bot,
-                        `Upgrade - Scroll - We don't have a '${scroll}' to upgrade ${item.name}(${item.level})`,
-                    )
-                    this.toUpgrade.splice(i, 1)
-                    i--
-                    continue
-                }
-            }
-            this.debug(bot, `Upgrading ${item.name}(${item.level})`)
-            this.toUpgrade.splice(i, 1)
-            if (bot.canUse("massproduction")) await bot.massProduction()
-            return bot.upgrade(indexes[0], bot.locateItem(scroll), offering ? bot.locateItem(offering) : undefined)
-        }
-    }
 }
 
 export async function startMerchant(
@@ -1530,4 +1394,92 @@ export async function startMerchant(
             onWhenNear: [{ distance: 10, position: options.defaultPosition }],
         }),
     )
+}
+
+export type NewMerchantStrategyOptions = {
+    contexts: Strategist<PingCompensatedCharacter>[]
+    itemConfig: ItemConfig
+    enableMluck?: {
+        /** Should we mluck those that we pass through `contexts`? */
+        contexts?: true
+        /** Should we mluck others? */
+        others?: true
+        /** Should we mluck ourself? */
+        self?: true
+        /** Should we travel to mluck our own characters and others? */
+        travel?: true
+    }
+}
+
+export const defaultNewMerchantStrategyOptions: NewMerchantStrategyOptions = {
+    contexts: [],
+    itemConfig: DEFAULT_ITEM_CONFIG,
+    enableMluck: {
+        contexts: true,
+        others: true,
+        self: true,
+        travel: true
+    }
+}
+
+export class NewMerchantStrategy implements Strategy<Merchant> {
+    public loops = new Map<LoopName, Loop<Merchant>>()
+
+    protected options: NewMerchantStrategyOptions
+
+    public constructor(options: NewMerchantStrategyOptions = defaultNewMerchantStrategyOptions) {
+        this.options = options
+
+        if (this.options.enableMluck) {
+            this.loops.set("mluck", {
+                fn: async (bot: Merchant) => {
+                    await this.mluck(bot).catch(console.error)
+                },
+                interval: ["mluck"],
+            })
+        }
+    }
+
+    protected async mluck(bot: Merchant) {
+        if (!bot.canUse("mluck")) return
+
+        if (
+            this.options.enableMluck.self
+            && (
+                !bot.s.mluck
+                || bot.s.mluck.f !== bot.id
+            )
+        ) return bot.mluck(bot.id)
+
+        const canMluck = (other: Character | Player): boolean => {
+            if (Tools.distance(bot, other) > AL.Game.G.skills.mluck.range) return false // Too far away
+            if (other.s.invis) return false // Can't mluck invsible players
+            if (!other.s.mluck) return true // They don't have mluck
+            if (!other.s.mluck.strong) return true // We can steal their mluck
+            return other.s.mluck.f === bot.id // We can refresh their mluck
+        }
+
+        const shouldMluck = (other: Character | Player): boolean => {
+            if (!canMluck(other)) return false
+            if (other.s.mluck?.f === "earthMer" && bot.id !== "earthMer") return false // Don't compete with earthMer
+            if (other.s.mluck?.f === bot.id && other.s.mluck.ms > AL.Game.G.skills.mluck.duration * 0.75) return false // They still have a lot left
+            return true
+        }
+
+        // Mluck contexts
+        if (this.options.enableMluck.contexts) {
+            for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
+                if (!shouldMluck(context.bot)) continue
+                return bot.mluck(context.bot.id)
+            }
+        }
+
+        // Mluck others
+        if (this.options.enableMluck.others) {
+            for (const player of bot.getPlayers({ isNPC: false, withinRange: "mluck" })) {
+                if (!shouldMluck(player)) continue
+                return bot.mluck(player.id)
+            }
+        }
+    }
 }
