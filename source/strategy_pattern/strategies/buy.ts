@@ -66,7 +66,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
 
                 if (
                     this.options.enableBuyForProfit
-                    && forSaleItem.price < forSaleItem.calculateNpcValue()
+                    && forSaleItem.price < (forSaleItem.calculateNpcValue() + forSaleItem.l ? 250_000 : 0)
                 ) {
                     // We want to buy it to resell it for a profit
                     wantToBuy = true
@@ -76,7 +76,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
                     !wantToBuy
                     && config.replenish
                     && bot.countItem(forSaleItem.name) < config.replenish
-                    && forSaleItem.price <= forSaleItem.calculateValue()
+                    && forSaleItem.price <= (forSaleItem.calculateValue() + forSaleItem.l ? 250_000 : 0)
                 ) {
                     // We want to buy them to replenish
                     wantToBuy = true
@@ -87,8 +87,8 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
                     !wantToBuy
                     && config.buy
                     && (
-                        (typeof config.buyPrice === "number" && forSaleItem.price <= config.buyPrice)
-                        || (config.buyPrice === "ponty" && forSaleItem.price <= forSaleItem.calculateValue() * AL.Game.G.multipliers.secondhands_mult)
+                        (typeof config.buyPrice === "number" && forSaleItem.price <= (config.buyPrice + forSaleItem.l ? 250_000 : 0))
+                        || (config.buyPrice === "ponty" && forSaleItem.price <= ((forSaleItem.calculateValue() * AL.Game.G.multipliers.secondhands_mult) + forSaleItem.l ? 250_000 : 0))
                     )
                 ) {
                     wantToBuy = true
