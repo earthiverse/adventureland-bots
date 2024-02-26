@@ -1,4 +1,5 @@
-import AL, { CharacterType, Item, ItemName, NPCName } from "alclient"
+import AL, { Character, CharacterType, Item, ItemData, ItemName, NPCName } from "alclient"
+import { checkOnlyEveryMS } from "./general"
 
 // TODO: Figure out how to require buy_price if buy is set
 export type BuyConfig = {
@@ -726,6 +727,100 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     }
 }
 
+export function wantToDestroy(itemConfig: ItemConfig, item: ItemData): boolean {
+    if (item.l) return false // Locked
+    if (item.level === undefined) return false // Item has no level, there's no point destroying it
+
+    const config = itemConfig[item.name]
+    if (!config) return false // No config
+    if (config.destroyBelowLevel === undefined) return false // Don't want to destroy
+
+    return item.level < config.destroyBelowLevel
+}
+
+export function wantToHold(itemConfig: ItemConfig, item: ItemData, bot: Character): boolean {
+    if (item.l) return true // We want to hold locked items
+
+    const config = itemConfig[item.name]
+    if (!config) return false // No config
+    if (!config.hold) return false
+    if (config.hold === true) return true
+    if (config.hold.includes(bot.ctype)) return true
+
+    return false
+}
+
+export function wantToSellToNpc(itemConfig: ItemConfig, item: Item, bot: Character): boolean {
+    if (wantToHold(itemConfig, item, bot)) return false
+
+    const config = itemConfig[item.name]
+    if (!config) return false // No config
+    if (!config.sell) return false // Don't want to sell
+
+    const npcValue = item.calculateNpcValue()
+    if (config.sellPrice === "npc") return true
+    if (typeof config.sellPrice === "number" && npcValue >= config.sellPrice) return true
+    if (config.sellPrice[item.level] && npcValue >= config.sellPrice[item.level]) return true
+
+    // TODO: Add logic to check if there are players buying for more than NPC
+
+    return false
+}
+
+export function wantToUpgrade(item: Item, itemConfig: UpgradeConfig, itemCounts: ItemCounts): boolean {
+    if (item.l) return false // Locked
+
+    if (!item.upgrade && !item.compound) return false // Not upgradable or compoundable
+
+    if (itemConfig) {
+        if (item.level < itemConfig.destroyBelowLevel) return false // We want to destroy it
+        if (itemConfig.upgradeUntilLevel !== undefined && item.level >= itemConfig.upgradeUntilLevel) return false // We don't want to upgrade it any further
+    }
+
+    const levelCounts = itemCounts.get(item.name)
+    if (levelCounts === undefined) return false // We don't have count information for this item
+
+    // Count how many we have of the given item at the same level or higher
+    let numItem = 0
+    for (const [level, levelCount] of levelCounts) {
+        if (level < item.level) continue // Lower level than what we have, don't count it
+        numItem += levelCount.q
+    }
+
+    // TODO: Add `.class` to ALClient's `Item`
+    const gItem = AL.Game.G.items[item.name]
+
+    // Count how many we would like to have to equip all of our characters with it
+    let classMultiplier = 4
+    if (gItem.class?.length == 1) {
+        if (gItem.class[0] == "merchant") {
+            classMultiplier = 1
+        } else {
+            classMultiplier = 3
+        }
+    }
+    let numEquippableMultiplier = 1
+    if (gItem.type == "ring" || gItem.type == "earring") {
+        numEquippableMultiplier = 2
+    } else {
+        for (const characterType in AL.Game.G.classes) {
+            const cType = characterType as CharacterType
+            const gClass = AL.Game.G.classes[cType]
+            if (!gItem.class?.includes(cType)) continue // This weapon can't be used on this character type
+            if (gClass.mainhand[gItem.wtype] && gClass.offhand[gItem.wtype]) {
+                // We can equip two of these on some character type
+                numEquippableMultiplier = 2
+                break
+            }
+        }
+    }
+    let numToKeep = (classMultiplier * numEquippableMultiplier)
+    numToKeep += (item.compound ? 2 : 0) // We need 3 to compound, only compound if we have extra
+    if (numItem <= numToKeep) return false // We don't want to lose this item
+
+    return true
+}
+
 /**
  * Programatically adds some additional items to buy
  */
@@ -910,4 +1005,212 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
             }
         }
     }
+}
+
+type LevelCounts = Map<number, {
+    /** How many of this item @ this level do we have? */
+    q: number
+    /** How many spaces are the items taking up in inventory / bank space? */
+    inventorySpaces: number
+}>
+type ItemCounts = Map<ItemName, LevelCounts>
+type OwnerItemCounts = Map<string, ItemCounts>
+
+export const OWNER_ITEM_COUNTS: OwnerItemCounts = new Map()
+/**
+ * This function will aggregate the bank, the inventories of all characters,
+ * and the items equipped on all characters so we can see how many of each item
+ * we own in total.
+ * @param owner The owner to get items for (e.g.: `bot.owner`)
+ */
+export async function getItemCounts(owner: string): Promise<ItemCounts> {
+    if (!AL.Database.connection) return new Map()
+
+    let countMap = OWNER_ITEM_COUNTS.get(owner)
+    if (countMap && !checkOnlyEveryMS(`item_everything_counts_${owner}`, 60_000)) {
+        return countMap
+    }
+
+    const countData = await AL.BankModel.aggregate([
+        {
+            /** Find our bank **/
+            $match: {
+                owner: owner,
+            },
+        },
+        {
+            /** Find our characters **/
+            $lookup: {
+                from: "players",
+                localField: "owner",
+                foreignField: "owner",
+                as: "players",
+            },
+        },
+        {
+            /** Add player equipment **/
+            $addFields: {
+                equipment: {
+                    $filter: {
+                        input: {
+                            $concatArrays: [
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 0] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 1] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 2] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 3] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 4] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 5] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 6] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 7] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 8] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 9] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 10] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 11] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 12] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 13] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 14] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 15] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 16] }, {}] } },
+                                { $objectToArray: { $ifNull: [{ $arrayElemAt: ["$players.slots", 17] }, {}] } },
+                            ],
+                        },
+                        cond: {
+                            $and: [{ $ne: ["$$this.v", null] }, { $ne: ["$$this.b", undefined] }],
+                        },
+                    },
+                },
+            },
+        },
+        {
+            /** Merge equipment with bank and inventories **/
+            $project: {
+                allItems: {
+                    $filter: {
+                        input: {
+                            $concatArrays: [
+                                { $ifNull: ["$items0", []] },
+                                { $ifNull: ["$items1", []] },
+                                { $ifNull: ["$items2", []] },
+                                { $ifNull: ["$items3", []] },
+                                { $ifNull: ["$items4", []] },
+                                { $ifNull: ["$items5", []] },
+                                { $ifNull: ["$items6", []] },
+                                { $ifNull: ["$items7", []] },
+                                { $ifNull: ["$items8", []] },
+                                { $ifNull: ["$items9", []] },
+                                { $ifNull: ["$items10", []] },
+                                { $ifNull: ["$items11", []] },
+                                { $ifNull: ["$items12", []] },
+                                { $ifNull: ["$items13", []] },
+                                { $ifNull: ["$items14", []] },
+                                { $ifNull: ["$items15", []] },
+                                { $ifNull: ["$items16", []] },
+                                { $ifNull: ["$items17", []] },
+                                { $ifNull: ["$items18", []] },
+                                { $ifNull: ["$items19", []] },
+                                { $ifNull: ["$items20", []] },
+                                { $ifNull: ["$items21", []] },
+                                { $ifNull: ["$items22", []] },
+                                { $ifNull: ["$items23", []] },
+                                { $ifNull: ["$items24", []] },
+                                { $ifNull: ["$items25", []] },
+                                { $ifNull: ["$items26", []] },
+                                { $ifNull: ["$items27", []] },
+                                { $ifNull: ["$items28", []] },
+                                { $ifNull: ["$items29", []] },
+                                { $ifNull: ["$items30", []] },
+                                { $ifNull: ["$items31", []] },
+                                { $ifNull: ["$items32", []] },
+                                { $ifNull: ["$items33", []] },
+                                { $ifNull: ["$items34", []] },
+                                { $ifNull: ["$items35", []] },
+                                { $ifNull: ["$items36", []] },
+                                { $ifNull: ["$items37", []] },
+                                { $ifNull: ["$items38", []] },
+                                { $ifNull: ["$items39", []] },
+                                { $ifNull: ["$items40", []] },
+                                { $ifNull: ["$items41", []] },
+                                { $ifNull: ["$items42", []] },
+                                { $ifNull: ["$items43", []] },
+                                { $ifNull: ["$items44", []] },
+                                { $ifNull: ["$items45", []] },
+                                { $ifNull: ["$items46", []] },
+                                { $ifNull: ["$items47", []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 0] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 1] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 2] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 3] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 4] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 5] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 6] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 7] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 8] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 9] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 10] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 11] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 12] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 13] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 14] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 15] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 16] }, []] },
+                                { $ifNull: [{ $arrayElemAt: ["$players.items", 17] }, []] },
+                                { $ifNull: ["$equipment.v", []] },
+                            ],
+                        },
+                        as: "item",
+                        cond: { $ne: ["$$item", null] },
+                    },
+                },
+            },
+        },
+        {
+            $unwind: {
+                path: "$allItems",
+            },
+        },
+        {
+            /** Group by name and level **/
+            $group: {
+                _id: { name: "$allItems.name", level: "$allItems.level" },
+                inventorySpaces: { $count: {} },
+                q: { $sum: "$allItems.q" },
+            },
+        },
+        {
+            /** Clean up **/
+            $project: {
+                _id: false,
+                name: "$_id.name",
+                level: "$_id.level",
+                inventorySpaces: "$inventorySpaces",
+                q: { $max: ["$q", "$inventorySpaces"] },
+            },
+        },
+        {
+            $sort: {
+                name: 1,
+                level: -1,
+                q: -1,
+            },
+        },
+    ]) as {
+        name: ItemName
+        level?: number
+        inventorySpaces: number
+        q: number
+    }[]
+
+    // Clear the old data
+    if (!countMap) countMap = new Map()
+    else countMap.clear()
+
+    // Set the data
+    for (const countDatum of countData) {
+        const levelCounts: LevelCounts = countMap.get(countDatum.name) ?? new Map()
+        levelCounts.set(countDatum.level, { q: countDatum.q, inventorySpaces: countDatum.inventorySpaces })
+        countMap.set(countDatum.name, levelCounts)
+    }
+
+    OWNER_ITEM_COUNTS.set(owner, countMap)
+    return countMap
 }

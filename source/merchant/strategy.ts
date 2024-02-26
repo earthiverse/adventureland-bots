@@ -16,7 +16,6 @@ import AL, {
 } from "alclient"
 import {
     getItemsToCompoundOrUpgrade,
-    getOfferingToUse,
     IndexesToCompoundOrUpgrade,
     withdrawItemFromBank,
 } from "../base/items.js"
@@ -42,10 +41,10 @@ import {
     DEFAULT_REPLENISH_RATIO,
     EXCESS_ITEMS_SELL,
 } from "../base/defaults.js"
-import { BankItemPosition, goAndWithdrawItem, tidyBank } from "../base/banking.js"
+import { BankItemPosition, goAndDepositItem, goAndWithdrawItem, locateEmptyBankSlots, locateItemsInBank, tidyBank } from "../base/banking.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig } from "../base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, wantToDestroy, wantToHold, wantToSellToNpc } from "../base/itemsNew.js"
 
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
@@ -1399,6 +1398,7 @@ export async function startMerchant(
 export type NewMerchantStrategyOptions = {
     contexts: Strategist<PingCompensatedCharacter>[]
     itemConfig: ItemConfig
+    goldToHold?: number
     enableMluck?: {
         /** Should we mluck those that we pass through `contexts`? */
         contexts?: true
@@ -1414,6 +1414,7 @@ export type NewMerchantStrategyOptions = {
 export const defaultNewMerchantStrategyOptions: NewMerchantStrategyOptions = {
     contexts: [],
     itemConfig: DEFAULT_ITEM_CONFIG,
+    goldToHold: DEFAULT_GOLD_TO_HOLD,
     enableMluck: {
         contexts: true,
         others: true,
@@ -1479,6 +1480,172 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             for (const player of bot.getPlayers({ isNPC: false, withinRange: "mluck" })) {
                 if (!shouldMluck(player)) continue
                 return bot.mluck(player.id)
+            }
+        }
+    }
+
+    protected async move(bot: Merchant) {
+        if (bot.rip) return bot.respawn()
+
+        await this.joinGiveaways(bot).catch(console.error)
+        await this.doBanking(bot) // NOTE: Don't catch, we don't want to continue if banking fails
+        await this.deliverReplenishables(bot).catch(console.error)
+    }
+
+    protected async doBanking(bot: Merchant) {
+        let wantToBank = false
+        if (bot.esize < 2) wantToBank = true
+        if (!wantToBank && this.options.goldToHold && bot.gold > this.options.goldToHold) wantToBank = true
+        if (!wantToBank && checkOnlyEveryMS(`${bot.id}_banking`, 600_000)) wantToBank = true
+
+        if (!wantToBank) return
+
+        await bot.smartMove(bankingPosition)
+
+        // Deposit or withdraw gold to match what we want to hold
+        const goldDifference = bot.gold - this.options.goldToHold
+        if (goldDifference > 0) await bot.depositGold(goldDifference)
+        else if (goldDifference < 0) await bot.withdrawGold(goldDifference)
+
+        // Dump everything in the bank
+        for (const [slot, item] of bot.getItems()) {
+            if (item.l) continue // We don't deposit locked items
+
+            if (wantToDestroy(this.options.itemConfig, item)) {
+                await bot.destroy(slot) // Destroy works in the bank (as of 2024-02-26), we'll just destroy it now
+                continue
+            }
+
+            if (wantToHold(this.options.itemConfig, item, bot)) continue
+            if (wantToSellToNpc(this.options.itemConfig, item, bot)) continue
+
+            if (item.q) {
+                // It's stackable
+                const stackableLocations = locateItemsInBank(bot, item, { quantityLessThan: AL.Game.G.items[item.name].s - item.q + 1 })
+                if (stackableLocations.length) {
+                    // We can stack it on an existing stack
+                    await goAndDepositItem(bot, stackableLocations[0][0], -1, slot)
+                    continue
+                }
+            }
+
+            // We need to find a new slot for this item
+            const emptyBankSlots = locateEmptyBankSlots(bot)
+            if (emptyBankSlots.length === 0) continue // Our bank is full
+
+            // Deposit the item in the empty slot
+            await goAndDepositItem(bot, emptyBankSlots[0][0], emptyBankSlots[0][1][0], slot)
+        }
+
+        // Destroy works in the bank (as of 2024-02-26), so we will look for items to destroy
+        let emptySlot = bot.getFirstEmptyInventorySlot()
+        if (emptySlot !== undefined) {
+            let foundItemToSell = false
+            for (const [packName, packItems] of bot.getBankItems()) {
+                for (const [packSlot, packItem] of packItems) {
+                    const config = this.options.itemConfig[packItem.name]
+                    if (!config) continue // No config for this item
+
+                    if (wantToDestroy(this.options.itemConfig, packItem)) {
+                        await goAndWithdrawItem(bot, packName, packSlot, emptySlot)
+                        if (bot.items[emptySlot].name !== packItem.name) continue // Item changed!?
+                        if (bot.items[emptySlot].level !== packItem.level) continue // Item changed!?
+                        await bot.destroy(emptySlot)
+                        continue
+                    }
+
+                    if (wantToSellToNpc(this.options.itemConfig, packItem, bot)) {
+                        if (!packItem.level && config.sellPrice === "npc") {
+                            foundItemToSell = true
+                            await goAndWithdrawItem(bot, packName, packSlot, emptySlot)
+                            emptySlot = bot.getFirstEmptyInventorySlot()
+                            if (emptySlot === undefined) break // No more empty slots
+                        }
+                    }
+                }
+            }
+
+            if (foundItemToSell) {
+                // Go and sell all the items
+                await bot.smartMove("main")
+                const sellPromises: Promise<boolean>[] = []
+                for (const [slot, item] of bot.getItems()) {
+                    if (!wantToSellToNpc(this.options.itemConfig, item, bot)) continue
+                    sellPromises.push(bot.sell(slot, item.q ?? 1))
+                }
+                await Promise.allSettled(sellPromises)
+
+                // Then restart banking from the beginning
+                return this.doBanking(bot)
+            }
+        }
+
+        // TODO: If we have space, clean the bank
+        emptySlot = bot.getFirstEmptyInventorySlot()
+        if (emptySlot !== undefined) {
+
+        }
+
+        // TODO: Look for items to upgrade or compound
+
+        // TODO: Look for items to craft
+
+        // TODO: Look for items to exchange
+
+        // Move back to main
+        await bot.smartMove("main")
+    }
+
+    protected async joinGiveaways(bot: Merchant) {
+        const giveawayPromises: Promise<unknown>[] = []
+        for (const player of bot.getPlayers({ withinRange: AL.Constants.NPC_INTERACTION_DISTANCE })) {
+            for (const s in player.slots) {
+                const slot = s as TradeSlotType
+                const item = player.slots[slot]
+                if (!item) continue // Nothing in the slot
+                if (!item.giveaway) continue // Not a giveaway
+                if (item.list && item.list.includes(bot.id)) continue // We're already in the giveaway
+                giveawayPromises.push(bot.joinGiveaway(slot, player.id, item.rid))
+            }
+        }
+        await Promise.allSettled(giveawayPromises)
+
+        // TODO: Find giveaways from merchants on this server
+    }
+
+    protected async deliverReplenishables(bot: Merchant) {
+        for (const friendContext of filterContexts(this.options.contexts, {
+            owner: bot.owner,
+            serverData: bot.serverData,
+        })) {
+            const friendBot = friendContext.bot
+            for (const key in this.options.itemConfig) {
+                const itemName = key as ItemName
+                const config = this.options.itemConfig[itemName]
+                if (!config.replenish) continue
+                if (config.hold === undefined) continue
+                if (config.hold !== true && !config.hold?.includes(friendBot.ctype)) continue
+                if (friendBot.canBuy(itemName)) continue // They can buy their own
+                const numFriendHas = friendBot.countItem(itemName)
+                if (numFriendHas > config.replenish * 0.25) continue // They have enough
+
+                const numToReplenishFriend = config.replenish - numFriendHas
+                const numWeHave = bot.countItem(itemName)
+                if (numWeHave < numToReplenishFriend) {
+                    if (!bot.canBuy(itemName, { quantity: numToReplenishFriend })) continue // We can't buy them for them
+                    await bot.buy(itemName, numToReplenishFriend)
+                }
+
+                await bot.smartMove(friendBot, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                if (AL.Tools.squaredDistance(bot, friendBot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
+                    // They moved somewhere, try again
+                    return this.deliverReplenishables(bot)
+                }
+
+                const itemSlot = bot.locateItem(itemName, bot.items, { quantityGreaterThan: numToReplenishFriend - 1 })
+                if (itemSlot === undefined) continue // We don't have the required item(s) anymore!?
+
+                await bot.sendItem(friendBot.id, itemSlot, numToReplenishFriend)
             }
         }
     }
