@@ -36,6 +36,7 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
         this.loops.set("compound", {
             fn: async (bot: Type) => {
+                if (bot.q.compound) return // Waiting for another compound to finish
                 await this.compound(bot).catch(console.error)
             },
             interval: 250,
@@ -43,6 +44,7 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
         this.loops.set("upgrade", {
             fn: async (bot: Type) => {
+                if (bot.q.upgrade) return // Waiting for another upgrade to finish
                 await this.upgrade(bot).catch(console.error)
             },
             interval: 250,
