@@ -1,5 +1,5 @@
 import AL, { Character, CharacterType, Item, ItemData, ItemName, NPCName } from "alclient"
-import { checkOnlyEveryMS } from "./general"
+import { checkOnlyEveryMS } from "./general.js"
 
 // TODO: Figure out how to require buy_price if buy is set
 export type BuyConfig = {
