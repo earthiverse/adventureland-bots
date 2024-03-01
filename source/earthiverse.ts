@@ -16,8 +16,8 @@ import AL, {
     Attribute,
 } from "alclient"
 import {
-    DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS,
-    MerchantMoveStrategyOptions,
+    NewMerchantStrategyOptions,
+    defaultNewMerchantStrategyOptions,
     startMerchant,
 } from "./merchant/strategy.js"
 import { filterContexts, Strategist, Strategy } from "./strategy_pattern/context.js"
@@ -45,12 +45,6 @@ import {
 import { randomIntFromInterval, sleep } from "./base/general.js"
 import { NewSellStrategy, SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
-import {
-    DEFAULT_ITEMS_TO_HOLD,
-    DEFAULT_MERCHANT_ITEMS_TO_HOLD,
-    DEFAULT_REPLENISHABLES,
-    DEFAULT_REPLENISH_RATIO,
-} from "./base/defaults.js"
 
 import bodyParser from "body-parser"
 import cors from "cors"
@@ -866,18 +860,7 @@ const startMerchantContext = async () => {
         return
     }
     const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
-    startMerchant(CONTEXT, PRIVATE_CONTEXTS, {
-        ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS,
-        debug: true,
-        enableInstanceProvider: {
-            crypt: {
-                maxInstances: 25
-            },
-            winter_instance: {
-                maxInstances: 1
-            }
-        },
-    })
+    startMerchant(CONTEXT, PRIVATE_CONTEXTS, defaultNewMerchantStrategyOptions)
     CONTEXT.applyStrategy(debugStrategy)
     CONTEXT.applyStrategy(adminCommandStrategy)
     CONTEXT.applyStrategy(guiStrategy)
@@ -1130,36 +1113,15 @@ const startPublicContext = async (
         }
         case "merchant": {
             context = new Strategist<Merchant>(bot as Merchant, baseStrategy)
-            const merchantOptions: MerchantMoveStrategyOptions = {
-                debug: true,
+            const merchantOptions: NewMerchantStrategyOptions = {
+                contexts: PUBLIC_CONTEXTS,
                 defaultPosition: {
                     map: "main",
                     x: randomIntFromInterval(-50, 50),
                     y: randomIntFromInterval(-50, 50),
                 },
-                enableBuyAndUpgrade: settings.buyAndUpgrade ? { upgradeToLevel: settings.buyAndUpgrade } : undefined,
-                enableBuyReplenishables: {
-                    all: DEFAULT_REPLENISHABLES,
-                    merchant: new Map([
-                        ["offering", 1],
-                        ["cscroll0", 100],
-                        ["cscroll1", 10],
-                        ["cscroll2", 2],
-                        ["scroll0", 100],
-                        ["scroll1", 10],
-                        ["scroll2", 2],
-                    ]),
-                    ratio: DEFAULT_REPLENISH_RATIO,
-                },
-                enableFishing: true,
-                enableMining: true,
-                enableOffload: {
-                    esize: 3,
-                    goldToHold: 1_000_000,
-                    itemsToHold: DEFAULT_ITEMS_TO_HOLD,
-                },
                 goldToHold: 50_000_000,
-                itemsToHold: DEFAULT_MERCHANT_ITEMS_TO_HOLD,
+                itemConfig: DEFAULT_ITEM_CONFIG
             }
             if (context.bot.canUse("mluck", { ignoreCooldown: true, ignoreLocation: true, ignoreMP: true })) {
                 merchantOptions.enableMluck = {

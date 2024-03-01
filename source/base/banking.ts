@@ -79,7 +79,7 @@ export async function dumpInventoryInBank(bot: PingCompensatedCharacter, options
         let idealSlot: BankItemPosition
         if (item.q && AL.Game.G.items[item.name].s > item.q) {
             // See if we can stack it on another stack somewhere
-            const bankItems = locateItemsInBank(bot, item, { quantityLessThan: AL.Game.G.items[item.name].s - item.q + 1 })
+            const bankItems = locateItemsInBank(bot, item.name, { quantityLessThan: AL.Game.G.items[item.name].s - item.q + 1 })
             if (bankItems.length) {
                 // Store it in the slot with the highest quantity
                 let highestQuantity = 0;
@@ -382,7 +382,7 @@ export function locateEmptyBankSlots(bot: PingCompensatedCharacter) {
  * @param itemName 
  * @param filters 
  */
-export function locateItemsInBank(bot: PingCompensatedCharacter, item: ItemData, filters?: LocateItemsFilters) {
+export function locateItemsInBank(bot: PingCompensatedCharacter, item: ItemName, filters?: LocateItemsFilters) {
     if (!bot.map.startsWith("bank")) throw new Error("We aren't in the bank")
     if (!bot.bank) throw new Error("We don't have bank information")
 
@@ -392,7 +392,7 @@ export function locateItemsInBank(bot: PingCompensatedCharacter, item: ItemData,
     for (bankPackName in bot.bank) {
         if (bankPackName == "gold") continue
 
-        const itemsInSlot = bot.locateItems(item.name, bot.bank[bankPackName], filters)
+        const itemsInSlot = bot.locateItems(item, bot.bank[bankPackName], filters)
 
         if (itemsInSlot.length) items.push([bankPackName, itemsInSlot])
     }

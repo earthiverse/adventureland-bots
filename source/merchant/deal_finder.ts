@@ -1,9 +1,8 @@
 import AL, { Merchant, ServerIdentifier, ServerRegion, TradeSlotType } from "alclient"
 import { getMsToNextMinute } from "../base/general.js"
-import { MERCHANT_ITEMS_TO_HOLD } from "../archive/base/merchant.js"
 import { Strategist } from "../strategy_pattern/context.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
-import { startMerchant } from "./strategy.js"
+import { defaultNewMerchantStrategyOptions, startMerchant } from "./strategy.js"
 import { DEFAULT_ITEMS_TO_BUY } from "../base/defaults.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
@@ -45,15 +44,7 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
 
     const merchant = await AL.Game.startMerchant(MERCHANT_NAME, serverRegion, serverIdentifier)
     const context = new Strategist<Merchant>(merchant, BASE_STRATEGY)
-    await startMerchant(context, [], {
-        defaultPosition: { map: "main", x: 100, y: 0 },
-        enableDealFinder: {
-            itemsToBuy: DEFAULT_ITEMS_TO_BUY
-        },
-        enableJoinGiveaways: true,
-        goldToHold: 500_000_000,
-        itemsToHold: MERCHANT_ITEMS_TO_HOLD
-    })
+    await startMerchant(context, [], defaultNewMerchantStrategyOptions)
 
     // Set up the disconnect for the next server hop
     setTimeout(async () => {

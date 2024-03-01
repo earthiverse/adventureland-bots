@@ -1,6 +1,6 @@
 import AL, { ItemName, Merchant, PingCompensatedCharacter, Player } from "alclient"
 import { Strategy, LoopName, Loop, Strategist, filterContexts } from "../context.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, wantToUpgrade } from "../../base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, wantToHold, wantToSellToNpc, wantToUpgrade } from "../../base/itemsNew.js"
 
 export type ItemStrategyOptions = {
     itemConfig: ItemConfig
@@ -179,10 +179,8 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
             for (const [slot, item] of bot.getItems()) {
                 if (item.l) continue // Can't send locked items
 
-                const itemConfig = this.options.itemConfig[item.name]
-                if (!itemConfig) continue // No item config, assume we don't want to sell it
-                if (itemConfig.hold === true || itemConfig.hold.includes(bot.ctype)) continue // 
-                if (!itemConfig.sell) continue // We don't want to sell it
+                if (wantToHold(this.options.itemConfig, item, bot)) continue
+                if (!wantToSellToNpc(this.options.itemConfig, item, bot)) continue
 
                 await bot.sendItem(friend.id, slot, item.q ?? 1)
             }
@@ -224,7 +222,7 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
         if (bot.map.startsWith("bank")) return // Can't compound in bank
         const itemCounts = await getItemCounts(bot.owner)
 
-        for (const [slot, item] of bot.getItems()) {
+        for (const [, item] of bot.getItems()) {
             const gItem = AL.Game.G.items[item.name]
             if (!gItem.compound) continue // Not compoundable
 
@@ -243,16 +241,20 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
             }
 
             const cscroll = `cscroll${item.calculateGrade()}` as ItemName
-            let cscrollPosition = bot.locateItem(cscroll)
-            if (cscrollPosition === undefined) {
+            let cscrollSlot = bot.locateItem(cscroll)
+            if (cscrollSlot === undefined) {
                 // We don't have the scroll needed
-                if (bot.canBuy(cscroll)) cscrollPosition = await bot.buy(cscroll)
+                if (bot.canBuy(cscroll)) cscrollSlot = await bot.buy(cscroll)
                 else continue // We can't buy the scroll needed
             }
 
+            const offeringSlot = offering ? bot.locateItem(offering) : undefined
+            if (!bot.canCompound(items[0], items[1], items[2], cscrollSlot, offeringSlot)) return // Can't compound from where we are
+
             if (bot.canUse("massproduction")) await (bot as unknown as Merchant).massProduction()
 
-            return bot.compound(items[0], items[1], items[2], bot.locateItem(cscroll), offering ? bot.locateItem(offering) : undefined)
+            // TODO: Remove from counts in case we fail
+            return bot.compound(items[0], items[1], items[2], cscrollSlot, offeringSlot)
         }
     }
 
@@ -275,16 +277,20 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
             }
 
             const scroll = `scroll${item.calculateGrade()}` as ItemName
-            let scrollPosition = bot.locateItem(scroll)
-            if (scrollPosition === undefined) {
+            let scrollSlot = bot.locateItem(scroll)
+            if (scrollSlot === undefined) {
                 // We don't have the scroll needed
-                if (bot.canBuy(scroll)) scrollPosition = await bot.buy(scroll)
+                if (bot.canBuy(scroll)) scrollSlot = await bot.buy(scroll)
                 else continue // We can't buy the scroll needed
             }
 
+            const offeringSlot = offering ? bot.locateItem(offering) : undefined
+            if (!bot.canUpgrade(slot, scrollSlot, offeringSlot)) return // Can't compound from where we are
+
             if (bot.canUse("massproduction")) await (bot as unknown as Merchant).massProduction()
 
-            return bot.upgrade(slot, bot.locateItem(scroll), offering ? bot.locateItem(offering) : undefined)
+            // TODO: Update counts in case we fail
+            return bot.upgrade(slot, scrollSlot, offeringSlot)
         }
     }
 }

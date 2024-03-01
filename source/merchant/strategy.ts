@@ -2,12 +2,15 @@ import AL, {
     BankPackName,
     Character,
     Constants,
+    Database,
+    Game,
     IPosition,
     ItemName,
     LocateItemsFilters,
     MapName,
     Merchant,
     NewMapData,
+    Pathfinder,
     PingCompensatedCharacter,
     Player,
     SlotType,
@@ -44,7 +47,7 @@ import {
 import { BankItemPosition, goAndDepositItem, goAndWithdrawItem, locateEmptyBankSlots, locateItemsInBank, tidyBank } from "../base/banking.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, wantToDestroy, wantToHold, wantToSellToNpc } from "../base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, wantToDestroy, wantToHold, wantToSellToNpc, wantToUpgrade } from "../base/itemsNew.js"
 
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
@@ -1375,10 +1378,13 @@ export class MerchantStrategy implements Strategy<Merchant> {
 export async function startMerchant(
     context: Strategist<Merchant>,
     friends: Strategist<PingCompensatedCharacter>[],
-    options?: MerchantMoveStrategyOptions,
+    options?: NewMerchantStrategyOptions,
 ) {
     context.applyStrategy(new AvoidDeathStrategy())
-    context.applyStrategy(new MerchantStrategy(friends, options))
+    context.applyStrategy(new NewMerchantStrategy({
+        ...options,
+        contexts: friends
+    }))
     context.applyStrategy(new TrackerStrategy())
     context.applyStrategy(new AcceptPartyRequestStrategy())
     context.applyStrategy(
@@ -1398,7 +1404,14 @@ export async function startMerchant(
 export type NewMerchantStrategyOptions = {
     contexts: Strategist<PingCompensatedCharacter>[]
     itemConfig: ItemConfig
+    /** The default position to stand when upgrading / waiting for things to do */
+    defaultPosition: IPosition
     goldToHold?: number
+    enableInstanceProvider?: {
+        [T in MapName]?: {
+            maxInstances?: number
+        }
+    }
     enableMluck?: {
         /** Should we mluck those that we pass through `contexts`? */
         contexts?: true
@@ -1414,6 +1427,7 @@ export type NewMerchantStrategyOptions = {
 export const defaultNewMerchantStrategyOptions: NewMerchantStrategyOptions = {
     contexts: [],
     itemConfig: DEFAULT_ITEM_CONFIG,
+    defaultPosition: { map: "main", x: 0, y: 0 },
     goldToHold: DEFAULT_GOLD_TO_HOLD,
     enableMluck: {
         contexts: true,
@@ -1439,6 +1453,31 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 interval: ["mluck"],
             })
         }
+
+        this.loops.set("move", {
+            fn: async (bot: Merchant) => {
+                if (bot.rip) return bot.respawn()
+
+                // TODO: Equip broom to go fast
+
+                await this.joinGiveaways(bot).catch(console.error)
+                await this.doBanking(bot) // NOTE: Don't catch, we don't want to continue if banking fails
+                await this.goGetHolidaySpirit(bot).catch(console.error)
+                await this.goDeliverReplenishables(bot).catch(console.error)
+                await this.goGetItemsFromContexts(bot).catch(console.error)
+                await this.goFishing(bot).catch(console.error)
+                await this.goMining(bot).catch(console.error)
+                await this.goCraft(bot).catch(console.error)
+                await this.goExchange(bot).catch(console.error)
+                // TODO: Buy and upgrade
+                // TODO: Deal finder
+                await this.goCheckInstances(bot).catch(console.error)
+                // TODO: Instance provider
+
+                await bot.smartMove(this.options.defaultPosition)
+            },
+            interval: 1000
+        })
     }
 
     protected async mluck(bot: Merchant) {
@@ -1484,14 +1523,9 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
     }
 
-    protected async move(bot: Merchant) {
-        if (bot.rip) return bot.respawn()
-
-        await this.joinGiveaways(bot).catch(console.error)
-        await this.doBanking(bot) // NOTE: Don't catch, we don't want to continue if banking fails
-        await this.deliverReplenishables(bot).catch(console.error)
-    }
-
+    /**
+     * TODO: Add sellExcess logic
+     */
     protected async doBanking(bot: Merchant) {
         let wantToBank = false
         if (bot.esize < 2) wantToBank = true
@@ -1500,12 +1534,12 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
         if (!wantToBank) return
 
-        await bot.smartMove(bankingPosition)
+        if (!bot.map.startsWith("bank")) await bot.smartMove(bankingPosition)
 
         // Deposit or withdraw gold to match what we want to hold
         const goldDifference = bot.gold - this.options.goldToHold
         if (goldDifference > 0) await bot.depositGold(goldDifference)
-        else if (goldDifference < 0) await bot.withdrawGold(goldDifference)
+        else if (goldDifference < 0 && bot.bank.gold) await bot.withdrawGold(-goldDifference)
 
         // Dump everything in the bank
         for (const [slot, item] of bot.getItems()) {
@@ -1521,7 +1555,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
             if (item.q) {
                 // It's stackable
-                const stackableLocations = locateItemsInBank(bot, item, { quantityLessThan: AL.Game.G.items[item.name].s - item.q + 1 })
+                const stackableLocations = locateItemsInBank(bot, item.name, { quantityLessThan: AL.Game.G.items[item.name].s - item.q + 1 })
                 if (stackableLocations.length) {
                     // We can stack it on an existing stack
                     await goAndDepositItem(bot, stackableLocations[0][0], -1, slot)
@@ -1537,10 +1571,11 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             await goAndDepositItem(bot, emptyBankSlots[0][0], emptyBankSlots[0][1][0], slot)
         }
 
-        // Destroy works in the bank (as of 2024-02-26), so we will look for items to destroy
+        // Look for items to sell, destroy, or hold
         let emptySlot = bot.getFirstEmptyInventorySlot()
-        if (emptySlot !== undefined) {
+        if (bot.esize >= 2) {
             let foundItemToSell = false
+            bankSearch:
             for (const [packName, packItems] of bot.getBankItems()) {
                 for (const [packSlot, packItem] of packItems) {
                     const config = this.options.itemConfig[packItem.name]
@@ -1559,14 +1594,21 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                             foundItemToSell = true
                             await goAndWithdrawItem(bot, packName, packSlot, emptySlot)
                             emptySlot = bot.getFirstEmptyInventorySlot()
-                            if (emptySlot === undefined) break // No more empty slots
+                            if (emptySlot === undefined) break bankSearch // No more empty slots
                         }
+                    }
+
+                    if (wantToHold(this.options.itemConfig, { ...packItem, l: undefined }, bot)) {
+                        if (bot.hasItem(packItem.name)) continue // We already have one
+                        await goAndWithdrawItem(bot, packName, packSlot, emptySlot)
+                        emptySlot = bot.getFirstEmptyInventorySlot()
+                        if (emptySlot === undefined) break bankSearch // No more empty slots
                     }
                 }
             }
 
             if (foundItemToSell) {
-                // Go and sell all the items
+                // Go and sell all the items we found
                 await bot.smartMove("main")
                 const sellPromises: Promise<boolean>[] = []
                 for (const [slot, item] of bot.getItems()) {
@@ -1580,45 +1622,210 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             }
         }
 
-        // TODO: If we have space, clean the bank
+        // If we have space, clean the bank
         emptySlot = bot.getFirstEmptyInventorySlot()
-        if (emptySlot !== undefined) {
+        if (emptySlot) {
+            // Get item counts
+            const countableCounts = new Map<ItemName, [BankPackName, number, number][]>()
+            for (const [bankPack, packItems] of bot.getBankItems()) {
+                for (const [bankSlot, packItem] of packItems) {
+                    if (!packItem.q) continue // Not stackable
+                    const gInfo = Game.G.items[packItem.name]
+                    if (packItem.q >= gInfo.s) continue // Full stack
+
+                    const countable = countableCounts.get(packItem.name) ?? []
+                    countable.push([bankPack, bankSlot, packItem.q])
+                    countableCounts.set(packItem.name, countable)
+                }
+            }
+            if (bot.esize >= 2) {
+                // We can combine stacks to their max stackable size
+                for (const [itemName, counts] of countableCounts) {
+                    // Sort highest counts to lowest count
+                    counts.sort((a, b) => a[2] - b[2])
+                    const gInfo = Game.G.items[itemName]
+
+                    for (let countIndex = 1; countIndex < counts.length; countIndex++) {
+                        const [packName1, bankSlot1, q1] = counts[countIndex - 1]
+                        const [packName2, bankSlot2, q2] = counts[countIndex]
+
+                        if (q1 + q2 < gInfo.s) {
+                            // We can stack the first one on the second one
+                            await goAndWithdrawItem(bot, packName1, bankSlot1, emptySlot)
+                            await goAndWithdrawItem(bot, packName2, bankSlot2, -1)
+                            if (bot.items[emptySlot]?.name !== itemName) return this.doBanking(bot) // We have a different item!?
+                            await goAndDepositItem(bot, packName2, bankSlot2, emptySlot)
+
+                            // Update counts and re-sort
+                            counts[countIndex] = [packName2, bankSlot2, q1 + q2]
+                            counts.sort((a, b) => a[2] - b[2])
+                        } else {
+                            // We can make one a full stack
+                            await goAndWithdrawItem(bot, packName1, bankSlot1, emptySlot)
+                            if (bot.items[emptySlot]?.name !== itemName) return this.doBanking(bot) // We have a different item!?
+                            const splitSlot = await bot.splitItem(emptySlot, gInfo.s - q2)
+                            await goAndDepositItem(bot, packName1, bankSlot1, emptySlot)
+                            await goAndDepositItem(bot, packName2, bankSlot2, splitSlot)
+
+                            // Remove full stack, update, and re-sort
+                            counts.splice(countIndex, 1)
+                            if (
+                                !bot.bank[packName1][bankSlot1]
+                                || bot.bank[packName1][bankSlot1].name !== itemName
+                            ) return this.doBanking(bot) // We have a different item!?
+                            countIndex -= 1
+                            counts[countIndex] = [packName1, bankSlot1, bot.bank[packName1][bankSlot1].q]
+                            counts.sort()
+                        }
+                    }
+                }
+            } else if (bot.esize === 1) {
+                // We can combine stacks if two combine to at most their stackable size
+                for (const [itemName, counts] of countableCounts) {
+                    // Sort highest counts to lowest count
+                    counts.sort((a, b) => a[2] - b[2])
+                    const gInfo = Game.G.items[itemName]
+
+                    for (let countIndex = 1; countIndex < counts.length; countIndex++) {
+                        const [packName1, bankSlot1, q1] = counts[countIndex - 1]
+                        const [packName2, bankSlot2, q2] = counts[countIndex]
+
+                        if (q1 + q2 < gInfo.s) {
+                            // We can stack the first one on the second one
+                            await goAndWithdrawItem(bot, packName1, bankSlot1, emptySlot)
+                            await goAndWithdrawItem(bot, packName2, bankSlot2, -1)
+                            if (bot.items[emptySlot]?.name !== itemName) return this.doBanking(bot) // We have a different item!?
+                            await goAndDepositItem(bot, packName2, bankSlot2, emptySlot)
+
+                            // Update counts and re-sort
+                            counts[countIndex] = [packName2, bankSlot2, q1 + q2]
+                            counts.sort((a, b) => a[2] - b[2])
+                        } else {
+                            // We don't have enough empty space to split them to make full stacks
+                            break
+                        }
+                    }
+                }
+            }
+        }
+
+        // TODO: Look for items to compound
+        if (bot.esize >= 4) {
 
         }
 
-        // TODO: Look for items to upgrade or compound
+        // Look for items to upgrade
+        if (bot.esize >= 2) {
+            const itemCounts = await getItemCounts(bot.owner)
+
+            bankSearch:
+            for (const [packName, packItems] of bot.getBankItems()) {
+                for (const [packSlot, packItem] of packItems) {
+                    if (!packItem.upgrade) continue // Not upgradable
+
+                    const itemConfig: UpgradeConfig = this.options.itemConfig[packItem.name]
+                    if (!wantToUpgrade(packItem, itemConfig, itemCounts)) continue
+
+                    // Withdraw the item, we'll upgrade it
+                    await goAndWithdrawItem(bot, packName, packSlot, emptySlot)
+                    emptySlot = bot.getFirstEmptyInventorySlot()
+                    if (bot.esize < 2) break bankSearch // Not enough empty slots
+                }
+            }
+        }
 
         // TODO: Look for items to craft
+        emptySlot = bot.getFirstEmptyInventorySlot()
+        if (emptySlot) {
+            // TODO: Check if we have enough space for all the items needed to craft this
+        }
 
         // TODO: Look for items to exchange
+        if (bot.esize >= 2) {
+            emptySlot = bot.getFirstEmptyInventorySlot()
+
+            bankSearch:
+            for (const [packName, packItems] of bot.getBankItems()) {
+                for (const [packSlot, packItem] of packItems) {
+                    const config = this.options.itemConfig[packItem.name]
+                    if (!config) continue
+                    if (!config.exchange) continue
+
+                    const stackSize = packItem.e ?? 1
+                    if (packItem.q < stackSize) continue // Not enough to exchange
+
+                    // Withdraw the exchangeables
+                    await bot.withdrawItem(packName, packSlot, emptySlot)
+
+                    if (packItem.q) {
+                        // Split them in to exchangable stacks
+                        while (bot.esize > 0) {
+                            const item = bot.items[emptySlot]
+                            if (!item) break // No item !?
+                            if (item.name !== packItem.name) break // Different item!?
+                            if (item.q < packItem.e) break // Not enough to exchange
+                            await bot.splitItem(emptySlot, stackSize)
+                        }
+                    }
+                    const item = bot.items[emptySlot]
+                    if (item && item.q !== stackSize) {
+                        // Put the rest back
+                        await bot.depositItem(emptySlot, packName, packSlot)
+                    }
+                    break bankSearch;
+                }
+            }
+        }
 
         // Move back to main
         await bot.smartMove("main")
     }
 
-    protected async joinGiveaways(bot: Merchant) {
-        const giveawayPromises: Promise<unknown>[] = []
-        for (const player of bot.getPlayers({ withinRange: AL.Constants.NPC_INTERACTION_DISTANCE })) {
-            for (const s in player.slots) {
-                const slot = s as TradeSlotType
-                const item = player.slots[slot]
-                if (!item) continue // Nothing in the slot
-                if (!item.giveaway) continue // Not a giveaway
-                if (item.list && item.list.includes(bot.id)) continue // We're already in the giveaway
-                giveawayPromises.push(bot.joinGiveaway(slot, player.id, item.rid))
-            }
-        }
-        await Promise.allSettled(giveawayPromises)
+    protected async goCheckInstances(bot: Merchant) {
+        // Remove finished instances every minute
+        if (checkOnlyEveryMS("cleanInstances", 60_000)) await cleanInstances()
 
-        // TODO: Find giveaways from merchants on this server
+        // TODO: Open instances
     }
 
-    protected async deliverReplenishables(bot: Merchant) {
+    protected async goCraft(bot: Merchant) {
+        for (const key in this.options.itemConfig) {
+            const itemName = key as ItemName
+            const config = this.options.itemConfig[itemName]
+            if (!config.craft) continue // We don't want to craft it
+
+            if (!bot.canCraft(itemName, { ignoreLocation: true, ignoreNpcItems: true })) continue // We can't craft it
+            if (!bot.canCraft(itemName, { ignoreLocation: true })) {
+                // We can craft it if we buy the rest of the recipe from NPCs
+                const gCraft = AL.Game.G.craft[itemName]
+                for (const [requiredQuantity, requiredItem] of gCraft.items) {
+                    if (bot.countItem(requiredItem) > requiredQuantity) continue // We have enough of this item
+                    if (!bot.canBuy(requiredItem)) {
+                        // We need to move to buy it
+                        await bot.smartMove(requiredItem, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+                    }
+                    await bot.buy(requiredItem, requiredQuantity)
+                }
+            }
+
+            if (!bot.canCraft(itemName, { ignoreLocation: true })) continue // We still can't craft it!?
+            if (!bot.canCraft(itemName)) {
+                // We need to move to craft it
+                const npc = AL.Pathfinder.locateCraftNPC(itemName)
+                await bot.smartMove(npc, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+            }
+
+            await bot.craft(itemName)
+        }
+    }
+
+    protected async goDeliverReplenishables(bot: Merchant) {
         for (const friendContext of filterContexts(this.options.contexts, {
             owner: bot.owner,
             serverData: bot.serverData,
         })) {
             const friendBot = friendContext.bot
+            if (friendBot === bot) continue // Ignore ourself
             for (const key in this.options.itemConfig) {
                 const itemName = key as ItemName
                 const config = this.options.itemConfig[itemName]
@@ -1639,7 +1846,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await bot.smartMove(friendBot, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                 if (AL.Tools.squaredDistance(bot, friendBot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
                     // They moved somewhere, try again
-                    return this.deliverReplenishables(bot)
+                    return this.goDeliverReplenishables(bot)
                 }
 
                 const itemSlot = bot.locateItem(itemName, bot.items, { quantityGreaterThan: numToReplenishFriend - 1 })
@@ -1648,5 +1855,285 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await bot.sendItem(friendBot.id, itemSlot, numToReplenishFriend)
             }
         }
+    }
+
+    protected async goExchange(bot: Merchant) {
+        for (const [slot, item] of bot.getItems()) {
+            const config = this.options.itemConfig[item.name]
+            if (!config) continue // No config
+            if (!config.exchange) continue // We don't want to exchange it
+            if (config.exchangeAtLevel !== undefined && item.level !== config.exchangeAtLevel) continue // We don't want to exchange it at this level
+
+            if ((item.e ?? 1) >= (item.q ?? 1)) continue // We don't have enough to exchange
+            if (!bot.canExchange(item.name)) {
+                // We need to move to exchange
+                const npc = AL.Pathfinder.locateExchangeNPC(item.name)
+                await bot.smartMove(npc, { getWithin: Constants.NPC_INTERACTION_DISTANCE - 50 })
+            }
+
+            await bot.exchange(slot)
+            if (bot.q.exchange) await sleep(bot.q.exchange.ms)
+        }
+    }
+
+    protected async goFishing(bot: Merchant) {
+        if (!bot.canUse("fishing", { ignoreEquipped: true, ignoreLocation: true })) return // We can't fish
+        if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
+            // Check the bank for a rod
+            await bot.smartMove(bankingPosition)
+            const rods = locateItemsInBank(bot, "rod")
+            if (rods.length) {
+                // We had one in the bank
+                await goAndWithdrawItem(bot, rods[0][0], rods[0][1][0])
+            } else {
+                // We need to craft a rod
+                if (bot.esize < 2) return // Not enough space to craft a rod
+
+                if (!bot.hasItem("spidersilk", bot.items, { locked: false })) {
+                    // Withdraw spidersilk
+                    const spiderSilk = locateItemsInBank(bot, "spidersilk", { locked: false })
+                    if (!spiderSilk.length) return // We don't have spidersilk to craft with
+                    await goAndWithdrawItem(bot, spiderSilk[0][0], spiderSilk[0][1][0])
+                }
+
+                if (!bot.hasItem("staff", bot.items, { locked: false, level: 0 })) {
+                    // Withdraw a staff
+                    const staff = locateItemsInBank(bot, "staff", { locked: false, level: 0 })
+                    if (staff.length) await goAndWithdrawItem(bot, staff[0][0], staff[0][1][0])
+                }
+
+                await bot.smartMove("main")
+                if (!bot.hasItem("spidersilk", bot.items, { locked: false })) return // We don't have spidersilk!?
+                if (!bot.hasItem("staff", bot.items, { locked: false, level: 0 })) await bot.buy("staff")
+
+                if (!bot.canCraft("rod")) {
+                    if (!bot.canCraft("rod", { ignoreLocation: true })) return // We can't craft!?
+                    const npc = Pathfinder.locateCraftNPC("rod")
+                    await bot.smartMove(npc, { getWithin: Constants.NPC_INTERACTION_DISTANCE - 50 })
+                }
+                await bot.craft("rod")
+
+                if (!bot.hasItem("rod") && !bot.isEquipped("rod")) return // We still don't have a rod!?
+            }
+        }
+
+        // TODO: Find closest fishing spot
+        await bot.smartMove(mainFishingSpot, { costs: { transport: 9999 } })
+
+        if (!bot.isEquipped("rod")) {
+            // Equip the rod
+            if (bot.slots.offhand) await bot.unequip("offhand")
+            await bot.equip(bot.locateItem("rod"))
+        }
+
+        // Wait if we're on cooldown
+        if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
+
+        await bot.fish()
+        if (!bot.isOnCooldown("fishing")) return this.goFishing(bot) // Keep fishing
+    }
+
+    protected async goGetHolidaySpirit(bot: Merchant) {
+        if (!bot.S.holidayseason) return // Not holiday season
+        if (bot.s.holidayspirit) return // We already have it
+
+        await bot.smartMove("newyear_tree", { getWithin: Constants.NPC_INTERACTION_DISTANCE - 50 })
+        await bot.getHolidaySpirit()
+    }
+
+    protected async goGetItemsFromContexts(bot: Merchant) {
+        if (bot.esize <= 1) return // We are low on space
+
+        for (const friendContext of filterContexts(this.options.contexts, {
+            owner: bot.owner,
+            serverData: bot.serverData,
+        })) {
+            const friendBot = friendContext.bot
+            if (friendBot === bot) continue // Ignore ourself
+
+            let wantToGo = false
+            if (friendBot.gold > this.options.goldToHold * 1.5) wantToGo = true // They have a lot of gold
+            if (!wantToGo && friendBot.esize <= 5) {
+                for (const [, item] of friendBot.getItems()) {
+                    if (wantToHold(this.options.itemConfig, item, friendBot)) continue
+                    // They have something they can transfer to us
+                    wantToGo = true
+                    break
+                }
+            }
+
+            if (!wantToGo) continue
+
+            await bot.smartMove(friendBot, { getWithin: Constants.NPC_INTERACTION_DISTANCE })
+            if (AL.Tools.squaredDistance(bot, friendBot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
+                // They moved somewhere, try again
+                return this.goGetItemsFromContexts(bot)
+            }
+
+            // Take their extra gold
+            const goldDifference = friendBot.gold - this.options.goldToHold
+            if (goldDifference > 0) await friendBot.sendGold(bot.id, goldDifference)
+
+            // Take their extra items
+            for (const [slot, item] of friendBot.getItems()) {
+                if (wantToHold(this.options.itemConfig, item, friendBot)) continue
+                await friendBot.sendItem(bot.id, slot, item.q ?? 1)
+                if (bot.esize <= 1) return this.doBanking(bot) // Go do banking if we're full now
+            }
+        }
+    }
+
+    protected async goMining(bot: Merchant) {
+        if (!bot.canUse("mining", { ignoreEquipped: true, ignoreLocation: true })) return // We can't mine
+        if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) {
+            // Check the bank for a pickaxe
+            await bot.smartMove(bankingPosition)
+            const pickaxes = locateItemsInBank(bot, "pickaxe")
+            if (pickaxes.length) {
+                // We had one in the bank
+                await goAndWithdrawItem(bot, pickaxes[0][0], pickaxes[0][1][0])
+            } else {
+                // We need to craft a pickaxe
+                if (bot.esize < 3) return // Not enough space to craft a pickaxe
+
+                if (!bot.hasItem("spidersilk", bot.items, { locked: false })) {
+                    // Withdraw spidersilk
+                    const spiderSilk = locateItemsInBank(bot, "spidersilk", { locked: false })
+                    if (!spiderSilk.length) return // We don't have spidersilk to craft with
+                    await goAndWithdrawItem(bot, spiderSilk[0][0], spiderSilk[0][1][0])
+                }
+
+                if (!bot.hasItem("staff", bot.items, { locked: false, level: 0 })) {
+                    // Withdraw a staff
+                    const staff = locateItemsInBank(bot, "staff", { locked: false, level: 0 })
+                    if (staff.length) await goAndWithdrawItem(bot, staff[0][0], staff[0][1][0])
+                }
+
+                if (!bot.hasItem("blade", bot.items, { locked: false, level: 0 })) {
+                    // Withdraw a blade
+                    const blade = locateItemsInBank(bot, "blade", { locked: false, level: 0 })
+                    if (blade.length) await goAndWithdrawItem(bot, blade[0][0], blade[0][1][0])
+                }
+
+                await bot.smartMove("main")
+                if (!bot.hasItem("spidersilk", bot.items, { locked: false })) return // We don't have spidersilk!?
+                if (!bot.hasItem("staff", bot.items, { locked: false, level: 0 })) await bot.buy("staff")
+                if (!bot.hasItem("blade", bot.items, { locked: false, level: 0 })) await bot.buy("blade")
+
+                if (!bot.canCraft("pickaxe")) {
+                    if (!bot.canCraft("pickaxe", { ignoreLocation: true })) return // We can't craft!?
+                    const npc = Pathfinder.locateCraftNPC("pickaxe")
+                    await bot.smartMove(npc, { getWithin: Constants.NPC_INTERACTION_DISTANCE - 50 })
+                }
+                await bot.craft("pickaxe")
+
+                if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) return // We still don't have a pickaxe!?
+            }
+        }
+
+        // TODO: Find closest mining spot
+        await bot.smartMove(miningSpot, { costs: { transport: 9999 } })
+
+        if (!bot.isEquipped("pickaxe")) {
+            // Equip the pickaxe
+            if (bot.slots.offhand) await bot.unequip("offhand")
+            await bot.equip(bot.locateItem("pickaxe"))
+        }
+
+        // Wait if we're on cooldown
+        if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
+
+        console.debug("MINE !?")
+        await bot.mine()
+        if (!bot.isOnCooldown("mining")) {
+            console.debug("KEEP MINING !?")
+            return this.goMining(bot) // Keep mining
+        }
+    }
+
+    protected async goMluck(bot: Merchant) {
+        if (!this.options.enableMluck) return // Don't want to mluck
+        if (!this.options.enableMluck.travel) return // Don't want to travel
+        if (!bot.canUse("mluck", { ignoreCooldown: true, ignoreLocation: true, ignoreMP: true })) return // Can't mluck
+
+        const canMluck = (other: Character | Player): boolean => {
+            if (other.s.invis) return false // Can't mluck invsible players
+            if (!other.s.mluck) return true // They don't have mluck
+            if (!other.s.mluck.strong) return true // We can steal their mluck
+            return other.s.mluck.f === bot.id // We can refresh their mluck
+        }
+
+        const shouldMluck = (other: Character | Player): boolean => {
+            if (!canMluck(other)) return false
+            if (other.s.mluck?.f === "earthMer" && bot.id !== "earthMer") return false // Don't compete with earthMer
+            if (other.s.mluck?.f === bot.id && other.s.mluck.ms > AL.Game.G.skills.mluck.duration * 0.25) return false // They still have a lot left
+            return true
+        }
+
+        // Find instance characters to mluck
+        if (this.options.enableMluck.contexts) {
+            for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
+                if (!shouldMluck(context.bot)) continue
+
+                await bot.smartMove(context.bot, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                if (
+                    AL.Tools.squaredDistance(bot, context.bot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED
+                    && shouldMluck(context.bot)
+                ) {
+                    // They moved somewhere, try again
+                    return this.goMluck(bot)
+                }
+            }
+        }
+
+        // Find other characters to mluck
+        if (this.options.enableMluck.others && Database.connection) {
+            const other = await AL.PlayerModel.findOne(
+                {
+                    $or: [
+                        { "s.mluck": undefined }, // They don't have mluck
+                        { "s.mluck.f": { $ne: bot.id }, "s.mluck.strong": undefined }, // We can steal mluck
+                    ],
+                    "s.invis": undefined,
+                    lastSeen: { $gt: Date.now() - 30_000 },
+                    serverIdentifier: bot.server.name,
+                    serverRegion: bot.server.region,
+                },
+                {
+                    _id: 0,
+                    map: 1,
+                    in: 1,
+                    name: 1,
+                    x: 1,
+                    y: 1,
+                },
+            )
+                .lean()
+                .exec()
+            if (other) {
+                await bot.smartMove(other, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                if (!bot.players[other.id]) {
+                    // They moved somewhere, try again
+                    return this.goMluck(bot)
+                }
+            }
+        }
+    }
+
+    protected async joinGiveaways(bot: Merchant) {
+        const giveawayPromises: Promise<unknown>[] = []
+        for (const player of bot.getPlayers({ withinRange: AL.Constants.NPC_INTERACTION_DISTANCE })) {
+            for (const s in player.slots) {
+                const slot = s as TradeSlotType
+                const item = player.slots[slot]
+                if (!item) continue // Nothing in the slot
+                if (!item.giveaway) continue // Not a giveaway
+                if (item.list && item.list.includes(bot.id)) continue // We're already in the giveaway
+                giveawayPromises.push(bot.joinGiveaway(slot, player.id, item.rid))
+            }
+        }
+        await Promise.allSettled(giveawayPromises)
+
+        // TODO: Find giveaways from merchants on this server
     }
 }

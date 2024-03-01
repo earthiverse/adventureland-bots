@@ -43,7 +43,7 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
                 const closestBot = getClosestBotToPosition(bankingPosition, friends)
                 if (closestBot === bot) {
                     await bot.smartMove(bankingPosition)
-                    const bankFieldgens = locateItemsInBank(bot, { name: "fieldgen0" })
+                    const bankFieldgens = locateItemsInBank(bot, "fieldgen0")
                     if (bankFieldgens.length) {
                         const [packName, indexes] = bankFieldgens[0]
                         await goAndWithdrawItem(bot, packName, indexes[0])
