@@ -3,8 +3,10 @@ import AL, {
     Character,
     Constants,
     Database,
+    GMap,
     Game,
     IPosition,
+    Item,
     ItemName,
     LocateItemsFilters,
     MapName,
@@ -1472,7 +1474,6 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 // TODO: Buy and upgrade
                 // TODO: Deal finder
                 await this.goCheckInstances(bot).catch(console.error)
-                // TODO: Instance provider
 
                 await bot.smartMove(this.options.defaultPosition)
             },
@@ -1525,12 +1526,14 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
     /**
      * TODO: Add sellExcess logic
+     * TODO: Add craft logic
      */
     protected async doBanking(bot: Merchant) {
         let wantToBank = false
         if (bot.esize < 2) wantToBank = true
         if (!wantToBank && this.options.goldToHold && bot.gold > this.options.goldToHold) wantToBank = true
-        if (!wantToBank && checkOnlyEveryMS(`${bot.id}_banking`, 600_000)) wantToBank = true
+        const checkKey = `${bot.id}_banking`
+        if (!wantToBank && checkOnlyEveryMS(checkKey, 600_000, false)) wantToBank = true
 
         if (!wantToBank) return
 
@@ -1590,12 +1593,11 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                     }
 
                     if (wantToSellToNpc(this.options.itemConfig, packItem, bot)) {
-                        if (!packItem.level && config.sellPrice === "npc") {
-                            foundItemToSell = true
-                            await goAndWithdrawItem(bot, packName, packSlot, emptySlot)
-                            emptySlot = bot.getFirstEmptyInventorySlot()
-                            if (emptySlot === undefined) break bankSearch // No more empty slots
-                        }
+                        foundItemToSell = true
+                        await goAndWithdrawItem(bot, packName, packSlot, emptySlot)
+                        emptySlot = bot.getFirstEmptyInventorySlot()
+                        if (emptySlot === undefined) break bankSearch // No more empty slots
+                        continue
                     }
 
                     if (wantToHold(this.options.itemConfig, { ...packItem, l: undefined }, bot)) {
@@ -1603,6 +1605,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                         await goAndWithdrawItem(bot, packName, packSlot, emptySlot)
                         emptySlot = bot.getFirstEmptyInventorySlot()
                         if (emptySlot === undefined) break bankSearch // No more empty slots
+                        continue
                     }
                 }
             }
@@ -1709,9 +1712,49 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             }
         }
 
-        // TODO: Look for items to compound
+        // Look for items to compound
         if (bot.esize >= 4) {
+            const itemCounts = await getItemCounts(bot.owner)
 
+            for (const [itemName, levelCounts] of itemCounts) {
+                const gInfo = AL.Game.G.items[itemName]
+                if (!gInfo.compound) continue // Not compoundable
+
+                const itemConfig = this.options.itemConfig[itemName]
+                countSearch:
+                for (const [itemLevel, countData] of levelCounts) {
+                    if (countData.inventorySpaces < 3) continue // We don't have enough to compound
+                    if (!wantToUpgrade(
+                        new Item({ name: itemName, level: itemLevel }, AL.Game.G),
+                        itemConfig,
+                        itemCounts)
+                    ) continue // We don't want to upgrade it at this level
+
+                    // Withdraw if we have enough to compound
+                    let numHave = bot.countItem(itemName, bot.items, { level: itemLevel, locked: false })
+                    if (numHave < 3) {
+                        let bankSlots: [BankPackName, number][] = []
+                        bankSearch:
+                        for (const [packName, packItems] of bot.getBankItems()) {
+                            for (const [packSlot, packItem] of packItems) {
+                                if (packItem.name !== itemName) continue // Wrong item
+                                if (packItem.level !== itemLevel) continue // Wrong level
+                                if (!wantToUpgrade(packItem, itemConfig, itemCounts)) continue // Something is special with this one
+                                bankSlots.push([packName, packSlot])
+                                if (bankSlots.length + numHave >= 3) break bankSearch
+                            }
+                        }
+                        if (numHave + bankSlots.length >= 3) {
+                            for (let num = 0; num < (3 - numHave); num++) {
+                                await goAndWithdrawItem(bot, bankSlots[num][0], bankSlots[num][1])
+                            }
+                            break countSearch
+                        }
+                    }
+                }
+
+                if (bot.esize < 4) break // Not enough space remaining
+            }
         }
 
         // Look for items to upgrade
@@ -1734,13 +1777,66 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             }
         }
 
-        // TODO: Look for items to craft
+        // Look for items to craft
         emptySlot = bot.getFirstEmptyInventorySlot()
         if (emptySlot) {
-            // TODO: Check if we have enough space for all the items needed to craft this
+            for (const key in this.options.itemConfig) {
+                const itmeName = key as ItemName
+                const config = this.options.itemConfig[itmeName]
+                if (!config.craft) continue // We don't want to craft it
+
+                const itemsNeeded = [...AL.Game.G.craft[itmeName].items]
+                const itemsFound: [BankPackName, number][] = []
+                bankSearch:
+                for (const [packName, packItems] of bot.getBankItems()) {
+                    for (const [packSlot, packItem] of packItems) {
+                        for (let i = 0; i < itemsNeeded.length; i++) {
+                            const needed = itemsNeeded[i]
+                            if (needed[1] !== packItem.name) continue // Wrong item
+                            if (needed[0] > (packItem.q ?? 1)) continue // Not enough
+                            if (needed[2] && packItem.level !== needed[2]) continue // Wrong level
+                            if (needed[2] === undefined && packItem.level) continue // Wrong level
+
+                            // We found one of the items needed to craft this item
+                            itemsFound.push([packName, packSlot])
+                            itemsNeeded.splice(i, 1)
+                            break
+                        }
+
+                        if (itemsNeeded.length === 0) break bankSearch // We found all the items
+                    }
+                }
+
+                if (
+                    itemsNeeded.length === 0 // We found everything
+                    && bot.esize >= itemsFound.length // We have enough space for everything
+                ) {
+                    for (const [packName, packSlot] of itemsFound) {
+                        await goAndWithdrawItem(bot, packName, packSlot)
+                    }
+                } else if (
+                    bot.esize >= itemsNeeded.length // We have enough space to buy the remaining items
+                ) {
+                    let canBuyRemainingFromNPC = true
+                    for (let i = 0; i < itemsNeeded.length; i++) {
+                        const itemNeeded = itemsNeeded[i]
+                        if (bot.canBuy(itemNeeded[1], { ignoreLocation: true })) continue
+                        canBuyRemainingFromNPC = false
+                        break
+                    }
+
+                    if (canBuyRemainingFromNPC) {
+                        for (const [packName, packSlot] of itemsFound) {
+                            await goAndWithdrawItem(bot, packName, packSlot)
+                        }
+                    }
+                }
+
+                if (bot.esize <= 0) break // No mre space
+            }
         }
 
-        // TODO: Look for items to exchange
+        // Look for items to exchange
         if (bot.esize >= 2) {
             emptySlot = bot.getFirstEmptyInventorySlot()
 
@@ -1750,28 +1846,13 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                     const config = this.options.itemConfig[packItem.name]
                     if (!config) continue
                     if (!config.exchange) continue
+                    if (config.exchangeAtLevel !== undefined && packItem.level !== config.exchangeAtLevel) continue
 
                     const stackSize = packItem.e ?? 1
-                    if (packItem.q < stackSize) continue // Not enough to exchange
+                    if ((packItem.q ?? 1) < stackSize) continue // Not enough to exchange
 
                     // Withdraw the exchangeables
-                    await bot.withdrawItem(packName, packSlot, emptySlot)
-
-                    if (packItem.q) {
-                        // Split them in to exchangable stacks
-                        while (bot.esize > 0) {
-                            const item = bot.items[emptySlot]
-                            if (!item) break // No item !?
-                            if (item.name !== packItem.name) break // Different item!?
-                            if (item.q < packItem.e) break // Not enough to exchange
-                            await bot.splitItem(emptySlot, stackSize)
-                        }
-                    }
-                    const item = bot.items[emptySlot]
-                    if (item && item.q !== stackSize) {
-                        // Put the rest back
-                        await bot.depositItem(emptySlot, packName, packSlot)
-                    }
+                    await goAndWithdrawItem(bot, packName, packSlot, emptySlot)
                     break bankSearch;
                 }
             }
@@ -1779,13 +1860,110 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
         // Move back to main
         await bot.smartMove("main")
+        setLastCheck(checkKey)
     }
 
     protected async goCheckInstances(bot: Merchant) {
         // Remove finished instances every minute
         if (checkOnlyEveryMS("cleanInstances", 60_000)) await cleanInstances()
+        if (
+            bot.serverData.region !== DEFAULT_REGION
+            || bot.serverData.name !== DEFAULT_IDENTIFIER
+        ) return // Only open instances on defautlt server
 
-        // TODO: Open instances
+        for (const key in this.options.enableInstanceProvider) {
+            const map = key as MapName
+            const checkKey = `${bot.id}_instance_check_${map}`
+            if (!checkOnlyEveryMS(checkKey, 300_000, false)) continue // Check every 5 minutes
+
+            // Check an existing instance
+            const instance = await AL.InstanceModel.findOne({
+                map: map,
+                in: { $nin: [...new Set(this.options.contexts.map((a) => a.bot.in))] }, // Ignore instances that any of our bots are currently in
+                serverIdentifier: bot.serverData.name,
+                serverRegion: bot.serverData.region,
+            })
+                .sort({ lastSeen: -1 })
+                .lean()
+                .exec()
+            if (instance) {
+                const gMap = (AL.Game.G.maps[map] as GMap)
+
+                // Move to the spawn entrance. 
+                // If it's not valid, it will be removed from the DB in ALClient
+                await bot.smartMove({ map: map, in: instance.in, x: gMap.spawns[0][0], y: gMap.spawns[0][1] }).catch()
+                if (bot.map !== map) return this.goCheckInstances(bot) // Try again (if deleted, we will check another instance)
+
+                // Move to every spawn until we find a monster
+                let moveFailed = false
+                let monsterFound = false
+                for (const monsterSpawn of gMap.monsters) {
+                    const x = (monsterSpawn.boundary[0] + monsterSpawn.boundary[2]) / 2
+                    const y = (monsterSpawn.boundary[1] + monsterSpawn.boundary[3]) / 2
+                    await bot.smartMove(
+                        { map: map, x: x, y: y },
+                        {
+                            getWithin: 400,
+                            numAttempts: 3,
+                            stopIfTrue: async () => bot.getEntity() !== undefined,
+                        }).catch(() => { moveFailed = true })
+                    if (bot.getEntity()) {
+                        // We found something
+                        monsterFound = true
+                        break
+                    }
+                }
+
+                if (!moveFailed && !monsterFound) {
+                    // We looked at all spawns, but didn't find anything
+                    await AL.InstanceModel.deleteOne({ _id: instance._id }).lean().exec()
+                    await AL.EntityModel.deleteMany({ in: instance.in, serverIdentifier: instance.serverIdentifier, serverRegion: instance.serverRegion }).lean().exec()
+                }
+            }
+
+            // Open a new instances
+            const maxInstances = this.options.enableInstanceProvider[map].maxInstances
+            if (maxInstances) {
+                const numInstances = await AL.InstanceModel.count({
+                    map: map,
+                    serverIdentifier: bot.serverData.name,
+                    serverRegion: bot.serverData.region,
+                }).exec()
+                if (numInstances >= maxInstances) {
+                    setLastCheck(checkKey)
+                    continue // Already have plenty open
+                }
+            }
+
+            const item = getKeyForCrypt(map)
+            if (!bot.hasItem(item)) {
+                if (bot.esize <= 0) continue // No space for this item
+
+                // Get a key from the bank
+                await bot.smartMove(bankingPosition)
+                bankSearch:
+                for (const [packName, packItems] of bot.getBankItems()) {
+                    for (const [packSlot, packItem] of packItems) {
+                        if (packItem.name !== item) continue
+                        await goAndWithdrawItem(bot, packName, packSlot)
+                        break bankSearch // We got it
+                    }
+                }
+
+                if (!bot.hasItem(item)) {
+                    // We don't have any keys for this crypt
+                    setLastCheck(checkKey)
+                    continue
+                }
+            }
+
+            await bot.smartMove(map)
+            if (bot.map !== map) return this.goCheckInstances(bot) // Try again
+            await addCryptMonstersToDB(bot, map, bot.in)
+
+            // We finished checking for this instance
+            setLastCheck(checkKey)
+        }
     }
 
     protected async goCraft(bot: Merchant) {
@@ -2043,12 +2221,8 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         // Wait if we're on cooldown
         if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
 
-        console.debug("MINE !?")
         await bot.mine()
-        if (!bot.isOnCooldown("mining")) {
-            console.debug("KEEP MINING !?")
-            return this.goMining(bot) // Keep mining
-        }
+        if (!bot.isOnCooldown("mining")) return this.goMining(bot) // Keep mining
     }
 
     protected async goMluck(bot: Merchant) {
