@@ -60,7 +60,7 @@ export class MerchantDestroyStrategy extends DestroyStrategy<Merchant> {
             for (const craftableItem of (["pickaxe", "rod"] as ItemName[])) {
                 if (bot.hasItem(craftableItem)) continue // We have the item in our inventory
                 if (bot.isEquipped(craftableItem)) continue // We have the item equipped
-                if (!AL.Game.G.craft.rod.items.some(i => i[1] === item.name)) continue // This item isn't needed to craft it
+                if (!AL.Game.G.craft[craftableItem].items.some(i => i[1] === item.name)) continue // This item isn't needed to craft it
 
                 continue // We need the item to craft
             }
