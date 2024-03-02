@@ -861,7 +861,6 @@ const startMerchantContext = async () => {
     }
     const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, defaultNewMerchantStrategyOptions)
-    CONTEXT.applyStrategy(debugStrategy)
     CONTEXT.applyStrategy(adminCommandStrategy)
     CONTEXT.applyStrategy(guiStrategy)
     CONTEXT.applyStrategy(privateSellStrategy)
