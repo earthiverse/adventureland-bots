@@ -51,6 +51,7 @@ export class MerchantDestroyStrategy extends DestroyStrategy<Merchant> {
     protected async destroy(bot: Merchant): Promise<void> {
         const destroyPromises = []
 
+        destroySearch:
         for (let [slot, item] of bot.getItems()) {
             const config = this.options.itemConfig[item.name]
             if (!config) continue // No config -> don't destroy
@@ -62,7 +63,7 @@ export class MerchantDestroyStrategy extends DestroyStrategy<Merchant> {
                 if (bot.isEquipped(craftableItem)) continue // We have the item equipped
                 if (!AL.Game.G.craft[craftableItem].items.some(i => i[1] === item.name)) continue // This item isn't needed to craft it
 
-                continue // We need the item to craft
+                continue destroySearch // We need the item to craft
             }
 
             destroyPromises.push(bot.destroy(slot))
