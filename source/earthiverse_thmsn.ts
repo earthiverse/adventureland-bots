@@ -14,7 +14,7 @@ import AL, {
     Attribute,
 } from "alclient"
 import {
-    DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS,
+    defaultNewMerchantStrategyOptions,
     startMerchant,
 } from "./merchant/strategy.js"
 import { filterContexts, Strategist, Strategy } from "./strategy_pattern/context.js"
@@ -34,7 +34,7 @@ import { Config, constructSetups, Setups } from "./strategy_pattern/setups/base.
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
 import { NewSellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
-import { DEFAULT_IDENTIFIER, DEFAULT_ITEMS_TO_HOLD, DEFAULT_REGION } from "./base/defaults.js"
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
 import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
@@ -59,7 +59,7 @@ AL.Constants.SPECIAL_MONSTERS.push(...BEE_DUNGEON_MONSTERS)
 for (const region in AL.Game.servers) {
     for (const id in AL.Game.servers[region]) {
         console.debug(`before: ${AL.Game.servers[region][id].addr}`)
-        AL.Game.servers[region][id].addr = 'thmsn.adventureland.community'
+        AL.Game.servers[region][id].addr = "thmsn.adventureland.community"
         console.debug(`after: ${AL.Game.servers[region][id].addr}`)
     }
 }
@@ -92,8 +92,8 @@ const PRIEST = "earthPri"
 const PARTY_LEADER = RANGER
 const PARTY_ALLOWLIST = ["earthiverse", "earthMag", "earthPri", "earthWar"]
 
-let TARGET_REGION: ServerRegion = DEFAULT_REGION
-let TARGET_IDENTIFIER: ServerIdentifier = DEFAULT_IDENTIFIER
+const TARGET_REGION: ServerRegion = DEFAULT_REGION
+const TARGET_IDENTIFIER: ServerIdentifier = DEFAULT_IDENTIFIER
 
 /** My characters */
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
@@ -224,8 +224,8 @@ class AdminCommandStrategy implements Strategy<PingCompensatedCharacter> {
 const adminCommandStrategy = new AdminCommandStrategy()
 
 const currentSetups = new Map<
-    Strategist<PingCompensatedCharacter>,
-    { attack: Strategy<PingCompensatedCharacter>; move: Strategy<PingCompensatedCharacter> }
+Strategist<PingCompensatedCharacter>,
+{ attack: Strategy<PingCompensatedCharacter>; move: Strategy<PingCompensatedCharacter> }
 >()
 const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], setups: Setups) => {
     // Setup a list of ready contexts
@@ -625,13 +625,7 @@ const startMerchantContext = async () => {
     }
     const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
     startMerchant(CONTEXT, CONTEXTS, {
-        ...DEFAULT_MERCHANT_MOVE_STRATEGY_OPTIONS,
-        debug: true,
-        enableOffload: {
-            esize: 20,
-            goldToHold: 100_000,
-            itemsToHold: DEFAULT_ITEMS_TO_HOLD,
-        },
+        ...defaultNewMerchantStrategyOptions,
         enableInstanceProvider: {
             "bee_dungeon": {
                 maxInstances: 1
