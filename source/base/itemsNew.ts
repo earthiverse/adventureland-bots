@@ -158,10 +158,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         craft: true
     },
     "blade": {
-        destroyBelowLevel: 1
+        // destroyBelowLevel: 1
+        sellExcess: 5,
+        upgradeUntilLevel: 0
     },
     "bow": {
-        destroyBelowLevel: 1
+        // destroyBelowLevel: 1
+        sellExcess: 5,
+        upgradeUntilLevel: 0
     },
     "bowofthedead": {
         destroyBelowLevel: 1
@@ -200,7 +204,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellExcess: 5
     },
     "claw": {
-        destroyBelowLevel: 1
+        // destroyBelowLevel: 1
+        sellExcess: 5,
+        upgradeUntilLevel: 0
     },
     "coat": {
         destroyBelowLevel: 1
@@ -375,11 +381,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 9,
     },
     "hpbelt": {
-        upgradeUntilLevel: 2
+        upgradeUntilLevel: 2,
+        sellExcess: 10
     },
     "hpot0": {
-        sell: true,
-        sellPrice: "npc"
+        // sell: true,
+        // sellPrice: "npc"
+        sellExcess: 9999
     },
     "iceskates": {
         destroyBelowLevel: 1
@@ -426,8 +434,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellPrice: 250_000
     },
     "mpot0": {
-        sell: true,
-        sellPrice: "npc"
+        // sell: true,
+        // sellPrice: "npc"
+        sellExcess: 9999
     },
     "mushroomstaff": {
         destroyBelowLevel: 1
@@ -504,7 +513,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         exchange: true
     },
     "shoes": {
-        destroyBelowLevel: 1
+        // destroyBelowLevel: 1
+        sellExcess: 5,
+        upgradeUntilLevel: 0
     },
     "shoes1": {
         destroyBelowLevel: 1
@@ -758,12 +769,11 @@ export function wantToSellToNpc(itemConfig: ItemConfig, item: Item, bot: Charact
     if (!config.sell) return false // Don't want to sell
 
     const npcValue = item.calculateNpcValue()
-    if (config.sellPrice === "npc") return true
+    if (config.sellPrice === "npc" && (item.level ?? 0) === 0) return true
     if (typeof config.sellPrice === "number" && npcValue >= config.sellPrice) return true
     if (config.sellPrice[item.level] && npcValue >= config.sellPrice[item.level]) return true
 
     // TODO: Add logic to check if there are players buying for more than NPC
-
     return false
 }
 
@@ -787,27 +797,24 @@ export function wantToUpgrade(item: Item, itemConfig: UpgradeConfig, itemCounts:
         numItem += levelCount.q
     }
 
-    // TODO: Add `.class` to ALClient's `Item`
-    const gItem = AL.Game.G.items[item.name]
-
     // Count how many we would like to have to equip all of our characters with it
     let classMultiplier = 4
-    if (gItem.class?.length == 1) {
-        if (gItem.class[0] == "merchant") {
+    if (item.class?.length == 1) {
+        if (item.class[0] == "merchant") {
             classMultiplier = 1
         } else {
             classMultiplier = 3
         }
     }
     let numEquippableMultiplier = 1
-    if (gItem.type == "ring" || gItem.type == "earring") {
+    if (item.type == "ring" || item.type == "earring") {
         numEquippableMultiplier = 2
     } else {
         for (const characterType in AL.Game.G.classes) {
             const cType = characterType as CharacterType
             const gClass = AL.Game.G.classes[cType]
-            if (!gItem.class?.includes(cType)) continue // This weapon can't be used on this character type
-            if (gClass.mainhand[gItem.wtype] && gClass.offhand[gItem.wtype]) {
+            if (!item.class?.includes(cType)) continue // This weapon can't be used on this character type
+            if (gClass.mainhand[item.wtype] && gClass.offhand[item.wtype]) {
                 // We can equip two of these on some character type
                 numEquippableMultiplier = 2
                 break
@@ -911,6 +918,17 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
             if (gCraft === undefined) {
                 console.warn(`${itemName} is not craftable, removing 'craft'`)
                 delete config.craft
+            } else {
+                for (const [, itemName2, itemLevel] of gCraft.items) {
+                    const config2 = itemConfig[itemName2]
+                    if (!config2) continue // No config for this requirement
+                    if (config2.sell && config2.sellPrice === "npc") {
+                        console.warn(`${itemName} requires ${itemName2} to craft, but we are selling ${itemName2}.`)
+                    }
+                    if (config2.destroyBelowLevel) {
+                        console.warn(`${itemName} requires ${itemName2} to craft, but we are destroying ${itemName2}.`)
+                    }
+                }
             }
         }
 
