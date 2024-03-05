@@ -5,8 +5,9 @@
     },
     "extends": [
         "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:@typescript-eslint/eslint-recommended"
+        "plugin:@typescript-eslint/recommended-type-checked"
     ],
     "globals": {
         "Atomics": "readonly",
@@ -15,16 +16,12 @@
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": 2018,
+        "project": ["./tsconfig.json"],
         "sourceType": "module"
     },
-    "plugins": [
-        "@typescript-eslint"
-    ],
+    "plugins": ["@typescript-eslint"],
     "rules": {
-        "array-bracket-spacing": [
-            "error",
-            "never"
-        ],
+        "array-bracket-spacing": ["error", "never"],
         "block-spacing": "error",
         "comma-spacing": [
             "error",
@@ -33,14 +30,8 @@
                 "after": true
             }
         ],
-        "@typescript-eslint/indent": [
-            "error",
-            4
-        ],
-        "func-call-spacing": [
-            "error",
-            "never"
-        ],
+        "@typescript-eslint/indent": ["error", 4],
+        "func-call-spacing": ["error", "never"],
         "keyword-spacing": [
             "error",
             {
@@ -54,10 +45,7 @@
                 "beforeColon": false
             }
         ],
-        "linebreak-style": [
-            "error",
-            "linux"
-        ],
+        "linebreak-style": ["error", "unix"],
         "no-multi-spaces": "error",
         "no-tabs": [
             "error",
@@ -66,24 +54,18 @@
             }
         ],
         "no-trailing-spaces": "error",
-        "object-curly-spacing": [
-            "error",
-            "always"
-        ],
-        "quotes": [
-            "error",
-            "double"
-        ],
-        "semi": [
-            "error",
-            "never"
-        ],
+        "object-curly-spacing": ["error", "always"],
+        "quotes": ["error", "double"],
+        "semi": ["error", "never"],
         "space-infix-ops": "error",
-        "space-in-parens": [
-            "error",
-            "never"
-        ],
+        "space-in-parens": ["error", "never"],
         "space-unary-ops": "error",
+        "@typescript-eslint/no-misused-promises": [
+            "error",
+            {
+                "checksConditionals": false
+            }
+        ],
         "@typescript-eslint/sort-type-union-intersection-members": "warn",
         "@typescript-eslint/type-annotation-spacing": [
             "error",
