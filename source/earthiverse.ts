@@ -301,10 +301,7 @@ class AdminCommandStrategy implements Strategy<PingCompensatedCharacter> {
 }
 const adminCommandStrategy = new AdminCommandStrategy()
 
-const currentSetups = new Map<
-    Strategist<PingCompensatedCharacter>,
-    { attack: Strategy<PingCompensatedCharacter>; move: Strategy<PingCompensatedCharacter> }
->()
+const currentSetups = new Map<Strategist<PingCompensatedCharacter>, { attack: Strategy<PingCompensatedCharacter>; move: Strategy<PingCompensatedCharacter> }>()
 const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], setups: Setups) => {
     // Setup a list of ready contexts
     const setupContexts = filterContexts(contexts)

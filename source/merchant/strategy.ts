@@ -1524,7 +1524,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
     }
 
-    protected async doBanking(bot: Merchant) {
+    protected async doBanking(bot: Merchant): Promise<void> {
         let wantToBank = false
         if (bot.esize < 2) wantToBank = true
         if (!wantToBank && this.options.goldToHold && bot.gold > this.options.goldToHold) wantToBank = true
@@ -1730,9 +1730,9 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                     ) continue // We don't want to upgrade it at this level
 
                     // Withdraw if we have enough to compound
-                    let numHave = bot.countItem(itemName, bot.items, { level: itemLevel, locked: false })
+                    const numHave = bot.countItem(itemName, bot.items, { level: itemLevel, locked: false })
                     if (numHave < 3) {
-                        let bankSlots: [BankPackName, number][] = []
+                        const bankSlots: [BankPackName, number][] = []
                         bankSearch:
                         for (const [packName, packItems] of bot.getBankItems()) {
                             for (const [packSlot, packItem] of packItems) {
@@ -1852,7 +1852,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
                     // Withdraw the exchangeables
                     await goAndWithdrawItem(bot, packName, packSlot, emptySlot)
-                    break bankSearch;
+                    break bankSearch
                 }
             }
         }
@@ -1862,7 +1862,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         setLastCheck(checkKey)
     }
 
-    protected async goCheckInstances(bot: Merchant) {
+    protected async goCheckInstances(bot: Merchant): Promise<void> {
         // Remove finished instances every minute
         if (checkOnlyEveryMS("cleanInstances", 60_000)) await cleanInstances()
         if (
@@ -1888,7 +1888,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             if (instance) {
                 const gMap = (AL.Game.G.maps[map] as GMap)
 
-                // Move to the spawn entrance. 
+                // Move to the spawn entrance
                 // If it's not valid, it will be removed from the DB in ALClient
                 await bot.smartMove({ map: map, in: instance.in, x: gMap.spawns[0][0], y: gMap.spawns[0][1] })
                 if (bot.map !== map) return this.goCheckInstances(bot) // Try again (if deleted, we will check another instance)
@@ -2018,7 +2018,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
     }
 
-    protected async goDeliverReplenishables(bot: Merchant) {
+    protected async goDeliverReplenishables(bot: Merchant): Promise<void> {
         for (const friendContext of filterContexts(this.options.contexts, {
             owner: bot.owner,
             serverData: bot.serverData,
@@ -2056,7 +2056,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
     }
 
-    protected async goExchange(bot: Merchant) {
+    protected async goExchange(bot: Merchant): Promise<void> {
         for (const [slot, item] of bot.getItems()) {
             const config = this.options.itemConfig[item.name]
             if (!config) continue // No config
@@ -2075,7 +2075,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
     }
 
-    protected async goFishing(bot: Merchant) {
+    protected async goFishing(bot: Merchant): Promise<void> {
         if (!bot.canUse("fishing", { ignoreEquipped: true, ignoreLocation: true })) return // We can't fish
 
         if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
@@ -2156,7 +2156,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         if (!bot.isOnCooldown("fishing")) return this.goFishing(bot) // Keep fishing
     }
 
-    protected async goGetHolidaySpirit(bot: Merchant) {
+    protected async goGetHolidaySpirit(bot: Merchant): Promise<void> {
         if (!bot.S.holidayseason) return // Not holiday season
         if (bot.s.holidayspirit) return // We already have it
 
@@ -2164,7 +2164,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         await bot.getHolidaySpirit()
     }
 
-    protected async goGetItemsFromContexts(bot: Merchant) {
+    protected async goGetItemsFromContexts(bot: Merchant): Promise<void> {
         if (bot.esize <= 1) return // We are low on space
 
         for (const friendContext of filterContexts(this.options.contexts, {
@@ -2206,7 +2206,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
     }
 
-    protected async goMining(bot: Merchant) {
+    protected async goMining(bot: Merchant): Promise<void> {
         if (!bot.canUse("mining", { ignoreEquipped: true, ignoreLocation: true })) return // We can't mine
         if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) {
             // Check the bank for a pickaxe
@@ -2292,7 +2292,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         if (!bot.isOnCooldown("mining")) return this.goMining(bot) // Keep mining
     }
 
-    protected async goMluck(bot: Merchant) {
+    protected async goMluck(bot: Merchant): Promise<void> {
         if (!this.options.enableMluck) return // Don't want to mluck
         if (!this.options.enableMluck.travel) return // Don't want to travel
         if (!bot.canUse("mluck", { ignoreCooldown: true, ignoreLocation: true, ignoreMP: true })) return // Can't mluck
@@ -2351,9 +2351,9 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             )
                 .lean()
                 .exec()
-            if (other) {
+            if (other && Tools.distance(bot, other) > (AL.Constants.NPC_INTERACTION_DISTANCE - 50)) {
                 await bot.smartMove(other, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
-                if (!bot.players[other.id]) {
+                if (!bot.players[other.name]) {
                     // They moved somewhere, try again
                     return this.goMluck(bot)
                 }

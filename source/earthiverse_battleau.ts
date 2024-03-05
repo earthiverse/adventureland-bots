@@ -14,7 +14,7 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: false })
 // Hack to fix URLs
 for (const region in AL.Game.servers) {
     for (const id in AL.Game.servers[region]) {
-        AL.Game.servers[region][id].addr = AL.Game.servers[region][id].addr.replace('aud1.', '')
+        AL.Game.servers[region][id].addr = AL.Game.servers[region][id].addr.replace("aud1.", "")
     }
 }
 
@@ -58,9 +58,9 @@ const options: RunnerOptions = {
 }
 
 for (const character of ["earthiverse", "earthMag", "earthPri", "earthMer"]) {
-    startRunner(await AL.Game.startCharacter(character, "US", "I"), options)
+    startRunner(await AL.Game.startCharacter(character, "US", "I"), options).catch(console.error)
 }
 
 for (const character of ["earthRog"]) {
-    startRunner(await AL.Game.startCharacter(character, "AU" as ServerRegion, "I"), options)
+    startRunner(await AL.Game.startCharacter(character, "AU" as ServerRegion, "I"), options).catch(console.error)
 }

@@ -25,7 +25,7 @@ import { NewSellStrategy } from "./strategies/sell.js"
 import { ToggleStandStrategy } from "./strategies/stand.js"
 import { TrackerStrategy } from "./strategies/tracker.js"
 import { DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "../base/defaults.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig } from "../base/itemsNew.js"
+import { ItemConfig } from "../base/itemsNew.js"
 
 // Variables
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
@@ -71,10 +71,7 @@ export type RunnerOptions = {
     merchantOverrides?: Partial<MerchantMoveStrategyOptions>
 }
 
-const currentSetups = new Map<
-    Strategist<PingCompensatedCharacter>,
-    Strategy<PingCompensatedCharacter>[]
->()
+const currentSetups = new Map<Strategist<PingCompensatedCharacter>, Strategy<PingCompensatedCharacter>[]>()
 const swapStrategies = (context: Strategist<PingCompensatedCharacter>, strategies: Strategy<PingCompensatedCharacter>[]) => {
     // Remove old strategies that aren't in the list
     for (const strategy of currentSetups.get(context) ?? []) {
@@ -99,7 +96,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
 
     if (options.ephemeral?.check && (!(await options.ephemeral.check()))) {
         // Prevent from starting for a minute
-        setTimeout(() => { startRunner(character, options) }, getMsToNextMinute() + options.ephemeral.buffer)
+        setTimeout(() => { startRunner(character, options).catch(console.error) }, getMsToNextMinute() + options.ephemeral.buffer)
         return
     }
 
