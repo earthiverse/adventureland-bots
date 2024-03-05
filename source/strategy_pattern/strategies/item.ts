@@ -1,6 +1,6 @@
 import AL, { ItemName, Merchant, PingCompensatedCharacter, Player } from "alclient"
 import { Strategy, LoopName, Loop, Strategist, filterContexts } from "../context.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, wantToHold, wantToSellToNpc, wantToUpgrade } from "../../base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, reduceCount, wantToHold, wantToSellToNpc, wantToUpgrade } from "../../base/itemsNew.js"
 
 export type ItemStrategyOptions = {
     itemConfig: ItemConfig
@@ -253,7 +253,11 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
             if (bot.canUse("massproduction")) await (bot as unknown as Merchant).massProduction()
 
-            // TODO: Remove from counts in case we fail
+            // Reduce counts just in case we fail
+            reduceCount(bot.owner, item)
+            reduceCount(bot.owner, item)
+            reduceCount(bot.owner, item)
+
             return bot.compound(items[0], items[1], items[2], cscrollSlot, offeringSlot)
         }
     }
@@ -289,7 +293,9 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
             if (bot.canUse("massproduction")) await (bot as unknown as Merchant).massProduction()
 
-            // TODO: Update counts in case we fail
+            // Reduce counts just in case we fail
+            reduceCount(bot.owner, item)
+
             return bot.upgrade(slot, scrollSlot, offeringSlot)
         }
     }

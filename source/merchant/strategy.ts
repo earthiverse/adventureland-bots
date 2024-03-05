@@ -49,7 +49,7 @@ import {
 import { BankItemPosition, goAndDepositItem, goAndWithdrawItem, locateEmptyBankSlots, locateItemsInBank, tidyBank } from "../base/banking.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, wantToDestroy, wantToHold, wantToSellToNpc, wantToUpgrade } from "../base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, reduceCount, wantToDestroy, wantToHold, wantToSellToNpc, wantToUpgrade } from "../base/itemsNew.js"
 
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
@@ -1524,10 +1524,6 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
     }
 
-    /**
-     * TODO: Add sellExcess logic
-     * TODO: Add craft logic
-     */
     protected async doBanking(bot: Merchant) {
         let wantToBank = false
         if (bot.esize < 2) wantToBank = true
@@ -1538,6 +1534,8 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         if (!wantToBank) return
 
         if (!bot.map.startsWith("bank")) await bot.smartMove(bankingPosition)
+
+        const itemCounts = await getItemCounts(bot.owner)
 
         // Deposit or withdraw gold to match what we want to hold
         const goldDifference = bot.gold - this.options.goldToHold
@@ -1554,7 +1552,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             }
 
             if (wantToHold(this.options.itemConfig, item, bot)) continue
-            if (wantToSellToNpc(this.options.itemConfig, item, bot)) continue
+            if (wantToSellToNpc(this.options.itemConfig, item, bot, itemCounts)) continue
 
             if (item.q) {
                 // It's stackable
@@ -1617,6 +1615,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 for (const [slot, item] of bot.getItems()) {
                     if (!wantToSellToNpc(this.options.itemConfig, item, bot)) continue
                     sellPromises.push(bot.sell(slot, item.q ?? 1))
+                    reduceCount(bot.owner, item)
                 }
                 await Promise.allSettled(sellPromises)
 
@@ -1891,7 +1890,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
                 // Move to the spawn entrance. 
                 // If it's not valid, it will be removed from the DB in ALClient
-                await bot.smartMove({ map: map, in: instance.in, x: gMap.spawns[0][0], y: gMap.spawns[0][1] }).catch()
+                await bot.smartMove({ map: map, in: instance.in, x: gMap.spawns[0][0], y: gMap.spawns[0][1] })
                 if (bot.map !== map) return this.goCheckInstances(bot) // Try again (if deleted, we will check another instance)
 
                 // Move to every spawn until we find a monster
@@ -1951,13 +1950,35 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 }
 
                 if (!bot.hasItem(item)) {
+                    // We didn't find a key in the bank, check our characters
+                    for (const friendContext of filterContexts(this.options.contexts, {
+                        owner: bot.owner,
+                        serverData: bot.serverData,
+                    })) {
+                        const friendBot = friendContext.bot
+                        if (friendBot === bot) continue // Ignore ourself
+                        if (!friendBot.hasItem(item)) continue // They don't have a key either
+
+                        // Let's go get a key from them
+                        await bot.smartMove(friendBot, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                        if (Tools.squaredDistance(bot, friendBot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return this.goCheckInstances(bot) // Try again
+
+                        // Get it
+                        const itemPos = friendBot.locateItem(item)
+                        if (itemPos === undefined) return this.goCheckInstances(bot) // They no longer have the item !?
+                        await friendBot.sendItem(bot.id, itemPos, friendBot.items[itemPos].q ?? 1)
+                        break
+                    }
+                }
+
+                if (!bot.hasItem(item)) {
                     // We don't have any keys for this crypt
                     setLastCheck(checkKey)
                     continue
                 }
             }
 
-            await bot.smartMove(map)
+            await bot.smartMove(map).catch()
             if (bot.map !== map) return this.goCheckInstances(bot) // Try again
             await addCryptMonstersToDB(bot, map, bot.in)
 
@@ -2056,6 +2077,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
     protected async goFishing(bot: Merchant) {
         if (!bot.canUse("fishing", { ignoreEquipped: true, ignoreLocation: true })) return // We can't fish
+
         if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
             // Check the bank for a rod
             await bot.smartMove(bankingPosition)
@@ -2070,7 +2092,30 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 if (!bot.hasItem("spidersilk", bot.items, { locked: false })) {
                     // Withdraw spidersilk
                     const spiderSilk = locateItemsInBank(bot, "spidersilk", { locked: false })
-                    if (!spiderSilk.length) return // We don't have spidersilk to craft with
+                    if (!spiderSilk.length) {
+                        // We didn't find spidersilk in the bank, check our characters
+                        for (const friendContext of filterContexts(this.options.contexts, {
+                            owner: bot.owner,
+                            serverData: bot.serverData,
+                        })) {
+                            const friendBot = friendContext.bot
+                            if (friendBot === bot) continue // Ignore ourself
+                            if (!friendBot.hasItem("spidersilk")) continue // They don't have spidersilk either
+
+                            // Let's go get spidersilk from them
+                            await bot.smartMove(friendBot, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                            if (Tools.squaredDistance(bot, friendBot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return this.goCheckInstances(bot) // Try again
+
+                            // Get it
+                            const itemPos = friendBot.locateItem("spidersilk")
+                            if (itemPos === undefined) return this.goFishing(bot) // They no longer have the item !?
+                            await friendBot.sendItem(bot.id, itemPos, friendBot.items[itemPos].q ?? 1)
+                            break
+                        }
+
+                        if (!bot.hasItem("spidersilk")) return // We couldn't get any
+                    }
+
                     await goAndWithdrawItem(bot, spiderSilk[0][0], spiderSilk[0][1][0])
                 }
 
@@ -2096,7 +2141,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
 
         // TODO: Find closest fishing spot
-        await bot.smartMove(mainFishingSpot, { costs: { transport: 9999 } })
+        await bot.smartMove(mainFishingSpot, { costs: { transport: 9999 } }).catch()
 
         if (!bot.isEquipped("rod")) {
             // Equip the rod
@@ -2142,7 +2187,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
             if (!wantToGo) continue
 
-            await bot.smartMove(friendBot, { getWithin: Constants.NPC_INTERACTION_DISTANCE })
+            await bot.smartMove(friendBot, { getWithin: Constants.NPC_INTERACTION_DISTANCE - 50 })
             if (AL.Tools.squaredDistance(bot, friendBot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
                 // They moved somewhere, try again
                 return this.goGetItemsFromContexts(bot)
@@ -2177,7 +2222,29 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 if (!bot.hasItem("spidersilk", bot.items, { locked: false })) {
                     // Withdraw spidersilk
                     const spiderSilk = locateItemsInBank(bot, "spidersilk", { locked: false })
-                    if (!spiderSilk.length) return // We don't have spidersilk to craft with
+                    if (!spiderSilk.length) {
+                        // We didn't find spidersilk in the bank, check our characters
+                        for (const friendContext of filterContexts(this.options.contexts, {
+                            owner: bot.owner,
+                            serverData: bot.serverData,
+                        })) {
+                            const friendBot = friendContext.bot
+                            if (friendBot === bot) continue // Ignore ourself
+                            if (!friendBot.hasItem("spidersilk")) continue // They don't have spidersilk either
+
+                            // Let's go get spidersilk from them
+                            await bot.smartMove(friendBot, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                            if (Tools.squaredDistance(bot, friendBot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return this.goCheckInstances(bot) // Try again
+
+                            // Get it
+                            const itemPos = friendBot.locateItem("spidersilk")
+                            if (itemPos === undefined) return this.goMining(bot) // They no longer have the item !?
+                            await friendBot.sendItem(bot.id, itemPos, friendBot.items[itemPos].q ?? 1)
+                            break
+                        }
+
+                        if (!bot.hasItem("spidersilk")) return // We couldn't get any
+                    }
                     await goAndWithdrawItem(bot, spiderSilk[0][0], spiderSilk[0][1][0])
                 }
 
@@ -2210,7 +2277,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
 
         // TODO: Find closest mining spot
-        await bot.smartMove(miningSpot, { costs: { transport: 9999 } })
+        await bot.smartMove(miningSpot, { costs: { transport: 9999 } }).catch()
 
         if (!bot.isEquipped("pickaxe")) {
             // Equip the pickaxe
@@ -2244,12 +2311,12 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             return true
         }
 
-        // Find instance characters to mluck
+        // Find context characters to mluck
         if (this.options.enableMluck.contexts) {
             for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
                 if (!shouldMluck(context.bot)) continue
 
-                await bot.smartMove(context.bot, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                await bot.smartMove(context.bot, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
                 if (
                     AL.Tools.squaredDistance(bot, context.bot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED
                     && shouldMluck(context.bot)
@@ -2285,7 +2352,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 .lean()
                 .exec()
             if (other) {
-                await bot.smartMove(other, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
+                await bot.smartMove(other, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
                 if (!bot.players[other.id]) {
                     // They moved somewhere, try again
                     return this.goMluck(bot)

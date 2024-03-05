@@ -761,11 +761,30 @@ export function wantToHold(itemConfig: ItemConfig, item: ItemData, bot: Characte
     return false
 }
 
-export function wantToSellToNpc(itemConfig: ItemConfig, item: Item, bot: Character): boolean {
+export function wantToSellToNpc(itemConfig: ItemConfig, item: Item, bot: Character, itemCounts: ItemCounts = null): boolean {
     if (wantToHold(itemConfig, item, bot)) return false
 
     const config = itemConfig[item.name]
     if (!config) return false // No config
+
+    if (config.sellExcess && itemCounts) {
+        const levelCounts = itemCounts.get(item.name)
+        if (levelCounts === undefined) return false // We don't have count information for this item
+
+        const entries = [...levelCounts.entries()]
+        entries.sort((a, b) => (b[0] ?? 0) - (a[0] ?? 0)) // Sort highest level first
+        let numItem = 0
+        for (const [level, countData] of entries) {
+            numItem += countData.q
+            if (numItem <= config.sellExcess) {
+                if (item.level && item.level >= level) return false // We don't have an excess at this or a higher level
+                continue // We don't have an excess yet
+            }
+            return true // We have an excess, we can sell this item
+        }
+        return false
+    }
+
     if (!config.sell) return false // Don't want to sell
 
     const npcValue = item.calculateNpcValue()
@@ -981,6 +1000,10 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
                     console.warn(`${itemName} has both 'sell' and 'destroyBelowLevel' set, removing 'sell: true'`)
                     delete config.sell
                 }
+                if (config.sellExcess) {
+                    console.warn(`${itemName} has both 'sell' and 'sellExcess' set, removing 'sell: true'`)
+                    delete config.sell
+                }
             } else if (Array.isArray(config.sellPrice)) {
                 for (const level in config.sellPrice) {
                     const sellPrice = config.sellPrice[level]
@@ -1025,7 +1048,7 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
     }
 }
 
-type LevelCounts = Map<number, {
+type LevelCounts = Map<number | undefined, {
     /** How many of this item @ this level do we have? */
     q: number
     /** How many spaces are the items taking up in inventory / bank space? */
@@ -1231,4 +1254,23 @@ export async function getItemCounts(owner: string): Promise<ItemCounts> {
 
     OWNER_ITEM_COUNTS.set(owner, countMap)
     return countMap
+}
+
+/**
+ * Reduces the count of the item. Useful to call before doing things that will/may
+ * alter our item counts
+ *
+ * @param owner 
+ * @param item 
+ * @returns 
+ */
+export function reduceCount(owner: string, item: ItemData) {
+    let countMap = OWNER_ITEM_COUNTS.get(owner)
+    if (!countMap) return // We don't have any owner data
+    let itemMap = countMap.get(item.name)
+    if (!itemMap) return // We don't have any item data
+    let countData = itemMap.get(item.level)
+    if (!countData) return // We don't have any count data
+    countData.inventorySpaces -= 1
+    countData.q -= item.q ?? 1
 }

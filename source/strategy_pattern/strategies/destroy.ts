@@ -1,6 +1,6 @@
 import AL, { Character, ItemName, Merchant } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig } from "../../base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, reduceCount } from "../../base/itemsNew.js"
 
 export type DestroyStrategyOptions = {
     itemConfig: ItemConfig
@@ -38,6 +38,7 @@ export class DestroyStrategy<Type extends Character> implements Strategy<Type> {
             if (config.destroyBelowLevel === undefined) continue // Don't want to destroy
             if (item.level >= config.destroyBelowLevel) continue // The item is too high level
 
+            reduceCount(bot.owner, item)
             destroyPromises.push(bot.destroy(slot))
         }
         await Promise.allSettled(destroyPromises)
@@ -66,6 +67,7 @@ export class MerchantDestroyStrategy extends DestroyStrategy<Merchant> {
                 continue destroySearch // We need the item to craft
             }
 
+            reduceCount(bot.owner, item)
             destroyPromises.push(bot.destroy(slot))
         }
         await Promise.allSettled(destroyPromises)

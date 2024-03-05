@@ -1,6 +1,6 @@
 import AL, { ItemName, Character, TradeSlotType } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, SellConfig, runSanityCheckOnItemConfig } from "../../base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, SellConfig, reduceCount, runSanityCheckOnItemConfig } from "../../base/itemsNew.js"
 
 export type SellStrategyOptions = {
     /**
@@ -189,6 +189,8 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
                 if (ourItemIndex === undefined) continue // We don't have any to sell
                 const ourItem = bot.items[ourItemIndex]
 
+                reduceCount(bot.owner, ourItem)
+
                 // Sell it
                 await bot.sellToMerchant(player.id, tradeSlot, wantedItem.rid, Math.min(ourItem.q ?? 1, wantedItem.q ?? 1)).catch(console.error)
             }
@@ -213,6 +215,8 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
                 const ourItem = bot.items[ourItemIndex]
 
                 // Sell it
+                reduceCount(bot.owner, ourItem)
+
                 await bot.sellToMerchant(player.id, tradeSlot, wantedItem.rid, ourItem.q ? Math.min(numWeHave - config.sellExcess, ourItem.q) : 1).catch(console.error)
             }
         }
@@ -240,6 +244,8 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
                 if (item.level ?? 0) continue // We're not selling this item if leveled
             }
 
+            reduceCount(bot.owner, item)
+
             await bot.sell(i, item.q ?? 1)
         }
 
@@ -250,6 +256,8 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
             if (config.sellExcess === undefined) continue // We don't want to sell
             const numWeHave = bot.countItem(item.name)
             if (numWeHave <= config.sellExcess) continue // We don't have an excess
+
+            reduceCount(bot.owner, item)
 
             await bot.sell(i, item.q ? Math.min(numWeHave - config.sellExcess, item.q) : 1)
         }
