@@ -1411,7 +1411,7 @@ export type NewMerchantStrategyOptions = {
     defaultPosition: IPosition
     goldToHold?: number
     enableInstanceProvider?: {
-        [T in MapName]?: {
+        [T in MapName | "bee_dungeon"]?: {
             maxInstances?: number
         }
     }
