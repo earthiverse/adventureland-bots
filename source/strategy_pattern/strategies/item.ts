@@ -1,4 +1,4 @@
-import AL, { ItemName, Merchant, PingCompensatedCharacter, Player } from "alclient"
+import AL, { Item, ItemName, Merchant, PingCompensatedCharacter, Player } from "alclient"
 import { Strategy, LoopName, Loop, Strategist, filterContexts } from "../context.js"
 import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, reduceCount, wantToHold, wantToSellToNpc, wantToUpgrade } from "../../base/itemsNew.js"
 
@@ -266,11 +266,22 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
         if (bot.map.startsWith("bank")) return // Can't upgrade in bank
         const itemCounts = await getItemCounts(bot.owner)
 
+        const itemsToUpgrade: [number, Item][] = []
+
         for (const [slot, item] of bot.getItems()) {
             if (!item.upgrade) continue // Not upgradable
 
             const itemConfig: UpgradeConfig = this.options.itemConfig[item.name]
             if (!wantToUpgrade(item, itemConfig, itemCounts)) continue
+
+            itemsToUpgrade.push([slot, item])
+        }
+
+        // Sort itemsToUpgrade lowest -> highest level, so we upgrade the lowest levels first
+        itemsToUpgrade.sort((a, b) => a[1].level - b[1].level)
+
+        for (const [slot, item] of itemsToUpgrade) {
+            const itemConfig: UpgradeConfig = this.options.itemConfig[item.name]
 
             let offering: ItemName
             if (itemConfig) {
