@@ -234,8 +234,8 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
             let offering: ItemName
             if (itemConfig) {
-                if (itemConfig.useOfferingFromLevel >= item.level) offering = "offering"
-                else if (itemConfig.usePrimlingFromLevel >= item.level) offering = "offeringp"
+                if (item.level >= itemConfig.useOfferingFromLevel) offering = "offering"
+                else if (item.level >= itemConfig.usePrimlingFromLevel) offering = "offeringp"
 
                 if (offering && !bot.hasItem(offering)) continue // We don't have the offering needed
             }
@@ -285,8 +285,8 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
             let offering: ItemName
             if (itemConfig) {
-                if (itemConfig.useOfferingFromLevel >= item.level) offering = "offering"
-                else if (itemConfig.usePrimlingFromLevel >= item.level) offering = "offeringp"
+                if (item.level >= itemConfig.useOfferingFromLevel) offering = "offering"
+                else if (item.level >= itemConfig.usePrimlingFromLevel) offering = "offeringp"
 
                 if (offering && !bot.hasItem(offering)) continue // We don't have the offering needed
             }
