@@ -11,7 +11,7 @@ export type BankItems = PackItems[]
 export type BankItemPosition = [BankPackName, number]
 
 /** Items with no `data` (i.e. not a cosmetic) or `p` (i.e. not special) */
-const GENERIC_ITEM = 'generic'
+const GENERIC_ITEM = "generic"
 
 const sortByPackNumberAsc = (a: PackItems, b: PackItems) => {
     const matchA = /^items(\d+)$/.exec(a[0])
@@ -28,7 +28,7 @@ export async function goAndDepositItem(bot: PingCompensatedCharacter, pack: Bank
     await bot.depositItem(inventoryPos, pack, packPos)
 }
 
-export async function goAndWithdrawItem(bot: PingCompensatedCharacter, pack: BankPackName, index: number, inventoryPos = bot.getFirstEmptyInventorySlot()) {
+export async function goAndWithdrawItem(bot: PingCompensatedCharacter, pack: BankPackName, index: number, inventoryPos = -1) {
     await bot.smartMove(pack, { getWithin: 9999 })
     await bot.withdrawItem(pack, index, inventoryPos)
 }

@@ -27,7 +27,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
     }
 
     public onApply(bot: Type) {
-        this.lootOnDrop = async (data: ChestData) => {
+        this.lootOnDrop = (data: ChestData) => {
             this.lootChest(bot, data).catch(console.error)
         }
         bot.socket.on("drop", this.lootOnDrop)

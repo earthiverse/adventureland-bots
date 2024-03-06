@@ -372,8 +372,8 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
             }
 
             if (
-                bot.isEquipped(ensureEquippedSlot.name)
-                || !bot.hasItem(ensureEquippedSlot.name, bot.items, ensureEquippedSlot.filters)
+                !bot.isEquipped(ensureEquippedSlot.name)
+                && !bot.hasItem(ensureEquippedSlot.name, bot.items, ensureEquippedSlot.filters)
             ) {
                 // We don't have the item
                 continue

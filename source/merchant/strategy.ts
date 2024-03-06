@@ -1333,7 +1333,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
         }
     }
 
-    protected async debug(bot: Merchant, message: string) {
+    protected debug(bot: Merchant, message: string) {
         if (!this.options.debug) return
         console.debug(`[${new Date().toISOString()}] [${bot.id}] DEBUG: ${message}`)
     }
@@ -1556,7 +1556,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
             if (item.q) {
                 // It's stackable
-                const stackableLocations = locateItemsInBank(bot, item.name, { quantityLessThan: AL.Game.G.items[item.name].s - item.q + 1 })
+                const stackableLocations = locateItemsInBank(bot, item.name, { quantityLessThan: AL.Game.G.items[item.name].s - item.q + 1, data: item.data })
                 if (stackableLocations.length) {
                     // We can stack it on an existing stack
                     await goAndDepositItem(bot, stackableLocations[0][0], -1, slot)
@@ -2063,7 +2063,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             if (!config.exchange) continue // We don't want to exchange it
             if (config.exchangeAtLevel !== undefined && item.level !== config.exchangeAtLevel) continue // We don't want to exchange it at this level
 
-            if ((item.e ?? 1) >= (item.q ?? 1)) continue // We don't have enough to exchange
+            if ((item.e ?? 1) > (item.q ?? 1)) continue // We don't have enough to exchange
             if (!bot.canExchange(item.name)) {
                 // We need to move to exchange
                 const npc = AL.Pathfinder.locateExchangeNPC(item.name)

@@ -39,8 +39,8 @@ export const IDLE_ATTACK_MONSTERS: MonsterName[] = ["arcticbee", "armadillo", "b
 export class BaseAttackStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
 
-    protected greedyOnEntities: (data: EntitiesData) => Promise<unknown>
-    protected stealOnAction: (data: ActionData) => Promise<unknown>
+    protected greedyOnEntities: (data: EntitiesData) => unknown
+    protected stealOnAction: (data: ActionData) => unknown
 
     protected botSort = new Map<string, (a: Entity, b: Entity) => boolean>()
     protected botEnsureEquipped = new Map<string, EnsureEquipped>()
@@ -79,7 +79,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         this.botSort.set(bot.id, sortPriority(bot, this.options.typeList))
 
         if (!this.options.disableKillSteal && !this.options.disableZapper) {
-            this.stealOnAction = async (data: ActionData) => {
+            this.stealOnAction = (data: ActionData) => {
                 if (!bot.canUse("zapperzap")) return
                 if (bot.s.town) return // Currently warping to town
 
@@ -96,12 +96,12 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
                 // Zap to try and kill steal the entity
                 this.preventOverkill(bot, target)
-                bot.zapperZap(data.target).catch(suppress_errors)
+                return bot.zapperZap(data.target).catch()
             }
             bot.socket.on("action", this.stealOnAction)
         }
         if (this.options.enableGreedyAggro) {
-            this.greedyOnEntities = async (data: EntitiesData) => {
+            this.greedyOnEntities = (data: EntitiesData) => {
                 if (data.monsters.length == 0) return // No monsters
                 if (this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets) return // Don't want any more targets
 
@@ -114,7 +114,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
                         if (AL.Game.G.monsters[monster.type].immune) continue // Can't damage immune monsters with zapperzap
                         bot.nextSkill.set("zapperzap", new Date(Date.now() + (bot.ping * 2)))
-                        return bot.zapperZap(monster.id)
+                        return bot.zapperZap(monster.id).catch()
                     }
                 }
                 // TODO: Refactor so this can be put in attack_warrior
@@ -125,7 +125,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
                         bot.nextSkill.set("taunt", new Date(Date.now() + (bot.ping * 2)))
-                        return (bot as unknown as Warrior).taunt(monster.id)
+                        return (bot as unknown as Warrior).taunt(monster.id).catch()
                     }
                 }
                 // TODO: Refactor so this can be put in attack_mage
@@ -148,7 +148,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                     }
                     if (cbursts.length) {
                         bot.nextSkill.set("cburst", new Date(Date.now() + (bot.ping * 2)))
-                        return (bot as unknown as Mage).cburst(cbursts)
+                        return (bot as unknown as Mage).cburst(cbursts).catch()
                     }
                 }
                 if (bot.canUse("attack")) {
@@ -158,7 +158,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > bot.range) continue
                         bot.nextSkill.set("attack", new Date(Date.now() + (bot.ping * 2)))
-                        return bot.basicAttack(monster.id)
+                        return bot.basicAttack(monster.id).catch()
                     }
                 }
             }
@@ -609,10 +609,10 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
         // If we could die due to attacks from incoming monsters
         let potentialIncomingDamage = 0
-        let multiplier = bot.calculateTargets()
-        multiplier['magical'] -= bot.mcourage
-        multiplier['physical'] -= bot.courage
-        multiplier['pure'] -= bot.pcourage
+        const multiplier = bot.calculateTargets()
+        multiplier["magical"] -= bot.mcourage
+        multiplier["physical"] -= bot.courage
+        multiplier["pure"] -= bot.pcourage
         for (const entity of bot.getEntities({ targetingMe: true })) {
             if (AL.Tools.distance(bot, entity) > entity.range + entity.speed) continue // Too far away to attack us
             let entityDamage = entity.calculateDamageRange(bot)[1]
