@@ -11,7 +11,7 @@ import { RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
 import { PartyHealStrategy } from "../strategy_pattern/strategies/partyheal.js"
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { GiveRogueSpeedStrategy } from "../strategy_pattern/strategies/rspeed.js"
-import { NewSellStrategy } from "../strategy_pattern/strategies/sell.js"
+import { SellStrategy } from "../strategy_pattern/strategies/sell.js"
 
 import bodyParser from "body-parser"
 import cors from "cors"
@@ -123,7 +123,7 @@ const partyHealStrategy = new PartyHealStrategy(CONTEXTS)
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 const respawnStrategy = new RespawnStrategy()
 const rspeedStrategy = new GiveRogueSpeedStrategy()
-const sellStrategy = new NewSellStrategy({
+const sellStrategy = new SellStrategy({
     itemConfig: CRABRAVE_ITEM_CONFIG
 })
 

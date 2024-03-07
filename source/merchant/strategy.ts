@@ -1378,7 +1378,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
     }
 }
 
-export async function startMerchant(
+export function startMerchant(
     context: Strategist<Merchant>,
     friends: Strategist<PingCompensatedCharacter>[],
     options?: NewMerchantStrategyOptions,

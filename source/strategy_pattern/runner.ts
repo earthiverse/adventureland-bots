@@ -21,7 +21,7 @@ import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategies/p
 import { PartyHealStrategy } from "./strategies/partyheal.js"
 import { RespawnStrategy } from "./strategies/respawn.js"
 import { GiveRogueSpeedStrategy } from "./strategies/rspeed.js"
-import { NewSellStrategy } from "./strategies/sell.js"
+import { SellStrategy } from "./strategies/sell.js"
 import { ToggleStandStrategy } from "./strategies/stand.js"
 import { TrackerStrategy } from "./strategies/tracker.js"
 import { DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "../base/defaults.js"
@@ -145,7 +145,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(new ItemStrategy({ contexts: CONTEXTS, itemConfig: options.itemConfig }))
-    context.applyStrategy(new NewSellStrategy({ itemConfig: options.itemConfig }))
+    context.applyStrategy(new SellStrategy({ itemConfig: options.itemConfig }))
 
     let moveStrategy: Strategy<PingCompensatedCharacter>
     if (character.ctype !== "merchant") {

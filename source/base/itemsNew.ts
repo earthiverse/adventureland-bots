@@ -968,7 +968,10 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
                     if (config2.sell && config2.sellPrice === "npc") {
                         console.warn(`${itemName} requires ${itemName2} to craft, but we are selling ${itemName2}.`)
                     }
-                    if (config2.destroyBelowLevel) {
+                    if (
+                        (itemLevel === undefined && config2.destroyBelowLevel)
+                        || (itemLevel < config2.destroyBelowLevel)
+                    ) {
                         console.warn(`${itemName} requires ${itemName2} to craft, but we are destroying ${itemName2}.`)
                     }
                 }

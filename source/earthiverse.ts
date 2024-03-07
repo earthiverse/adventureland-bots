@@ -1,5 +1,4 @@
 import AL, {
-    ItemName,
     Merchant,
     PingCompensatedCharacter,
     Priest,
@@ -43,7 +42,7 @@ import {
     getValentinesMonsterPriority,
 } from "./base/serverhop.js"
 import { randomIntFromInterval, sleep } from "./base/general.js"
-import { NewSellStrategy, SellStrategy } from "./strategy_pattern/strategies/sell.js"
+import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
 
 import bodyParser from "body-parser"
@@ -64,7 +63,7 @@ import { CRYPT_MONSTERS, getCryptWaitTime } from "./base/crypt.js"
 import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
 import { hasItemInBank } from "./base/items.js"
 import { DestroyStrategy, MerchantDestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
-import { DEFAULT_ITEM_CONFIG, REPLENISH_ITEM_CONFIG, adjustItemConfig } from "./base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, REPLENISH_ITEM_CONFIG, adjustItemConfig, runSanityCheckOnItemConfig } from "./base/itemsNew.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true, cheat: true })
@@ -125,28 +124,8 @@ const privateBuyStrategy = new BuyStrategy({
     enableBuyForProfit: true
 })
 adjustItemConfig(DEFAULT_ITEM_CONFIG)
-const publicBuyStrategy = new BuyStrategy({
-    contexts: PUBLIC_CONTEXTS,
-    itemConfig: REPLENISH_ITEM_CONFIG,
-})
 
-const privateSellStrategy = new NewSellStrategy()
-const PUBLIC_ITEMS_TO_SELL = new Map<ItemName, [number, number][]>([
-    ["cake", undefined],
-    ["carrotsword", undefined],
-    ["coat1", undefined],
-    ["gloves1", undefined],
-    ["gphelmet", undefined],
-    ["helmet1", undefined],
-    ["hpamulet", undefined],
-    ["hpbelt", undefined],
-    ["iceskates", undefined],
-    ["pants1", undefined],
-    ["phelmet", undefined],
-    ["shoes1", undefined],
-    ["stramulet", undefined],
-    ["vitearring", undefined],
-])
+const privateSellStrategy = new SellStrategy()
 
 //// Strategies
 // Debug
@@ -188,10 +167,6 @@ const homeServerStrategy = new HomeServerStrategy(DEFAULT_REGION, DEFAULT_IDENTI
 const privateItemStrategy = new ItemStrategy({
     contexts: PRIVATE_CONTEXTS,
     itemConfig: DEFAULT_ITEM_CONFIG,
-})
-const publicItemStrategy = new ItemStrategy({
-    contexts: PUBLIC_CONTEXTS,
-    itemConfig: DEFAULT_ITEM_CONFIG
 })
 
 let OVERRIDE_MONSTERS: MonsterName[]
@@ -798,9 +773,6 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
         context.applyStrategy(privateBuyStrategy)
         context.applyStrategy(privateSellStrategy)
         context.applyStrategy(privateItemStrategy)
-    } else {
-        context.applyStrategy(publicBuyStrategy)
-        context.applyStrategy(publicItemStrategy)
     }
 
     context.applyStrategy(homeServerStrategy)
@@ -974,10 +946,8 @@ class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> 
 const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 
 export type PublicSettings = {
-    sell?: {
-        sellMap: [ItemName, [number, number][]][]
-    }
-    buyAndUpgrade?: number
+    itemConfig?: ItemConfig
+    merchantConfig?: Partial<Pick<NewMerchantStrategyOptions, "defaultPosition" | "goldToHold" | "enableInstanceProvider">>
 }
 
 // Allow others to join me
@@ -986,9 +956,13 @@ const startPublicContext = async (
     userID: string,
     userAuth: string,
     characterID: string,
-    settings: PublicSettings,
+    settings: PublicSettings = {},
     attemptNum = 0,
 ) => {
+    if (settings.itemConfig) {
+        await runSanityCheckOnItemConfig(settings.itemConfig)
+    }
+
     // Remove stopped contexts
     for (let i = 0; i < ALL_CONTEXTS.length; i++) {
         const context = ALL_CONTEXTS[i]
@@ -1127,7 +1101,7 @@ const startPublicContext = async (
                     y: randomIntFromInterval(-50, 50),
                 },
                 goldToHold: 50_000_000,
-                itemConfig: DEFAULT_ITEM_CONFIG
+                itemConfig: settings?.itemConfig ?? REPLENISH_ITEM_CONFIG
             }
             if (context.bot.canUse("mluck", { ignoreCooldown: true, ignoreLocation: true, ignoreMP: true })) {
                 merchantOptions.enableMluck = {
@@ -1138,7 +1112,6 @@ const startPublicContext = async (
             }
             startMerchant(context as Strategist<Merchant>, PUBLIC_CONTEXTS, merchantOptions)
             context.applyStrategy(guiStrategy)
-            context.applyStrategy(publicItemStrategy)
             break
         }
         case "paladin": {
@@ -1170,11 +1143,9 @@ const startPublicContext = async (
     if (PARTY_ALLOWLIST.indexOf(bot.id) < 0) PARTY_ALLOWLIST.push(bot.id)
     context.applyStrategy(disconnectOnCommandStrategy)
 
-    context.applyStrategy(
-        new SellStrategy(
-            settings.sell?.sellMap ? { sellMap: new Map(settings.sell.sellMap) } : { sellMap: PUBLIC_ITEMS_TO_SELL },
-        ),
-    )
+    context.applyStrategy(new SellStrategy({ itemConfig: settings.itemConfig ?? REPLENISH_ITEM_CONFIG }))
+    context.applyStrategy(new ItemStrategy({ contexts: PUBLIC_CONTEXTS, itemConfig: settings.itemConfig ?? REPLENISH_ITEM_CONFIG }))
+    context.applyStrategy(new BuyStrategy({ contexts: PUBLIC_CONTEXTS, itemConfig: settings.itemConfig ?? REPLENISH_ITEM_CONFIG }))
 
     SETTINGS_CACHE[bot.id] = settings
     PUBLIC_CONTEXTS.push(context)
