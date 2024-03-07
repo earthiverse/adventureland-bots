@@ -2079,6 +2079,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
     protected async goFishing(bot: Merchant): Promise<void> {
         if (!bot.canUse("fishing", { ignoreEquipped: true, ignoreLocation: true })) return // We can't fish
+        if (bot.c.fishing) await sleep(bot.c.fishing.ms) // We're already fishing!?
 
         if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
             // Check the bank for a rod
@@ -2210,6 +2211,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
     protected async goMining(bot: Merchant): Promise<void> {
         if (!bot.canUse("mining", { ignoreEquipped: true, ignoreLocation: true })) return // We can't mine
+        if (bot.c.mining) await sleep(bot.c.mining.ms) // We're already mining!?
         if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) {
             // Check the bank for a pickaxe
             await bot.smartMove(bankingPosition)
