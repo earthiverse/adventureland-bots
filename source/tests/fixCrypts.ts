@@ -8,6 +8,7 @@ import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.j
 import { caveCryptEntrance, winterlandXmageEntrance } from "../base/locations.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
 import { XMAGE_MONSTERS } from "../strategy_pattern/setups/xmage.js"
+import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 
 const credentials = "../../credentials.json"
 const rogueName = "earthRog"
@@ -26,9 +27,10 @@ async function run() {
         serverRegion: serverRegion,
     }).sort({
         map: 1
-    }).lean().exec();
+    }).lean().exec()
 
     const context = new Strategist<Rogue>(rogue)
+    context.applyStrategy(new BaseStrategy())
     context.applyStrategy(new AlwaysInvisStrategy())
     context.applyStrategy(new RespawnStrategy())
     context.applyStrategy(new AvoidDeathStrategy())
@@ -49,7 +51,7 @@ async function run() {
     for (const instance of instances) {
         console.debug(`Trying to fix ${instance.map} ${instance.in} (${num}/${total})...`)
 
-        let found = new Map<MonsterName, Set<string>>()
+        const found = new Map<MonsterName, Set<string>>()
         let error = false
 
         const listener = (data: EntitiesData) => {
@@ -96,7 +98,7 @@ async function run() {
             num += 1
         }
 
-        if (instance.map === 'crypt') {
+        if (instance.map === "crypt") {
             // Top right of map
             await rogue.smartMove({
                 in: instance.in,
@@ -114,7 +116,7 @@ async function run() {
                 } catch (e) {
                     if (e.message?.startsWith("We don't have the required item to enter")) {
                         console.debug("Instance expired! Deleting...")
-                        prepareNext(true)
+                        await prepareNext(true)
                         continue
                     }
                 }
@@ -144,7 +146,7 @@ async function run() {
 
             // Exit the crypt
             await rogue.smartMove(caveCryptEntrance).catch(suppress_errors)
-        } else if (instance.map === 'winter_instance') {
+        } else if (instance.map === "winter_instance") {
             await rogue.smartMove({
                 in: instance.in,
                 map: instance.map,
@@ -163,7 +165,7 @@ async function run() {
             console.debug(`No monsters were found on ${instance.map} ${instance.in}, deleting...`)
             await prepareNext(true)
         } else {
-            prepareNext()
+            await prepareNext()
         }
     }
 
@@ -172,4 +174,4 @@ async function run() {
     AL.Database.disconnect()
 }
 
-run()
+await run()

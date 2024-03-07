@@ -1,5 +1,6 @@
 import AL, { Character, CharacterType, Item, ItemData, ItemName, NPCName } from "alclient"
 import { checkOnlyEveryMS } from "./general.js"
+import { TradeItem } from "alclient/build/TradeItem.js"
 
 // TODO: Figure out how to require buy_price if buy is set
 export type BuyConfig = {
@@ -761,8 +762,31 @@ export function wantToHold(itemConfig: ItemConfig, item: ItemData, bot: Characte
     return false
 }
 
+export function wantToSellToPlayer(itemConfig: ItemConfig, item: TradeItem, bot: Character) {
+    if (wantToHold(itemConfig, item, bot)) return false
+
+    const config = itemConfig[item.name]
+
+    if (!config) return false // No config
+    if (!config.sell) return false // We don't want to sell
+
+    if (typeof config.sellPrice === "number") {
+        if ((item.level ?? 0) > 0) return false // We're not selling this item if leveled
+        if (config.sellPrice > item.price) return false // We want more for it
+    } else if (config.sellPrice === "npc") {
+        if ((item.level ?? 0) > 0) return false // We're not selling this item if leveled
+        if (item.calculateNpcValue() > item.price) return false // We want more for it
+    } else {
+        if (!config.sellPrice[item.level ?? 0]) return false // We're not selling this item at this level
+        if (config.sellPrice[item.level ?? 0] > item.price) return false // We want more for it
+    }
+
+    return true
+}
+
 export function wantToSellToNpc(itemConfig: ItemConfig, item: Item, bot: Character, itemCounts: ItemCounts = null): boolean {
     if (wantToHold(itemConfig, item, bot)) return false
+    if (item.p) return false // We don't want to sell special items to NPCs
 
     const config = itemConfig[item.name]
     if (!config) return false // No config

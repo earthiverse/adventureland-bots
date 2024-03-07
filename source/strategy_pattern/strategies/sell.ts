@@ -1,6 +1,6 @@
 import AL, { ItemName, Character, TradeSlotType } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, SellConfig, reduceCount, runSanityCheckOnItemConfig } from "../../base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, SellConfig, reduceCount, runSanityCheckOnItemConfig, wantToSellToNpc, wantToSellToPlayer } from "../../base/itemsNew.js"
 
 export type SellStrategyOptions = {
     /**
@@ -145,19 +145,17 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
         this.options = options
 
         this.loops.set("sell", {
-            fn: async (bot: Type) => { await this.sell(bot) },
+            fn: async (bot: Type) => {
+                await this.sellToPlayers(bot)
+                await this.sellToNPCs(bot)
+            },
             interval: 1000
         })
     }
 
     public onApply(bot: Type) {
         // Ensure that we don't sell for less than we can get from an NPC
-        runSanityCheckOnItemConfig(this.options.itemConfig)
-    };
-
-    protected async sell(bot: Type) {
-        await this.sellToPlayers(bot)
-        await this.sellToNPCs(bot)
+        runSanityCheckOnItemConfig(this.options.itemConfig).catch(console.error)
     }
 
     protected async sellToPlayers(bot: Type) {
@@ -166,20 +164,7 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
         })
         for (const player of players) {
             for (const [tradeSlot, wantedItem] of player.getWantedItems()) {
-                const config: SellConfig = this.options.itemConfig[wantedItem.name]
-                if (!config) continue // Not in config
-                if (!config.sell) continue // We don't want to sell
-
-                if (typeof config.sellPrice === "number") {
-                    if ((wantedItem.level ?? 0) > 0) continue // We're not selling this item if leveled
-                    if (config.sellPrice > wantedItem.price) continue // We want more for it
-                } else if (config.sellPrice === "npc") {
-                    if ((wantedItem.level ?? 0) > 0) continue // We're not selling this item if leveled
-                    if (wantedItem.calculateNpcValue() > wantedItem.price) continue // We want more for it
-                } else {
-                    if (!config.sellPrice[wantedItem.level ?? 0]) continue // We're not selling this item at this level
-                    if (config.sellPrice[wantedItem.level ?? 0] > wantedItem.price) continue // We want more for it
-                }
+                if (!wantToSellToPlayer(this.options.itemConfig, wantedItem, bot)) continue // We don't want to sell it
 
                 const ourItemIndex = bot.locateItem(
                     wantedItem.name,
@@ -226,23 +211,7 @@ export class NewSellStrategy<Type extends Character> implements Strategy<Type> {
         if (!bot.canSell()) return
 
         for (const [i, item] of bot.getItems()) {
-            if (item.l) continue // Can't sell locked items
-            if (item.p) continue // Don't sell special items
-
-            const config: SellConfig = this.options.itemConfig[item.name]
-            if (!config) continue // Not in config
-            if (!config.sell) continue // We don't want to sell
-            const npcOffer = item.calculateNpcValue()
-
-            if (typeof config.sellPrice === "number") {
-                if (item.level ?? 0) continue // We're not selling this item if leveled
-                if (config.sellPrice > npcOffer) continue // We want more than NPC price
-            } else if (Array.isArray(config.sellPrice)) {
-                if (!config.sellPrice[item.level ?? 0]) continue // We're not selling this item at this level
-                if (config.sellPrice[item.level ?? 0] > npcOffer) continue // We want more than NPC price
-            } else if (config.sellPrice === "npc") {
-                if (item.level ?? 0) continue // We're not selling this item if leveled
-            }
+            if (!wantToSellToNpc(this.options.itemConfig, item, bot)) continue // We don't want to sell
 
             reduceCount(bot.owner, item)
 

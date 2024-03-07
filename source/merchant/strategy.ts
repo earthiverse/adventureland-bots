@@ -49,7 +49,8 @@ import {
 import { BankItemPosition, goAndDepositItem, goAndWithdrawItem, locateEmptyBankSlots, locateItemsInBank, tidyBank } from "../base/banking.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, reduceCount, wantToDestroy, wantToHold, wantToSellToNpc, wantToUpgrade } from "../base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, reduceCount, wantToDestroy, wantToHold, wantToSellToNpc, wantToSellToPlayer, wantToUpgrade } from "../base/itemsNew.js"
+import { TradeItem } from "alclient/build/TradeItem.js"
 
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
@@ -1474,6 +1475,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 // TODO: Buy and upgrade
                 // TODO: Deal finder
                 await this.goCheckInstances(bot).catch(console.error)
+                await this.goSellItems(bot).catch(console.error)
 
                 await bot.smartMove(this.options.defaultPosition)
             },
@@ -2297,6 +2299,10 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         if (!this.options.enableMluck.travel) return // Don't want to travel
         if (!bot.canUse("mluck", { ignoreCooldown: true, ignoreLocation: true, ignoreMP: true })) return // Can't mluck
 
+        // Travel to mluck
+        const key = `goMluck_${bot.serverData.region}${bot.serverData.name}`
+        if (checkOnlyEveryMS(key, 5_000)) return
+
         const canMluck = (other: Character | Player): boolean => {
             if (other.s.invis) return false // Can't mluck invsible players
             if (!other.s.mluck) return true // They don't have mluck
@@ -2329,14 +2335,14 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
         // Find other characters to mluck
         if (this.options.enableMluck.others && Database.connection) {
-            const other = await AL.PlayerModel.findOne(
+            const others = await AL.PlayerModel.find(
                 {
                     $or: [
                         { "s.mluck": undefined }, // They don't have mluck
                         { "s.mluck.f": { $ne: bot.id }, "s.mluck.strong": undefined }, // We can steal mluck
                     ],
                     "s.invis": undefined,
-                    lastSeen: { $gt: Date.now() - 30_000 },
+                    lastSeen: { $gt: Date.now() - 60_000 },
                     serverIdentifier: bot.server.name,
                     serverRegion: bot.server.region,
                 },
@@ -2351,30 +2357,161 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             )
                 .lean()
                 .exec()
-            if (other && Tools.distance(bot, other) > (AL.Constants.NPC_INTERACTION_DISTANCE - 50)) {
+
+            for (const other of others) {
                 await bot.smartMove(other, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
-                if (!bot.players[other.name]) {
-                    // They moved somewhere, try again
-                    return this.goMluck(bot)
-                }
             }
         }
+
+        setLastCheck(key)
     }
 
-    protected async joinGiveaways(bot: Merchant) {
-        const giveawayPromises: Promise<unknown>[] = []
-        for (const player of bot.getPlayers({ withinRange: AL.Constants.NPC_INTERACTION_DISTANCE })) {
-            for (const s in player.slots) {
-                const slot = s as TradeSlotType
-                const item = player.slots[slot]
-                if (!item) continue // Nothing in the slot
-                if (!item.giveaway) continue // Not a giveaway
-                if (item.list && item.list.includes(bot.id)) continue // We're already in the giveaway
-                giveawayPromises.push(bot.joinGiveaway(slot, player.id, item.rid))
+    protected async goSellItems(bot: Merchant): Promise<void> {
+        const key = `goSellItems_${bot.serverData.region}${bot.serverData.name}`
+        if (checkOnlyEveryMS(key, 60_000)) return // We've already checked recently
+
+        const buyingMerchants = await AL.PlayerModel.find({
+            lastSeen: { $gt: Date.now() - 120_000 },
+            serverIdentifier: bot.serverData.name,
+            serverRegion: bot.serverData.region,
+            $or: [
+                { "slots.trade1.b": true },
+                { "slots.trade2.b": true },
+                { "slots.trade3.b": true },
+                { "slots.trade4.b": true },
+                { "slots.trade5.b": true },
+                { "slots.trade6.b": true },
+                { "slots.trade7.b": true },
+                { "slots.trade8.b": true },
+                { "slots.trade9.b": true },
+                { "slots.trade10.b": true },
+                { "slots.trade11.b": true },
+                { "slots.trade12.b": true },
+                { "slots.trade13.b": true },
+                { "slots.trade14.b": true },
+                { "slots.trade15.b": true },
+                { "slots.trade16.b": true },
+                { "slots.trade17.b": true },
+                { "slots.trade18.b": true },
+                { "slots.trade19.b": true },
+                { "slots.trade20.b": true },
+                { "slots.trade21.b": true },
+                { "slots.trade22.b": true },
+                { "slots.trade23.b": true },
+                { "slots.trade24.b": true },
+                { "slots.trade25.b": true },
+                { "slots.trade26.b": true },
+                { "slots.trade27.b": true },
+                { "slots.trade28.b": true },
+                { "slots.trade29.b": true },
+                { "slots.trade30.b": true },
+            ],
+        }).lean().exec()
+
+        // Check if there's anything we want to sell
+        const itemCounts = await getItemCounts(bot.owner)
+        merchantSearch:
+        for (const buyingMerchant of buyingMerchants) {
+            for (const sN in buyingMerchant.slots) {
+                if (!sN.startsWith("trade")) continue // Not a trade slot
+                const slotName = sN as TradeSlotType
+                const slotData = buyingMerchant.slots[slotName]
+                if (!slotData) continue // No slot data
+                if (!slotData.b) continue // Not buying
+
+                const tradeItem = new TradeItem(slotData, AL.Game.G)
+                if (!wantToSellToPlayer(this.options.itemConfig, tradeItem, bot)) continue // We don't want to sell
+
+                // Check if we might have it in the bank
+                const levelCounts = itemCounts.get(slotData.name)
+                if (!levelCounts) continue // We don't have any
+                const countData = levelCounts.get(slotData.level)
+                if (!countData || countData.inventorySpaces <= 0) continue // We don't have any at the given level
+
+                // Check if we have it in the bank
+                await bot.smartMove(bankingPosition)
+                const itemsToSell = locateItemsInBank(bot, slotData.name, { level: slotData.level, locked: false, special: false })
+                if (itemsToSell.length === 0) continue // We don't have any
+
+                // Withdraw it
+                await goAndWithdrawItem(bot, itemsToSell[0][0], itemsToSell[0][1][0])
+
+                // Move to the merchant
+                await bot.smartMove(buyingMerchant, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+                await sleep(1000)
+                break merchantSearch
             }
         }
-        await Promise.allSettled(giveawayPromises)
 
-        // TODO: Find giveaways from merchants on this server
+        setLastCheck(key)
+    }
+
+    protected async joinGiveaways(bot: Merchant): Promise<void> {
+        // Join nearby giveaways
+        const joinNearby = async () => {
+            const giveawayPromises: Promise<unknown>[] = []
+            for (const player of bot.getPlayers({ withinRange: AL.Constants.NPC_INTERACTION_DISTANCE })) {
+                for (const s in player.slots) {
+                    const slot = s as TradeSlotType
+                    const item = player.slots[slot]
+                    if (!item) continue // Nothing in the slot
+                    if (!item.giveaway) continue // Not a giveaway
+                    if (item.list && item.list.includes(bot.id)) continue // We're already in the giveaway
+                    giveawayPromises.push(bot.joinGiveaway(slot, player.id, item.rid))
+                }
+            }
+            return Promise.allSettled(giveawayPromises)
+        }
+
+        await joinNearby()
+
+        // Travel to join giveaways
+        const key = `joinGiveaways_${bot.serverData.region}${bot.serverData.name}`
+        if (checkOnlyEveryMS(key, 60_000)) return
+        const giveawayMerchants = await AL.PlayerModel.find({
+            lastSeen: { $gt: Date.now() - 120_000 },
+            serverIdentifier: bot.serverData.name,
+            serverRegion: bot.serverData.region,
+            $or: [
+                { "slots.trade1.giveaway": true, "slots.trade1.list": { $ne: bot.id } },
+                { "slots.trade2.giveaway": true, "slots.trade2.list": { $ne: bot.id } },
+                { "slots.trade3.giveaway": true, "slots.trade3.list": { $ne: bot.id } },
+                { "slots.trade4.giveaway": true, "slots.trade4.list": { $ne: bot.id } },
+                { "slots.trade5.giveaway": true, "slots.trade5.list": { $ne: bot.id } },
+                { "slots.trade6.giveaway": true, "slots.trade6.list": { $ne: bot.id } },
+                { "slots.trade7.giveaway": true, "slots.trade7.list": { $ne: bot.id } },
+                { "slots.trade8.giveaway": true, "slots.trade8.list": { $ne: bot.id } },
+                { "slots.trade9.giveaway": true, "slots.trade9.list": { $ne: bot.id } },
+                { "slots.trade10.giveaway": true, "slots.trade10.list": { $ne: bot.id } },
+                { "slots.trade11.giveaway": true, "slots.trade11.list": { $ne: bot.id } },
+                { "slots.trade12.giveaway": true, "slots.trade12.list": { $ne: bot.id } },
+                { "slots.trade13.giveaway": true, "slots.trade13.list": { $ne: bot.id } },
+                { "slots.trade14.giveaway": true, "slots.trade14.list": { $ne: bot.id } },
+                { "slots.trade15.giveaway": true, "slots.trade15.list": { $ne: bot.id } },
+                { "slots.trade16.giveaway": true, "slots.trade16.list": { $ne: bot.id } },
+                { "slots.trade17.giveaway": true, "slots.trade17.list": { $ne: bot.id } },
+                { "slots.trade18.giveaway": true, "slots.trade18.list": { $ne: bot.id } },
+                { "slots.trade19.giveaway": true, "slots.trade19.list": { $ne: bot.id } },
+                { "slots.trade20.giveaway": true, "slots.trade20.list": { $ne: bot.id } },
+                { "slots.trade21.giveaway": true, "slots.trade21.list": { $ne: bot.id } },
+                { "slots.trade22.giveaway": true, "slots.trade22.list": { $ne: bot.id } },
+                { "slots.trade23.giveaway": true, "slots.trade23.list": { $ne: bot.id } },
+                { "slots.trade24.giveaway": true, "slots.trade24.list": { $ne: bot.id } },
+                { "slots.trade25.giveaway": true, "slots.trade25.list": { $ne: bot.id } },
+                { "slots.trade26.giveaway": true, "slots.trade26.list": { $ne: bot.id } },
+                { "slots.trade27.giveaway": true, "slots.trade27.list": { $ne: bot.id } },
+                { "slots.trade28.giveaway": true, "slots.trade28.list": { $ne: bot.id } },
+                { "slots.trade29.giveaway": true, "slots.trade29.list": { $ne: bot.id } },
+                { "slots.trade30.giveaway": true, "slots.trade30.list": { $ne: bot.id } },
+            ],
+        }).lean().exec()
+
+        for (const giveawayMerchant of giveawayMerchants) {
+            await bot.smartMove(giveawayMerchant, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+            const merchant = bot.players.get(giveawayMerchant.name)
+            if (merchant) await joinNearby()
+        }
+
+        setLastCheck(key)
     }
 }
