@@ -34,10 +34,10 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
             .filter((c) => c.ctype !== "merchant")
 
         // Ensure we have a fieldgen ready
-        const hasFieldGenInBank = await hasItemInBank(bot.owner, "fieldgen0")
         const groupHasFieldgen = this.groupHasFieldgen(friends)
         const placedFieldgen = this.getPlacedFieldgen(friends)
         if (!groupHasFieldgen && !placedFieldgen) {
+            const hasFieldGenInBank = await hasItemInBank(bot.owner, "fieldgen0")
             if (hasFieldGenInBank) {
                 // Have a bot go get a fieldgen
                 const closestBot = getClosestBotToPosition(bankingPosition, friends)
@@ -77,11 +77,14 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
         const xmage = await this.checkGoodData(bot, true)
 
         if (xmage) {
-            if (xmage.type === "xmagefi" && (
-                bot.ctype === "mage"
-                || this.options.disableCheckDB // We set this on our helpers, don't have helpers attack xmagefi
-            )) {
-                // Priest can't keep up with healing with three characters, so have the mage go to arctic bees
+            if (
+                xmage.type === "xmagefi"
+                && (
+                    bot.ctype === "mage"
+                    || this.options.disableCheckDB // We set this on our helpers, don't have helpers attack xmagefi
+                )
+            ) {
+                // Priest can't keep up with healing too many characters, so have the mage go to arctic bees
                 const arcticBee = bot.getEntity({ type: "arcticbee" })
                 if (!arcticBee) {
                     await bot.smartMove("arcticbee", { resolveOnFinalMoveStart: true })

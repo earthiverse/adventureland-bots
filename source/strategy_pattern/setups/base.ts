@@ -538,6 +538,6 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         // xmagefi: xmageSetup, NOT SAFE
         xmagefz: xmageSetup,
         xmagen: xmageSetup,
-        // xmagex: xmageSetup, POSSIBLY NOT SAFE
+        xmagex: xmageSetup,
     }
 }
