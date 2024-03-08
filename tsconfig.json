@@ -24,6 +24,7 @@
     "exclude": [
         "build",
         "node_modules",
-        "source/archive"
+        "source/archive",
+        "source/custom"
     ]
 }

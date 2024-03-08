@@ -387,6 +387,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
     const cryptSetup = constructCryptSetup(contexts)
     const osnakeSetup = constructOSnakeSetup(contexts)
     const xmageSetup = constructXMageSetup(contexts)
+    const rgooSetup = constructRGooSetup(contexts)
 
     return {
         a1: cryptSetup,
@@ -402,7 +403,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         bat: constructGenericSetup(contexts, ["bat", "goldenbat", "phoenix", "mvampire"], true),
         bbpompom: constructBBPomPomSetup(contexts),
         bee: constructBeeSetup(contexts),
-        bgoo: constructRGooSetup(contexts),
+        bgoo: rgooSetup,
         bigbird: constructBigBirdSetup(contexts),
         boar: constructBoarSetup(contexts),
         booboo: constructBooBooSetup(contexts),
@@ -447,7 +448,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         pppompom: constructPPPomPomSetup(contexts),
         prat: constructPRatSetup(contexts),
         rat: constructRatSetup(contexts),
-        rgoo: constructRGooSetup(contexts),
+        rgoo: rgooSetup,
         rharpy: constructRHarpySetup(contexts),
         scorpion: constructGenericSetup(contexts, ["scorpion", "phoenix"], true),
         skeletor: constructSkeletorSetup(contexts),
@@ -477,6 +478,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
     const cryptSetup = constructCryptHelperSetup(contexts)
     const osnakeSetup = constructOSnakeHelperSetup(contexts)
     const xmageSetup = constructXmageHelperSetup(contexts)
+    const rgooSetup = constructRGooHelperSetup(contexts)
 
     return {
         a1: cryptSetup,
@@ -492,7 +494,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         bat: constructGenericSetup(contexts, ["bat"]),
         bbpompom: constructGenericWithPriestSetup(contexts, ["bbpompom"]),
         bee: constructGenericSetup(contexts, ["bee"]),
-        bgoo: constructGenericSetup(contexts, ["rgoo", "bgoo"]),
+        bgoo: rgooSetup,
         boar: constructGenericWithPriestSetup(contexts, ["boar"]),
         bscorpion: constructBScorpionHelperSetup(contexts),
         crab: constructGenericSetup(contexts, ["crab", "phoenix"]),
@@ -522,7 +524,7 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         poisio: constructGenericSetup(contexts, ["poisio"]),
         porcupine: constructPorcupineHelperSetup(contexts),
         rat: constructGenericSetup(contexts, ["rat"]),
-        rgoo: constructRGooHelperSetup(contexts),
+        rgoo: rgooSetup,
         scorpion: constructGenericSetup(contexts, ["scorpion"]),
         snake: osnakeSetup,
         snowman: constructSnowmanHelperSetup(contexts),
