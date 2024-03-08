@@ -444,11 +444,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     "offering": {
         hold: ["merchant"],
-        // TODO: What slot?
     },
     "offeringp": {
         hold: ["merchant"],
-        // TODO: What slot?
+        buy: true,
+        buyPrice: 2_500_000,
     },
     "ornamentstaff": {
         destroyBelowLevel: 1
