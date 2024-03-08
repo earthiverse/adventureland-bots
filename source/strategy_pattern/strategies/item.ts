@@ -288,7 +288,11 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
                 if (item.level >= itemConfig.useOfferingFromLevel) offering = "offering"
                 else if (item.level >= itemConfig.usePrimlingFromLevel) offering = "offeringp"
 
-                if (offering && !bot.hasItem(offering)) continue // We don't have the offering needed
+                if (offering && !bot.hasItem(offering)) {
+                    // We don't have the offering needed
+                    if (bot.canBuy(offering)) await bot.buy(offering)
+                    else continue // We can't buy it
+                }
             }
 
             const scroll = `scroll${item.calculateGrade()}` as ItemName
