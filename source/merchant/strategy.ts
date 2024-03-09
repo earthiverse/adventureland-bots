@@ -2439,6 +2439,117 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await goAndWithdrawItem(bot, itemsToSell[0][0], itemsToSell[0][1][0])
 
                 // Move to the merchant
+                // NOTE: Requires `ItemStrategy` to be active to sell it
+                await bot.smartMove(buyingMerchant, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+                await sleep(1000)
+                break merchantSearch
+            }
+        }
+
+        // Check if there's anything we can craft to sell
+        merchantSearch:
+        for (const buyingMerchant of buyingMerchants) {
+            slotSearch:
+            for (const sN in buyingMerchant.slots) {
+                if (!sN.startsWith("trade")) continue // Not a trade slot
+                const slotName = sN as TradeSlotType
+                const slotData = buyingMerchant.slots[slotName]
+                if (!slotData) continue // No slot data
+                if (!slotData.b) continue // Not buying
+
+                const config = this.options.itemConfig[slotData.name]
+                if (!config.craft) continue // Not crafting
+                if (config.destroyBelowLevel) continue // We would immediately destroy it
+
+                const tradeItem = new TradeItem(slotData, AL.Game.G)
+                if (!wantToSellToPlayer(this.options.itemConfig, tradeItem, bot)) continue // We don't want to sell
+
+                const itemsNeeded = [...AL.Game.G.craft[slotData.name].items]
+                for (const [, itemName, level] of itemsNeeded) {
+                    const levelCounts = itemCounts.get(itemName)
+                    if (!levelCounts) continue slotSearch // We don't have any
+                    const countData = levelCounts.get(level)
+                    if (!countData || countData.inventorySpaces <= 0) {
+                        if ((level === 0 || level === undefined) && bot.canBuy(itemName, { ignoreLocation: true })) continue // It's OK, we can buy it from an NPC!
+                        continue slotSearch // We don't have any at the given level, and we can't buy it from an NPC
+                    }
+                }
+
+                // We might have all of the items we need in the bank
+                await bot.smartMove(bankingPosition)
+                const itemsFound: [BankPackName, number][] = []
+                bankSearch:
+                for (const [packName, packItems] of bot.getBankItems()) {
+                    for (const [packSlot, packItem] of packItems) {
+                        for (let i = 0; i < itemsNeeded.length; i++) {
+                            const needed = itemsNeeded[i]
+                            if (needed[1] !== packItem.name) continue // Wrong item
+                            if (needed[0] > (packItem.q ?? 1)) continue // Not enough
+                            if (needed[2] && packItem.level !== needed[2]) continue // Wrong level
+                            if (needed[2] === undefined && packItem.level) continue // Wrong level
+
+                            // We found one of the items needed to craft this item
+                            itemsFound.push([packName, packSlot])
+                            itemsNeeded.splice(i, 1)
+                            break
+                        }
+
+                        if (itemsNeeded.length === 0) break bankSearch // We found all the items
+                    }
+                }
+
+                // Withdraw the items if we have everything
+                if (
+                    itemsNeeded.length === 0 // We found everything
+                    && bot.esize >= itemsFound.length // We have enough space for everything
+                ) {
+                    for (const [packName, packSlot] of itemsFound) {
+                        await goAndWithdrawItem(bot, packName, packSlot)
+                    }
+                } else if (
+                    bot.esize >= itemsNeeded.length // We have enough space to buy the remaining items
+                ) {
+                    let canBuyRemainingFromNPC = true
+                    for (let i = 0; i < itemsNeeded.length; i++) {
+                        const itemNeeded = itemsNeeded[i]
+                        if (bot.canBuy(itemNeeded[1], { ignoreLocation: true })) continue
+                        canBuyRemainingFromNPC = false
+                        break
+                    }
+
+                    if (canBuyRemainingFromNPC) {
+                        for (const [packName, packSlot] of itemsFound) {
+                            await goAndWithdrawItem(bot, packName, packSlot)
+                        }
+                    }
+                } else {
+                    continue
+                }
+
+                // Go buy remaining items from NPC
+                await bot.smartMove("main")
+                for (let i = 0; i < itemsNeeded.length; i++) {
+                    const itemNeeded = itemsNeeded[i]
+                    if (!bot.canBuy(itemNeeded[1]) && bot.canBuy(itemNeeded[1], { ignoreLocation: true })) {
+                        await bot.smartMove(itemNeeded[1])
+                    } else {
+                        continue slotSearch // We can't buy it anymore!?
+                    }
+                    await bot.buy(itemNeeded[1])
+                }
+
+                // Go craft
+                if (!bot.canCraft(slotData.name)) {
+                    if (bot.canCraft(slotData.name, { ignoreLocation: true })) {
+                        await bot.smartMove(Pathfinder.locateCraftNPC(slotData.name))
+                    } else {
+                        continue slotSearch // We can't craft it anymore!?
+                    }
+                    await bot.craft(slotData.name)
+                }
+
+                // Move to the merchant
+                // NOTE: Requires `ItemStrategy` to be active to sell it
                 await bot.smartMove(buyingMerchant, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
                 await sleep(1000)
                 break merchantSearch
