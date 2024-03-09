@@ -2458,6 +2458,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 if (!slotData.b) continue // Not buying
 
                 const config = this.options.itemConfig[slotData.name]
+                if (!config) continue // No config
                 if (!config.craft) continue // Not crafting
                 if (config.destroyBelowLevel) continue // We would immediately destroy it
 
