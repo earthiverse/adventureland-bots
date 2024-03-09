@@ -763,7 +763,8 @@ export function wantToHold(itemConfig: ItemConfig, item: ItemData, bot: Characte
 }
 
 export function wantToSellToPlayer(itemConfig: ItemConfig, item: TradeItem, bot: Character) {
-    if (wantToHold(itemConfig, item, bot)) return false
+    if (item.l) return false // Can't sell locked items
+    if (item.p) return false // Don't sell special items
 
     const config = itemConfig[item.name]
 
