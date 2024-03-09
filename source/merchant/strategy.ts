@@ -2459,21 +2459,21 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
                 const config = this.options.itemConfig[slotData.name]
                 if (!config) continue // No config
-                if (!config.craft) continue // Not crafting
                 if (config.destroyBelowLevel) continue // We would immediately destroy it
+
+                const gCraft = AL.Game.G.craft[slotData.name]
+                if (!gCraft) continue // Not craftable
 
                 const tradeItem = new TradeItem(slotData, AL.Game.G)
                 if (!wantToSellToPlayer(this.options.itemConfig, tradeItem, bot)) continue // We don't want to sell
 
-                const itemsNeeded = [...AL.Game.G.craft[slotData.name].items]
+                const itemsNeeded = [...gCraft.items]
                 for (const [, itemName, level] of itemsNeeded) {
+                    if ((level === 0 || level === undefined) && bot.canBuy(itemName, { ignoreLocation: true })) continue // It's OK, we can buy it from an NPC!
                     const levelCounts = itemCounts.get(itemName)
                     if (!levelCounts) continue slotSearch // We don't have any
                     const countData = levelCounts.get(level)
-                    if (!countData || countData.inventorySpaces <= 0) {
-                        if ((level === 0 || level === undefined) && bot.canBuy(itemName, { ignoreLocation: true })) continue // It's OK, we can buy it from an NPC!
-                        continue slotSearch // We don't have any at the given level, and we can't buy it from an NPC
-                    }
+                    if (!countData || countData.inventorySpaces <= 0) continue slotSearch // We don't have any at the given level, and we can't buy it from an NPC
                 }
 
                 // We might have all of the items we need in the bank
@@ -2522,6 +2522,8 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                         for (const [packName, packSlot] of itemsFound) {
                             await goAndWithdrawItem(bot, packName, packSlot)
                         }
+                    } else {
+                        continue
                     }
                 } else {
                     continue
