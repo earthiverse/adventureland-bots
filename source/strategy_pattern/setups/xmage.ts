@@ -17,6 +17,8 @@ export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xm
 export const DOWNTIME_MONSTERS: MonsterName[] = ["snowman", "arcticbee"]
 
 class XMageMoveStrategy extends KiteMonsterMoveStrategy {
+    public activeBots = new Map<PingCompensatedCharacter, true>()
+
     public constructor(contexts: Strategist<PingCompensatedCharacter>[], disableCheckDB?: true) {
         super({
             contexts: contexts,
@@ -28,19 +30,25 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
         this.spawns = this.spawns.filter((p) => p.map === "winter_instance" || p.map === "winterland")
     }
 
+    public onApply(bot: PingCompensatedCharacter) {
+        this.activeBots.set(bot, true)
+    }
+
+    public onRemove?(bot: PingCompensatedCharacter) {
+        this.activeBots.delete(bot)
+    }
+
     protected async move(bot: PingCompensatedCharacter): Promise<IPosition> {
-        const friends = filterContexts(this.options.contexts, { serverData: bot.serverData })
-            .map((e) => e.bot)
-            .filter((c) => c.ctype !== "merchant")
+        const group = [...this.activeBots.keys()]
 
         // Ensure we have a fieldgen ready
-        const groupHasFieldgen = this.groupHasFieldgen(friends)
-        const placedFieldgen = this.getPlacedFieldgen(friends)
+        const groupHasFieldgen = this.groupHasFieldgen(group)
+        const placedFieldgen = this.getPlacedFieldgen(group)
         if (!groupHasFieldgen && !placedFieldgen) {
             const hasFieldGenInBank = await hasItemInBank(bot.owner, "fieldgen0")
             if (hasFieldGenInBank) {
                 // Have a bot go get a fieldgen
-                const closestBot = getClosestBotToPosition(bankingPosition, friends)
+                const closestBot = getClosestBotToPosition(bankingPosition, group)
                 if (closestBot === bot) {
                     await bot.smartMove(bankingPosition)
                     const bankFieldgens = locateItemsInBank(bot, "fieldgen0")
@@ -98,7 +106,7 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
 
             if (xmage.type === "xmagex" && groupHasFieldgen && !placedFieldgen) {
                 // Place the fieldgen if we're on xmagex
-                await this.placeFieldGen(friends)
+                await this.placeFieldGen(group)
             }
             return
         } else if (this.options.disableCheckDB) {
@@ -108,29 +116,29 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
         return super.move(bot)
     }
 
-    protected groupHasFieldgen(friends: PingCompensatedCharacter[]) {
-        for (const friend of friends) {
-            if (friend.hasItem("fieldgen0")) {
+    protected groupHasFieldgen(group: PingCompensatedCharacter[]) {
+        for (const member of group) {
+            if (member.hasItem("fieldgen0")) {
                 return true
             }
         }
         return false
     }
 
-    protected getPlacedFieldgen(friends: PingCompensatedCharacter[]) {
-        for (const friend of friends) {
-            if (friend.map !== "winter_instance") continue
-            const entity = friend.getEntity({ type: "fieldgen0" })
+    protected getPlacedFieldgen(group: PingCompensatedCharacter[]) {
+        for (const member of group) {
+            if (member.map !== "winter_instance") continue
+            const entity = member.getEntity({ type: "fieldgen0" })
             if (entity) return entity
         }
     }
 
-    protected async placeFieldGen(friends: PingCompensatedCharacter[]) {
-        for (const friend of friends) {
-            if (friend.map !== "winter_instance") continue
-            const fieldgen = friend.locateItem("fieldgen0")
+    protected async placeFieldGen(group: PingCompensatedCharacter[]) {
+        for (const member of group) {
+            if (member.map !== "winter_instance") continue
+            const fieldgen = member.locateItem("fieldgen0")
             if (!fieldgen) continue
-            return friend.equip(fieldgen)
+            return member.equip(fieldgen)
         }
     }
 }
