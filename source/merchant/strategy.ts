@@ -2063,7 +2063,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         if (bot.esize <= 2) return // We don't have enough room in our inventory
 
         const key = `goDeliverUpgrades_${bot.serverData.region}${bot.serverData.name}`
-        if (checkOnlyEveryMS(key, 60_000)) return // We've already checked recently
+        if (!checkOnlyEveryMS(key, 300_000)) return // We've already checked recently
 
         const itemCounts = await getItemCounts(bot.owner)
         for (const friendContext of filterContexts(this.options.contexts, {
@@ -2395,7 +2395,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
         // Travel to mluck
         const key = `goMluck_${bot.serverData.region}${bot.serverData.name}`
-        if (checkOnlyEveryMS(key, 5_000)) return
+        if (!checkOnlyEveryMS(key, 5_000)) return
 
         const canMluck = (other: Character | Player): boolean => {
             if (other.s.invis) return false // Can't mluck invsible players
@@ -2462,7 +2462,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
     protected async goSellItems(bot: Merchant): Promise<void> {
         const key = `goSellItems_${bot.serverData.region}${bot.serverData.name}`
-        if (checkOnlyEveryMS(key, 60_000)) return // We've already checked recently
+        if (!checkOnlyEveryMS(key, 60_000)) return // We've already checked recently
 
         const buyingMerchants = await AL.PlayerModel.find({
             lastSeen: { $gt: Date.now() - 120_000 },
@@ -2675,7 +2675,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
         // Travel to join giveaways
         const key = `joinGiveaways_${bot.serverData.region}${bot.serverData.name}`
-        if (checkOnlyEveryMS(key, 60_000)) return
+        if (!checkOnlyEveryMS(key, 60_000)) return
         const giveawayMerchants = await AL.PlayerModel.find({
             lastSeen: { $gt: Date.now() - 120_000 },
             serverIdentifier: bot.serverData.name,
