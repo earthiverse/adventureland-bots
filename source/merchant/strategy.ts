@@ -1467,6 +1467,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await this.doBanking(bot) // NOTE: Don't catch, we don't want to continue if banking fails
                 await this.goGetHolidaySpirit(bot).catch(console.error)
                 await this.goDeliverReplenishables(bot).catch(console.error)
+                await this.goDeliverUpgrades(bot).catch(console.error)
                 await this.goGetItemsFromContexts(bot).catch(console.error)
                 await this.goFishing(bot).catch(console.error)
                 await this.goMining(bot).catch(console.error)
@@ -2056,6 +2057,97 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await bot.sendItem(friendBot.id, itemSlot, numToReplenishFriend)
             }
         }
+    }
+
+    protected async goDeliverUpgrades(bot: Merchant): Promise<void> {
+        if (bot.esize <= 2) return // We don't have enough room in our inventory
+
+        const key = `goDeliverUpgrades_${bot.serverData.region}${bot.serverData.name}`
+        if (checkOnlyEveryMS(key, 60_000)) return // We've already checked recently
+
+        const itemCounts = await getItemCounts(bot.owner)
+        for (const friendContext of filterContexts(this.options.contexts, {
+            owner: bot.owner,
+            serverData: bot.serverData,
+        })) {
+            const friend = friendContext.bot
+            if (friend === bot) continue // Don't do anything for ourselves
+
+            for (const s in friend.slots) {
+                const slotName = s as SlotType
+                const slot = friend.slots[slotName]
+
+                if (slot) {
+                    if (slot.level === undefined) continue // Can't upgrade this item
+
+                    // Check if we have the same item at a higher level
+                    const levelCounts = itemCounts.get(slot.name)
+                    if (!levelCounts) continue // We don't have any information about this item
+                    const [highestLevel, countData] = [...levelCounts.entries()].sort((a, b) => b[0] - a[0])[0]
+                    if (highestLevel <= slot.level || countData.inventorySpaces === 0) continue // We have the highest level
+
+                    // Go to the bank, we might have a better item
+                    await bot.smartMove(bankingPosition)
+
+                    // Look for the item
+                    let bestItem: [Item, BankPackName, number]
+                    for (const [packName, packItems] of bot.getBankItems()) {
+                        for (const [packSlot, packItem] of packItems) {
+                            if (packItem.name !== slot.name) continue // Not the same item
+                            if (packItem.level <= slot.level) continue // Not higher level
+                            if (bestItem && bestItem[0].level >= packItem.level) continue // We already found something better
+
+                            bestItem = [packItem, packName, packSlot]
+                        }
+                    }
+                    if (!bestItem) continue // We didn't find anything better
+
+                    // Withdraw the item
+                    await goAndWithdrawItem(bot, bestItem[1], bestItem[2])
+                    const itemPos = bot.locateItem(slot.name, bot.items, { levelGreaterThan: slot.level })
+                    if (itemPos === undefined) continue // We didn't withdraw the item!?
+
+                    await bot.smartMove("scrolls", { getWithin: Constants.NPC_INTERACTION_DISTANCE - 50 })
+
+                    const item = new Item(bot.items[itemPos], AL.Game.G)
+                    if (item.stat) {
+                        const stat = AL.Game.G.classes[friend.ctype].main_stat
+                        if (item.stat_type !== stat) {
+                            const grade = bestItem[0].calculateGrade()
+                            const statScroll = `${stat}scroll` as ItemName
+                            const numNeeded = Math.pow(10, grade)
+                            const numHave = bot.countItem(statScroll, bot.items)
+                            if (!bot.canBuy(statScroll, { quantity: numNeeded - numHave })) continue // We can't afford scrolls {
+
+                            // Buy scrolls and apply them to the weapon
+                            const statScrollPosition = await bot.buy(statScroll, numNeeded - numHave)
+                            await bot.upgrade(itemPos, statScrollPosition)
+                        }
+                    }
+
+                    // Go deliver the item
+                    await bot.smartMove(friend, { getWithin: Constants.NPC_INTERACTION_DISTANCE / 2 })
+                    if (Tools.squaredDistance(bot, friend) > Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // They moved somewhere
+                    await bot.sendItem(friend.id, itemPos)
+
+                    // Have them equip the item
+                    const friendItemPos = friend.locateItem(item.name, friend.items, { levelGreaterThan: slot.level, returnHighestLevel: true })
+                    if (friendItemPos === undefined) continue // Couldn't find the item !?
+                    await friend.equip(friendItemPos)
+                } else if (
+                    !slot
+                    && slotName !== "offhand"
+                    && slotName !== "mainhand"
+                ) {
+                    // TODO: It's an armor slot that's empty, find something that fits
+                } else {
+                    // Weapons are hard to deal with
+                    continue
+                }
+            }
+        }
+
+        setLastCheck(key)
     }
 
     protected async goExchange(bot: Merchant): Promise<void> {
