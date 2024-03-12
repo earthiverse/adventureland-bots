@@ -59,11 +59,12 @@ import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
 import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
-import { CRYPT_MONSTERS, getCryptWaitTime } from "./base/crypt.js"
+import { CRYPT_MONSTERS } from "./base/crypt.js"
 import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
 import { hasItemInBank } from "./base/items.js"
 import { DestroyStrategy, MerchantDestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
 import { DEFAULT_ITEM_CONFIG, ItemConfig, REPLENISH_ITEM_CONFIG, adjustItemConfig, runSanityCheckOnItemConfig } from "./base/itemsNew.js"
+import { getRecentCryptMonsters, getRecentSpecialMonsters, getRecentXMages } from "./base/monsters.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true, cheat: true })
@@ -456,95 +457,41 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                     // Can't damage for another 30s
                     continue
                 }
-                priority.push(specialMonster.type)
-            }
-
-            if (AL.Database.connection) {
-                for (const specialMonster of await AL.EntityModel.find(
-                    {
-                        $and: [
-                            {
-                                $or: [
-                                    { target: undefined },
-                                    { target: { $in: PARTY_ALLOWLIST } },
-                                    { type: { $in: ["crabxx", "franky", "icegolem", "phoenix", "snowman", "wabbit"] } }, // Coop monsters will give credit
-                                ],
-                            },
-                            {
-                                $or: [{ "s.fullguardx": undefined }, { "s.fullguardx.ms": { $lt: 30_000 } }],
-                            },
-                            {
-                                $or: [{ "s.fullguard": undefined }, { "s.fullguard.ms": { $lt: 30_000 } }],
-                            },
-                        ],
-                        lastSeen: { $gt: Date.now() - 30_000 },
-                        serverIdentifier: context.bot.serverData.name,
-                        serverRegion: context.bot.serverData.region,
-                        type: { $in: SPECIAL_MONSTERS },
-                    },
-                    {
-                        type: 1,
-                    },
-                )
-                    .lean()
-                    .exec()) {
+                for (const _context of contexts) {
                     priority.push(specialMonster.type)
                 }
+            }
+
+            for (const type of await getRecentSpecialMonsters(PARTY_ALLOWLIST, SPECIAL_MONSTERS, context.bot.serverData.name, context.bot.serverData.region)) {
+                priority.push(type)
             }
 
             for (const xmage of context.bot.getEntities({
                 couldGiveCredit: true,
                 typeList: XMAGE_MONSTERS,
             })) {
-                priority.push(xmage.type)
+                for (const _context of contexts) {
+                    priority.push(xmage.type)
+                }
+            }
+
+            const hasFieldGen = await hasItemInBank(context.bot.owner, "fieldgen0")
+            for (const type of await getRecentXMages(context.bot.serverData.name, context.bot.serverData.region)) {
+                if (!hasFieldGen && type === "xmagex") continue // We can only do xmagex if we have a fieldgen0
+                priority.push(type)
             }
 
             for (const cryptMonster of context.bot.getEntities({
                 couldGiveCredit: true,
                 typeList: CRYPT_MONSTERS,
             })) {
-                priority.push(cryptMonster.type)
-            }
-
-            if (AL.Database.connection) {
-                const hasFieldGen = await hasItemInBank(context.bot.owner, "fieldgen0")
-                for (const xmage of await AL.EntityModel.find(
-                    {
-                        $or: [
-                            { firstSeen: null },
-                            { firstSeen: { $lt: Date.now() - getCryptWaitTime("winter_instance") } },
-                        ],
-                        lastSeen: { $gt: Date.now() - 60000 },
-                        serverIdentifier: context.bot.serverData.name,
-                        serverRegion: context.bot.serverData.region,
-                        type: { $in: XMAGE_MONSTERS },
-                    },
-                    {
-                        type: 1,
-                    },
-                )
-                    .lean()
-                    .exec()) {
-                    if (xmage.type == "xmagex" && !hasFieldGen) continue // We can only do xmagex if we have a fieldgen0
-                    priority.push(xmage.type)
-                }
-
-                for (const cryptMonster of await AL.EntityModel.find(
-                    {
-                        $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime("crypt") } }],
-                        lastSeen: { $gt: Date.now() - 60_000 },
-                        serverIdentifier: context.bot.serverData.name,
-                        serverRegion: context.bot.serverData.region,
-                        type: { $in: CRYPT_MONSTERS },
-                    },
-                    {
-                        type: 1,
-                    },
-                )
-                    .lean()
-                    .exec()) {
+                for (const _context of contexts) {
                     priority.push(cryptMonster.type)
                 }
+            }
+
+            for (const type of await getRecentCryptMonsters(context.bot.serverData.name, context.bot.serverData.region)) {
+                priority.push(type)
             }
         }
     }
