@@ -1461,7 +1461,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             fn: async (bot: Merchant) => {
                 if (bot.rip) return bot.respawn()
 
-                // TODO: Equip broom to go fast
+                await this.equipBroom(bot).catch(console.error)
 
                 await this.joinGiveaways(bot).catch(console.error)
                 await this.doBanking(bot) // NOTE: Don't catch, we don't want to continue if banking fails
@@ -1525,6 +1525,20 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 return bot.mluck(player.id)
             }
         }
+    }
+
+    /**
+     * The broom gives us a lot of speed, we should equip it
+     * unless we're fishing, mining, or attacking
+     */
+    protected async equipBroom(bot: Merchant): Promise<void> {
+        const broomPos = bot.locateItem("broom", bot.items, { returnHighestLevel: true })
+        if (broomPos === undefined) return // No broom, or we already have it equipped
+
+        if (!bot.slots.mainhand) return bot.equip(broomPos) // We don't have a broom equipped
+        if (bot.slots.mainhand.name !== "broom") return bot.equip(broomPos) // Replace with the broom
+        const broom = bot.items[broomPos]
+        if (bot.slots.mainhand.level < broom.level) return bot.equip(broomPos) // Replace with better broom
     }
 
     protected async doBanking(bot: Merchant): Promise<void> {
