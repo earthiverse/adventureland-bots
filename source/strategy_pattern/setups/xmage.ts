@@ -17,7 +17,7 @@ export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xm
 export const DOWNTIME_MONSTERS: MonsterName[] = ["snowman", "arcticbee"]
 
 class XMageMoveStrategy extends KiteMonsterMoveStrategy {
-    public static activeBots = new Map<PingCompensatedCharacter, true>()
+    public static activeBots = new Map<string, PingCompensatedCharacter>()
 
     public constructor(contexts: Strategist<PingCompensatedCharacter>[], disableCheckDB?: true) {
         super({
@@ -31,15 +31,15 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
     }
 
     public onApply(bot: PingCompensatedCharacter) {
-        XMageMoveStrategy.activeBots.set(bot, true)
+        XMageMoveStrategy.activeBots.set(bot.id, bot)
     }
 
     public onRemove?(bot: PingCompensatedCharacter) {
-        XMageMoveStrategy.activeBots.delete(bot)
+        XMageMoveStrategy.activeBots.delete(bot.id)
     }
 
     protected async move(bot: PingCompensatedCharacter): Promise<IPosition> {
-        const group = [...XMageMoveStrategy.activeBots.keys()]
+        const group = [...XMageMoveStrategy.activeBots.values()]
 
         // Ensure we have a fieldgen ready
         const groupHasFieldgen = this.groupHasFieldgen(group)
