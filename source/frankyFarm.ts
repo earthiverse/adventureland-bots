@@ -21,7 +21,7 @@ import { PaladinAttackStrategy } from "./strategy_pattern/strategies/attack_pala
 
 const CREDENTIALS = "../credentials.json"
 const CHARACTERS = ["earthiverse", "earthPri", "earthMag"]
-const SERVER_REGION: ServerRegion = "EU"
+const SERVER_REGION: ServerRegion = "US"
 const SERVER_IDENTIFIER: ServerIdentifier = "PVP"
 const PARTY_LEADER = "earthiverse"
 
