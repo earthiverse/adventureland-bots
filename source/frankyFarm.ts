@@ -68,7 +68,7 @@ class PaladinMummyFarmStrategy extends PaladinAttackStrategy {
         const franky = bot.getEntity({ type: "franky", withinRange: "attack", hasTarget: true })
 
         // Attack franky if we don't have coop points
-        if (!bot.s.coop && franky) {
+        if (franky && !bot.s.coop) {
             await bot.basicAttack(franky.id)
             return
         }
@@ -87,13 +87,13 @@ class PriestMummyFarmStrategy extends PriestAttackStrategy {
         const franky = bot.getEntity({ type: "franky", withinRange: "heal", hasTarget: true })
 
         // Heal franky if he's low
-        if (franky.max_hp - franky.hp > bot.heal) {
+        if (franky && franky.max_hp - franky.hp > bot.heal) {
             await bot.healSkill(franky.id)
             return
         }
 
         // Attack franky if we don't have coop points
-        if (!bot.s.coop) {
+        if (franky && !bot.s.coop) {
             await bot.basicAttack(franky.id)
             return
         }
@@ -112,7 +112,7 @@ class RangerMummyFarmStrategy extends RangerAttackStrategy {
         const franky = bot.getEntity({ type: "franky", withinRange: "attack", hasTarget: true })
 
         // Attack franky if we don't have coop points
-        if (!bot.s.coop && franky) {
+        if (franky && !bot.s.coop) {
             await bot.basicAttack(franky.id)
             return
         }
@@ -131,7 +131,7 @@ class RogueMummyFarmStrategy extends RogueAttackStrategy {
         const franky = bot.getEntity({ type: "franky", withinRange: "attack", hasTarget: true })
 
         // Attack franky if we don't have coop points
-        if (!bot.s.coop && franky) {
+        if (franky && !bot.s.coop) {
             await bot.basicAttack(franky.id)
             return
         }
@@ -150,7 +150,7 @@ class MageMummyFarmStrategy extends MageAttackStrategy {
         const franky = bot.getEntity({ type: "franky", withinRange: "attack", hasTarget: true })
 
         // Attack franky if we don't have coop points
-        if (!bot.s.coop && franky) {
+        if (franky && !bot.s.coop) {
             await bot.basicAttack(franky.id)
             return
         }
@@ -169,7 +169,7 @@ class WarriorMummyFarmStrategy extends WarriorAttackStrategy {
         const franky = bot.getEntity({ type: "franky", withinRange: "attack", hasTarget: true })
 
         // Attack franky if we don't have coop points
-        if (!bot.s.coop && franky) {
+        if (franky && !bot.s.coop) {
             await bot.basicAttack(franky.id)
             return
         }
