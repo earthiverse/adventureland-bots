@@ -179,6 +179,7 @@ class LeaderMummyFarmStrategy extends PriestMummyFarmStrategy {
 const leaderMummyFarmStrategy = new LeaderMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    disableScare: true,
     typeList: ["nerfedmummy"]
 })
 
