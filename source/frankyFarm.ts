@@ -1,4 +1,4 @@
-import AL, { Mage, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import AL, { Game, Mage, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, ServerIdentifier, ServerRegion, Tools, Warrior } from "alclient"
 import { startCharacterFromName } from "./strategy_pattern/runner.js"
 import { Strategist } from "./strategy_pattern/context.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
@@ -18,6 +18,7 @@ import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
 import { RogueAttackStrategy } from "./strategy_pattern/strategies/attack_rogue.js"
 import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { PaladinAttackStrategy } from "./strategy_pattern/strategies/attack_paladin.js"
+import { suppress_errors } from "./strategy_pattern/logging.js"
 
 const CREDENTIALS = "../credentials.json"
 const CHARACTERS = ["earthPri", "earthiverse", "earthMag"]
@@ -65,21 +66,48 @@ const paladinMummyFarmStrategy = new PaladinMummyFarmStrategy({
 
 class PriestMummyFarmStrategy extends PriestAttackStrategy {
     protected async attack(bot: Priest): Promise<void> {
-        const franky = bot.getEntity({ type: "franky", withinRange: "heal", hasTarget: true })
+        await this.healFriendsOrSelf(bot).catch()
+        if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot).catch(suppress_errors)
+
+        if (!this.shouldAttack(bot)) {
+            this.defensiveAttack(bot).catch(suppress_errors)
+            return
+        }
+
+        const priority = this.botSort.get(bot.id)
+
+        await this.ensureEquipped(bot)
+
+        await this.frankyLogic(bot)
+
+        if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disableAbsorb) await this.absorbTargets(bot).catch(suppress_errors)
+        if (!this.options.disableZapper) await this.zapperAttack(bot, priority).catch(suppress_errors)
+        if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
+
+        await this.ensureEquipped(bot)
+    }
+
+    protected async frankyLogic(bot: Priest) {
+        const franky = bot.getEntity({ type: "franky", withinRange: "heal" })
+        if (!franky) return
 
         // Heal franky if he's low
-        if (franky && franky.max_hp - franky.hp > bot.heal) {
+        if (franky.max_hp - franky.hp > bot.heal) {
             await bot.healSkill(franky.id)
             return
         }
 
-        // Attack franky if we don't have coop points
-        if (franky && !bot.s.coop) {
+        if (
+            franky
+            && (
+                !bot.s.coop // We don't have coop points yet
+                || !franky.target // Franky has no target
+            )
+        ) {
             await bot.basicAttack(franky.id)
             return
         }
-
-        return super.attack(bot)
     }
 }
 const priestMummyFarmStrategy = new PriestMummyFarmStrategy({
@@ -90,10 +118,15 @@ const priestMummyFarmStrategy = new PriestMummyFarmStrategy({
 
 class RangerMummyFarmStrategy extends RangerAttackStrategy {
     protected async attack(bot: Ranger): Promise<void> {
-        const franky = bot.getEntity({ type: "franky", withinRange: "attack", hasTarget: true })
+        const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
 
-        // Attack franky if we don't have coop points
-        if (franky && !bot.s.coop) {
+        if (
+            franky
+            && (
+                !bot.s.coop // We don't have coop points yet
+                || !franky.target // Franky has no target
+            )
+        ) {
             await bot.basicAttack(franky.id)
             return
         }
@@ -109,10 +142,15 @@ const rangerMummyFarmStrategy = new RangerMummyFarmStrategy({
 
 class RogueMummyFarmStrategy extends RogueAttackStrategy {
     protected async attack(bot: Rogue): Promise<void> {
-        const franky = bot.getEntity({ type: "franky", withinRange: "attack", hasTarget: true })
+        const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
 
-        // Attack franky if we don't have coop points
-        if (franky && !bot.s.coop) {
+        if (
+            franky
+            && (
+                !bot.s.coop // We don't have coop points yet
+                || !franky.target // Franky has no target
+            )
+        ) {
             await bot.basicAttack(franky.id)
             return
         }
@@ -128,10 +166,15 @@ const rogueMummyFarmStrategy = new RogueMummyFarmStrategy({
 
 class MageMummyFarmStrategy extends MageAttackStrategy {
     protected async attack(bot: Mage): Promise<void> {
-        const franky = bot.getEntity({ type: "franky", withinRange: "attack", hasTarget: true })
+        const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
 
-        // Attack franky if we don't have coop points
-        if (franky && !bot.s.coop) {
+        if (
+            franky
+            && (
+                !bot.s.coop // We don't have coop points yet
+                || !franky.target // Franky has no target
+            )
+        ) {
             await bot.basicAttack(franky.id)
             return
         }
@@ -147,10 +190,15 @@ const mageMummyFarmStrategy = new MageMummyFarmStrategy({
 
 class WarriorMummyFarmStrategy extends WarriorAttackStrategy {
     protected async attack(bot: Warrior): Promise<void> {
-        const franky = bot.getEntity({ type: "franky", withinRange: "attack", hasTarget: true })
+        const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
 
-        // Attack franky if we don't have coop points
-        if (franky && !bot.s.coop) {
+        if (
+            franky
+            && (
+                !bot.s.coop // We don't have coop points yet
+                || !franky.target // Franky has no target
+            )
+        ) {
             await bot.basicAttack(franky.id)
             return
         }
@@ -165,15 +213,18 @@ const warriorMummyFarmStrategy = new WarriorMummyFarmStrategy({
 })
 
 class LeaderMummyFarmStrategy extends PriestMummyFarmStrategy {
-    protected async attack(bot: Priest): Promise<void> {
-        // Attack franky if he doesn't have a target
-        const franky = bot.getEntity({ type: "franky", withinRange: "attack", hasTarget: false })
-        if (franky) {
-            await bot.basicAttack(franky.id)
-            return
-        }
+    protected async frankyLogic(bot: Priest): Promise<void> {
+        await super.frankyLogic(bot)
 
-        return super.attack(bot)
+        // Take franky's target
+        const franky = bot.getEntity({ type: "franky", hasTarget: true, targetingMe: false })
+        if (!franky) return
+
+        const target = bot.players.get(franky.target)
+        if (!target) return
+        if (Tools.distance(bot, target) > Game.G.skills.absorb.range) return
+
+        await bot.absorbSins(target.id)
     }
 }
 const leaderMummyFarmStrategy = new LeaderMummyFarmStrategy({
