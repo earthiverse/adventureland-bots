@@ -20,10 +20,10 @@ import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { PaladinAttackStrategy } from "./strategy_pattern/strategies/attack_paladin.js"
 
 const CREDENTIALS = "../credentials.json"
-const CHARACTERS = ["earthiverse", "earthPri", "earthMag"]
+const CHARACTERS = ["earthPri", "earthiverse", "earthMag"]
 const SERVER_REGION: ServerRegion = "US"
 const SERVER_IDENTIFIER: ServerIdentifier = "PVP"
-const PARTY_LEADER = "earthiverse"
+const PARTY_LEADER = "earthPri"
 
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 
@@ -43,25 +43,6 @@ const requestPartyStrategy = new RequestPartyStrategy(PARTY_LEADER)
 const rSpeedStrategy = new GiveRogueSpeedStrategy()
 
 const frankyMoveStrategy = new ImprovedMoveStrategy("franky", { idlePosition: frankyIdlePosition })
-
-class LeaderMummyFarmStrategy extends RangerAttackStrategy {
-    protected async attack(bot: Ranger): Promise<void> {
-        // Attack franky if he doesn't have a target
-        const franky = bot.getEntity({ type: "franky", withinRange: "attack", hasTarget: false })
-        if (franky) {
-            await bot.basicAttack(franky.id)
-            return
-        }
-
-        return super.attack(bot)
-    }
-}
-const leaderMummyFarmStrategy = new LeaderMummyFarmStrategy({
-    contexts: CONTEXTS,
-    disableIdleAttack: true,
-    disableScare: true,
-    typeList: ["nerfedmummy"]
-})
 
 class PaladinMummyFarmStrategy extends PaladinAttackStrategy {
     protected async attack(bot: Paladin): Promise<void> {
@@ -183,6 +164,25 @@ const warriorMummyFarmStrategy = new WarriorMummyFarmStrategy({
     typeList: ["nerfedmummy"]
 })
 
+class LeaderMummyFarmStrategy extends PriestMummyFarmStrategy {
+    protected async attack(bot: Priest): Promise<void> {
+        // Attack franky if he doesn't have a target
+        const franky = bot.getEntity({ type: "franky", withinRange: "attack", hasTarget: false })
+        if (franky) {
+            await bot.basicAttack(franky.id)
+            return
+        }
+
+        return super.attack(bot)
+    }
+}
+const leaderMummyFarmStrategy = new LeaderMummyFarmStrategy({
+    contexts: CONTEXTS,
+    disableIdleAttack: true,
+    disableScare: true,
+    typeList: ["nerfedmummy"]
+})
+
 for (const character of CHARACTERS) {
     const bot = await startCharacterFromName(character, SERVER_REGION, SERVER_IDENTIFIER)
     let context: Strategist<PingCompensatedCharacter>
@@ -199,15 +199,15 @@ for (const character of CHARACTERS) {
         case "priest":
             context = new Strategist<Priest>(bot as Priest, baseStrategy)
             context.applyStrategy(partyHealStrategy)
-            context.applyStrategy(priestMummyFarmStrategy)
-            break
-        case "ranger":
-            context = new Strategist<Ranger>(bot as Ranger, baseStrategy)
             if (context.bot.id === PARTY_LEADER) {
                 context.applyStrategy(leaderMummyFarmStrategy)
             } else {
-                context.applyStrategy(rangerMummyFarmStrategy)
+                context.applyStrategy(priestMummyFarmStrategy)
             }
+            break
+        case "ranger":
+            context = new Strategist<Ranger>(bot as Ranger, baseStrategy)
+            context.applyStrategy(rangerMummyFarmStrategy)
             break
         case "rogue":
             context = new Strategist<Rogue>(bot as Rogue, baseStrategy)
