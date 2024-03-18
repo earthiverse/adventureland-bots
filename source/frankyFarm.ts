@@ -72,6 +72,8 @@ const paladinMummyFarmStrategy = new PaladinMummyFarmStrategy({
 })
 
 class PriestMummyFarmStrategy extends PriestAttackStrategy {
+    protected lastAttack: number = 0
+
     protected async attack(bot: Priest): Promise<void> {
         await this.healFriendsOrSelf(bot).catch()
         if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot).catch(suppress_errors)
@@ -111,9 +113,11 @@ class PriestMummyFarmStrategy extends PriestAttackStrategy {
             && (
                 !bot.s.coop // We don't have coop points yet
                 || !franky.target // Franky has no target
+                || Date.now() - this.lastAttack > 10_000 // Franky despawns if the last attack isn't within 20s
             )
         ) {
             await bot.basicAttack(franky.id)
+            this.lastAttack = Date.now()
             return
         }
     }
