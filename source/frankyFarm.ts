@@ -19,6 +19,8 @@ import { RogueAttackStrategy } from "./strategy_pattern/strategies/attack_rogue.
 import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { PaladinAttackStrategy } from "./strategy_pattern/strategies/attack_paladin.js"
 import { suppress_errors } from "./strategy_pattern/logging.js"
+import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
+import { REPLENISH_ITEM_CONFIG } from "./base/itemsNew.js"
 
 const CREDENTIALS = "../credentials.json"
 const CHARACTERS = ["earthPri", "earthiverse", "earthMag"]
@@ -42,6 +44,11 @@ const trackerStrategy = new TrackerStrategy()
 const acceptPartyRequestStrategy = new AcceptPartyRequestStrategy()
 const requestPartyStrategy = new RequestPartyStrategy(PARTY_LEADER)
 const rSpeedStrategy = new GiveRogueSpeedStrategy()
+const buyStrategy = new BuyStrategy({
+    itemConfig: REPLENISH_ITEM_CONFIG,
+    contexts: CONTEXTS,
+    enableBuyForProfit: true
+})
 
 const frankyMoveStrategy = new ImprovedMoveStrategy("franky", { idlePosition: frankyIdlePosition })
 
@@ -305,6 +312,7 @@ for (const character of CHARACTERS) {
         frankyMoveStrategy,
         respawnStrategy,
         trackerStrategy,
+        buyStrategy
     ])
 
     if (context.bot.id !== PARTY_LEADER) context.applyStrategy(requestPartyStrategy)
