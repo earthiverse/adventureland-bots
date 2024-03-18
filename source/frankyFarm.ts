@@ -47,12 +47,19 @@ const frankyMoveStrategy = new ImprovedMoveStrategy("franky", { idlePosition: fr
 
 class PaladinMummyFarmStrategy extends PaladinAttackStrategy {
     protected async attack(bot: Paladin): Promise<void> {
-        const franky = bot.getEntity({ type: "franky", withinRange: "attack", hasTarget: true })
+        if (bot.canUse("attack")) {
+            const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
 
-        // Attack franky if we don't have coop points
-        if (franky && !bot.s.coop) {
-            await bot.basicAttack(franky.id)
-            return
+            if (
+                franky
+                && (
+                    !bot.s.coop // We don't have coop points yet
+                    || !franky.target // Franky has no target
+                )
+            ) {
+                await bot.basicAttack(franky.id)
+                return
+            }
         }
 
         await super.attack(bot)
@@ -89,6 +96,7 @@ class PriestMummyFarmStrategy extends PriestAttackStrategy {
     }
 
     protected async frankyLogic(bot: Priest) {
+        if (!bot.canUse("heal")) return // Can't heal right now
         const franky = bot.getEntity({ type: "franky", withinRange: "heal" })
         if (!franky) return
 
@@ -118,17 +126,19 @@ const priestMummyFarmStrategy = new PriestMummyFarmStrategy({
 
 class RangerMummyFarmStrategy extends RangerAttackStrategy {
     protected async attack(bot: Ranger): Promise<void> {
-        const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
+        if (bot.canUse("attack")) {
+            const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
 
-        if (
-            franky
-            && (
-                !bot.s.coop // We don't have coop points yet
-                || !franky.target // Franky has no target
-            )
-        ) {
-            await bot.basicAttack(franky.id)
-            return
+            if (
+                franky
+                && (
+                    !bot.s.coop // We don't have coop points yet
+                    || !franky.target // Franky has no target
+                )
+            ) {
+                await bot.basicAttack(franky.id)
+                return
+            }
         }
 
         await super.attack(bot)
@@ -142,17 +152,19 @@ const rangerMummyFarmStrategy = new RangerMummyFarmStrategy({
 
 class RogueMummyFarmStrategy extends RogueAttackStrategy {
     protected async attack(bot: Rogue): Promise<void> {
-        const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
+        if (bot.canUse("attack")) {
+            const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
 
-        if (
-            franky
-            && (
-                !bot.s.coop // We don't have coop points yet
-                || !franky.target // Franky has no target
-            )
-        ) {
-            await bot.basicAttack(franky.id)
-            return
+            if (
+                franky
+                && (
+                    !bot.s.coop // We don't have coop points yet
+                    || !franky.target // Franky has no target
+                )
+            ) {
+                await bot.basicAttack(franky.id)
+                return
+            }
         }
 
         await super.attack(bot)
@@ -166,17 +178,19 @@ const rogueMummyFarmStrategy = new RogueMummyFarmStrategy({
 
 class MageMummyFarmStrategy extends MageAttackStrategy {
     protected async attack(bot: Mage): Promise<void> {
-        const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
+        if (bot.canUse("attack")) {
+            const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
 
-        if (
-            franky
-            && (
-                !bot.s.coop // We don't have coop points yet
-                || !franky.target // Franky has no target
-            )
-        ) {
-            await bot.basicAttack(franky.id)
-            return
+            if (
+                franky
+                && (
+                    !bot.s.coop // We don't have coop points yet
+                    || !franky.target // Franky has no target
+                )
+            ) {
+                await bot.basicAttack(franky.id)
+                return
+            }
         }
 
         await super.attack(bot)
@@ -190,17 +204,19 @@ const mageMummyFarmStrategy = new MageMummyFarmStrategy({
 
 class WarriorMummyFarmStrategy extends WarriorAttackStrategy {
     protected async attack(bot: Warrior): Promise<void> {
-        const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
+        if (bot.canUse("attack")) {
+            const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
 
-        if (
-            franky
-            && (
-                !bot.s.coop // We don't have coop points yet
-                || !franky.target // Franky has no target
-            )
-        ) {
-            await bot.basicAttack(franky.id)
-            return
+            if (
+                franky
+                && (
+                    !bot.s.coop // We don't have coop points yet
+                    || !franky.target // Franky has no target
+                )
+            ) {
+                await bot.basicAttack(franky.id)
+                return
+            }
         }
 
         await super.attack(bot)
@@ -215,6 +231,8 @@ const warriorMummyFarmStrategy = new WarriorMummyFarmStrategy({
 class LeaderMummyFarmStrategy extends PriestMummyFarmStrategy {
     protected async frankyLogic(bot: Priest): Promise<void> {
         await super.frankyLogic(bot)
+
+        if (!bot.canUse("absorb")) return // Can't absorb
 
         // Take franky's target
         const franky = bot.getEntity({ type: "franky", hasTarget: true, targetingMe: false })
