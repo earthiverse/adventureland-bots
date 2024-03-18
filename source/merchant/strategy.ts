@@ -1473,7 +1473,6 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await this.goMining(bot).catch(console.error)
                 await this.goCraft(bot).catch(console.error)
                 await this.goExchange(bot).catch(console.error)
-                // TODO: Buy and upgrade
                 // TODO: Deal finder
                 await this.goCheckInstances(bot).catch(console.error)
                 await this.goSellItems(bot).catch(console.error)
@@ -2087,6 +2086,8 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             const friend = friendContext.bot
             if (friend === bot) continue // Don't do anything for ourselves
 
+            const mainStat = AL.Game.G.classes[friend.ctype].main_stat
+
             for (const s in friend.slots) {
                 const slotName = s as SlotType
                 const slot = friend.slots[slotName]
@@ -2125,15 +2126,14 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
                     const item = new Item(bot.items[itemPos], AL.Game.G)
                     if (item.stat) {
-                        const stat = AL.Game.G.classes[friend.ctype].main_stat
-                        if (item.stat_type !== stat) {
+                        if (item.stat_type !== mainStat) {
                             const grade = bestItem[0].calculateGrade()
-                            const statScroll = `${stat}scroll` as ItemName
+                            const statScroll = `${mainStat}scroll` as ItemName
                             const numNeeded = Math.pow(10, grade)
                             const numHave = bot.countItem(statScroll, bot.items)
                             if (!bot.canBuy(statScroll, { quantity: numNeeded - numHave })) continue // We can't afford scrolls {
 
-                            // Buy scrolls and apply them to the weapon
+                            // Buy scrolls and apply them to the item
                             const statScrollPosition = await bot.buy(statScroll, numNeeded - numHave)
                             await bot.upgrade(itemPos, statScrollPosition)
                         }
@@ -2153,7 +2153,65 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                     && slotName !== "offhand"
                     && slotName !== "mainhand"
                 ) {
-                    // TODO: It's an armor slot that's empty, find something that fits
+                    let bestItem: [Item, BankPackName, number]
+                    let desiredItem: ItemName
+
+                    if (slotName === "earring1" || slotName === "earring2") {
+                        desiredItem = `${mainStat}earring` as ItemName
+                    } else if (slotName === "amulet") {
+                        desiredItem = `${mainStat}amulet` as ItemName
+                    } else if (slotName === "belt") {
+                        desiredItem = `${mainStat}amulet` as ItemName
+                    } else if (slotName === "ring1" || slotName === "ring2") {
+                        desiredItem = `${mainStat}ring` as ItemName
+                    }
+
+                    if (!desiredItem) continue // TODO: More logic for other items
+
+                    // Check if we have the desired item
+                    const levelCounts = itemCounts.get(desiredItem)
+                    if (!levelCounts) continue // We don't have any information about this item
+
+                    // Go to the bank, we might have a better item
+                    await bot.smartMove(bankingPosition)
+
+                    // Look for the item
+                    for (const [packName, packItems] of bot.getBankItems()) {
+                        for (const [packSlot, packItem] of packItems) {
+                            if (packItem.name !== desiredItem) continue // Not the same item
+                            if (bestItem && bestItem[0].level >= packItem.level) continue // We already found something better
+                            bestItem = [packItem, packName, packSlot]
+                        }
+                    }
+
+                    if (!bestItem) continue // We didn't find anything
+
+                    // Withdraw the item
+                    await goAndWithdrawItem(bot, bestItem[1], bestItem[2])
+                    const itemPos = bot.locateItem(slot.name, bot.items, { levelGreaterThan: slot.level })
+                    if (itemPos === undefined) continue // We didn't withdraw the item!?
+
+                    await bot.smartMove("scrolls", { getWithin: Constants.NPC_INTERACTION_DISTANCE - 50 })
+
+                    const item = new Item(bot.items[itemPos], AL.Game.G)
+                    if (item.stat) {
+                        if (item.stat_type !== mainStat) {
+                            const grade = bestItem[0].calculateGrade()
+                            const statScroll = `${mainStat}scroll` as ItemName
+                            const numNeeded = Math.pow(10, grade)
+                            const numHave = bot.countItem(statScroll, bot.items)
+                            if (!bot.canBuy(statScroll, { quantity: numNeeded - numHave })) continue // We can't afford scrolls {
+
+                            // Buy scrolls and apply them to the item
+                            const statScrollPosition = await bot.buy(statScroll, numNeeded - numHave)
+                            await bot.upgrade(itemPos, statScrollPosition)
+                        }
+                    }
+
+                    // Go deliver the item
+                    await bot.smartMove(friend, { getWithin: Constants.NPC_INTERACTION_DISTANCE / 2 })
+                    if (Tools.squaredDistance(bot, friend) > Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // They moved somewhere
+                    await bot.sendItem(friend.id, itemPos)
                 } else {
                     // Weapons are hard to deal with
                     continue

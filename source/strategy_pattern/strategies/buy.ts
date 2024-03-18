@@ -39,7 +39,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
 
     public onApply(bot: Type) {
         // Ensure that we don't overpay for NPC items
-        runSanityCheckOnItemConfig(this.options.itemConfig)
+        runSanityCheckOnItemConfig(this.options.itemConfig).catch(console.error)
 
         this.secondhandsListener = (data: ItemDataTrade[]) => {
             const server = `${bot.server.region}${bot.server.name}`
