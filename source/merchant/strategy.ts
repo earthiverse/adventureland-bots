@@ -2164,6 +2164,8 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                         desiredItem = `${mainStat}amulet` as ItemName
                     } else if (slotName === "ring1" || slotName === "ring2") {
                         desiredItem = `${mainStat}ring` as ItemName
+                    } else if (slotName === "orb") {
+                        desiredItem = "jacko"
                     }
 
                     if (!desiredItem) continue // TODO: More logic for other items
