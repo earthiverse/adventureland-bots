@@ -68,6 +68,7 @@ class PaladinMummyFarmStrategy extends PaladinAttackStrategy {
                 )
             ) {
                 await bot.basicAttack(franky.id)
+                this.lastAttack = Date.now()
                 return
             }
         }
@@ -161,6 +162,7 @@ class RangerMummyFarmStrategy extends RangerAttackStrategy {
                 )
             ) {
                 await bot.basicAttack(franky.id)
+                this.lastAttack = Date.now()
                 return
             }
         }
@@ -194,6 +196,7 @@ class RogueMummyFarmStrategy extends RogueAttackStrategy {
                 )
             ) {
                 await bot.basicAttack(franky.id)
+                this.lastAttack = Date.now()
                 return
             }
         }
@@ -227,6 +230,7 @@ class MageMummyFarmStrategy extends MageAttackStrategy {
                 )
             ) {
                 await bot.basicAttack(franky.id)
+                this.lastAttack = Date.now()
                 return
             }
         }
@@ -260,6 +264,7 @@ class WarriorMummyFarmStrategy extends WarriorAttackStrategy {
                 )
             ) {
                 await bot.basicAttack(franky.id)
+                this.lastAttack = Date.now()
                 return
             }
         }
