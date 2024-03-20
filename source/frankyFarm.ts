@@ -38,7 +38,7 @@ const avoidStackingStrategy = new AvoidStackingStrategy()
 const baseStrategy = new BaseStrategy(CONTEXTS)
 const chargeStrategy = new ChargeStrategy()
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(CONTEXTS)
-const partyHealStrategy = new PartyHealStrategy(CONTEXTS)
+const partyHealStrategy = new PartyHealStrategy(CONTEXTS, { healWhenLessThan: { hpRatio: 0.9 } })
 const respawnStrategy = new RespawnStrategy()
 const trackerStrategy = new TrackerStrategy()
 const acceptPartyRequestStrategy = new AcceptPartyRequestStrategy()
@@ -64,7 +64,7 @@ class PaladinMummyFarmStrategy extends PaladinAttackStrategy {
                 && (
                     !bot.s.coop // We don't have coop points yet
                     || !franky.target // Franky has no target
-                    || Date.now() - this.lastAttack > 7_500 // Franky despawns if the last attack isn't within 20s
+                    || Date.now() - this.lastAttack > 10_000 // Franky despawns if the last attack isn't within 20s
                 )
             ) {
                 await bot.basicAttack(franky.id)
@@ -113,7 +113,7 @@ class PriestMummyFarmStrategy extends PriestAttackStrategy {
 
     protected async frankyLogic(bot: Priest) {
         if (!bot.canUse("heal")) return // Can't heal right now
-        const franky = bot.getEntity({ type: "franky", withinRange: "heal" })
+        const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
         if (!franky) return
 
         // Heal franky if he's low
@@ -127,7 +127,7 @@ class PriestMummyFarmStrategy extends PriestAttackStrategy {
             && (
                 !bot.s.coop // We don't have coop points yet
                 || !franky.target // Franky has no target
-                || Date.now() - this.lastAttack > 7_500 // Franky despawns if the last attack isn't within 20s
+                || Date.now() - this.lastAttack > 10_000 // Franky despawns if the last attack isn't within 20s
             )
         ) {
             await bot.basicAttack(franky.id)
@@ -158,7 +158,7 @@ class RangerMummyFarmStrategy extends RangerAttackStrategy {
                 && (
                     !bot.s.coop // We don't have coop points yet
                     || !franky.target // Franky has no target
-                    || Date.now() - this.lastAttack > 7_500 // Franky despawns if the last attack isn't within 20s
+                    || Date.now() - this.lastAttack > 10_000 // Franky despawns if the last attack isn't within 20s
                 )
             ) {
                 await bot.basicAttack(franky.id)
@@ -192,7 +192,7 @@ class RogueMummyFarmStrategy extends RogueAttackStrategy {
                 && (
                     !bot.s.coop // We don't have coop points yet
                     || !franky.target // Franky has no target
-                    || Date.now() - this.lastAttack > 7_500 // Franky despawns if the last attack isn't within 20s
+                    || Date.now() - this.lastAttack > 10_000 // Franky despawns if the last attack isn't within 20s
                 )
             ) {
                 await bot.basicAttack(franky.id)
@@ -226,7 +226,7 @@ class MageMummyFarmStrategy extends MageAttackStrategy {
                 && (
                     !bot.s.coop // We don't have coop points yet
                     || !franky.target // Franky has no target
-                    || Date.now() - this.lastAttack > 7_500 // Franky despawns if the last attack isn't within 20s
+                    || Date.now() - this.lastAttack > 10_000 // Franky despawns if the last attack isn't within 20s
                 )
             ) {
                 await bot.basicAttack(franky.id)
@@ -260,7 +260,7 @@ class WarriorMummyFarmStrategy extends WarriorAttackStrategy {
                 && (
                     !bot.s.coop // We don't have coop points yet
                     || !franky.target // Franky has no target
-                    || Date.now() - this.lastAttack > 7_500 // Franky despawns if the last attack isn't within 20s
+                    || Date.now() - this.lastAttack > 10_000 // Franky despawns if the last attack isn't within 20s
                 )
             ) {
                 await bot.basicAttack(franky.id)
