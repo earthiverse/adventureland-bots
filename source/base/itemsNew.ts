@@ -6,14 +6,16 @@ import { TradeItem } from "alclient/build/TradeItem.js"
 export type BuyConfig = {
     /** If set, we should try to buy it from other players or NPCs */
     buy?: true
-    /** 
+    /** If set, we should list it to buy on our stand */
+    list?: true
+    /**
      * Maximum price to pay for the item.
-     * 
+     *
      * If set to a number, we should buy it for that much at level 0.
-     * 
+     *
      * If set to 'ponty', we should buy it for as much as ponty is selling it for (G * multipliers.secondhands_mult).
-     * 
-     * TODO: How should we go about buying the item at higher levels?
+     *
+     * TODO: Add support for ` | { [T in number]: number }`
      */
     buyPrice?: number | "ponty"
 }
@@ -26,7 +28,7 @@ export type CraftConfig = {
 export type ExchangeConfig = {
     /** If set, we should try to exchange it. */
     exchange?: true
-    /** 
+    /**
      * If set, we should only exchange it at the given level. 
      * This is for items like `goldenearring` that can be combined.
      * Each level has a different drop table.
@@ -35,21 +37,21 @@ export type ExchangeConfig = {
 }
 
 export type HoldConfig = {
-    /** 
+    /**
      * If set to true, we will have all bots hold on to these items
-     * 
+     *
      * If set to an array, we will check that those character types hold on to these items
      */
     hold?: true | CharacterType[]
-    /** 
-     * If set, we should try to always have this many of the item in our inventory at any time 
-     * 
+    /**
+     * If set, we should try to always have this many of the item in our inventory at any time
+     *
      * We should only replenish if "hold" is true, or set to our character type
      */
     replenish?: number
-    /** 
+    /**
      * If set, we should try to place it in this slot in in our inventory
-     * 
+     *
      * We should only organize it in this slot if "hold" is true, or set to our character type
      */
     holdSlot?: number
@@ -59,14 +61,16 @@ export type HoldConfig = {
 export type SellConfig = {
     /** If set, we should sell it to other players or NPCs */
     sell?: true
+    /** If set, we should list it for sale on our stand */
+    list?: true
     /**
      * Minimum price to sell it for
-     * 
-     * If it's a number, we should sell it at that price if 
+     *
+     * If it's a number, we should sell it at that price if
      * it's an item without a level, or an item at level 0
-     * 
+     *
      * If it's "npc", sell it at `G * G.multipliers.buy_to_sell`
-     * 
+     *
      * If it's an object, treat it as sellPrice[level] is sellPrice
      */
     sellPrice?: number | "npc" | { [T in number]: number }
@@ -75,9 +79,9 @@ export type SellConfig = {
 }
 
 export type UpgradeConfig = {
-    /** 
+    /**
      * If set, we should destroy the item if it's below the specified level
-     * 
+     *
      * If set, we should NOT upgrade the item
      */
     destroyBelowLevel?: number
@@ -956,6 +960,23 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
                     }
                 }
             }
+
+            if (config.sell) {
+                // TODO: Add more comparisons, for example, between numbers and strings
+                if (
+                    (
+                        typeof config.buyPrice === "number"
+                        && typeof config.sellPrice === "number"
+                        && config.buyPrice >= config.sellPrice
+                    ) || (
+                        config.buyPrice === "ponty"
+                        && config.sellPrice === "npc"
+                    )
+                ) {
+                    console.warn(`We are selling ${itemName} for less than we're buying it for, removing 'sell: true'`)
+                    delete config.sell
+                }
+            }
         }
 
         if (config.craft) {
@@ -1031,6 +1052,10 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
                 if (config.sellExcess) {
                     console.warn(`${itemName} has both 'sell' and 'sellExcess' set, removing 'sell: true'`)
                     delete config.sell
+                }
+                if (config.list) {
+                    console.warn(`${itemName} has 'list', but is selling at NPC price, removing 'list: true'`)
+                    delete config.list
                 }
             } else if (Array.isArray(config.sellPrice)) {
                 for (const level in config.sellPrice) {
@@ -1262,12 +1287,7 @@ export async function getItemCounts(owner: string): Promise<ItemCounts> {
                 q: -1,
             },
         },
-    ]) as {
-        name: ItemName
-        level?: number
-        inventorySpaces: number
-        q: number
-    }[]
+    ])
 
     // Clear the old data
     if (!countMap) countMap = new Map()
@@ -1288,9 +1308,9 @@ export async function getItemCounts(owner: string): Promise<ItemCounts> {
  * Reduces the count of the item. Useful to call before doing things that will/may
  * alter our item counts
  *
- * @param owner 
- * @param item 
- * @returns 
+ * @param owner
+ * @param item
+ * @returns
  */
 export function reduceCount(owner: string, item: ItemData) {
     let countMap = OWNER_ITEM_COUNTS.get(owner)

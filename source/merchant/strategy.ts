@@ -1476,6 +1476,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 // TODO: Deal finder
                 await this.goCheckInstances(bot).catch(console.error)
                 await this.goSellItems(bot).catch(console.error)
+                await this.listForSale(bot).catch(console.error)
 
                 await bot.smartMove(this.options.defaultPosition)
             },
@@ -2795,5 +2796,40 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
 
         setLastCheck(key)
+    }
+
+    protected async listForSale(bot: Merchant): Promise<void> {
+        if (!bot.stand) return // We don't have the stand open
+
+        for (const iN in this.options.itemConfig) {
+            const itemName = iN as ItemName
+            const config = this.options.itemConfig[itemName]
+            if (!config.list) continue // We don't want to list
+
+            if (config.buy) {
+                if (bot.isListedForPurchase(itemName)) continue // Already listed for sale
+
+                if (typeof config.buyPrice == "number") {
+                    await bot.listForPurchase(itemName, config.buyPrice)
+                } else if (config.buyPrice == "ponty") {
+                    const item = new Item({
+                        name: itemName,
+                        level: (Game.G.items[itemName].upgrade || Game.G.items[itemName].compound) ? 0 : undefined
+                    }, Game.G)
+                    await bot.listForPurchase(itemName, item.calculateValue() * Game.G.multipliers.secondhands_mult)
+                }
+
+                // TODO: Add support for buyPrice array
+            } else if (config.sell) {
+                const itemPos = bot.locateItem(itemName)
+                if (itemPos === undefined) continue // We don't have the item in our inventory
+
+                if (typeof config.sellPrice === "number") {
+                    await bot.listForSale(itemPos, config.sellPrice)
+                }
+
+                // TODO: Add support for sellPrice array
+            }
+        }
     }
 }

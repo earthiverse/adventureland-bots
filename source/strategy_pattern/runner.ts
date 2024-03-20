@@ -136,7 +136,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
             context.applyStrategy(chargeStrategy)
             break
         default:
-            context = new Strategist<PingCompensatedCharacter>(character as PingCompensatedCharacter, baseStrategy)
+            context = new Strategist<PingCompensatedCharacter>(character, baseStrategy)
             break
     }
 
