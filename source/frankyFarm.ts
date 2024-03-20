@@ -78,6 +78,9 @@ class PaladinMummyFarmStrategy extends PaladinAttackStrategy {
 const paladinMummyFarmStrategy = new PaladinMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    generateEnsureEquipped: {
+        attributes: ["attack", "resistance"]
+    },
     typeList: ["nerfedmummy"]
 })
 
@@ -135,6 +138,10 @@ class PriestMummyFarmStrategy extends PriestAttackStrategy {
 const priestMummyFarmStrategy = new PriestMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    generateEnsureEquipped: {
+        avoidAttributes: ["blast", "explosion"],
+        attributes: ["attack", "resistance"]
+    },
     typeList: ["nerfedmummy"]
 })
 
@@ -164,6 +171,10 @@ class RangerMummyFarmStrategy extends RangerAttackStrategy {
 const rangerMummyFarmStrategy = new RangerMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    generateEnsureEquipped: {
+        avoidAttributes: ["blast", "explosion"],
+        attributes: ["attack", "resistance"]
+    },
     typeList: ["nerfedmummy"]
 })
 
@@ -193,6 +204,10 @@ class RogueMummyFarmStrategy extends RogueAttackStrategy {
 const rogueMummyFarmStrategy = new RogueMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    generateEnsureEquipped: {
+        avoidAttributes: ["blast", "explosion"],
+        attributes: ["attack", "resistance"]
+    },
     typeList: ["nerfedmummy"]
 })
 
@@ -222,6 +237,10 @@ class MageMummyFarmStrategy extends MageAttackStrategy {
 const mageMummyFarmStrategy = new MageMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    generateEnsureEquipped: {
+        avoidAttributes: ["blast", "explosion"],
+        attributes: ["attack", "resistance"]
+    },
     typeList: ["nerfedmummy"]
 })
 
@@ -251,6 +270,10 @@ class WarriorMummyFarmStrategy extends WarriorAttackStrategy {
 const warriorMummyFarmStrategy = new WarriorMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    generateEnsureEquipped: {
+        avoidAttributes: ["blast", "explosion"],
+        attributes: ["attack", "resistance"]
+    },
     typeList: ["nerfedmummy"]
 })
 
@@ -275,6 +298,10 @@ const leaderMummyFarmStrategy = new LeaderMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
     disableScare: true,
+    generateEnsureEquipped: {
+        avoidAttributes: ["blast", "explosion"],
+        attributes: ["attack", "resistance"]
+    },
     typeList: ["nerfedmummy"]
 })
 
