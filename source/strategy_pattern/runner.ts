@@ -26,14 +26,11 @@ import { ToggleStandStrategy } from "./strategies/stand.js"
 import { TrackerStrategy } from "./strategies/tracker.js"
 import { DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "../base/defaults.js"
 import { ItemConfig } from "../base/itemsNew.js"
+import { DestroyStrategy } from "./strategies/destroy.js"
 
 // Variables
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
-const REPLENISHABLES = new Map<ItemName, number>([
-    ["hpot1", 9999],
-    ["mpot1", 9999],
-    ["xptome", 1],
-])
+
 
 // Strategies
 const avoidStackingStrategy = new AvoidStackingStrategy()
@@ -44,10 +41,6 @@ const bankStrategy = new MoveToBankAndDepositStuffStrategy({
 const baseStrategy = new BaseStrategy(CONTEXTS)
 const chargeStrategy = new ChargeStrategy()
 const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
-const getReplenishablesStrategy = new GetReplenishablesStrategy({
-    contexts: CONTEXTS,
-    replenishables: REPLENISHABLES
-})
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(CONTEXTS)
 const partyHealStrategy = new PartyHealStrategy(CONTEXTS)
 const respawnStrategy = new RespawnStrategy()
@@ -145,7 +138,21 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(new ItemStrategy({ contexts: CONTEXTS, itemConfig: options.itemConfig }))
+    context.applyStrategy(new DestroyStrategy({ itemConfig: options.itemConfig }))
     context.applyStrategy(new SellStrategy({ itemConfig: options.itemConfig }))
+
+    // TODO: Replace `replenishables` in GetReplenishablesStrategy with itemConfig
+    const REPLENISHABLES = new Map<ItemName, number>()
+    for (const key in options.itemConfig) {
+        const itemName = key as ItemName
+        const config = options.itemConfig[itemName]
+        if (!config.replenish) continue
+        REPLENISHABLES.set(itemName, config.replenish)
+    }
+    const getReplenishablesStrategy = new GetReplenishablesStrategy({
+        contexts: CONTEXTS,
+        replenishables: REPLENISHABLES
+    })
 
     let moveStrategy: Strategy<PingCompensatedCharacter>
     if (character.ctype !== "merchant") {
