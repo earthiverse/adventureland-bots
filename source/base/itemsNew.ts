@@ -285,6 +285,12 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "elixirvit2": {
         craft: true
     },
+    "epyjamas": {
+        destroyBelowLevel: 1
+    },
+    "eslippers": {
+        destroyBelowLevel: 1
+    },
     "essenceoflife": {
         sellExcess: 9999 * 5
     },
