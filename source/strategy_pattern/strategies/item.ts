@@ -109,7 +109,7 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
                 if (!item2) continue // No item
                 if (item2.name !== item1.name) continue // Different item
                 if (item2.p !== item1.p) continue // Different title
-                if (item2.v !== item1.v) continue // Different PVP marking
+                if (item2.v && !item1.v) continue // Different PVP marking
                 if (item2.q === gItem.s) continue // Full stack
 
                 if (item1.q + item2.q <= gItem.s) {
