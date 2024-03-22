@@ -392,8 +392,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 9,
     },
     "hpbelt": {
-        upgradeUntilLevel: 2,
-        sellExcess: 10
+        sell: true,
+        sellPrice: "npc"
     },
     "hpot0": {
         // sell: true,
@@ -524,8 +524,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         exchange: true
     },
     "shoes": {
-        // destroyBelowLevel: 1
-        sellExcess: 5,
+        // destroyBelowLevel: 1,
+        sellExcess: 1,
         upgradeUntilLevel: 0
     },
     "shoes1": {
