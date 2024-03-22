@@ -1939,7 +1939,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
             // Open a new instances
             const maxInstances = this.options.enableInstanceProvider[map].maxInstances
-            if (maxInstances) {
+            if (maxInstances !== undefined) {
                 const numInstances = await AL.InstanceModel.count({
                     map: map,
                     serverIdentifier: bot.serverData.name,
