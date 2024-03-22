@@ -100,6 +100,11 @@ export class SellStrategy<Type extends Character> implements Strategy<Type> {
             const numWeHave = bot.countItem(item.name)
             if (numWeHave <= config.sellExcess) continue // We don't have an excess
 
+            if (item.level) {
+                const lowestLevel = bot.locateItem(item.name, bot.items, { returnLowestLevel: true })
+                if (item.level !== lowestLevel) continue // We have a lower level of the same item we can sell
+            }
+
             reduceCount(bot.owner, item)
 
             await bot.sell(i, item.q ? Math.min(numWeHave - config.sellExcess, item.q) : 1)
