@@ -1,4 +1,4 @@
-import AL, { ItemData, Warrior } from "alclient"
+import AL, { ItemData, SlotType, Warrior } from "alclient"
 import { sleep } from "../../base/general.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions, IDLE_ATTACK_MONSTERS } from "./attack.js"
 import { suppress_errors } from "../logging.js"
@@ -185,15 +185,19 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         if (this.options.enableEquipForCleave) {
             // Re-equip items
+            const equipBatch: { num: number, slot: SlotType }[] = []
+
             if (mainhand) {
-                await bot.equip(bot.locateItem(mainhand.name, bot.items, { level: mainhand.level, special: mainhand.p }))
+                equipBatch.push({ num: bot.locateItem(mainhand.name, bot.items, { level: mainhand.level, special: mainhand.p, statType: mainhand.stat_type }), slot: "mainhand" })
             } else {
                 await bot.unequip("mainhand")
             }
 
             if (offhand) {
-                await bot.equip(bot.locateItem(offhand.name, bot.items, { level: offhand.level, special: offhand.p, statType: offhand.stat_type }))
+                equipBatch.push({ num: bot.locateItem(offhand.name, bot.items, { level: offhand.level, special: offhand.p, statType: offhand.stat_type }), slot: "offhand" })
             }
+
+            if (equipBatch.length) await bot.equipBatch(equipBatch)
         }
     }
 
@@ -243,15 +247,19 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         if (this.options.enableEquipForStomp) {
             // Re-equip items
+            const equipBatch: { num: number, slot: SlotType }[] = []
+
             if (mainhand) {
-                await bot.equip(bot.locateItem(mainhand.name, bot.items, { level: mainhand.level, special: mainhand.p }))
+                equipBatch.push({ num: bot.locateItem(mainhand.name, bot.items, { level: mainhand.level, special: mainhand.p, statType: mainhand.stat_type }), slot: "mainhand" })
             } else {
                 await bot.unequip("mainhand")
             }
 
             if (offhand) {
-                await bot.equip(bot.locateItem(offhand.name, bot.items, { level: offhand.level, special: offhand.p, statType: offhand.stat_type }))
+                equipBatch.push({ num: bot.locateItem(offhand.name, bot.items, { level: offhand.level, special: offhand.p, statType: offhand.stat_type }), slot: "offhand" })
             }
+
+            if (equipBatch.length) await bot.equipBatch(equipBatch)
         }
     }
 
