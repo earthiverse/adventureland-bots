@@ -608,7 +608,7 @@ export class MoveInCircleMoveStrategy implements Strategy<Character> {
         })
     }
 
-    private move(bot: Character) {
+    protected async move(bot: Character) {
         const angle = (2 * Math.PI) / this.options.sides
         const center = this.options.center
         const radius = this.options.radius

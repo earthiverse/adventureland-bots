@@ -1,4 +1,4 @@
-import AL, { ActionData, Attribute, Character, EntitiesData, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, MonsterName, PingCompensatedCharacter, SkillName, SlotType, Warrior } from "alclient"
+import AL, { ActionData, Character, EntitiesData, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, MonsterName, PingCompensatedCharacter, SkillName, SlotType, Warrior } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sleep } from "../../base/general.js"
 import { sortPriority } from "../../base/sort.js"
@@ -310,6 +310,9 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     protected async ensureEquipped(bot: Type) {
         const ensureEquipped = this.botEnsureEquipped.get(bot.id)
         if (!ensureEquipped) return
+
+        const equipBatch: { num: number, slot: SlotType }[] = []
+
         for (const sT in ensureEquipped) {
             const slotType = sT as SlotType
             const ensure = ensureEquipped[slotType]
@@ -414,9 +417,11 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                     }
                 }
 
-                await bot.equip(toEquip, slotType).catch(console.error)
+                equipBatch.push({ num: toEquip, slot: slotType })
             }
         }
+
+        if (equipBatch.length) await bot.equipBatch(equipBatch).catch(console.error)
     }
 
     protected async scare(bot: Type) {

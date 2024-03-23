@@ -12,6 +12,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
 import { hasItemInBank } from "../../base/items.js"
+import { generateEnsureEquipped } from "./equipment.js"
 
 export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xmagefz"]
 export const DOWNTIME_MONSTERS: MonsterName[] = ["snowman", "arcticbee"]
@@ -222,7 +223,14 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
                 this.options.ensureEquipped.orb = { name: "jacko" }
                 break
             case "xmagex":
-                this.options.ensureEquipped.orb = { name: "jacko" }
+                if (entity.hp < 100_000) {
+                    this.options.generateEnsureEquipped.prefer.orb.name = "rabbitsfoot"
+                    this.options.generateEnsureEquipped.attributes = ["luck"]
+                } else {
+                    this.options.generateEnsureEquipped.prefer.orb.name = "jacko"
+                    this.options.generateEnsureEquipped.attributes = ["resistance"]
+                }
+                this.options.ensureEquipped = generateEnsureEquipped(bot, this.options.generateEnsureEquipped)
                 break
         }
 
