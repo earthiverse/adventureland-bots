@@ -1,6 +1,6 @@
 import AL, { CharacterType, IPosition, ItemName, Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, ServerIdentifier, ServerRegion, Warrior } from "alclient"
 import { getMsToNextMinute, randomIntFromInterval } from "../base/general.js"
-import { MerchantMoveStrategyOptions, MerchantStrategy } from "../merchant/strategy.js"
+import { NewMerchantStrategy, NewMerchantStrategyOptions, defaultNewMerchantStrategyOptions } from "../merchant/strategy.js"
 import { Strategist, Strategy } from "./context.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./strategies/attack.js"
 import { MageAttackStrategy } from "./strategies/attack_mage.js"
@@ -24,7 +24,6 @@ import { GiveRogueSpeedStrategy } from "./strategies/rspeed.js"
 import { SellStrategy } from "./strategies/sell.js"
 import { ToggleStandStrategy } from "./strategies/stand.js"
 import { TrackerStrategy } from "./strategies/tracker.js"
-import { DEFAULT_ITEMS_TO_HOLD, DEFAULT_MERCHANT_ITEMS_TO_HOLD, DEFAULT_REPLENISHABLES, DEFAULT_REPLENISH_RATIO } from "../base/defaults.js"
 import { ItemConfig } from "../base/itemsNew.js"
 import { DestroyStrategy } from "./strategies/destroy.js"
 
@@ -61,7 +60,7 @@ export type RunnerOptions = {
     moveStrategy?: Strategy<PingCompensatedCharacter>
     moveOverrides?: Partial<ImprovedMoveStrategyOptions>
 
-    merchantOverrides?: Partial<MerchantMoveStrategyOptions>
+    merchantOverrides?: Partial<NewMerchantStrategyOptions>
 }
 
 const currentSetups = new Map<Strategist<PingCompensatedCharacter>, Strategy<PingCompensatedCharacter>[]>()
@@ -172,31 +171,12 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
             y: randomIntFromInterval(-50, 50)
         }
 
-        moveStrategy = new MerchantStrategy(CONTEXTS, {
+        moveStrategy = new NewMerchantStrategy({
+            ...defaultNewMerchantStrategyOptions,
+            ...(options.merchantOverrides ?? {}),
+            itemConfig: options.itemConfig,
             defaultPosition: defaultPosition,
-            enableBuyReplenishables: {
-                all: DEFAULT_REPLENISHABLES,
-                merchant: new Map([
-                    ["offering", 1],
-                    ["cscroll0", 100],
-                    ["cscroll1", 10],
-                    ["cscroll2", 2],
-                    ["scroll0", 100],
-                    ["scroll1", 10],
-                    ["scroll2", 2],
-                ]),
-                ratio: DEFAULT_REPLENISH_RATIO,
-            },
-            enableFishing: true,
-            enableMining: true,
-            enableOffload: {
-                esize: 3,
-                goldToHold: 1_000_000,
-                itemsToHold: DEFAULT_ITEMS_TO_HOLD,
-            },
-            goldToHold: 50_000_000,
-            itemsToHold: DEFAULT_MERCHANT_ITEMS_TO_HOLD,
-            ...(options.merchantOverrides ?? {})
+            goldToHold: 50_000
         })
         context.applyStrategy(new ToggleStandStrategy({
             offWhenMoving: true,
