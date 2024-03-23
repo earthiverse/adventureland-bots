@@ -1,8 +1,7 @@
 import { IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Tools, Warrior } from "alclient"
 import { KiteMonsterMoveStrategy } from "../strategies/move.js"
 import { Strategist, filterContexts } from "../context.js"
-import { bankingPosition, getClosestBotToPosition, offsetPositionParty } from "../../base/locations.js"
-import { goAndWithdrawItem, locateItemsInBank } from "../../base/banking.js"
+import { offsetPositionParty } from "../../base/locations.js"
 import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategies/attack_warrior.js"
@@ -11,7 +10,6 @@ import { sleep } from "../../base/general.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
-import { hasItemInBank } from "../../base/items.js"
 import { generateEnsureEquipped } from "./equipment.js"
 
 export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xmagefz"]
@@ -40,49 +38,6 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
     }
 
     protected async move(bot: PingCompensatedCharacter): Promise<IPosition> {
-        const group = [...XMageMoveStrategy.activeBots.values()]
-
-        // Ensure we have a fieldgen ready
-        const groupHasFieldgen = this.groupHasFieldgen(group)
-        const placedFieldgen = this.getPlacedFieldgen(group)
-        if (!groupHasFieldgen && !placedFieldgen) {
-            const hasFieldGenInBank = await hasItemInBank(bot.owner, "fieldgen0")
-            if (hasFieldGenInBank) {
-                // Have a bot go get a fieldgen
-                const closestBot = getClosestBotToPosition(bankingPosition, group)
-                if (closestBot === bot) {
-                    await bot.smartMove(bankingPosition)
-                    const bankFieldgens = locateItemsInBank(bot, "fieldgen0")
-                    if (bankFieldgens.length) {
-                        const [packName, indexes] = bankFieldgens[0]
-                        await goAndWithdrawItem(bot, packName, indexes[0])
-                    } else {
-                        // Have the bot leave the bank
-                        await bot.smartMove("main")
-                    }
-                    return
-                } else {
-                    // Have other bots farm the downtime monsters
-                    this.options.typeList = DOWNTIME_MONSTERS
-                    return super.move(bot)
-                }
-            }
-        }
-
-        if (groupHasFieldgen || placedFieldgen) {
-            this.options.typeList = XMAGE_MONSTERS
-        } else {
-            // We don't have a fieldgen0, so we can't do xmagex
-            this.options.typeList = ["xmagen", "xmagefi", "xmagefz"]
-        }
-
-        // Have priest heal the fieldgen if we've placed one
-        if (bot.ctype === "priest" && placedFieldgen && placedFieldgen.hp < placedFieldgen.max_hp * 0.75) {
-            if (Tools.distance(bot, placedFieldgen) > bot.range) {
-                return bot.smartMove(placedFieldgen, { getWithin: bot.range / 2, resolveOnFinalMoveStart: true })
-            }
-        }
-
         const xmage = await this.checkGoodData(bot, true)
 
         if (xmage) {
@@ -103,44 +58,34 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
                 return
             }
 
-            await bot.smartMove(offsetPositionParty(xmage, bot, 20))
-
-            if (xmage.type === "xmagex" && groupHasFieldgen && !placedFieldgen) {
-                // Place the fieldgen if we're on xmagex
-                await this.placeFieldGen(group)
+            let nearbyMage = bot.getEntity({ typeList: XMAGE_MONSTERS })
+            if (!nearbyMage) {
+                await bot.smartMove(xmage, { getWithin: 800 })
             }
+
+            nearbyMage = bot.getEntity({ typeList: XMAGE_MONSTERS })
+            if (!nearbyMage) return // We still can't see it?
+
+            if (nearbyMage.type === "xmagex") {
+                if (bot.ctype === "priest") {
+                    // Priest should go to xmage
+                    await bot.smartMove(offsetPositionParty(xmage, bot, 20))
+                } else {
+                    // Other bots should kite
+                    await this.kite(bot, nearbyMage)
+                    return
+                }
+            } else {
+                // Surround other mages
+                await bot.smartMove(offsetPositionParty(xmage, bot, 20))
+            }
+
             return
         } else if (this.options.disableCheckDB) {
             // Have other bots farm the downtime monsters
             this.options.typeList = DOWNTIME_MONSTERS
         }
         return super.move(bot)
-    }
-
-    protected groupHasFieldgen(group: PingCompensatedCharacter[]) {
-        for (const member of group) {
-            if (member.hasItem("fieldgen0")) {
-                return true
-            }
-        }
-        return false
-    }
-
-    protected getPlacedFieldgen(group: PingCompensatedCharacter[]) {
-        for (const member of group) {
-            if (member.map !== "winter_instance") continue
-            const entity = member.getEntity({ type: "fieldgen0" })
-            if (entity) return entity
-        }
-    }
-
-    protected async placeFieldGen(group: PingCompensatedCharacter[]) {
-        for (const member of group) {
-            if (member.map !== "winter_instance") continue
-            const fieldgen = member.locateItem("fieldgen0")
-            if (!fieldgen) continue
-            return member.equip(fieldgen)
-        }
     }
 }
 

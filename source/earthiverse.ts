@@ -475,9 +475,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 }
             }
 
-            const hasFieldGen = await hasItemInBank(context.bot.owner, "fieldgen0")
             for (const type of await getRecentXMages(context.bot.serverData.name, context.bot.serverData.region)) {
-                if (!hasFieldGen && type === "xmagex") continue // We can only do xmagex if we have a fieldgen0
                 priority.push(type)
             }
 
