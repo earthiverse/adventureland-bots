@@ -1576,7 +1576,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 const stackableLocations = locateItemsInBank(bot, item.name, { quantityLessThan: AL.Game.G.items[item.name].s - item.q + 1, data: item.data })
                 if (stackableLocations.length) {
                     // We can stack it on an existing stack
-                    await goAndDepositItem(bot, stackableLocations[0][0], -1, slot)
+                    await goAndDepositItem(bot, stackableLocations[0][0], -1, slot).catch(suppress_errors)
                     continue
                 }
             }
@@ -1586,7 +1586,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             if (emptyBankSlots.length === 0) continue // Our bank is full
 
             // Deposit the item in the empty slot
-            await goAndDepositItem(bot, emptyBankSlots[0][0], emptyBankSlots[0][1][0], slot)
+            await goAndDepositItem(bot, emptyBankSlots[0][0], emptyBankSlots[0][1][0], slot).catch(suppress_errors)
         }
 
         // Look for items to sell, destroy, or hold
