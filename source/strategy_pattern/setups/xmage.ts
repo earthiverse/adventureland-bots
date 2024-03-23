@@ -177,6 +177,7 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
                     this.options.generateEnsureEquipped.attributes = ["resistance"]
                 }
                 this.options.ensureEquipped = generateEnsureEquipped(bot, this.options.generateEnsureEquipped)
+                this.botEnsureEquipped.set(bot.id, this.options.ensureEquipped)
                 break
         }
 
