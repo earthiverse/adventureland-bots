@@ -381,6 +381,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 if ((context.bot.S.pinkgoo as ServerInfoDataLive)?.live) priority.push("pinkgoo")
             }
 
+            // Easter
             if (context.bot.S.egghunt) {
                 if (
                     (context.bot.S.wabbit as ServerInfoDataLive)?.live &&

@@ -66,20 +66,21 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
             nearbyMage = bot.getEntity({ typeList: XMAGE_MONSTERS })
             if (!nearbyMage) return // We still can't see it?
 
-            if (nearbyMage.type === "xmagex") {
-                if (bot.ctype === "priest") {
-                    // Priest should go to xmage
-                    await bot.smartMove(offsetPositionParty(xmage, bot, 20))
-                } else {
-                    // Other bots should kite
-                    await this.kite(bot, nearbyMage)
-                    return
-                }
-            } else {
-                // Surround other mages
-                await bot.smartMove(offsetPositionParty(xmage, bot, 20))
-            }
+            // if (nearbyMage.type === "xmagex") {
+            //     if (bot.ctype === "priest") {
+            //         // Priest should go to xmage
+            //         await bot.smartMove(offsetPositionParty(xmage, bot, 20))
+            //     } else {
+            //         // Other bots should kite
+            //         await this.kite(bot, nearbyMage)
+            //         return
+            //     }
+            // } else {
+            //     // Surround other mages
+            //     await bot.smartMove(offsetPositionParty(xmage, bot, 20))
+            // }
 
+            await bot.smartMove(offsetPositionParty(xmage, bot, 20))
             return
         } else if (this.options.disableCheckDB) {
             // Have other bots farm the downtime monsters
