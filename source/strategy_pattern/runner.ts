@@ -176,7 +176,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
             ...(options.merchantOverrides ?? {}),
             itemConfig: options.itemConfig,
             defaultPosition: defaultPosition,
-            goldToHold: 50_000
+            goldToHold: 50_000_000
         })
         context.applyStrategy(new ToggleStandStrategy({
             offWhenMoving: true,
