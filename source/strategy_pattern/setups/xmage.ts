@@ -160,13 +160,19 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
 
         switch (entity.type) {
             case "xmagefi":
-                this.options.ensureEquipped.orb = { name: "test_orb" }
+                this.options.generateEnsureEquipped.prefer.orb.name = "test_orb"
+                this.options.generateEnsureEquipped.attributes = ["resistance"]
+                this.botEnsureEquipped.set(bot.id, this.options.ensureEquipped)
                 break
             case "xmagefz":
-                this.options.ensureEquipped.orb = { name: "test_orb" }
+                this.options.generateEnsureEquipped.prefer.orb.name = "test_orb"
+                this.options.generateEnsureEquipped.attributes = ["resistance"]
+                this.botEnsureEquipped.set(bot.id, this.options.ensureEquipped)
                 break
             case "xmagen":
-                this.options.ensureEquipped.orb = { name: "jacko" }
+                this.options.generateEnsureEquipped.prefer.orb.name = "jacko"
+                this.options.generateEnsureEquipped.attributes = ["resistance"]
+                this.botEnsureEquipped.set(bot.id, this.options.ensureEquipped)
                 break
             case "xmagex":
                 if (entity.hp < 100_000) {
