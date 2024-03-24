@@ -162,17 +162,14 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
             case "xmagefi":
                 this.options.generateEnsureEquipped.prefer.orb.name = "test_orb"
                 this.options.generateEnsureEquipped.attributes = ["resistance"]
-                this.botEnsureEquipped.set(bot.id, this.options.ensureEquipped)
                 break
             case "xmagefz":
                 this.options.generateEnsureEquipped.prefer.orb.name = "test_orb"
                 this.options.generateEnsureEquipped.attributes = ["resistance"]
-                this.botEnsureEquipped.set(bot.id, this.options.ensureEquipped)
                 break
             case "xmagen":
                 this.options.generateEnsureEquipped.prefer.orb.name = "jacko"
                 this.options.generateEnsureEquipped.attributes = ["resistance"]
-                this.botEnsureEquipped.set(bot.id, this.options.ensureEquipped)
                 break
             case "xmagex":
                 if (entity.hp < 100_000) {
@@ -182,10 +179,10 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
                     this.options.generateEnsureEquipped.prefer.orb.name = "jacko"
                     this.options.generateEnsureEquipped.attributes = ["resistance"]
                 }
-                this.options.ensureEquipped = generateEnsureEquipped(bot, this.options.generateEnsureEquipped)
-                this.botEnsureEquipped.set(bot.id, this.options.ensureEquipped)
                 break
         }
+        this.options.ensureEquipped = generateEnsureEquipped(bot, this.options.generateEnsureEquipped)
+        this.botEnsureEquipped.set(bot.id, this.options.ensureEquipped)
 
         return super.attack(bot)
     }
