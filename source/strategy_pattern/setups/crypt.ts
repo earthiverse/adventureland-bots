@@ -177,7 +177,7 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
             amulet: { name: "intamulet", filters: RETURN_HIGHEST },
             belt: { name: "intbelt", filters: RETURN_HIGHEST },
             cape: { name: "angelwings", filters: RETURN_HIGHEST },
-            chest: { name: "harmor", filters: RETURN_HIGHEST },
+            chest: { name: "xarmor", filters: RETURN_HIGHEST },
             earring1: { name: "cearring", filters: RETURN_HIGHEST },
             earring2: { name: "cearring", filters: RETURN_HIGHEST },
             gloves: { name: "xgloves", filters: RETURN_HIGHEST },
