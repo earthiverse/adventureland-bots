@@ -1692,8 +1692,10 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                                 !bot.bank[packName1][bankSlot1]
                                 || bot.bank[packName1][bankSlot1].name !== itemName
                             ) return this.doBanking(bot) // We have a different item!?
-                            countIndex -= 1
-                            counts[countIndex] = [packName1, bankSlot1, bot.bank[packName1][bankSlot1].q]
+
+                            // Update counts and re-sort
+                            counts[countIndex - 1] = [packName1, bankSlot1, bot.bank[packName1][bankSlot1].q]
+                            counts[countIndex] = [packName2, bankSlot2, bot.bank[packName2][bankSlot2].q]
                             counts.sort()
                         }
                     }
