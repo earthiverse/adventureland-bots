@@ -1,5 +1,5 @@
-import AL, { ItemName, IPosition, ItemDataTrade, PingCompensatedCharacter, Item } from "alclient"
-import { Loop, LoopName, Strategist, Strategy } from "../context.js"
+import AL, { ItemName, IPosition, ItemDataTrade, PingCompensatedCharacter, Item, Tools } from "alclient"
+import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 import { BuyConfig, DEFAULT_ITEM_CONFIG, HoldConfig, ItemConfig, runSanityCheckOnItemConfig } from "../../base/itemsNew.js"
 
 export type BuyStrategyOptions = {
@@ -24,6 +24,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
     protected static pontyData = new Map<string, [Date, ItemDataTrade[]]>()
 
     public constructor(options: BuyStrategyOptions = defaultBuyStrategyOptions) {
+        if (!options.contexts) options.contexts = []
         this.options = options
         this.pontyLocations = AL.Pathfinder.locateNPC("secondhands")
 
@@ -150,10 +151,28 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
             const num = bot.countItem(itemName)
             if (num >= config.replenish) continue // We have enough
 
-            // TODO: Check if our contexts have extra, or can buy some for us
-            if (!bot.canBuy(itemName)) continue // We can't buy any
-
             const gItem = AL.Game.G.items[itemName]
+
+            if (!bot.canBuy(itemName)) {
+                // We can't buy it, check if another one of our characters can
+                for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData, owner: bot.owner })) {
+                    const contextBot = context.bot
+                    if (!contextBot.canBuy(itemName)) continue // They can't buy any either
+                    if (Tools.squaredDistance(bot, contextBot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // They're too far away
+
+                    const contextNum = contextBot.countItem(itemName)
+                    const numWant = config.replenish - num
+                    const numToBuy = Math.min(config.replenish + numWant - contextNum, Math.floor(contextBot.gold / gItem.g))
+                    if (numToBuy > 0) await contextBot.buy(itemName, numToBuy) // Buy some more
+
+                    // Transfer them
+                    const slot = contextBot.locateItem(itemName, contextBot.items, { quantityGreaterThan: numWant - 1 })
+                    await contextBot.sendItem(bot.id, slot, numWant)
+                    break
+                }
+                continue
+            }
+
             const numToBuy = Math.min(config.replenish - num, Math.floor(bot.gold / gItem.g))
 
             await bot.buy(itemName, numToBuy)
