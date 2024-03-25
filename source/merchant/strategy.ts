@@ -1678,13 +1678,13 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                             // Update counts and re-sort
                             counts[countIndex] = [packName2, bankSlot2, q1 + q2]
                             counts.sort((a, b) => a[2] - b[2])
-                        } else {
+                        } else if (q1 < gInfo.s) {
                             // We can make one a full stack
-                            await goAndWithdrawItem(bot, packName1, bankSlot1, emptySlot)
+                            await goAndWithdrawItem(bot, packName2, bankSlot2, emptySlot)
                             if (bot.items[emptySlot]?.name !== itemName) return this.doBanking(bot) // We have a different item!?
-                            const splitSlot = await bot.splitItem(emptySlot, gInfo.s - q2)
-                            await goAndDepositItem(bot, packName1, bankSlot1, emptySlot)
-                            await goAndDepositItem(bot, packName2, bankSlot2, splitSlot)
+                            const splitSlot = await bot.splitItem(emptySlot, gInfo.s - q1)
+                            await goAndDepositItem(bot, packName1, bankSlot1, splitSlot)
+                            await goAndDepositItem(bot, packName2, bankSlot2, emptySlot)
 
                             // Remove full stack, update, and re-sort
                             counts.splice(countIndex, 1)
