@@ -14,6 +14,11 @@ export const ZAPPER_STRRING: EnsureEquipped = {
     ring2: { name: "strring", filters: RETURN_HIGHEST },
 }
 
+export const BLASTER: EnsureEquipped = {
+    mainhand: { name: "gstaff", filters: RETURN_HIGHEST },
+    offhand: UNEQUIP,
+}
+
 export const MAGE_SPLASH: EnsureEquipped = {
     amulet: { name: "intamulet", filters: RETURN_HIGHEST },
     belt: { name: "intbelt", filters: RETURN_HIGHEST },

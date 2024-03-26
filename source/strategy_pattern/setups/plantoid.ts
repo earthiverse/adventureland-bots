@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy, KiteMonsterMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Requirements, Setup } from "./base"
-import { ZAPPER_CRING, ZAPPER_STRRING } from "./equipment.js"
+import { BLASTER, MAGE_SPLASH, ZAPPER_CRING, ZAPPER_STRRING } from "./equipment.js"
 
 export function constructPlantoidSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const requirements: Requirements = {
@@ -28,7 +28,8 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             disableEnergize: true,
                             disableZapper: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "explosion", "blast"],
+                                attributes: ["armor", "int", "explosion", "blast"],
+                                prefer: BLASTER
                             },
                             targetingPartyMember: true,
                             type: "plantoid"
