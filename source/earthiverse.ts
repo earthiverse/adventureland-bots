@@ -61,7 +61,6 @@ import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
 import { CRYPT_MONSTERS } from "./base/crypt.js"
 import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
-import { hasItemInBank } from "./base/items.js"
 import { DestroyStrategy, MerchantDestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
 import { DEFAULT_ITEM_CONFIG, ItemConfig, REPLENISH_ITEM_CONFIG, adjustItemConfig, runSanityCheckOnItemConfig } from "./base/itemsNew.js"
 import { getRecentCryptMonsters, getRecentSpecialMonsters, getRecentXMages } from "./base/monsters.js"
@@ -74,8 +73,8 @@ await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: tr
 const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
-let ENABLE_MONSTERHUNTS = true
-const DEFAULT_MONSTERS: MonsterName[] = ["croc", "bat"]
+let ENABLE_MONSTERHUNTS = false
+const DEFAULT_MONSTERS: MonsterName[] = ["plantoid", "porcupine", "gscorpion"]
 const SPECIAL_MONSTERS: MonsterName[] = [
     "crabxx",
     "cutebee",
