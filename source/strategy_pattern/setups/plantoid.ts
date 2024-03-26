@@ -50,6 +50,8 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
+                            // Porcupines are too close
+                            disableAgitate: true,
                             disableZapper: true,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
