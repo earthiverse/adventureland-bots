@@ -28,7 +28,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             disableEnergize: true,
                             disableZapper: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "int", "explosion", "blast"],
+                                attributes: ["armor", "explosion", "blast"],
                             },
                             targetingPartyMember: true,
                             type: "plantoid"
@@ -41,7 +41,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "int", "attack"],
+                                attributes: ["armor", "attack"],
                             },
                             type: "plantoid",
                         }),
