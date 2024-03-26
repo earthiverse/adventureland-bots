@@ -5,6 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy, KiteMonsterMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Requirements, Setup } from "./base"
+import { ZAPPER_CRING, ZAPPER_STRRING } from "./equipment.js"
 
 export function constructPlantoidSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const requirements: Requirements = {
@@ -52,11 +53,11 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             // Porcupines are too close
                             disableAgitate: true,
-                            disableZapper: true,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "str", "explosion", "blast"],
+                                prefer: ZAPPER_STRRING
                             },
                             targetingPartyMember: true,
                             type: "plantoid"
