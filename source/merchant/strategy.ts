@@ -1670,28 +1670,41 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
                         if (q1 + q2 < gInfo.s) {
                             // We can stack the first one on the second one
+
+                            // Withdraw both so they stack on each other
                             await goAndWithdrawItem(bot, packName1, bankSlot1, emptySlot)
                             await goAndWithdrawItem(bot, packName2, bankSlot2, -1)
                             if (bot.items[emptySlot]?.name !== itemName) return this.doBanking(bot) // We have a different item!?
+
+                            // Re-deposit them
                             await goAndDepositItem(bot, packName2, bankSlot2, emptySlot)
 
-                            // Update counts and re-sort
-                            counts[countIndex] = [packName2, bankSlot2, q1 + q2]
+                            // Update count
+                            counts[countIndex] = [packName2, bankSlot2, bot.bank[packName2][bankSlot2].q]
+
+                            // Remove the slot that's now empty
+                            countIndex -= 1
+                            counts.splice(countIndex, 1)
+
+                            // Re-sort
                             counts.sort((a, b) => a[2] - b[2])
                         } else if (q1 < gInfo.s) {
                             // We can make one a full stack
+                            // Withdraw the lower quantity stack
                             await goAndWithdrawItem(bot, packName2, bankSlot2, emptySlot)
                             if (bot.items[emptySlot]?.name !== itemName) return this.doBanking(bot) // We have a different item!?
+
+                            // Split off enough to make the higher quantity stack a full stack
                             const splitSlot = await bot.splitItem(emptySlot, gInfo.s - q1)
+                            if (bot.items[splitSlot]?.name !== itemName) return this.doBanking(bot) // We have a different item!?
                             await goAndDepositItem(bot, packName1, bankSlot1, splitSlot)
+
+                            // Deposit the rest where we got them from
                             await goAndDepositItem(bot, packName2, bankSlot2, emptySlot)
 
-                            // Remove full stack, update, and re-sort
-                            counts.splice(countIndex, 1)
-                            if (
-                                !bot.bank[packName1][bankSlot1]
-                                || bot.bank[packName1][bankSlot1].name !== itemName
-                            ) return this.doBanking(bot) // We have a different item!?
+                            // Update counts
+                            counts[countIndex - 1] = [packName1, bankSlot1, bot.bank[packName1][bankSlot1].q]
+                            counts[countIndex] = [packName2, bankSlot2, bot.bank[packName2][bankSlot2].q]
 
                             // Update counts and re-sort
                             counts[countIndex - 1] = [packName1, bankSlot1, bot.bank[packName1][bankSlot1].q]
