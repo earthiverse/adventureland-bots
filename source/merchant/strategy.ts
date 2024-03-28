@@ -1696,7 +1696,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                             // Update counts and re-sort
                             counts[countIndex - 1] = [packName1, bankSlot1, bot.bank[packName1][bankSlot1].q]
                             counts[countIndex] = [packName2, bankSlot2, bot.bank[packName2][bankSlot2].q]
-                            counts.sort()
+                            counts.sort((a, b) => a[2] - b[2])
                         }
                     }
                 }
