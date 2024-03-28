@@ -1697,7 +1697,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                             // Split off enough to make the higher quantity stack a full stack
                             const splitSlot = await bot.splitItem(emptySlot, gInfo.s - q1)
                             if (bot.items[splitSlot]?.name !== itemName) return this.doBanking(bot) // We have a different item!?
-                            await goAndDepositItem(bot, packName1, bankSlot1, splitSlot)
+                            await goAndDepositItem(bot, packName1, -1, splitSlot)
 
                             // Deposit the rest where we got them from
                             await goAndDepositItem(bot, packName2, bankSlot2, emptySlot)
