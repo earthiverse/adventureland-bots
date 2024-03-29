@@ -21,6 +21,7 @@ export type LoopName =
     | "destroy"
     | "elixir"
     | "equip"
+    | "exchange"
     | "heal"
     | "invis"
     | "item"

@@ -604,6 +604,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "t2bow": {
         destroyBelowLevel: 1
     },
+    "t2quiver": {
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 2
+    },
     "t3bow": {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 2
@@ -698,13 +702,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     "xarmor": {
         buy: true,
-        buyPrice: "ponty",
+        buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 4
     },
     "xboots": {
         buy: true,
-        buyPrice: "ponty",
+        buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 4
     },
@@ -713,13 +717,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     "xgloves": {
         buy: true,
-        buyPrice: "ponty",
+        buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 4
     },
     "xhelmet": {
         buy: true,
-        buyPrice: "ponty",
+        buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 4
     },
@@ -740,7 +744,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     "xpants": {
         buy: true,
-        buyPrice: "ponty",
+        buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 4
     },
@@ -758,6 +762,20 @@ export function wantToDestroy(itemConfig: ItemConfig, item: ItemData): boolean {
     if (config.destroyBelowLevel === undefined) return false // Don't want to destroy
 
     return item.level < config.destroyBelowLevel
+}
+
+export function wantToExchange(itemConfig: ItemConfig, item: Item): boolean {
+    if (item.l) return false // Locked
+    if (!item.e) return false // Not exchangable
+
+    const config = itemConfig[item.name]
+    if (!config) return false // No config
+    if (!config.exchange) return false // Don't want to exchange
+    if (config.exchangeAtLevel !== undefined && item.level !== config.exchangeAtLevel) return false // We don't want to exchange it at this level
+
+    if ((item.e ?? 1) > (item.q ?? 1)) return false // We don't have enough to exchange
+
+    return true
 }
 
 export function wantToHold(itemConfig: ItemConfig, item: ItemData, bot: Character): boolean {

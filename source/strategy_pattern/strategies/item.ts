@@ -1,6 +1,6 @@
 import AL, { Item, ItemName, Merchant, PingCompensatedCharacter, Player } from "alclient"
 import { Strategy, LoopName, Loop, Strategist, filterContexts } from "../context.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, reduceCount, wantToHold, wantToSellToNpc, wantToUpgrade } from "../../base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, reduceCount, wantToExchange, wantToHold, wantToSellToNpc, wantToUpgrade } from "../../base/itemsNew.js"
 
 export type ItemStrategyOptions = {
     itemConfig: ItemConfig
@@ -32,6 +32,14 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
                 await this.transferStackableItems(bot).catch(console.error)
             },
             interval: 5_000
+        })
+
+        this.loops.set("exchange", {
+            fn: async (bot: Type) => {
+                if (bot.q.exchange) return // Waiting for another exchange to finish
+                await this.exchange(bot).catch(console.error)
+            },
+            interval: 250,
         })
 
         this.loops.set("compound", {
@@ -277,6 +285,8 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
             itemsToUpgrade.push([slot, item])
         }
 
+        if (!itemsToUpgrade.length) return // No items to upgrade
+
         // Sort itemsToUpgrade lowest -> highest level, so we upgrade the lowest levels first
         itemsToUpgrade.sort((a, b) => a[1].level - b[1].level)
 
@@ -313,5 +323,23 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
             return bot.upgrade(slot, scrollSlot, offeringSlot)
         }
+    }
+
+    private async exchange(bot: Type) {
+        if (bot.map.startsWith("bank")) return // Can't exchange in bank
+
+        const itemsToExchange: [number, Item][] = []
+
+        for (const [slot, item] of bot.getItems()) {
+            if (!wantToExchange(this.options.itemConfig, item)) continue
+            if (!bot.canExchange(item.name)) continue
+            itemsToExchange.push([slot, item])
+        }
+
+        if (!itemsToExchange.length) return // No items to exchange
+
+        // Sort itemsToExchange lowest -> highest quantity, so we free up inventory the fastest
+        itemsToExchange.sort((a, b) => (a[1].q ?? 1) - (b[1].q ?? 1))
+        return bot.exchange(itemsToExchange[0][0])
     }
 }

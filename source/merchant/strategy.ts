@@ -49,7 +49,7 @@ import {
 import { BankItemPosition, goAndDepositItem, goAndWithdrawItem, locateEmptyBankSlots, locateItemsInBank, tidyBank } from "../base/banking.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, reduceCount, wantToDestroy, wantToHold, wantToSellToNpc, wantToSellToPlayer, wantToUpgrade } from "../base/itemsNew.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, reduceCount, wantToDestroy, wantToExchange, wantToHold, wantToSellToNpc, wantToSellToPlayer, wantToUpgrade } from "../base/itemsNew.js"
 import { TradeItem } from "alclient/build/TradeItem.js"
 
 export type MerchantMoveStrategyOptions = {
@@ -2242,12 +2242,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
     protected async goExchange(bot: Merchant): Promise<void> {
         for (const [slot, item] of bot.getItems()) {
-            const config = this.options.itemConfig[item.name]
-            if (!config) continue // No config
-            if (!config.exchange) continue // We don't want to exchange it
-            if (config.exchangeAtLevel !== undefined && item.level !== config.exchangeAtLevel) continue // We don't want to exchange it at this level
-
-            if ((item.e ?? 1) > (item.q ?? 1)) continue // We don't have enough to exchange
+            if (!wantToExchange(this.options.itemConfig, item)) continue
             if (!bot.canExchange(item.name)) {
                 // We need to move to exchange
                 const npc = AL.Pathfinder.locateExchangeNPC(item.name)
