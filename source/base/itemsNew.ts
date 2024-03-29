@@ -345,6 +345,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "greenenvelope": {
         exchange: true
     },
+    "harbringer": {
+        destroyBelowLevel: 1
+    },
     "harmor": {
         buy: true,
         buyPrice: "ponty",
@@ -431,6 +434,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "maceofthedead": {
         destroyBelowLevel: 1
     },
+    "mpxgloves": {
+        // Don't upgrade, it's special
+        upgradeUntilLevel: 0,
+    },
     "merry": {
         destroyBelowLevel: 1
     },
@@ -459,6 +466,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: ["merchant"],
         buy: true,
         buyPrice: 2_500_000,
+    },
+    "oozingterror": {
+        destroyBelowLevel: 1
     },
     "ornamentstaff": {
         destroyBelowLevel: 1
@@ -615,6 +625,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "test_orb": {
         upgradeUntilLevel: 0
     },
+    "throwingstars": {
+        // We use level 0 to craft other stars
+        upgradeUntilLevel: 0
+    },
     "tigerhelmet": {
         destroyBelowLevel: 1
     },
@@ -622,8 +636,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: true,
         holdSlot: 41
     },
-    "throwingstars": {
-        // We use level 0 to craft other stars
+    "tshirt88": {
+        // Don't upgrade, it's special
         upgradeUntilLevel: 0
     },
     "vattire": {
