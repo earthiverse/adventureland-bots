@@ -155,7 +155,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     "bcape": {
         // We can craft other capes at level 7
-        upgradeUntilLevel: 7
+        upgradeUntilLevel: 7,
+        usePrimlingFromLevel: 5
     },
     "bfangamulet": {
         buy: true,
