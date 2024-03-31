@@ -327,6 +327,7 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
     private async exchange(bot: Type) {
         if (bot.map.startsWith("bank")) return // Can't exchange in bank
+        if (bot.esize <= 1) return // Don't want to exchange when it will fill up our inventory
 
         const itemsToExchange: [number, Item][] = []
 

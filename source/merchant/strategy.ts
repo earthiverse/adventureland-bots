@@ -2241,6 +2241,8 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
     }
 
     protected async goExchange(bot: Merchant): Promise<void> {
+        if (bot.esize <= 1) return // Don't want to exchange if it will fill up our inventory
+
         for (const [slot, item] of bot.getItems()) {
             if (!wantToExchange(this.options.itemConfig, item)) continue
             if (!bot.canExchange(item.name)) {
