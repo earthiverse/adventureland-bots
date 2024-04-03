@@ -295,6 +295,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "essenceoflife": {
         sellExcess: 9999 * 5
     },
+    "exoarm": {
+        usePrimlingFromLevel: 0,
+        useOfferingFromLevel: 1
+    },
     "fieldgen0": {
         sellExcess: 20
     },
@@ -320,12 +324,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "gcape": {
         destroyBelowLevel: 1
     },
-    /** Green Gem */
-    "gem0": {
+    "gem0": { /** Green Gem */
         exchange: true
     },
-    /** Red Gem */
-    "gem1": {
+    "gem1": { /** Red Gem */
         exchange: true
     },
     "gemfragment": {
@@ -414,6 +416,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "intring": {
         sell: true,
         sellPrice: "npc"
+    },
+    "lantern": {
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 3
     },
     "lbelt": {
         craft: true
@@ -692,6 +698,18 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     "wbasher": {
         destroyBelowLevel: 1
+    },
+    "wbook0": {
+        usePrimlingFromLevel: 3,
+        useOfferingFromLevel: 4
+    },
+    "wbook1": {
+        usePrimlingFromLevel: 0,
+        useOfferingFromLevel: 1
+    },
+    "wbookhs": {
+        usePrimlingFromLevel: 0,
+        useOfferingFromLevel: 1
     },
     "wbreeches": {
         craft: true,
