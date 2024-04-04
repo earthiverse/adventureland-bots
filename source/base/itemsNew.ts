@@ -513,6 +513,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "quiver": {
         destroyBelowLevel: 1
     },
+    "rabbitsfoot": {
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 2
+    },
     "resistancering": {
         craft: true
     },
@@ -964,6 +968,37 @@ export async function adjustItemConfig(itemConfig: ItemConfig) {
             config.buy = true
             config.buyPrice = "ponty"
             continue
+        }
+
+        // Use primlings and offerings for higher level items
+        if (gItem.compound && gItem.grades) {
+            let primlingFrom = 3
+            if (gItem.grades[1] == 0) {
+                // Rare at level 0
+                primlingFrom = 1
+            } else if (gItem.grades[0] == 0) {
+                // High at level 0
+                primlingFrom = 2
+            }
+
+            if (!config.usePrimlingFromLevel) config.usePrimlingFromLevel = primlingFrom
+            if (!config.useOfferingFromLevel) config.useOfferingFromLevel = primlingFrom + 1
+        }
+        if (gItem.upgrade && gItem.grades) {
+            let primlingFrom = 8
+            let offeringFrom = 9
+            if (gItem.grades[1] == 0) {
+                // Rare at level 0
+                primlingFrom = 4
+                offeringFrom = 7
+            } else if (gItem.grades[0] == 0) {
+                // High at level 0
+                primlingFrom = 6
+                offeringFrom = 8
+            }
+
+            if (!config.usePrimlingFromLevel) config.usePrimlingFromLevel = primlingFrom
+            if (!config.useOfferingFromLevel) config.useOfferingFromLevel = offeringFrom
         }
 
         if (Object.keys(config).length === 0) {
