@@ -39,8 +39,9 @@ class TrackUpgradeStrategy implements Strategy<Character> {
 class BuyAndUpgradeStrategy implements Strategy<Merchant> {
     public loops = new Map<LoopName, Loop<Merchant>>()
 
+    public testSlot = new Map<string, number>()
+
     public constructor(options: { item: ItemName } = { item: "wshield" }) {
-        let testSlot: number = 0
         this.loops.set("upgrade", {
             fn: async (bot: Merchant) => {
                 if (bot.q.upgrade) return // Already upgrading
@@ -61,7 +62,7 @@ class BuyAndUpgradeStrategy implements Strategy<Merchant> {
                 }
 
                 // Swap item to the test slot
-                testSlot = (testSlot + 1) % bot.isize
+                const testSlot = this.testSlot.get(bot.id) + 1 % bot.isize
                 if (itemSlot !== testSlot) {
                     await bot.swapItems(testSlot, itemSlot)
                     itemSlot = testSlot
@@ -80,11 +81,17 @@ class BuyAndUpgradeStrategy implements Strategy<Merchant> {
 
                 // Upgrade
                 await bot.upgrade(itemSlot, scrollSlot)
+                this.testSlot.set(bot.id, testSlot)
             },
             interval: 500,
         })
     }
 
+    public onApply(bot: Merchant) {
+        if (!this.testSlot.has(bot.id)) {
+            this.testSlot.set(bot.id, 0)
+        }
+    }
 }
 
 const baseStrategy = new BaseStrategy()
