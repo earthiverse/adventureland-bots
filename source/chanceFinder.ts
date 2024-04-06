@@ -27,6 +27,7 @@ class TrackUpgradeStrategy implements Strategy<Character> {
 
             // Append roll to file that's tracking what slot we upgraded
             fs.appendFile(`${dir}/${slot}`, roll.toFixed(2) + "\n", suppress_errors)
+            console.debug(`rolled a ${roll.toFixed(2)} in slot ${slot}`)
         }
         bot.socket.on("q_data", this.onQ)
     }
@@ -62,7 +63,7 @@ class BuyAndUpgradeStrategy implements Strategy<Merchant> {
                 }
 
                 // Swap item to the test slot
-                const testSlot = this.testSlot.get(bot.id) + 1 % bot.isize
+                const testSlot = (this.testSlot.get(bot.id) + 1) % bot.isize
                 if (itemSlot !== testSlot) {
                     await bot.swapItems(testSlot, itemSlot)
                     itemSlot = testSlot
