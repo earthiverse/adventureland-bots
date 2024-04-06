@@ -20,6 +20,7 @@
     "lru-cache": "^10.2.0",
     "node-trilateration": "^1.0.0",
     "queue-promise": "^2.2.1",
+    "simple-statistics": "^7.8.3",
     "wordlist-english": "^1.2.1"
   },
   "devDependencies": {
