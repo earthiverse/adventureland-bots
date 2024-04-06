@@ -430,7 +430,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     "lostearring": {
         exchange: true,
         exchangeAtLevel: 2,
-        upgradeUntilLevel: 2
+        upgradeUntilLevel: 2,
+        // Don't use offerings or primlings
+        useOfferingFromLevel: 99,
+        usePrimlingFromLevel: 99,
     },
     "luckbooster": {
         hold: true
