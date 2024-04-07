@@ -30,7 +30,6 @@ import { DestroyStrategy } from "./strategies/destroy.js"
 // Variables
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 
-
 // Strategies
 const avoidStackingStrategy = new AvoidStackingStrategy()
 const bankStrategy = new MoveToBankAndDepositStuffStrategy({
@@ -47,7 +46,7 @@ const rSpeedStrategy = new GiveRogueSpeedStrategy()
 const trackerStrategy = new TrackerStrategy()
 
 export type RunnerOptions = {
-    monster: MonsterName
+    monsters: MonsterName[]
     itemConfig: ItemConfig
     partyLeader?: string
     ephemeral?: {
@@ -97,7 +96,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
     switch (character.ctype) {
         case "mage":
             context = new Strategist<Mage>(character as Mage, baseStrategy)
-            attackStrategy = options.attackStrategy ?? new MageAttackStrategy({ type: options.monster, contexts: CONTEXTS })
+            attackStrategy = options.attackStrategy ?? new MageAttackStrategy({ typeList: options.monsters, contexts: CONTEXTS })
             context.applyStrategy(magiportStrategy)
             break
         case "merchant": {
@@ -106,25 +105,25 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
         }
         case "paladin":
             context = new Strategist<Paladin>(character as Paladin, baseStrategy)
-            attackStrategy = options.attackStrategy ?? new PaladinAttackStrategy({ type: options.monster, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
+            attackStrategy = options.attackStrategy ?? new PaladinAttackStrategy({ typeList: options.monsters, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
             break
         case "priest":
             context = new Strategist<Priest>(character as Priest, baseStrategy)
-            attackStrategy = options.attackStrategy ?? new PriestAttackStrategy({ type: options.monster, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
+            attackStrategy = options.attackStrategy ?? new PriestAttackStrategy({ typeList: options.monsters, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
             context.applyStrategy(partyHealStrategy)
             break
         case "ranger":
             context = new Strategist<Ranger>(character as Ranger, baseStrategy)
-            attackStrategy = options.attackStrategy ?? new RangerAttackStrategy({ type: options.monster, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
+            attackStrategy = options.attackStrategy ?? new RangerAttackStrategy({ typeList: options.monsters, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
             break
         case "rogue":
             context = new Strategist<Rogue>(character as Rogue, baseStrategy)
-            attackStrategy = options.attackStrategy ?? new RogueAttackStrategy({ type: options.monster, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
+            attackStrategy = options.attackStrategy ?? new RogueAttackStrategy({ typeList: options.monsters, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
             context.applyStrategy(rSpeedStrategy)
             break
         case "warrior":
             context = new Strategist<Warrior>(character as Warrior, baseStrategy)
-            attackStrategy = options.attackStrategy ?? new WarriorAttackStrategy({ type: options.monster, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
+            attackStrategy = options.attackStrategy ?? new WarriorAttackStrategy({ typeList: options.monsters, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
             context.applyStrategy(chargeStrategy)
             break
         default:
@@ -155,7 +154,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
 
     let moveStrategy: Strategy<PingCompensatedCharacter>
     if (character.ctype !== "merchant") {
-        moveStrategy = options.moveStrategy ?? new ImprovedMoveStrategy(options.monster, { ...(options.moveOverrides ?? {}) })
+        moveStrategy = options.moveStrategy ?? new ImprovedMoveStrategy(options.monsters, { ...(options.moveOverrides ?? {}) })
 
         if (options.partyLeader) {
             if (character.id == options.partyLeader) {

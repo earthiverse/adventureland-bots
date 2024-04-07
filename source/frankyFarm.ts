@@ -52,9 +52,9 @@ const buyStrategy = new BuyStrategy({
 
 const frankyMoveStrategy = new ImprovedMoveStrategy("franky", { idlePosition: frankyIdlePosition })
 
-class PaladinMummyFarmStrategy extends PaladinAttackStrategy {
-    protected lastAttack: number = 0
+let LAST_ATTACK: number = 0
 
+class PaladinMummyFarmStrategy extends PaladinAttackStrategy {
     protected async attack(bot: Paladin): Promise<void> {
         if (bot.canUse("attack")) {
             const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
@@ -64,11 +64,11 @@ class PaladinMummyFarmStrategy extends PaladinAttackStrategy {
                 && (
                     !bot.s.coop // We don't have coop points yet
                     || !franky.target // Franky has no target
-                    || Date.now() - this.lastAttack > 10_000 // Franky despawns if the last attack isn't within 20s
+                    || Date.now() - LAST_ATTACK > 10_000 // Franky despawns if the last attack isn't within 20s
                 )
             ) {
                 await bot.basicAttack(franky.id)
-                this.lastAttack = Date.now()
+                LAST_ATTACK = Date.now()
                 return
             }
         }
@@ -79,6 +79,7 @@ class PaladinMummyFarmStrategy extends PaladinAttackStrategy {
 const paladinMummyFarmStrategy = new PaladinMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    disableScare: true,
     generateEnsureEquipped: {
         attributes: ["attack", "resistance"]
     },
@@ -86,8 +87,6 @@ const paladinMummyFarmStrategy = new PaladinMummyFarmStrategy({
 })
 
 class PriestMummyFarmStrategy extends PriestAttackStrategy {
-    protected lastAttack: number = 0
-
     protected async attack(bot: Priest): Promise<void> {
         await this.healFriendsOrSelf(bot).catch()
         if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot).catch(suppress_errors)
@@ -127,11 +126,11 @@ class PriestMummyFarmStrategy extends PriestAttackStrategy {
             && (
                 !bot.s.coop // We don't have coop points yet
                 || !franky.target // Franky has no target
-                || Date.now() - this.lastAttack > 10_000 // Franky despawns if the last attack isn't within 20s
+                || Date.now() - LAST_ATTACK > 10_000 // Franky despawns if the last attack isn't within 20s
             )
         ) {
             await bot.basicAttack(franky.id)
-            this.lastAttack = Date.now()
+            LAST_ATTACK = Date.now()
             return
         }
     }
@@ -139,6 +138,7 @@ class PriestMummyFarmStrategy extends PriestAttackStrategy {
 const priestMummyFarmStrategy = new PriestMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    disableScare: true,
     generateEnsureEquipped: {
         avoidAttributes: ["blast", "explosion"],
         attributes: ["attack", "resistance"]
@@ -147,8 +147,6 @@ const priestMummyFarmStrategy = new PriestMummyFarmStrategy({
 })
 
 class RangerMummyFarmStrategy extends RangerAttackStrategy {
-    protected lastAttack: number = 0
-
     protected async attack(bot: Ranger): Promise<void> {
         if (bot.canUse("attack")) {
             const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
@@ -158,11 +156,11 @@ class RangerMummyFarmStrategy extends RangerAttackStrategy {
                 && (
                     !bot.s.coop // We don't have coop points yet
                     || !franky.target // Franky has no target
-                    || Date.now() - this.lastAttack > 10_000 // Franky despawns if the last attack isn't within 20s
+                    || Date.now() - LAST_ATTACK > 10_000 // Franky despawns if the last attack isn't within 20s
                 )
             ) {
                 await bot.basicAttack(franky.id)
-                this.lastAttack = Date.now()
+                LAST_ATTACK = Date.now()
                 return
             }
         }
@@ -173,6 +171,7 @@ class RangerMummyFarmStrategy extends RangerAttackStrategy {
 const rangerMummyFarmStrategy = new RangerMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    disableScare: true,
     generateEnsureEquipped: {
         avoidAttributes: ["blast", "explosion"],
         attributes: ["attack", "resistance"]
@@ -181,8 +180,6 @@ const rangerMummyFarmStrategy = new RangerMummyFarmStrategy({
 })
 
 class RogueMummyFarmStrategy extends RogueAttackStrategy {
-    protected lastAttack: number = 0
-
     protected async attack(bot: Rogue): Promise<void> {
         if (bot.canUse("attack")) {
             const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
@@ -192,11 +189,11 @@ class RogueMummyFarmStrategy extends RogueAttackStrategy {
                 && (
                     !bot.s.coop // We don't have coop points yet
                     || !franky.target // Franky has no target
-                    || Date.now() - this.lastAttack > 10_000 // Franky despawns if the last attack isn't within 20s
+                    || Date.now() - LAST_ATTACK > 10_000 // Franky despawns if the last attack isn't within 20s
                 )
             ) {
                 await bot.basicAttack(franky.id)
-                this.lastAttack = Date.now()
+                LAST_ATTACK = Date.now()
                 return
             }
         }
@@ -207,6 +204,7 @@ class RogueMummyFarmStrategy extends RogueAttackStrategy {
 const rogueMummyFarmStrategy = new RogueMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    disableScare: true,
     generateEnsureEquipped: {
         avoidAttributes: ["blast", "explosion"],
         attributes: ["attack", "resistance"]
@@ -215,8 +213,6 @@ const rogueMummyFarmStrategy = new RogueMummyFarmStrategy({
 })
 
 class MageMummyFarmStrategy extends MageAttackStrategy {
-    protected lastAttack: number = 0
-
     protected async attack(bot: Mage): Promise<void> {
         if (bot.canUse("attack")) {
             const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
@@ -226,11 +222,11 @@ class MageMummyFarmStrategy extends MageAttackStrategy {
                 && (
                     !bot.s.coop // We don't have coop points yet
                     || !franky.target // Franky has no target
-                    || Date.now() - this.lastAttack > 10_000 // Franky despawns if the last attack isn't within 20s
+                    || Date.now() - LAST_ATTACK > 10_000 // Franky despawns if the last attack isn't within 20s
                 )
             ) {
                 await bot.basicAttack(franky.id)
-                this.lastAttack = Date.now()
+                LAST_ATTACK = Date.now()
                 return
             }
         }
@@ -241,6 +237,7 @@ class MageMummyFarmStrategy extends MageAttackStrategy {
 const mageMummyFarmStrategy = new MageMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    disableScare: true,
     generateEnsureEquipped: {
         avoidAttributes: ["blast", "explosion"],
         attributes: ["attack", "resistance"]
@@ -249,8 +246,6 @@ const mageMummyFarmStrategy = new MageMummyFarmStrategy({
 })
 
 class WarriorMummyFarmStrategy extends WarriorAttackStrategy {
-    protected lastAttack: number = 0
-
     protected async attack(bot: Warrior): Promise<void> {
         if (bot.canUse("attack")) {
             const franky = bot.getEntity({ type: "franky", withinRange: "attack" })
@@ -260,11 +255,11 @@ class WarriorMummyFarmStrategy extends WarriorAttackStrategy {
                 && (
                     !bot.s.coop // We don't have coop points yet
                     || !franky.target // Franky has no target
-                    || Date.now() - this.lastAttack > 10_000 // Franky despawns if the last attack isn't within 20s
+                    || Date.now() - LAST_ATTACK > 10_000 // Franky despawns if the last attack isn't within 20s
                 )
             ) {
                 await bot.basicAttack(franky.id)
-                this.lastAttack = Date.now()
+                LAST_ATTACK = Date.now()
                 return
             }
         }
@@ -275,11 +270,12 @@ class WarriorMummyFarmStrategy extends WarriorAttackStrategy {
 const warriorMummyFarmStrategy = new WarriorMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    disableScare: true,
     generateEnsureEquipped: {
         avoidAttributes: ["blast", "explosion"],
         attributes: ["attack", "resistance"]
     },
-    typeList: ["nerfedmummy"]
+    typeList: ["nerfedmummy"],
 })
 
 class LeaderMummyFarmStrategy extends PriestMummyFarmStrategy {
@@ -302,6 +298,7 @@ class LeaderMummyFarmStrategy extends PriestMummyFarmStrategy {
 const leaderMummyFarmStrategy = new LeaderMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
+    disableScare: true,
     generateEnsureEquipped: {
         avoidAttributes: ["blast", "explosion"],
         attributes: ["attack", "resistance"]
