@@ -84,7 +84,7 @@ class BuyAndUpgradeStrategy implements Strategy<Merchant> {
                 await bot.upgrade(itemSlot, scrollSlot)
                 this.testSlot.set(bot.id, testSlot)
             },
-            interval: 500,
+            interval: 100,
         })
     }
 
