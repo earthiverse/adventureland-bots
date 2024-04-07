@@ -64,6 +64,7 @@ import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
 import { DestroyStrategy, MerchantDestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
 import { DEFAULT_ITEM_CONFIG, ItemConfig, REPLENISH_ITEM_CONFIG, adjustItemConfig, runSanityCheckOnItemConfig } from "./base/itemsNew.js"
 import { getRecentCryptMonsters, getRecentSpecialMonsters, getRecentXMages } from "./base/monsters.js"
+import { TrackUpgradeStrategy } from "./chanceFinder.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true, cheat: true })
@@ -168,6 +169,7 @@ const privateItemStrategy = new ItemStrategy({
     contexts: PRIVATE_CONTEXTS,
     itemConfig: DEFAULT_ITEM_CONFIG,
 })
+const upgradeStatisticsStrategy = new TrackUpgradeStrategy()
 
 let OVERRIDE_MONSTERS: MonsterName[]
 let OVERRIDE_REGION: ServerRegion
@@ -727,6 +729,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(elixirStrategy)
     context.applyStrategy(destroyStrategy)
+    context.applyStrategy(upgradeStatisticsStrategy)
 }
 
 async function startMage(context: Strategist<Mage>, privateContext = false) {

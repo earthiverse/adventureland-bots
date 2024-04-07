@@ -12,7 +12,7 @@ const CREDENTIALS = "../credentials.json"
 await Promise.all([AL.Game.loginJSONFile(CREDENTIALS, false), AL.Game.getGData(false)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: false })
 
-class TrackUpgradeStrategy implements Strategy<Character> {
+export class TrackUpgradeStrategy implements Strategy<Character> {
     private onQ: (data: PQData) => void
 
     public onApply(bot: Character) {
@@ -108,3 +108,29 @@ const context = new Strategist<Merchant>(merchant1, baseStrategy)
 context.applyStrategy(moveStrategy)
 context.applyStrategy(trackUpgradeStrategy)
 context.applyStrategy(upgradeStrategy)
+
+const connectLoop = async () => {
+    try {
+        await context.reconnect(false)
+    } catch (e) {
+        console.error(e)
+    } finally {
+        context?.bot?.socket?.removeAllListeners("disconnect")
+        setTimeout(async () => { await connectLoop() }, getMsToNextMinute() + 5_000)
+    }
+}
+setTimeout(async () => { await connectLoop() }, getMsToNextMinute() + 5_000)
+
+const disconnectLoop = async () => {
+    try {
+        console.log("Disconnecting...")
+
+        context.bot.socket.removeAllListeners("disconnect")
+        await context.bot.disconnect()
+    } catch (e) {
+        console.error(e)
+    } finally {
+        setTimeout(async () => { await disconnectLoop() }, getMsToNextMinute() + (60_000 - 5_000))
+    }
+}
+setTimeout(async () => { await disconnectLoop() }, getMsToNextMinute() - 5_000)
