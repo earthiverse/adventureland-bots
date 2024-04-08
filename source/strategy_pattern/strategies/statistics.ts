@@ -13,6 +13,7 @@ export class TrackUpgradeStrategy implements Strategy<Character> {
         fs.mkdir(dir, { recursive: true }, suppress_errors)
 
         this.onQ = (data) => {
+            if (!data.q.upgrade) return // Not upgrade
             if (data.p.failure !== true && data.p.success !== true) return // Still rolling
             const slot = data.num
             const roll = parseFloat(`${data.p.nums[3]}${data.p.nums[2]}.${data.p.nums[1]}${data.p.nums[0]}`)
