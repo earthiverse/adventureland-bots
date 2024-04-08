@@ -781,10 +781,10 @@ const startMerchantContext = async () => {
         ...defaultNewMerchantStrategyOptions,
         enableInstanceProvider: {
             crypt: {
-                maxInstances: 0
+                maxInstances: 20
             },
             winter_instance: {
-                maxInstances: 0
+                maxInstances: 1
             }
         }
     })
