@@ -795,6 +795,7 @@ const startMerchantContext = async () => {
     CONTEXT.applyStrategy(merchantDestroyStrategy)
     CONTEXT.applyStrategy(avoidDeathStrategy)
     CONTEXT.applyStrategy(privateBuyStrategy)
+    CONTEXT.applyStrategy(upgradeStatisticsStrategy)
 
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
