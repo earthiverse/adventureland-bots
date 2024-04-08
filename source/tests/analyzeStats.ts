@@ -19,7 +19,7 @@ function calculateStatistics(numbers: number[]) {
         average: mean(numbers),
         median: median(numbers),
         numRolls: numbers.length,
-        numMoreThan97: numbers.filter((num) => num >= 96.3).length,
+        numMoreThan96_3: numbers.filter((num) => num >= 96.3).length,
         standardDeviation: standardDeviation(numbers)
     }
 }
@@ -41,7 +41,9 @@ function compareFileDistributions(directoryPath: string) {
 const fileStats = compareFileDistributions(directoryPath).sort((a, b) => sorter.compare(a.fileName, b.fileName))
 
 // Print stats
-const table = new Table()
+const table = new Table({
+    sort: (row1, row2) => { return row1.percentMoreThan96_3 - row2.percentMoreThan96_3 }
+})
 for (const fileStat of fileStats) {
     table.addRow({
         slot: fileStat.fileName,
@@ -49,7 +51,8 @@ for (const fileStat of fileStats) {
         median: fileStat.statistics.median.toFixed(2),
         stdDev: fileStat.statistics.standardDeviation.toFixed(2),
         numRolls: fileStat.statistics.numRolls,
-        numMoreThan97: fileStat.statistics.numMoreThan97
+        numMoreThan96_3: fileStat.statistics.numMoreThan96_3,
+        percentMoreThan96_3: ((fileStat.statistics.numMoreThan96_3 / fileStat.statistics.numRolls) * 100).toFixed(2)
     })
 }
 table.printTable()
