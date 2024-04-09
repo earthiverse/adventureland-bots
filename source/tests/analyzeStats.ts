@@ -19,7 +19,8 @@ function calculateStatistics(numbers: number[]) {
         average: mean(numbers),
         median: median(numbers),
         numRolls: numbers.length,
-        numMoreThan96_3: numbers.filter((num) => num >= 96.3).length,
+        numMoreThan96_3: numbers.filter((num) => num > 96.3).length,
+        numLessThan1_2: numbers.filter((num) => num < 1.2).length,
         standardDeviation: standardDeviation(numbers)
     }
 }
@@ -52,7 +53,9 @@ for (const fileStat of fileStats) {
         stdDev: fileStat.statistics.standardDeviation.toFixed(2),
         numRolls: fileStat.statistics.numRolls,
         numMoreThan96_3: fileStat.statistics.numMoreThan96_3,
-        percentMoreThan96_3: ((fileStat.statistics.numMoreThan96_3 / fileStat.statistics.numRolls) * 100).toFixed(2)
+        percentMoreThan96_3: ((fileStat.statistics.numMoreThan96_3 / fileStat.statistics.numRolls) * 100).toFixed(2),
+        numLessThan1_2: fileStat.statistics.numLessThan1_2,
+        percentLessThan1_2: ((fileStat.statistics.numLessThan1_2 / fileStat.statistics.numRolls) * 100).toFixed(2)
     })
 }
 table.printTable()
