@@ -421,9 +421,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 3
     },
-    "lbelt": {
-        craft: true
-    },
+    // "lbelt": {
+    //     craft: true
+    // },
     "leather": {
         exchange: true
     },
@@ -433,7 +433,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         upgradeUntilLevel: 2,
         // Don't use offerings or primlings
         useOfferingFromLevel: 99,
-        usePrimlingFromLevel: 99,
+        usePrimlingFromLevel: 98,
     },
     "luckbooster": {
         hold: true
@@ -831,7 +831,7 @@ export function wantToHold(itemConfig: ItemConfig, item: ItemData, bot: Characte
 }
 
 export function wantToSellToPlayer(itemConfig: ItemConfig, item: TradeItem, bot: Character) {
-    if (item.l) return false // Can't sell locked items
+    if (wantToHold(itemConfig, item, bot)) return false
     if (item.p) return false // Don't sell special items
 
     const config = itemConfig[item.name]
@@ -984,8 +984,8 @@ export async function adjustItemConfig(itemConfig: ItemConfig) {
                 primlingFrom = 2
             }
 
-            if (!config.usePrimlingFromLevel) config.usePrimlingFromLevel = primlingFrom
-            if (!config.useOfferingFromLevel) config.useOfferingFromLevel = primlingFrom + 1
+            if (config.usePrimlingFromLevel === undefined) config.usePrimlingFromLevel = primlingFrom
+            if (config.useOfferingFromLevel === undefined) config.useOfferingFromLevel = primlingFrom + 1
         }
         if (gItem.upgrade && gItem.grades) {
             let primlingFrom = 8
@@ -1000,8 +1000,8 @@ export async function adjustItemConfig(itemConfig: ItemConfig) {
                 offeringFrom = 8
             }
 
-            if (!config.usePrimlingFromLevel) config.usePrimlingFromLevel = primlingFrom
-            if (!config.useOfferingFromLevel) config.useOfferingFromLevel = offeringFrom
+            if (config.usePrimlingFromLevel === undefined) config.usePrimlingFromLevel = primlingFrom
+            if (config.useOfferingFromLevel === undefined) config.useOfferingFromLevel = offeringFrom
         }
 
         if (Object.keys(config).length === 0) {
@@ -1180,7 +1180,7 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
             }
         }
 
-        if (config.useOfferingFromLevel && config.usePrimlingFromLevel) {
+        if (config.useOfferingFromLevel !== undefined && config.usePrimlingFromLevel !== undefined) {
             if (config.useOfferingFromLevel <= config.usePrimlingFromLevel) {
                 console.warn(`${itemName} has 'useOfferingFromLevel' <= and 'usePrimlingFromLevel'. Removing 'usePrimlingFromLevel'`)
                 delete config.usePrimlingFromLevel

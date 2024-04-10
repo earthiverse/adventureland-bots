@@ -19,6 +19,9 @@ test("No warnings when running sanity check on default item config", async () =>
     const adjustedItemConfig = { ...DEFAULT_ITEM_CONFIG }
     await adjustItemConfig(adjustedItemConfig)
 
+    // Run the sanity check again
+    await runSanityCheckOnItemConfig(adjustedItemConfig)
+
     // Make sure there were no warnings
     expect(warnMock).not.toHaveBeenCalled()
 
