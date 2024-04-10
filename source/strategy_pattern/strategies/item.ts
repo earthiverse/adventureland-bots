@@ -2,6 +2,17 @@ import AL, { Item, ItemName, Merchant, PingCompensatedCharacter, Player } from "
 import { Strategy, LoopName, Loop, Strategist, filterContexts } from "../context.js"
 import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, reduceCount, wantToExchange, wantToHold, wantToSellToNpc, wantToUpgrade } from "../../base/itemsNew.js"
 
+/**
+ * There are slots that give a slightly better chance to succeed when upgrading
+ */
+export const LUCKY_SLOTS = new Map<string, number>([
+    ["earthMag", 21],
+    ["earthMer", 11],
+    ["earthMer2", 34],
+    ["earthPri", 12],
+    ["earthWar", 20],
+])
+
 export type ItemStrategyOptions = {
     itemConfig: ItemConfig
     /** If available, we can do things like stacking items on one character instead of across three */
@@ -290,7 +301,7 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
         // Sort itemsToUpgrade lowest -> highest level, so we upgrade the lowest levels first
         itemsToUpgrade.sort((a, b) => a[1].level - b[1].level)
 
-        for (const [slot, item] of itemsToUpgrade) {
+        for (let [slot, item] of itemsToUpgrade) {
             const itemConfig: UpgradeConfig = this.options.itemConfig[item.name]
 
             let offering: ItemName
@@ -317,6 +328,19 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
             if (!bot.canUpgrade(slot, scrollSlot, offeringSlot)) return // Can't compound from where we are
 
             if (bot.canUse("massproduction")) await (bot as unknown as Merchant).massProduction()
+
+            if (LUCKY_SLOTS.has(bot.id)) {
+                // Swap for improved upgrade chance
+                const luckySlot = LUCKY_SLOTS.get(bot.id)
+                if (luckySlot !== slot) {
+                    await bot.swapItems(luckySlot, slot)
+                    slot = luckySlot
+
+                    if (scrollSlot === luckySlot) {
+                        scrollSlot = slot
+                    }
+                }
+            }
 
             // Reduce counts just in case we fail
             reduceCount(bot.owner, item)
