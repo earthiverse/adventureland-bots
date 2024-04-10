@@ -1,6 +1,7 @@
 import { jest } from "@jest/globals"
-import AL from "alclient"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, adjustItemConfig, runSanityCheckOnItemConfig } from "./itemsNew.js"
+import AL, { Item, Priest } from "alclient"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, adjustItemConfig, runSanityCheckOnItemConfig, wantToSellToNpc, wantToSellToPlayer } from "./itemsNew.js"
+import { TradeItem } from "alclient/build/TradeItem.js"
 
 beforeAll(async () => {
     await AL.Game.getGData(true, false)
@@ -59,4 +60,49 @@ test("Warning when buyPrice > sellPrice (buyPrice and sellPrice are numbers)", a
 
     // Set log back to normal
     console.warn = warn
+})
+
+test("wantToSell works as expected", () => {
+    const itemConfig: ItemConfig = {
+        // Not stackable
+        "vhammer": {
+            sell: true,
+            sellPrice: 100_000_000
+        },
+        // Stackable
+        "monstertoken": {
+            sell: true,
+            sellPrice: 250_000
+        }
+    }
+
+    const bot = new Priest("", "", "", AL.Game.G, { region: "ASIA", name: "I", addr: "test", port: 0, players: 0, key: "ASIAI" })
+
+    const vhammerInventory = new Item({ name: "vhammer", level: 0 }, AL.Game.G)
+    // We shouldn't want to sell it to an NPC
+    expect(wantToSellToNpc(itemConfig, vhammerInventory, bot)).toBeFalsy()
+    // We shouldn't want to sell it at a low price
+    for (const price of [1, 99_999_999]) {
+        const pricedTooLow = new TradeItem({ name: "vhammer", b: true, level: 0, price: price, rid: "" }, AL.Game.G)
+        expect(wantToSellToPlayer(itemConfig, pricedTooLow, bot)).toBeFalsy()
+    }
+    // We should want to sell it at a high enough price
+    for (const price of [100_000_000, 999_999_999]) {
+        const pricedOkay = new TradeItem({ name: "vhammer", b: true, level: 0, price: price, rid: "" }, AL.Game.G)
+        expect(wantToSellToPlayer(itemConfig, pricedOkay, bot)).toBeTruthy()
+    }
+
+    const monsterTokenInventory = new Item({ name: "monstertoken", q: 10 }, AL.Game.G)
+    // We shouldn't want to sell it to an NPC
+    expect(wantToSellToNpc(itemConfig, monsterTokenInventory, bot)).toBeFalsy()
+    // We shouldn't want to sell it at a low price
+    for (const price of [1, 50_000, 150_000]) {
+        const pricedTooLow = new TradeItem({ name: "monstertoken", b: true, q: 9999, price: price, rid: "" }, AL.Game.G)
+        expect(wantToSellToPlayer(itemConfig, pricedTooLow, bot)).toBeFalsy()
+    }
+    // We should want to sell it at a high enough price
+    for (const price of [250_000, 500_000, 999_999_999]) {
+        const pricedOkay = new TradeItem({ name: "monstertoken", b: true, q: 9999, price: price, rid: "" }, AL.Game.G)
+        expect(wantToSellToPlayer(itemConfig, pricedOkay, bot)).toBeTruthy()
+    }
 })
