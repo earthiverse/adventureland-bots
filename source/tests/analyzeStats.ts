@@ -21,6 +21,7 @@ function calculateStatistics(numbers: number[]) {
         numRolls: numbers.length,
         numMoreThan96_3: numbers.filter((num) => num > 96.3).length,
         numLessThan1_2: numbers.filter((num) => num < 1.2).length,
+        numZero: numbers.filter((num) => num === 0).length,
         standardDeviation: standardDeviation(numbers)
     }
 }
@@ -43,7 +44,7 @@ const fileStats = compareFileDistributions(directoryPath).sort((a, b) => sorter.
 
 // Print stats
 const table = new Table({
-    sort: (row1, row2) => { return row1.percentMoreThan96_3 - row2.percentMoreThan96_3 }
+    sort: (row1, row2) => { return row2.percentZero - row1.percentZero }
 })
 for (const fileStat of fileStats) {
     table.addRow({
@@ -52,10 +53,12 @@ for (const fileStat of fileStats) {
         median: fileStat.statistics.median.toFixed(2),
         stdDev: fileStat.statistics.standardDeviation.toFixed(2),
         numRolls: fileStat.statistics.numRolls,
-        numMoreThan96_3: fileStat.statistics.numMoreThan96_3,
-        percentMoreThan96_3: ((fileStat.statistics.numMoreThan96_3 / fileStat.statistics.numRolls) * 100).toFixed(2),
-        numLessThan1_2: fileStat.statistics.numLessThan1_2,
-        percentLessThan1_2: ((fileStat.statistics.numLessThan1_2 / fileStat.statistics.numRolls) * 100).toFixed(2)
+        numZero: fileStat.statistics.numZero,
+        percentZero: ((fileStat.statistics.numZero / fileStat.statistics.numRolls) * 100).toFixed(2),
+        // numMoreThan96_3: fileStat.statistics.numMoreThan96_3,
+        // percentMoreThan96_3: ((fileStat.statistics.numMoreThan96_3 / fileStat.statistics.numRolls) * 100).toFixed(2),
+        // numLessThan1_2: fileStat.statistics.numLessThan1_2,
+        // percentLessThan1_2: ((fileStat.statistics.numLessThan1_2 / fileStat.statistics.numRolls) * 100).toFixed(2)
     })
 }
 table.printTable()
