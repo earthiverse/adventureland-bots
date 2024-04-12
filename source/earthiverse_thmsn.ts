@@ -32,7 +32,7 @@ import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { Config, constructSetups, Setups } from "./strategy_pattern/setups/base.js"
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
-import { NewSellStrategy } from "./strategy_pattern/strategies/sell.js"
+import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
@@ -104,7 +104,7 @@ const privateBuyStrategy = new BuyStrategy({
     itemConfig: DEFAULT_ITEM_CONFIG
 })
 
-const privateSellStrategy = new NewSellStrategy({
+const privateSellStrategy = new SellStrategy({
     itemConfig: DEFAULT_ITEM_CONFIG
 })
 
