@@ -9,7 +9,7 @@ export type PartyOptions = {
 }
 
 export class AcceptPartyRequestStrategy<Type extends Character> implements Strategy<Type> {
-    private onRequest: (data: {name: string}) => Promise<void>
+    private onRequest: (data: { name: string }) => Promise<void>
 
     public options: PartyOptions
 
@@ -20,6 +20,7 @@ export class AcceptPartyRequestStrategy<Type extends Character> implements Strat
 
     public onApply(bot: Type) {
         this.onRequest = async (data: InviteData) => {
+            console.debug(data)
             if (this.options.allowList && !this.options.allowList.includes(data.name)) return // Not in allow list
             if (this.options.denyList && this.options.denyList.includes(data.name)) return // In deny list
 
@@ -29,7 +30,7 @@ export class AcceptPartyRequestStrategy<Type extends Character> implements Strat
     }
 
     public onRemove(bot: Type) {
-        bot.socket.off("request", this.onRequest)
+        if (this.onRequest) bot.socket.off("request", this.onRequest)
     }
 }
 
