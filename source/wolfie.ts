@@ -15,6 +15,7 @@ import { NewMerchantStrategy, defaultNewMerchantStrategyOptions } from "./mercha
 import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
 import { ToggleStandStrategy } from "./strategy_pattern/strategies/stand.js"
 import { RETURN_HIGHEST } from "./strategy_pattern/setups/equipment.js"
+import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
@@ -28,6 +29,7 @@ const SELL_STRATEGY = new SellStrategy({ itemConfig: DEFAULT_ITEM_CONFIG })
 const RESPAWN_STRATEGY = new RespawnStrategy()
 const TRACKER_STRATEGY = new TrackerStrategy()
 const DESTROY_STRATEGY = new DestroyStrategy({ itemConfig: DEFAULT_ITEM_CONFIG })
+const TRACK_UPGRADES_STRATEGY = new TrackUpgradeStrategy()
 const PARTY_ACCEPT_STRATEGY = new AcceptPartyRequestStrategy()
 const AVOID_DEATH_STRATEGY = new AvoidDeathStrategy()
 const MERCHANT_STRATEGY = new NewMerchantStrategy({ ...defaultNewMerchantStrategyOptions, contexts: CONTEXTS })
@@ -106,6 +108,7 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
         context.applyStrategy(RESPAWN_STRATEGY)
         context.applyStrategy(TRACKER_STRATEGY)
         context.applyStrategy(DESTROY_STRATEGY)
+        context.applyStrategy(TRACK_UPGRADES_STRATEGY)
     }
 }
 start("US", "I")
