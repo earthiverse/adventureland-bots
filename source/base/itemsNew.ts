@@ -830,8 +830,8 @@ export function wantToHold(itemConfig: ItemConfig, item: ItemData, bot: Characte
     return false
 }
 
-export function wantToSellToPlayer(itemConfig: ItemConfig, item: TradeItem, bot: Character) {
-    if (wantToHold(itemConfig, item, bot)) return false
+export function wantToSellToPlayer(itemConfig: ItemConfig, item: TradeItem) {
+    // NOTE: Don't add a hold check here, if we want to sell, but also hold it, it's fine to sell.
     if (item.p) return false // Don't sell special items
 
     const config = itemConfig[item.name]

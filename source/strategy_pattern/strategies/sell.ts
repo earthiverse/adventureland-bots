@@ -38,7 +38,7 @@ export class SellStrategy<Type extends Character> implements Strategy<Type> {
         })
         for (const player of players) {
             for (const [tradeSlot, wantedItem] of player.getWantedItems()) {
-                if (!wantToSellToPlayer(this.options.itemConfig, wantedItem, bot)) continue // We don't want to sell it
+                if (!wantToSellToPlayer(this.options.itemConfig, wantedItem)) continue // We don't want to sell it
 
                 const ourItemIndex = bot.locateItem(
                     wantedItem.name,

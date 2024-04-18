@@ -2601,7 +2601,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 if (!slotData.b) continue // Not buying
 
                 const tradeItem = new TradeItem(slotData, AL.Game.G)
-                if (!wantToSellToPlayer(this.options.itemConfig, tradeItem, bot)) continue // We don't want to sell
+                if (!wantToSellToPlayer(this.options.itemConfig, tradeItem)) continue // We don't want to sell
 
                 // Check if we might have it in the bank
                 const levelCounts = itemCounts.get(slotData.name)
@@ -2644,7 +2644,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 if (!gCraft) continue // Not craftable
 
                 const tradeItem = new TradeItem(slotData, AL.Game.G)
-                if (!wantToSellToPlayer(this.options.itemConfig, tradeItem, bot)) continue // We don't want to sell
+                if (!wantToSellToPlayer(this.options.itemConfig, tradeItem)) continue // We don't want to sell
 
                 const itemsNeeded = [...gCraft.items]
                 for (const [, itemName, level] of itemsNeeded) {

@@ -84,12 +84,12 @@ test("wantToSell works as expected", () => {
     // We shouldn't want to sell it at a low price
     for (const price of [1, 99_999_999]) {
         const pricedTooLow = new TradeItem({ name: "vhammer", b: true, level: 0, price: price, rid: "" }, AL.Game.G)
-        expect(wantToSellToPlayer(itemConfig, pricedTooLow, bot)).toBeFalsy()
+        expect(wantToSellToPlayer(itemConfig, pricedTooLow)).toBeFalsy()
     }
     // We should want to sell it at a high enough price
     for (const price of [100_000_000, 999_999_999]) {
         const pricedOkay = new TradeItem({ name: "vhammer", b: true, level: 0, price: price, rid: "" }, AL.Game.G)
-        expect(wantToSellToPlayer(itemConfig, pricedOkay, bot)).toBeTruthy()
+        expect(wantToSellToPlayer(itemConfig, pricedOkay)).toBeTruthy()
     }
 
     const monsterTokenInventory = new Item({ name: "monstertoken", q: 10 }, AL.Game.G)
@@ -98,11 +98,11 @@ test("wantToSell works as expected", () => {
     // We shouldn't want to sell it at a low price
     for (const price of [1, 50_000, 150_000]) {
         const pricedTooLow = new TradeItem({ name: "monstertoken", b: true, q: 9999, price: price, rid: "" }, AL.Game.G)
-        expect(wantToSellToPlayer(itemConfig, pricedTooLow, bot)).toBeFalsy()
+        expect(wantToSellToPlayer(itemConfig, pricedTooLow)).toBeFalsy()
     }
     // We should want to sell it at a high enough price
     for (const price of [250_000, 500_000, 999_999_999]) {
         const pricedOkay = new TradeItem({ name: "monstertoken", b: true, q: 9999, price: price, rid: "" }, AL.Game.G)
-        expect(wantToSellToPlayer(itemConfig, pricedOkay, bot)).toBeTruthy()
+        expect(wantToSellToPlayer(itemConfig, pricedOkay)).toBeTruthy()
     }
 })
