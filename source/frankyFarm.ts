@@ -298,7 +298,7 @@ class LeaderMummyFarmStrategy extends PriestMummyFarmStrategy {
 const leaderMummyFarmStrategy = new LeaderMummyFarmStrategy({
     contexts: CONTEXTS,
     disableIdleAttack: true,
-    maximumTargets: 10,
+    disableScare: true,
     generateEnsureEquipped: {
         avoidAttributes: ["blast", "explosion"],
         attributes: ["attack", "resistance"]
