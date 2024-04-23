@@ -1,4 +1,4 @@
-import AL, { Character, ChestData, Game, ItemName, PingCompensatedCharacter, Tools } from "alclient"
+import AL, { Attribute, Character, ChestData, Game, ItemName, PingCompensatedCharacter, Tools } from "alclient"
 import { LRUCache } from "lru-cache"
 import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../context.js"
 
@@ -70,12 +70,16 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
         }
 
         for (const potion of BaseStrategy.potions) {
-            const gives = Game.G.items[potion].gives
-            if (!gives) continue // It's missing give information!?
+            const gItem = Game.G.items[potion]
+            if (!gItem.gives) continue // It's missing give information!?
             if (!bot.hasItem(potion)) continue // We don't have any
             let couldGiveHp = 0
             let couldGiveMp = 0
-            for (const give of gives) {
+            for (const give of [
+                ...gItem.gives,
+                ...(((gItem[bot.map] as unknown as any).gives as [Attribute, number][]) ?? []), // Map bonuses
+                ...(((gItem[bot.ctype] as unknown as any).gives as [Attribute, number][]) ?? []), // Character bonuses
+            ]) {
                 if (give[0] === "hp") couldGiveHp += Math.max(0, Math.min(give[1], missingHP))
                 else if (give[0] === "mp") couldGiveMp += Math.max(0, Math.min(give[1], missingMP))
             }
