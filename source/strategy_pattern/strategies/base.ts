@@ -15,7 +15,14 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
      * A list of potions to use
      * TODO: Move this to a config option
      * */
-    protected static potions: ItemName[] = ["hpot0", "mpot0", "hpot1", "mpot1"]
+    protected static potions: ItemName[] = [
+        "hpot0",
+        "mpot0",
+        "honeypot" as ItemName,
+        "hpot1",
+        "mpot1",
+        "honeypot1" as ItemName,
+    ]
 
     public constructor(contexts?: Strategist<Type>[]) {
         this.contexts = contexts ?? []
