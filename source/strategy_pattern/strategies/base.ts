@@ -71,7 +71,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
 
         for (const potion of BaseStrategy.potions) {
             const gItem = Game.G.items[potion]
-            if (!gItem.gives) continue // It's missing give information!?
+            if (!gItem?.gives) continue // It's missing give information!?
             if (!bot.hasItem(potion)) continue // We don't have any
             let couldGiveHp = 0
             let couldGiveMp = 0
