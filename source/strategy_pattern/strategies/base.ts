@@ -77,8 +77,8 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
             let couldGiveMp = 0
             for (const give of [
                 ...gItem.gives,
-                ...(((gItem[bot.map] as unknown as any).gives as [Attribute, number][]) ?? []), // Map bonuses
-                ...(((gItem[bot.ctype] as unknown as any).gives as [Attribute, number][]) ?? []), // Character bonuses
+                ...(((gItem[bot.map] as unknown as any)?.gives as [Attribute, number][]) ?? []), // Map bonuses
+                ...(((gItem[bot.ctype] as unknown as any)?.gives as [Attribute, number][]) ?? []), // Character bonuses
             ]) {
                 if (give[0] === "hp") couldGiveHp += Math.max(0, Math.min(give[1], missingHP))
                 else if (give[0] === "mp") couldGiveMp += Math.max(0, Math.min(give[1], missingMP))
