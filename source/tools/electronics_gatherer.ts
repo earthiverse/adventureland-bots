@@ -62,7 +62,7 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
     setTimeout(getNextServer, getMsToNextMinute() + BUFFER)
 
     // Set up the emergency check
-    setTimeout(emergencyStop, getMsToNextMinute() - BUFFER / 2)
+    setTimeout(emergencyStop, getMsToNextMinute() - Math.min(5000, BUFFER / 2)
 
     // Set up the disconnect for the next server hop
     setTimeout(() => {
