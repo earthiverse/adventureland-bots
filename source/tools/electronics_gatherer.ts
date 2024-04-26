@@ -1,123 +1,142 @@
 import AL, { Rogue, ServerIdentifier, ServerRegion } from "alclient"
-import fs from "fs"
 import { getMsToNextMinute } from "../base/general.js"
 import { Strategist, Strategy } from "../strategy_pattern/context.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
-import { HoldPositionMoveStrategy } from "../strategy_pattern/strategies/move.js"
-import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { ItemStrategy } from "../strategy_pattern/strategies/item.js"
+import { DEFAULT_ITEM_CONFIG } from "../base/itemsNew.js"
+import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
+import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
+import { DestroyStrategy } from "../strategy_pattern/strategies/destroy.js"
+import { HoldPositionMoveStrategy } from "../strategy_pattern/strategies/move.js"
+import { SellStrategy } from "../strategy_pattern/strategies/sell.js"
 
-// Login, prepare, and get game data
-await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getGData(true)])
-await Promise.all([AL.Pathfinder.prepare(AL.Game.G, { cheat: true }), AL.Game.updateServersAndCharacters()])
+await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
+await AL.Pathfinder.prepare(AL.Game.G)
 
 const BUFFER = 27_500
+const ROGUE_NAME = "earthRog"
+const CONTEXTS: Strategist<Rogue>[] = []
 
-const credentials = JSON.parse(fs.readFileSync("../../credentials.json", "utf-8"))
-
-const baseStrategy = new BaseStrategy()
-const respawnStrategy = new RespawnStrategy()
-const holdStrategy = new HoldPositionMoveStrategy({ map: "cyberland", x: 0, y: 0 })
-const itemStrategy = new ItemStrategy()
+const BASE_STRATEGY = new BaseStrategy()
+const ITEM_STRATEGY = new ItemStrategy({ contexts: CONTEXTS, itemConfig: DEFAULT_ITEM_CONFIG })
+const BUY_STRATEGY = new BuyStrategy({ contexts: CONTEXTS, itemConfig: DEFAULT_ITEM_CONFIG })
+const SELL_STRATEGY = new SellStrategy({ itemConfig: DEFAULT_ITEM_CONFIG })
+const RESPAWN_STRATEGY = new RespawnStrategy()
+const DESTROY_STRATEGY = new DestroyStrategy({ itemConfig: DEFAULT_ITEM_CONFIG })
+const FROG_MOVE_STRATEGY = new HoldPositionMoveStrategy({ map: "cyberland", x: 0, y: 0 })
 
 export class ElectronicsStrategy implements Strategy<Rogue> {
     public onApply(bot: Rogue) {
         bot.socket.emit("eval", { command: "give spares" })
     }
 }
-const electronicsStrategy = new ElectronicsStrategy()
+const ELECTRONICS_STRATEGY = new ElectronicsStrategy()
 
-let targetRegion: ServerRegion = "ASIA"
-let targetIdentifier: ServerIdentifier = "I"
-
-const nextServer = () => {
-    if (targetRegion == "US") {
-        if (targetIdentifier == "I") targetIdentifier = "II"
-        else if (targetIdentifier == "II") targetIdentifier = "III"
-        else if (targetIdentifier == "III") targetIdentifier = "PVP"
+let nextDefaultRegion: ServerRegion
+let nextDefaultIdentifier: ServerIdentifier
+function getNextDefaultServer() {
+    if (nextDefaultRegion == "US") {
+        if (nextDefaultIdentifier == "I") nextDefaultIdentifier = "II"
+        else if (nextDefaultIdentifier == "II") nextDefaultIdentifier = "III"
+        else if (nextDefaultIdentifier == "III") nextDefaultIdentifier = "PVP"
         else {
-            targetRegion = "EU"
-            targetIdentifier = "I"
+            nextDefaultRegion = "EU"
+            nextDefaultIdentifier = "I"
         }
-    } else if (targetRegion == "EU") {
-        if (targetIdentifier == "I") targetIdentifier = "II"
-        else if (targetIdentifier == "II") targetIdentifier = "PVP"
+    } else if (nextDefaultRegion == "EU") {
+        if (nextDefaultIdentifier == "I") nextDefaultIdentifier = "II"
+        else if (nextDefaultIdentifier == "II") nextDefaultIdentifier = "PVP"
         else {
-            targetRegion = "ASIA"
-            targetIdentifier = "I"
+            nextDefaultRegion = "ASIA"
+            nextDefaultIdentifier = "I"
         }
     } else {
-        targetRegion = "US"
-        targetIdentifier = "I"
+        nextDefaultRegion = "US"
+        nextDefaultIdentifier = "I"
     }
+    return { serverRegion: nextDefaultRegion, serverIdentifier: nextDefaultIdentifier }
 }
 
-const serverLoop = async () => {
-    try {
-        nextServer()
-    } catch (e) {
-        console.error(e)
-    } finally {
-        setTimeout(serverLoop, getMsToNextMinute())
-    }
-}
-serverLoop()
+async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentifier) {
+    // Set up the next check for deals
+    setTimeout(getNextServer, getMsToNextMinute() + BUFFER)
 
-async function startGatherer(userId: string, userAuth: string, characterID: string) {
-    console.log(`Connecting to ${targetRegion} ${targetIdentifier}...`)
-    let bot: Rogue
-    try {
-        bot = new AL.Rogue(userId, userAuth, characterID, AL.Game.G, AL.Game.servers[targetRegion][targetIdentifier])
-        await bot.connect()
-    } catch (e) {
-        console.error(`${characterID} had an error (start) on ${targetRegion}${targetIdentifier}`)
-        console.error(e)
-        bot.disconnect()
-        setTimeout(startGatherer, getMsToNextMinute() + BUFFER, userId, userAuth, characterID)
+    // Set up the emergency check
+    setTimeout(emergencyStop, getMsToNextMinute() - BUFFER / 2)
+
+    // Set up the disconnect for the next server hop
+    setTimeout(() => {
+        console.log("Stopping!")
+        for (const context of CONTEXTS) context.stop()
+    }, getMsToNextMinute() - BUFFER)
+
+    CONTEXTS.splice(0, CONTEXTS.length)
+
+    const rogue = await AL.Game.startRogue(ROGUE_NAME, serverRegion, serverIdentifier)
+    const context = new Strategist<Rogue>(rogue, BASE_STRATEGY)
+    context.applyStrategy(ITEM_STRATEGY)
+    context.applyStrategy(BUY_STRATEGY)
+    context.applyStrategy(SELL_STRATEGY)
+    context.applyStrategy(RESPAWN_STRATEGY)
+    context.applyStrategy(DESTROY_STRATEGY)
+    context.applyStrategy(FROG_MOVE_STRATEGY)
+    context.applyStrategy(ELECTRONICS_STRATEGY)
+
+    CONTEXTS.push(context)
+}
+
+async function getNextServer() {
+    // Check what server our characters are on, and avoid those servers
+    await AL.Game.updateServersAndCharacters()
+    const online = new Set<string>()
+    for (const charName in AL.Game.characters) {
+        const charData = AL.Game.characters[charName]
+        if (!charData.online) continue // Not online
+        online.add(charData.server)
+    }
+    const avoidServers = [...online]
+        // Return a formatted list of servers to not check
+        .map((v) => {
+            const server = /(US|EU|ASIA)([MDCLXVI]+|PVP)/.exec(v)
+            const serverRegion: ServerRegion = server[1] as ServerRegion
+            const serverIdentifier: ServerIdentifier = server[2] as ServerIdentifier
+            return { serverRegion: serverRegion, serverIdentifier: serverIdentifier }
+        })
+    if (avoidServers.length === 0)
+        // Use a non-existent server so Mongo doesn't yell at us for avoidServers being empty
+        avoidServers.push({ serverRegion: "ASIA", serverIdentifier: "III" })
+
+    for (let i = 0; i < 5; i++) {
+        const nextServer = getNextDefaultServer()
+        if (
+            avoidServers.some(
+                (v) => v.serverRegion == nextServer.serverRegion && v.serverIdentifier == nextServer.serverIdentifier,
+            )
+        ) {
+            // We want to avoid this server
+            continue
+        }
+        console.log(`Going to ${nextServer.serverRegion}${nextServer.serverIdentifier} to see what's what!`)
+        start(nextServer.serverRegion, nextServer.serverIdentifier)
         return
     }
 
-    const context: Strategist<Rogue> = new Strategist<Rogue>(bot, baseStrategy)
-    context.applyStrategy(respawnStrategy)
-    context.applyStrategy(holdStrategy)
-    context.applyStrategy(itemStrategy)
-    context.applyStrategy(electronicsStrategy)
-
-    const connectLoop = async () => {
-        try {
-            console.log(`Connecting to ${targetRegion} ${targetIdentifier}...`)
-            await context.changeServer(targetRegion, targetIdentifier, false)
-        } catch (e) {
-            console.error(`${characterID} had an error (connect) on ${targetRegion}${targetIdentifier}`)
-            console.error(e)
-            context?.bot?.disconnect()
-        } finally {
-            context?.bot?.socket?.removeAllListeners("disconnect")
-            setTimeout(connectLoop, getMsToNextMinute() + BUFFER)
-        }
-    }
-    setTimeout(connectLoop, getMsToNextMinute() + BUFFER)
-
-    const disconnectLoop = async () => {
-        try {
-            console.log("Disconnecting...")
-
-            context.bot.socket.removeAllListeners("disconnect")
-            await context.bot.disconnect()
-        } catch (e) {
-            console.error(`${characterID} had an error (disconnect) on ${targetRegion}${targetIdentifier}`)
-            console.error(e)
-        } finally {
-            setTimeout(disconnectLoop, getMsToNextMinute() + (60_000 - BUFFER))
-        }
-    }
-    setTimeout(disconnectLoop, getMsToNextMinute() - BUFFER)
+    console.log("Not going anywhere for now...")
+    setTimeout(getNextServer, getMsToNextMinute() + BUFFER)
+    return
 }
+setTimeout(getNextServer, getMsToNextMinute() + BUFFER)
 
-setTimeout(
-    startGatherer,
-    getMsToNextMinute() + BUFFER,
-    credentials.userID,
-    credentials.userAuth,
-    AL.Game.characters.earthRog.id,
-)
+async function emergencyStop() {
+    // Update who's online
+    await AL.Game.updateServersAndCharacters()
+    let numOnline = 0
+    for (const charName in AL.Game.characters) {
+        const charData = AL.Game.characters[charName]
+        if (charData.online) numOnline++
+        if (numOnline > 4) {
+            console.error("Too many characters online!")
+            process.exit(99)
+        }
+    }
+}
