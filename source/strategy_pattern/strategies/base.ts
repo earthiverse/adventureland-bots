@@ -1,4 +1,4 @@
-import AL, { Character, ChestData, PingCompensatedCharacter, Tools } from "alclient"
+import AL, { Character, ChestData, Game, ItemName, PingCompensatedCharacter, Tools } from "alclient"
 import { LRUCache } from "lru-cache"
 import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../context.js"
 
@@ -10,11 +10,19 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
 
     protected static recentlyLooted = new LRUCache<string, boolean>({ max: 10 })
 
+    /**
+     * A list of potions to use
+     * TODO: Move this to a config option
+     * */
+    protected static potions: ItemName[] = ["hpot0", "mpot0", "hpot1", "mpot1"]
+
     public constructor(contexts?: Strategist<Type>[]) {
         this.contexts = contexts ?? []
         this.loops.set("heal", {
-            fn: async (bot: Type) => { await this.heal(bot) },
-            interval: ["use_hp"]
+            fn: async (bot: Type) => {
+                await this.heal(bot)
+            },
+            interval: ["use_hp"],
         })
         this.loops.set("loot", {
             fn: async (bot: Type) => {
@@ -22,7 +30,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
                     await this.lootChest(bot, chest)
                 }
             },
-            interval: 250
+            interval: 250,
         })
     }
 
@@ -38,47 +46,69 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
     }
 
     private async heal(bot: Type) {
-        if (bot.rip) return
+        if (bot.rip) return // Don't heal if dead
 
         const missingHP = bot.max_hp - bot.hp
         const missingMP = bot.max_mp - bot.mp
+
+        if (missingHP == 0 && missingMP == 0) return // We have full HP and MP
+
+        let maxGiveHp = Math.min(50, missingHP) // If we use `regen_hp` skill
+        let maxGiveHpPotion: ItemName | "regen_hp" = "regen_hp"
+        let maxGiveMp = Math.min(100, missingMP) // If we use `regen_mp` skill
+        let maxGiveMpPotion: ItemName | "regen_mp" = "regen_mp"
+        let maxGiveBoth = Math.max(maxGiveHp, maxGiveMp)
+        let maxGiveBothPotion: ItemName
+
         const hpRatio = bot.hp / bot.max_hp
         const mpRatio = bot.mp / bot.max_mp
-        const hpot1 = bot.locateItem("hpot1")
-        const hpot0 = bot.locateItem("hpot0")
-        const mpot1 = bot.locateItem("mpot1")
-        const mpot0 = bot.locateItem("mpot0")
-        if (hpRatio < mpRatio) {
-            if (bot.c.town || bot.c.fishing || bot.c.mining) {
-                await bot.regenHP()
-            } else if (missingHP >= 400 && hpot1 !== undefined) {
-                await bot.useHPPot(hpot1)
-            } else if (missingHP >= 200 && hpot0 !== undefined) {
-                await bot.useHPPot(hpot0)
-            } else {
-                await bot.regenHP()
+
+        if (bot.c.town || bot.c.fishing || bot.c.mining || bot.c.pickpocket) {
+            // Channeled skills will stop chanelling if you use a potion
+            if (hpRatio <= mpRatio) return bot.regenHP()
+            else return bot.regenMP()
+        }
+
+        for (const potion of BaseStrategy.potions) {
+            const gives = Game.G.items[potion].gives
+            if (!gives) continue // It's missing give information!?
+            if (!bot.hasItem(potion)) continue // We don't have any
+            let couldGiveHp = 0
+            let couldGiveMp = 0
+            for (const give of gives) {
+                if (give[0] === "hp") couldGiveHp += Math.max(0, Math.min(give[1], missingHP))
+                else if (give[0] === "mp") couldGiveMp += Math.max(0, Math.min(give[1], missingMP))
             }
-        } else if (mpRatio < hpRatio) {
-            if (bot.c.town || bot.c.fishing || bot.c.mining) {
-                await bot.regenMP()
-            } else if (missingMP >= 500 && mpot1 !== undefined) {
-                await bot.useMPPot(mpot1)
-            } else if (missingMP >= 300 && mpot0 !== undefined) {
-                await bot.useMPPot(mpot0)
-            } else {
-                await bot.regenMP()
+            if (couldGiveHp > maxGiveHp) {
+                maxGiveHp = couldGiveHp
+                maxGiveHpPotion = potion
             }
-        } else if (hpRatio < 1) {
-            if (bot.c.town || bot.c.fishing || bot.c.mining) {
-                await bot.regenHP()
-            } else if (missingHP >= 400 && hpot1 !== undefined) {
-                await bot.useHPPot(hpot1)
-            } else if (missingHP >= 200 && hpot0 !== undefined) {
-                await bot.useHPPot(hpot0)
-            } else {
-                await bot.regenHP()
+            if (couldGiveMp > maxGiveMp) {
+                maxGiveMp = couldGiveMp
+                maxGiveMpPotion = potion
+            }
+            const couldGiveBoth = couldGiveHp + couldGiveMp
+            if (couldGiveBoth > maxGiveBoth) {
+                maxGiveBoth = couldGiveBoth
+                maxGiveBothPotion = potion
             }
         }
+
+        if (Math.abs(hpRatio - mpRatio) < 0.25) {
+            // Our ratios are pretty similar, prefer both
+            if (maxGiveBothPotion)
+                return bot.usePotion(bot.locateItem(maxGiveBothPotion, bot.items, { returnLowestQuantity: true }))
+        }
+
+        if (hpRatio <= mpRatio) {
+            // HP ratio is the same, or lower than the MP ratio, prefer HP
+            if (maxGiveHpPotion === "regen_hp") return bot.regenHP()
+            else return bot.usePotion(bot.locateItem(maxGiveHpPotion, bot.items, { returnLowestQuantity: true }))
+        }
+
+        // MP ratio is lower, prefer MP
+        if (maxGiveMpPotion === "regen_mp") return bot.regenMP()
+        else return bot.usePotion(bot.locateItem(maxGiveMpPotion, bot.items, { returnLowestQuantity: true }))
     }
 
     private async lootChest(bot: Type, chest: ChestData) {

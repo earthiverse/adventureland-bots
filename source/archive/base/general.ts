@@ -1418,9 +1418,9 @@ export function startHealLoop(bot: Character): void {
                     if (bot.c.town || bot.c.fishing || bot.c.mining) {
                         await bot.regenHP()
                     } else if (missingHP >= 400 && hpot1 !== undefined) {
-                        await bot.useHPPot(hpot1)
+                        await bot.usePotion(hpot1)
                     } else if (missingHP >= 200 && hpot0 !== undefined) {
-                        await bot.useHPPot(hpot0)
+                        await bot.usePotion(hpot0)
                     } else {
                         await bot.regenHP()
                     }
@@ -1428,9 +1428,9 @@ export function startHealLoop(bot: Character): void {
                     if (bot.c.town || bot.c.fishing || bot.c.mining) {
                         await bot.regenMP()
                     } else if (missingMP >= 500 && mpot1 !== undefined) {
-                        await bot.useMPPot(mpot1)
+                        await bot.usePotion(mpot1)
                     } else if (missingMP >= 300 && mpot0 !== undefined) {
-                        await bot.useMPPot(mpot0)
+                        await bot.usePotion(mpot0)
                     } else {
                         await bot.regenMP()
                     }
@@ -1438,9 +1438,9 @@ export function startHealLoop(bot: Character): void {
                     if (bot.c.town || bot.c.fishing || bot.c.mining) {
                         await bot.regenHP()
                     } else if (missingHP >= 400 && hpot1 !== undefined) {
-                        await bot.useHPPot(hpot1)
+                        await bot.usePotion(hpot1)
                     } else if (missingHP >= 200 && hpot0 !== undefined) {
-                        await bot.useHPPot(hpot0)
+                        await bot.usePotion(hpot0)
                     } else {
                         await bot.regenHP()
                     }
