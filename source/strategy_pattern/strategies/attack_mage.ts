@@ -1,4 +1,3 @@
-
 import AL, { ActionData, ActionDataRay, Entity, Mage, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { suppress_errors } from "../logging.js"
@@ -11,7 +10,7 @@ export type MageAttackStrategyOptions = BaseAttackStrategyOptions & {
 export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
     protected options: MageAttackStrategyOptions
 
-    protected stealOnActionCburst: (data: ActionData) => Promise<unknown>
+    protected stealOnActionCburst: (data: ActionData) => void
 
     public constructor(options?: MageAttackStrategyOptions) {
         super(options)
@@ -22,7 +21,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
     public onApply(bot: Mage): void {
         super.onApply(bot)
         if (!this.options.disableCburst && !this.options.disableKillSteal) {
-            this.stealOnActionCburst = async (data: ActionData) => {
+            this.stealOnActionCburst = (data: ActionData) => {
                 // TODO: Improve for if we see 3shot or 5shot
                 //       Maybe sleep for a few ms?
                 if (!bot.canUse("cburst")) return
@@ -100,7 +99,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         const entities = bot.getEntities({
             ...this.options,
             canDamage: "cburst",
-            withinRange: "cburst"
+            withinRange: "cburst",
         })
         let mpNeeded = bot.G.skills.cburst.mp + bot.mp_cost
         for (const entity of entities) {
@@ -121,7 +120,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
 
         // Allow half of our MP to go to killing monsters with cburst
 
-        let mpPool = (bot.mp - AL.Game.G.skills.cburst.mp - (bot.max_mp / 2))
+        let mpPool = bot.mp - AL.Game.G.skills.cburst.mp - bot.max_mp / 2
         if (mpPool <= 0) return
 
         const toCburst = new Map<string, number>()
@@ -129,12 +128,12 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
             const entities = bot.getEntities({
                 canDamage: "cburst",
                 hasTarget: false,
-                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
-                withinRange: "cburst"
+                typeList: Array.isArray(this.options.enableGreedyAggro)
+                    ? this.options.enableGreedyAggro
+                    : this.options.typeList,
+                withinRange: "cburst",
             })
-            if (
-                entities.length
-                && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
+            if (entities.length && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
                 // Prioritize the entities
                 for (const entity of entities) {
                     if (mpPool - 5 < 0) break // Not enough MP
@@ -148,7 +147,8 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         const entities = bot.getEntities({
             ...this.options,
             canDamage: "cburst",
-            withinRange: "cburst"
+            withinRange: "cburst",
+            couldDieToProjectiles: false,
         })
 
         // Prioritize the entities
@@ -156,8 +156,10 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         for (const entity of entities) targets.add(entity)
 
         // Look for everything we can kill in one shot with cburst
-        targets.forEach(((entity) => {
-            const mpNeededToKill = entity.hp * 1.1 / AL.Game.G.skills.cburst.ratio * AL.Tools.damage_multiplier(bot.rpiercing - entity.resistance)
+        targets.forEach((entity) => {
+            const mpNeededToKill =
+                ((entity.hp * 1.1) / AL.Game.G.skills.cburst.ratio) *
+                AL.Tools.damage_multiplier(bot.rpiercing - entity.resistance)
             if (mpNeededToKill > mpPool) return // Not enough MP
             if (toCburst.has(entity.id)) {
                 mpPool += toCburst.get(entity.id)
@@ -167,12 +169,13 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
             }
             this.preventOverkill(bot, entity)
             mpPool -= mpNeededToKill
-        }))
+        })
 
         // Look for a single target to spend mp attacking
-        if (bot.mp > (bot.max_mp - 500) && mpPool >= 0) {
+        if (bot.mp > bot.max_mp - 500 && mpPool >= 0) {
             while (targets.size) {
                 const target = targets.poll()
+                if (target.willDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)) continue
                 if (toCburst.has(target.id)) continue // Already cbursting
 
                 // Use the rest of our pool (if we were to kill it, it would have already been set in toCburst)
@@ -182,7 +185,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         }
 
         if (toCburst.size == 0) return // No targets to attack
-        
+
         // cburst everything in our list
         return await bot.cburst([...toCburst.entries()])
     }
