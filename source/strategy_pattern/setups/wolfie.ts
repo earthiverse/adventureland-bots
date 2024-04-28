@@ -6,6 +6,7 @@ import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_SPLASH, PRIEST_LUCK, WARRIOR_SPLASH } from "./equipment.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export function constructWolfieSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -19,11 +20,11 @@ export function constructWolfieSetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                prefer: { ...MAGE_SPLASH }
+                                prefer: { ...MAGE_SPLASH },
                             },
-                            type: "wolfie"
+                            type: "wolfie",
                         }),
-                        move: new ImprovedMoveStrategy("wolfie")
+                        move: new ImprovedMoveStrategy("wolfie"),
                     },
                     {
                         ctype: "priest",
@@ -31,11 +32,11 @@ export function constructWolfieSetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                prefer: { ...PRIEST_LUCK }
+                                prefer: { ...PRIEST_LUCK },
                             },
                             type: "wolfie",
                         }),
-                        move: new ImprovedMoveStrategy("wolfie")
+                        move: new ImprovedMoveStrategy("wolfie"),
                     },
                     {
                         ctype: "warrior",
@@ -43,15 +44,29 @@ export function constructWolfieSetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             enableEquipForCleave: true,
                             generateEnsureEquipped: {
-                                prefer: { ...WARRIOR_SPLASH }
+                                prefer: { ...WARRIOR_SPLASH },
                             },
                             enableGreedyAggro: true,
-                            type: "wolfie"
+                            type: "wolfie",
                         }),
-                        move: new ImprovedMoveStrategy("wolfie")
-                    }
-                ]
+                        move: new ImprovedMoveStrategy("wolfie"),
+                    },
+                ],
             },
-        ]
+            {
+                id: "wolfie_ranger",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["dex", "attack"] },
+                            type: "wolfie",
+                        }),
+                        move: new ImprovedMoveStrategy("wolfie"),
+                    },
+                ],
+            },
+        ],
     }
 }
