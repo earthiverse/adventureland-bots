@@ -1,4 +1,12 @@
-import AL, { Character, InviteData, Merchant, PingCompensatedCharacter, Ranger, ServerIdentifier, ServerRegion } from "alclient"
+import AL, {
+    Character,
+    InviteData,
+    Merchant,
+    PingCompensatedCharacter,
+    Ranger,
+    ServerIdentifier,
+    ServerRegion,
+} from "alclient"
 import { Loop, LoopName, Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
@@ -33,7 +41,10 @@ const TRACK_UPGRADES_STRATEGY = new TrackUpgradeStrategy()
 const PARTY_ACCEPT_STRATEGY = new AcceptPartyRequestStrategy()
 const AVOID_DEATH_STRATEGY = new AvoidDeathStrategy()
 const MERCHANT_STRATEGY = new NewMerchantStrategy({ ...defaultNewMerchantStrategyOptions, contexts: CONTEXTS })
-const MERCHANT_STAND_STRATEGY = new ToggleStandStrategy({ offWhenMoving: true, onWhenNear: [{ distance: 100, position: defaultNewMerchantStrategyOptions.defaultPosition }] })
+const MERCHANT_STAND_STRATEGY = new ToggleStandStrategy({
+    offWhenMoving: true,
+    onWhenNear: [{ distance: 100, position: defaultNewMerchantStrategyOptions.defaultPosition }],
+})
 const ATTACK_STRATEGY_WOLFIE = new RangerAttackStrategy({
     contexts: CONTEXTS,
     generateEnsureEquipped: {
@@ -42,12 +53,26 @@ const ATTACK_STRATEGY_WOLFIE = new RangerAttackStrategy({
             chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
             ring1: { name: "zapper", filters: RETURN_HIGHEST },
             ring2: { name: "cring", filters: RETURN_HIGHEST },
-            orb: { name: "vorb", filters: RETURN_HIGHEST }
-        }
+            orb: { name: "vorb", filters: RETURN_HIGHEST },
+        },
     },
-    typeList: ["wolfie"]
+    typeList: ["wolfie"],
 })
 const MOVE_STRATEGY_WOLFIE = new ImprovedMoveStrategy(["wolfie"])
+const ATTACK_STRATEGY_BAT = new RangerAttackStrategy({
+    contexts: CONTEXTS,
+    generateEnsureEquipped: {
+        prefer: {
+            mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
+            chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
+            ring1: { name: "zapper", filters: RETURN_HIGHEST },
+            ring2: { name: "cring", filters: RETURN_HIGHEST },
+            orb: { name: "vorb", filters: RETURN_HIGHEST },
+        },
+    },
+    typeList: ["bat", "goldenbat", "mvampire"],
+})
+const MOVE_STRATEGY_BAT = new ImprovedMoveStrategy(["bat", "goldenbat", "mvampire"])
 
 class PolioPartyStrategy<Type extends Character> implements Strategy<Type> {
     private onInvite: (data: { name: string }) => Promise<void>
@@ -58,7 +83,7 @@ class PolioPartyStrategy<Type extends Character> implements Strategy<Type> {
             fn: async (bot: Character) => {
                 await this.requestPartyInvite(bot)
             },
-            interval: 2000
+            interval: 2000,
         })
     }
 
@@ -91,12 +116,20 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
     merchantContext.applyStrategy(MERCHANT_STAND_STRATEGY)
     merchantContext.applyStrategy(PARTY_ACCEPT_STRATEGY)
 
-    for (const name of ["earthiverse", "earthRan2", "earthRan3"]) {
+    for (const name of ["earthiverse"]) {
         const ranger = await AL.Game.startRanger(name, serverRegion, serverIdentifier)
         const context = new Strategist<Ranger>(ranger, BASE_STRATEGY)
         CONTEXTS.push(context)
         context.applyStrategy(ATTACK_STRATEGY_WOLFIE)
         context.applyStrategy(MOVE_STRATEGY_WOLFIE)
+        context.applyStrategy(POLIO_PARTY_STRATEGY)
+    }
+    for (const name of ["earthRan2", "earthRan3"]) {
+        const ranger = await AL.Game.startRanger(name, serverRegion, serverIdentifier)
+        const context = new Strategist<Ranger>(ranger, BASE_STRATEGY)
+        CONTEXTS.push(context)
+        context.applyStrategy(ATTACK_STRATEGY_BAT)
+        context.applyStrategy(MOVE_STRATEGY_BAT)
         context.applyStrategy(POLIO_PARTY_STRATEGY)
     }
 
