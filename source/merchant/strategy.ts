@@ -1469,6 +1469,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await this.goDeliverReplenishables(bot).catch(console.error)
                 await this.goDeliverUpgrades(bot).catch(console.error)
                 await this.goGetItemsFromContexts(bot).catch(console.error)
+                await this.goMluck(bot).catch(console.error)
                 await this.goFishing(bot).catch(console.error)
                 await this.goMining(bot).catch(console.error)
                 await this.goCraft(bot).catch(console.error)
