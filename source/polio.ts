@@ -30,6 +30,7 @@ import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.j
 import { WarriorAttackStrategy } from "./strategy_pattern/strategies/attack_warrior.js"
 import { MageAttackStrategy } from "./strategy_pattern/strategies/attack_mage.js"
 import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
+import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
@@ -43,6 +44,7 @@ const SELL_STRATEGY = new SellStrategy({ itemConfig: DEFAULT_ITEM_CONFIG })
 const RESPAWN_STRATEGY = new RespawnStrategy()
 const TRACKER_STRATEGY = new TrackerStrategy()
 const DESTROY_STRATEGY = new DestroyStrategy({ itemConfig: DEFAULT_ITEM_CONFIG })
+const CHARGE_STRATEGY = new ChargeStrategy()
 const ELIXIR_STRATEGY = new ElixirStrategy("elixirluck")
 const TRACK_UPGRADES_STRATEGY = new TrackUpgradeStrategy()
 const PARTY_ACCEPT_STRATEGY = new AcceptPartyRequestStrategy()
@@ -82,16 +84,23 @@ const BAT_PRIORITY: MonsterName[] = ["goldenbat", "mvampire", "bat"]
 // })
 const ATTACK_STRATEGY_BAT_WARRIOR = new WarriorAttackStrategy({
     contexts: CONTEXTS,
+    disableAgitate: true,
     enableGreedyAggro: true,
     enableEquipForCleave: true,
     generateEnsureEquipped: {
         prefer: {
             mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
             offhand: { name: "ololipop", filters: RETURN_HIGHEST },
-            chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
+            shoes: { name: "wingedboots", filters: RETURN_HIGHEST },
+            chest: { name: "coat", filters: RETURN_HIGHEST },
+            pants: { name: "pants", filters: RETURN_HIGHEST },
+            helmet: { name: "helmet", filters: RETURN_HIGHEST },
+            // chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
             gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
             ring1: { name: "zapper", filters: RETURN_HIGHEST },
             ring2: { name: "cring", filters: RETURN_HIGHEST },
+            orb: { name: "orbofstr", filters: RETURN_HIGHEST },
+            amulet: { name: "mpxamulet", filters: RETURN_HIGHEST },
         },
     },
     typeList: BAT_PRIORITY,
@@ -103,7 +112,7 @@ const ATTACK_STRATEGY_BAT_MAGE = new MageAttackStrategy({
             mainhand: { name: "gstaff", filters: RETURN_HIGHEST },
             offhand: UNEQUIP,
             chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
-            gloves: { name: "mpgloves", filters: RETURN_HIGHEST },
+            gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
             ring1: { name: "cring", filters: RETURN_HIGHEST },
             ring2: { name: "cring", filters: RETURN_HIGHEST },
         },
@@ -174,6 +183,7 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
     context3.applyStrategy(ATTACK_STRATEGY_BAT_WARRIOR)
     context3.applyStrategy(MOVE_STRATEGY_BAT)
     context3.applyStrategy(POLIO_PARTY_STRATEGY)
+    context3.applyStrategy(CHARGE_STRATEGY)
 
     // for (const name of ["earthRan2", "earthRan3"]) {
     //     const ranger = await AL.Game.startRanger(name, serverRegion, serverIdentifier)
