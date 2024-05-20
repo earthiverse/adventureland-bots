@@ -83,6 +83,7 @@ const BAT_PRIORITY: MonsterName[] = ["goldenbat", "mvampire", "bat"]
 const ATTACK_STRATEGY_BAT_WARRIOR = new WarriorAttackStrategy({
     contexts: CONTEXTS,
     enableGreedyAggro: true,
+    enableEquipForCleave: true,
     generateEnsureEquipped: {
         prefer: {
             mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
