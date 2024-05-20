@@ -56,6 +56,8 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         await this.ensureEquipped(bot)
 
+        // TODO: If we have cleave enabled, cleave to agitate
+        // TODO: Add `hasIncomingProjectile` to entity filter
         if (!this.options.disableAgitate) await this.agitateTargets(bot).catch(suppress_errors)
         if (!this.options.disableStomp) await this.stomp(bot).catch(suppress_errors)
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority).catch(suppress_errors)

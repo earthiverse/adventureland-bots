@@ -1,4 +1,18 @@
-import AL, { ActionData, Character, EntitiesData, Entity, GetEntitiesFilters, ItemName, LocateItemFilters, Mage, MonsterName, PingCompensatedCharacter, SkillName, SlotType, Warrior } from "alclient"
+import AL, {
+    ActionData,
+    Character,
+    EntitiesData,
+    Entity,
+    GetEntitiesFilters,
+    ItemName,
+    LocateItemFilters,
+    Mage,
+    MonsterName,
+    PingCompensatedCharacter,
+    SkillName,
+    SlotType,
+    Warrior,
+} from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sleep } from "../../base/general.js"
 import { sortPriority } from "../../base/sort.js"
@@ -24,6 +38,8 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     disableKillSteal?: true
     disableScare?: true
     disableZapper?: true
+    /** Disables using zapper to aggro the monster */
+    disableZapperGreedyAggro?: true
     /** If set, we will aggro as many nearby monsters as we can */
     enableGreedyAggro?: true | MonsterName[]
     /** If set, we will check if we have the correct items equipped before and after attacking */
@@ -33,8 +49,47 @@ export type BaseAttackStrategyOptions = GetEntitiesFilters & {
     maximumTargets?: number
 }
 
-export const KILL_STEAL_AVOID_MONSTERS: MonsterName[] = ["kitty1", "kitty2", "kitty3", "kitty4", "puppy1", "puppy2", "puppy3", "puppy4"]
-export const IDLE_ATTACK_MONSTERS: MonsterName[] = ["arcticbee", "armadillo", "bat", "bee", "boar", "crab", "crabx", "croc", "cutebee", "frog", "goo", "hen", "iceroamer", "minimush", "nerfedbat", "osnake", "phoenix", "poisio", "rat", "rooster", "scorpion", "slenderman", "snake", "snowman", "spider", "squig", "squigtoad", "tortoise", "wabbit"]
+export const KILL_STEAL_AVOID_MONSTERS: MonsterName[] = [
+    "kitty1",
+    "kitty2",
+    "kitty3",
+    "kitty4",
+    "puppy1",
+    "puppy2",
+    "puppy3",
+    "puppy4",
+]
+export const IDLE_ATTACK_MONSTERS: MonsterName[] = [
+    "arcticbee",
+    "armadillo",
+    "bat",
+    "bee",
+    "boar",
+    "crab",
+    "crabx",
+    "croc",
+    "cutebee",
+    "frog",
+    "goo",
+    "hen",
+    "iceroamer",
+    "minimush",
+    "nerfedbat",
+    "osnake",
+    "phoenix",
+    "poisio",
+    "rat",
+    "rooster",
+    "scorpion",
+    "slenderman",
+    "snake",
+    "snowman",
+    "spider",
+    "squig",
+    "squigtoad",
+    "tortoise",
+    "wabbit",
+]
 
 export class BaseAttackStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
@@ -51,9 +106,10 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
     public constructor(options?: BaseAttackStrategyOptions) {
         this.options = options ?? {
-            contexts: []
+            contexts: [],
         }
-        if (!this.options.disableCreditCheck && this.options.couldGiveCredit === undefined) this.options.couldGiveCredit = true
+        if (!this.options.disableCreditCheck && this.options.couldGiveCredit === undefined)
+            this.options.couldGiveCredit = true
         if (this.options.willDieToProjectiles === undefined) this.options.willDieToProjectiles = false
 
         if (!options.disableZapper) this.interval.push("zapperzap")
@@ -68,12 +124,13 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 if (this.shouldScare(bot)) await this.scare(bot)
                 await this.attack(bot)
             },
-            interval: this.interval
+            interval: this.interval,
         })
     }
 
     public onApply(bot: Type) {
-        if (this.options.generateEnsureEquipped) this.options.ensureEquipped = generateEnsureEquipped(bot, this.options.generateEnsureEquipped)
+        if (this.options.generateEnsureEquipped)
+            this.options.ensureEquipped = generateEnsureEquipped(bot, this.options.generateEnsureEquipped)
         this.botEnsureEquipped.set(bot.id, this.options.ensureEquipped)
 
         this.botSort.set(bot.id, sortPriority(bot, this.options.typeList))
@@ -100,7 +157,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             }
             bot.socket.on("action", this.stealOnAction)
         }
-        if (this.options.enableGreedyAggro) {
+        if (this.options.enableGreedyAggro && !this.options.disableZapperGreedyAggro) {
             this.greedyOnEntities = (data: EntitiesData) => {
                 if (data.monsters.length == 0) return // No monsters
                 if (this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets) return // Don't want any more targets
@@ -109,11 +166,15 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 if (!this.options.disableZapper && bot.canUse("zapperzap")) {
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
-                        if (Array.isArray(this.options.enableGreedyAggro) && !this.options.enableGreedyAggro.includes(monster.type)) continue
+                        if (
+                            Array.isArray(this.options.enableGreedyAggro) &&
+                            !this.options.enableGreedyAggro.includes(monster.type)
+                        )
+                            continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
                         if (AL.Game.G.monsters[monster.type].immune) continue // Can't damage immune monsters with zapperzap
-                        bot.nextSkill.set("zapperzap", new Date(Date.now() + (bot.ping * 2)))
+                        bot.nextSkill.set("zapperzap", new Date(Date.now() + bot.ping * 2))
                         return bot.zapperZap(monster.id).catch()
                     }
                 }
@@ -121,10 +182,14 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 if (bot.ctype == "warrior" && bot.canUse("taunt")) {
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
-                        if (Array.isArray(this.options.enableGreedyAggro) && !this.options.enableGreedyAggro.includes(monster.type)) continue
+                        if (
+                            Array.isArray(this.options.enableGreedyAggro) &&
+                            !this.options.enableGreedyAggro.includes(monster.type)
+                        )
+                            continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
-                        bot.nextSkill.set("taunt", new Date(Date.now() + (bot.ping * 2)))
+                        bot.nextSkill.set("taunt", new Date(Date.now() + bot.ping * 2))
                         return (bot as unknown as Warrior).taunt(monster.id).catch()
                     }
                 }
@@ -133,7 +198,11 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                     const cbursts: [string, number][] = []
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
-                        if (Array.isArray(this.options.enableGreedyAggro) && !this.options.enableGreedyAggro.includes(monster.type)) continue
+                        if (
+                            Array.isArray(this.options.enableGreedyAggro) &&
+                            !this.options.enableGreedyAggro.includes(monster.type)
+                        )
+                            continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
                         cbursts.push([monster.id, 1])
@@ -141,23 +210,27 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                     for (const monster of bot.getEntities({
                         hasTarget: false,
                         typeList: this.options.typeList,
-                        withinRange: "cburst"
+                        withinRange: "cburst",
                     })) {
                         if (cbursts.some((cburst) => cburst[0] == monster.id)) continue // Already in our list to cburst
                         cbursts.push([monster.id, 1])
                     }
                     if (cbursts.length) {
-                        bot.nextSkill.set("cburst", new Date(Date.now() + (bot.ping * 2)))
+                        bot.nextSkill.set("cburst", new Date(Date.now() + bot.ping * 2))
                         return (bot as unknown as Mage).cburst(cbursts).catch()
                     }
                 }
                 if (bot.canUse("attack")) {
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
-                        if (Array.isArray(this.options.enableGreedyAggro) && !this.options.enableGreedyAggro.includes(monster.type)) continue
+                        if (
+                            Array.isArray(this.options.enableGreedyAggro) &&
+                            !this.options.enableGreedyAggro.includes(monster.type)
+                        )
+                            continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > bot.range) continue
-                        bot.nextSkill.set("attack", new Date(Date.now() + (bot.ping * 2)))
+                        bot.nextSkill.set("attack", new Date(Date.now() + bot.ping * 2))
                         return bot.basicAttack(monster.id).catch()
                     }
                 }
@@ -196,12 +269,15 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             const entities = bot.getEntities({
                 canDamage: "attack",
                 hasTarget: false,
-                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
-                withinRange: "attack"
+                typeList: Array.isArray(this.options.enableGreedyAggro)
+                    ? this.options.enableGreedyAggro
+                    : this.options.typeList,
+                withinRange: "attack",
             })
             if (
-                entities.length
-                && !(this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets)) {
+                entities.length &&
+                !(this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets)
+            ) {
                 // Prioritize the entities
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
@@ -210,10 +286,11 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 const canKill = bot.canKillInOneShot(target)
                 if (canKill) this.preventOverkill(bot, target)
                 if (
-                    !canKill
-                    || targets.size > 0
-                    || bot.mp < bot.max_mp * 0.25 // Energize if we are low on MP
-                ) this.getEnergizeFromOther(bot).catch(suppress_errors)
+                    !canKill ||
+                    targets.size > 0 ||
+                    bot.mp < bot.max_mp * 0.25 // Energize if we are low on MP
+                )
+                    this.getEnergizeFromOther(bot).catch(suppress_errors)
 
                 return bot.basicAttack(target.id)
             }
@@ -223,7 +300,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         const entities = bot.getEntities({
             ...this.options,
             canDamage: "attack",
-            withinRange: "attack"
+            withinRange: "attack",
         })
         if (entities.length == 0) return // No targets to attack
 
@@ -270,7 +347,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             typeList: IDLE_ATTACK_MONSTERS,
             willBurnToDeath: false,
             willDieToProjectiles: false,
-            withinRange: "attack"
+            withinRange: "attack",
         })
         if (entities.length == 0) return // No targets to attack
 
@@ -311,7 +388,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         const ensureEquipped = this.botEnsureEquipped.get(bot.id)
         if (!ensureEquipped) return
 
-        const equipBatch: { num: number, slot: SlotType }[] = []
+        const equipBatch: { num: number; slot: SlotType }[] = []
 
         for (const sT in ensureEquipped) {
             const slotType = sT as SlotType
@@ -325,66 +402,74 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
             if (
                 // We don't have anything equipped
-                !bot.slots[slotType]
+                !bot.slots[slotType] ||
                 // We don't have the same name equipped
-                || bot.slots[slotType].name !== ensure.name
+                bot.slots[slotType].name !== ensure.name ||
                 // We want the highest level, and we have a higher level item in our inventory
-                || (ensure.filters?.returnHighestLevel && bot.hasItem(ensure.name, bot.items, { ...ensure.filters, levelGreaterThan: bot.slots[slotType].level })) // We have a higher level one to equip
+                (ensure.filters?.returnHighestLevel &&
+                    bot.hasItem(ensure.name, bot.items, {
+                        ...ensure.filters,
+                        levelGreaterThan: bot.slots[slotType].level,
+                    })) || // We have a higher level one to equip
                 // We want the lowest level, and d we have a lower level item in our inventory
-                || (ensure.filters?.returnLowestLevel && bot.hasItem(ensure.name, bot.items, { ...ensure.filters, levelLessThan: bot.slots[slotType].level })) // We have a lower level one to equip
+                (ensure.filters?.returnLowestLevel &&
+                    bot.hasItem(ensure.name, bot.items, {
+                        ...ensure.filters,
+                        levelLessThan: bot.slots[slotType].level,
+                    })) // We have a lower level one to equip
             ) {
                 let toEquip = bot.locateItem(ensure.name, bot.items, ensure.filters)
                 if (toEquip === undefined) {
                     if (
-                        slotType === "mainhand"
+                        slotType === "mainhand" &&
                         // We have it equipped in our offhand
-                        && bot.slots["offhand"]?.name === ensure.name
+                        bot.slots["offhand"]?.name === ensure.name &&
                         // We don't want it equipped in our offhand
-                        && (!ensureEquipped["offhand"] || ensureEquipped["offhand"].name !== ensure.name)
+                        (!ensureEquipped["offhand"] || ensureEquipped["offhand"].name !== ensure.name) &&
                         // We have enough space to unequip something
-                        && bot.esize > 0
+                        bot.esize > 0
                     ) {
                         toEquip = await bot.unequip("offhand")
                     } else if (
-                        slotType === "offhand"
+                        slotType === "offhand" &&
                         // We have it equipped in our mainhand
-                        && bot.slots["mainhand"]?.name === ensure.name
+                        bot.slots["mainhand"]?.name === ensure.name &&
                         // We don't want it equipped in our mainhand
-                        && (!ensureEquipped["mainhand"] || ensureEquipped["mainhand"].name !== ensure.name)
+                        (!ensureEquipped["mainhand"] || ensureEquipped["mainhand"].name !== ensure.name) &&
                         // We have enough space to unequip something
-                        && bot.esize > 0
+                        bot.esize > 0
                     ) {
                         toEquip = await bot.unequip("mainhand")
                     } else if (
-                        slotType === "ring1"
+                        slotType === "ring1" &&
                         // We have it equipped in the other slot
-                        && bot.slots["ring2"]?.name === ensure.name
+                        bot.slots["ring2"]?.name === ensure.name &&
                         // We have enough space to unequip something
-                        && bot.esize > 0
+                        bot.esize > 0
                     ) {
                         toEquip = await bot.unequip("ring2")
                     } else if (
-                        slotType === "ring2"
+                        slotType === "ring2" &&
                         // We have it equipped in the other slot
-                        && bot.slots["ring1"]?.name === ensure.name
+                        bot.slots["ring1"]?.name === ensure.name &&
                         // We have enough space to unequip something
-                        && bot.esize > 0
+                        bot.esize > 0
                     ) {
                         toEquip = await bot.unequip("earring1")
                     } else if (
-                        slotType === "earring1"
+                        slotType === "earring1" &&
                         // We have it equipped in the other slot
-                        && bot.slots["earring2"]?.name === ensure.name
+                        bot.slots["earring2"]?.name === ensure.name &&
                         // We have enough space to unequip something
-                        && bot.esize > 0
+                        bot.esize > 0
                     ) {
                         toEquip = await bot.unequip("earring2")
                     } else if (
-                        slotType === "earring2"
+                        slotType === "earring2" &&
                         // We have it equipped in the other slot
-                        && bot.slots["earring1"]?.name === ensure.name
+                        bot.slots["earring1"]?.name === ensure.name &&
                         // We have enough space to unequip something
-                        && bot.esize > 0
+                        bot.esize > 0
                     ) {
                         toEquip = await bot.unequip("earring1")
                     }
@@ -400,7 +485,10 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                     const weaponType = AL.Game.G.items[ensure.name].wtype
                     const doubleHandTypes = AL.Game.G.classes[bot.ctype].doublehand
                     if (weaponType && doubleHandTypes && doubleHandTypes[weaponType]) {
-                        if (ensureEquipped.offhand && !ensureEquipped.offhand.unequip) throw new Error(`'${ensure.name}' is a doublehand for ${bot.ctype}. We can't equip ${ensureEquipped.offhand.name} in our offhand.`)
+                        if (ensureEquipped.offhand && !ensureEquipped.offhand.unequip)
+                            throw new Error(
+                                `'${ensure.name}' is a doublehand for ${bot.ctype}. We can't equip ${ensureEquipped.offhand.name} in our offhand.`,
+                            )
                         if (bot.slots.offhand) {
                             if (bot.esize <= 0) continue // We don't have enough space to unequip our offhand
                             await bot.unequip("offhand")
@@ -461,12 +549,15 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             const entities = bot.getEntities({
                 canDamage: "zapperzap",
                 hasTarget: false,
-                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
-                withinRange: "zapperzap"
+                typeList: Array.isArray(this.options.enableGreedyAggro)
+                    ? this.options.enableGreedyAggro
+                    : this.options.typeList,
+                withinRange: "zapperzap",
             })
             if (
-                entities.length
-                && !(this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets)) {
+                entities.length &&
+                !(this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets)
+            ) {
                 // Prioritize the entities
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
@@ -479,7 +570,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         const entities = bot.getEntities({
             ...this.options,
             canDamage: "zapperzap",
-            withinRange: "zapperzap"
+            withinRange: "zapperzap",
         })
         if (entities.length == 0) return // No targets to attack
 
@@ -586,9 +677,12 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (this.options.typeList) {
             // If something else is targeting us, scare
             const targetingMe = bot.getEntities({
-                notTypeList: [...this.options.typeList, ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS)],
+                notTypeList: [
+                    ...this.options.typeList,
+                    ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS),
+                ],
                 targetingMe: true,
-                willDieToProjectiles: false
+                willDieToProjectiles: false,
             })
             if (targetingMe.length) {
                 return true
@@ -600,7 +694,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             const targetingMe = bot.getEntities({
                 notTypeList: [this.options.type, ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS)],
                 targetingMe: true,
-                willDieToProjectiles: false
+                willDieToProjectiles: false,
             })
             if (targetingMe.length) {
                 return true
@@ -623,7 +717,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             let entityDamage = entity.calculateDamageRange(bot)[1]
 
             // Calculate additional mobbing damage
-            if (multiplier[entity.damage_type] > 0) entityDamage *= (1 + (0.2 * multiplier[entity.damage_type]))
+            if (multiplier[entity.damage_type] > 0) entityDamage *= 1 + 0.2 * multiplier[entity.damage_type]
 
             potentialIncomingDamage += entityDamage
         }
