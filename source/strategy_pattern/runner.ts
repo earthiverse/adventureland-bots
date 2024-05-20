@@ -33,8 +33,7 @@ const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 // Strategies
 const avoidStackingStrategy = new AvoidStackingStrategy()
 const bankStrategy = new MoveToBankAndDepositStuffStrategy({
-    invisibleRogue: true,
-    map: "bank_b"
+    invisibleRogue: true
 })
 const baseStrategy = new BaseStrategy(CONTEXTS)
 const chargeStrategy = new ChargeStrategy()

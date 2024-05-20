@@ -1,7 +1,15 @@
-import AL, { BankInfo, BankPackName, ItemData, ItemName, LocateItemsFilters, PingCompensatedCharacter } from "alclient";
-import { getEmptyInventorySlots } from "./items.js";
-import { bankingPosition } from "./locations.js";
-import { TOO_FULL_FALLBACK_ITEMS_TO_SELL } from "./defaults.js";
+import AL, {
+    BankInfo,
+    BankPackName,
+    Character,
+    ItemData,
+    ItemName,
+    LocateItemsFilters,
+    PingCompensatedCharacter,
+} from "alclient"
+import { getEmptyInventorySlots } from "./items.js"
+import { bankingPosition } from "./locations.js"
+import { TOO_FULL_FALLBACK_ITEMS_TO_SELL } from "./defaults.js"
 
 /** The bank pack name, followed by the indexes for items */
 export type PackItems = [BankPackName, number[]]
@@ -23,12 +31,22 @@ const sortByPackNumberAsc = (a: PackItems, b: PackItems) => {
     return numA - numB
 }
 
-export async function goAndDepositItem(bot: PingCompensatedCharacter, pack: BankPackName, packPos: number, inventoryPos: number) {
+export async function goAndDepositItem(
+    bot: PingCompensatedCharacter,
+    pack: BankPackName,
+    packPos: number,
+    inventoryPos: number,
+) {
     await bot.smartMove(pack, { getWithin: 9999 })
     await bot.depositItem(inventoryPos, pack, packPos)
 }
 
-export async function goAndWithdrawItem(bot: PingCompensatedCharacter, pack: BankPackName, index: number, inventoryPos = -1) {
+export async function goAndWithdrawItem(
+    bot: PingCompensatedCharacter,
+    pack: BankPackName,
+    index: number,
+    inventoryPos = -1,
+) {
     await bot.smartMove(pack, { getWithin: 9999 })
     await bot.withdrawItem(pack, index, inventoryPos)
 }
@@ -46,9 +64,9 @@ export type BankOptions = {
 
 /**
  * Dumps (or attempts to, at least) items from our inventory in to our bank
- * 
- * @param bot 
- * @param options 
+ *
+ * @param bot
+ * @param options
  */
 export async function dumpInventoryInBank(bot: PingCompensatedCharacter, options: BankOptions) {
     if (!bot.map.startsWith("bank")) throw new Error("We aren't in the bank")
@@ -79,10 +97,12 @@ export async function dumpInventoryInBank(bot: PingCompensatedCharacter, options
         let idealSlot: BankItemPosition
         if (item.q && AL.Game.G.items[item.name].s > item.q) {
             // See if we can stack it on another stack somewhere
-            const bankItems = locateItemsInBank(bot, item.name, { quantityLessThan: AL.Game.G.items[item.name].s - item.q + 1 })
+            const bankItems = locateItemsInBank(bot, item.name, {
+                quantityLessThan: AL.Game.G.items[item.name].s - item.q + 1,
+            })
             if (bankItems.length) {
                 // Store it in the slot with the highest quantity
-                let highestQuantity = 0;
+                let highestQuantity = 0
                 for (const [packName, indexes] of bankItems) {
                     for (const i of indexes) {
                         const item = bot.bank[packName][i]
@@ -235,7 +255,10 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
                     // Split enough from B to stack A to the max
                     const numToSplit = gData.s - itemA.q
                     await bot.splitItem(inventoryPositionB, numToSplit)
-                    const splitItemsPosition = bot.locateItem(itemName, bot.items, { quantityLessThan: itemA.q, returnHighestQuantity: true })
+                    const splitItemsPosition = bot.locateItem(itemName, bot.items, {
+                        quantityLessThan: itemA.q,
+                        returnHighestQuantity: true,
+                    })
 
                     // Stack A to the max
                     await bot.swapItems(splitItemsPosition, inventoryPositionA)
@@ -251,8 +274,7 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
     // Grab items to sell and sell them
     if (options.itemsToSell) {
         const toSellIndexes = []
-        item:
-        for (itemName in itemNames) {
+        item: for (itemName in itemNames) {
             if (!options.itemsToSell.has(itemName)) continue // We don't want to sell it
             if (options.itemsToSell.get(itemName) !== undefined) continue // TODO: Selling it is complicated, add better selling later
 
@@ -291,8 +313,7 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
 
     if (options.itemsInExcessSell && emptySlots.length > 0) {
         const toSellIndexes = []
-        item:
-        for (const [itemName, maxSlots] of options.itemsInExcessSell) {
+        item: for (const [itemName, maxSlots] of options.itemsInExcessSell) {
             const itemTypes = itemNames[itemName]
             if (!itemTypes) continue // We don't have any of these items
 
@@ -347,11 +368,11 @@ export async function tidyBank(bot: PingCompensatedCharacter, options: BankOptio
 
 /**
  * Gets all empty slots in our bank
- * 
- * @param bot 
- * @returns 
+ *
+ * @param bot
+ * @returns
  */
-export function locateEmptyBankSlots(bot: PingCompensatedCharacter) {
+export function locateEmptyBankSlots(bot: Character) {
     if (!bot.map.startsWith("bank")) throw new Error("We aren't in the bank")
     if (!bot.bank) throw new Error("We don't have bank information")
 
@@ -377,10 +398,10 @@ export function locateEmptyBankSlots(bot: PingCompensatedCharacter) {
 
 /**
  * Gets all items in the bank with the given item name and optional filters
- * 
- * @param bot 
- * @param itemName 
- * @param filters 
+ *
+ * @param bot
+ * @param itemName
+ * @param filters
  */
 export function locateItemsInBank(bot: PingCompensatedCharacter, item: ItemName, filters?: LocateItemsFilters) {
     if (!bot.map.startsWith("bank")) throw new Error("We aren't in the bank")

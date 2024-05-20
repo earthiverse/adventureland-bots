@@ -9,6 +9,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
     protected lootOnDrop: (data: ChestData) => void
 
     protected static recentlyLooted = new LRUCache<string, boolean>({ max: 10 })
+    protected static chestCache = new Map<string, Map<string, Map<string, ChestData>>>()
 
     /**
      * A list of potions to use
@@ -35,6 +36,20 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
     }
 
     public onApply(bot: Type) {
+        if (!BaseStrategy.chestCache.has(bot.id)) {
+            BaseStrategy.chestCache.set(bot.id, new Map())
+        }
+
+        // Add all chests we have saved
+        const botChestCache = BaseStrategy.chestCache.get(bot.id)
+        const server = `${bot.serverData.region}${bot.serverData.name}`
+        if (botChestCache.has(server)) {
+            for (const [chestId, chestData] of botChestCache.get(server)) {
+                bot.chests.set(chestId, chestData)
+            }
+            botChestCache.delete(server)
+        }
+
         this.lootOnDrop = (data: ChestData) => {
             this.lootChest(bot, data).catch(console.error)
         }
@@ -42,6 +57,13 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
     }
 
     public onRemove(bot: Type) {
+        // Save chests
+        if (bot.chests.size) {
+            const botChestCache = BaseStrategy.chestCache.get(bot.id)
+            const server = `${bot.serverData.region}${bot.serverData.name}`
+            botChestCache.set(server, bot.chests)
+        }
+
         if (this.lootOnDrop) bot.socket.removeListener("drop", this.lootOnDrop)
     }
 

@@ -93,11 +93,16 @@ const trackerStrategy = new TrackerStrategy()
 const rspeedStrategy = new GiveRogueSpeedStrategy()
 const buyStrategy = new BuyStrategy({
     contexts: [],
-    buyMap: undefined,
-    replenishables: new Map<ItemName, number>([
-        ["hpot1", 2500],
-        ["mpot1", 2500],
-    ]),
+    itemConfig: {
+        hpot0: {
+            hold: true,
+            replenish: 2500,
+        },
+        mpot0: {
+            hold: true,
+            replenish: 2500,
+        },
+    },
 })
 const respawnStrategy = new RespawnStrategy()
 
@@ -108,19 +113,52 @@ async function startRspeedRogue(context: Strategist<Rogue>) {
     })
 
     const sellStrategy = new SellStrategy({
-        sellMap: new Map<ItemName, [number, number][]>([
-            ["beewings", undefined],
-            ["cclaw", undefined],
-            ["crabclaw", undefined],
-            ["gslime", undefined],
-            ["gstaff", undefined],
-            ["hpamulet", undefined],
-            ["hpbelt", undefined],
-            ["ringsj", undefined],
-            ["stinger", undefined],
-            ["wcap", undefined],
-            ["wshoes", undefined],
-        ]),
+        itemConfig: {
+            beewings: {
+                sell: true,
+                sellPrice: "npc",
+            },
+            cclaw: {
+                sell: true,
+                sellPrice: "npc",
+            },
+            crabclaw: {
+                sell: true,
+                sellPrice: "npc",
+            },
+            gslime: {
+                sell: true,
+                sellPrice: "npc",
+            },
+            gstaff: {
+                sell: true,
+                sellPrice: "npc",
+            },
+            hpamulet: {
+                sell: true,
+                sellPrice: "npc",
+            },
+            hpbelt: {
+                sell: true,
+                sellPrice: "npc",
+            },
+            ringsj: {
+                sell: true,
+                sellPrice: "npc",
+            },
+            stinger: {
+                sell: true,
+                sellPrice: "npc",
+            },
+            wcap: {
+                sell: true,
+                sellPrice: "npc",
+            },
+            wshoes: {
+                sell: true,
+                sellPrice: "npc",
+            },
+        },
     })
 
     context.applyStrategy(moveStrategy)

@@ -1,15 +1,16 @@
 import { BankInfo, BankPackName, Character, CharacterData, ItemName, Rogue } from "alclient"
 import { sleep } from "../../base/general.js"
-import { DEFAULT_ITEMS_TO_HOLD } from "../../base/defaults.js"
 import { Strategy, LoopName, Loop } from "../context.js"
 import { suppress_errors } from "../logging.js"
+import { DEFAULT_ITEM_CONFIG, ItemConfig, wantToHold } from "../../base/itemsNew.js"
+import { bankingPosition } from "../../base/locations.js"
+import { locateEmptyBankSlots } from "../../base/banking.js"
 
 // TODO: Improve to bank not on a specific map, but all available maps
 
 export type MoveToBankAndDepositStuffStrategyOptions = {
     invisibleRogue?: true
-    itemsToHold?: Set<ItemName>
-    map?: "bank_b" | "bank_u" | "bank"
+    itemConfig?: ItemConfig
 }
 
 export class MoveToBankAndDepositStuffStrategy<Type extends Character> implements Strategy<Type> {
@@ -20,8 +21,7 @@ export class MoveToBankAndDepositStuffStrategy<Type extends Character> implement
     public constructor(options?: MoveToBankAndDepositStuffStrategyOptions) {
         // Set default options
         if (!options) options = {}
-        if (!options.itemsToHold) options.itemsToHold = DEFAULT_ITEMS_TO_HOLD
-        if (!options.map) options.map = "bank"
+        if (!options.itemConfig) options.itemConfig = DEFAULT_ITEM_CONFIG
         this.options = options
 
         this.loops.set("move", {
@@ -45,15 +45,20 @@ export class MoveToBankAndDepositStuffStrategy<Type extends Character> implement
             await (bot as unknown as Rogue).invis()
         }
 
-        await bot.smartMove(this.options.map).catch(suppress_errors)
+        await bot.smartMove(bankingPosition).catch(suppress_errors)
 
-        await sleep(2000)
+        const emptySlots = locateEmptyBankSlots(bot)
+        if (!emptySlots) return
 
         for (let i = 0; i < bot.isize; i++) {
             const item = bot.items[i]
             if (!item) continue // No item
-            if (item.l) continue // Item is locked
-            if (this.options.itemsToHold.has(item.name)) continue // We want to hold this item
+            if (wantToHold(this.options.itemConfig, item, bot)) continue // We want to hold this item
+
+            const emptySlot = emptySlots.pop()
+            if (!emptySlot) return
+
+            await bot.smartMove(emptySlot[0], { getWithin: 1000 })
 
             // Deposit the items
             await bot.depositItem(i).catch(console.error)
@@ -78,7 +83,7 @@ export class BankInformationStrategy<Type extends Character> implements Strategy
     /** The string is the owner ID, since banks are shared across owners */
     public static bankData = new Map<string, BankInfo>()
 
-    public async onApply(bot: Type) {
+    public onApply(bot: Type) {
         this.checkBankInfo = (data: CharacterData) => {
             if (!data.user) return // No bank info (we are probably not in the bank)
 
@@ -88,7 +93,7 @@ export class BankInformationStrategy<Type extends Character> implements Strategy
         bot.socket.on("player", this.checkBankInfo)
     }
 
-    public async onRemove(bot: Type) {
+    public onRemove(bot: Type) {
         if (this.checkBankInfo) bot.socket.removeListener("player", this.checkBankInfo)
     }
 

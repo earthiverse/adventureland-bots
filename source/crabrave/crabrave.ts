@@ -95,7 +95,7 @@ const REPLENISHABLES = new Map<ItemName, number>([
 
 const avoidStackingStrategy = new AvoidStackingStrategy()
 const avoidDeathStrategy = new AvoidDeathStrategy()
-const bankStrategy = new MoveToBankAndDepositStuffStrategy({ map: "bank" })
+const bankStrategy = new MoveToBankAndDepositStuffStrategy()
 const baseStrategy = new BaseStrategy(CONTEXTS)
 const buyStrategy = new BuyStrategy({
     contexts: CONTEXTS,
