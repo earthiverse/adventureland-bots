@@ -29,6 +29,7 @@ import { RETURN_HIGHEST, UNEQUIP } from "./strategy_pattern/setups/equipment.js"
 import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.js"
 import { WarriorAttackStrategy } from "./strategy_pattern/strategies/attack_warrior.js"
 import { MageAttackStrategy } from "./strategy_pattern/strategies/attack_mage.js"
+import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
@@ -42,6 +43,7 @@ const SELL_STRATEGY = new SellStrategy({ itemConfig: DEFAULT_ITEM_CONFIG })
 const RESPAWN_STRATEGY = new RespawnStrategy()
 const TRACKER_STRATEGY = new TrackerStrategy()
 const DESTROY_STRATEGY = new DestroyStrategy({ itemConfig: DEFAULT_ITEM_CONFIG })
+const ELIXIR_STRATEGY = new ElixirStrategy("elixirluck")
 const TRACK_UPGRADES_STRATEGY = new TrackUpgradeStrategy()
 const PARTY_ACCEPT_STRATEGY = new AcceptPartyRequestStrategy()
 const AVOID_DEATH_STRATEGY = new AvoidDeathStrategy()
@@ -186,6 +188,7 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
         context.applyStrategy(ITEM_STRATEGY)
         context.applyStrategy(BUY_STRATEGY)
         context.applyStrategy(SELL_STRATEGY)
+        context.applyStrategy(ELIXIR_STRATEGY)
         context.applyStrategy(RESPAWN_STRATEGY)
         context.applyStrategy(TRACKER_STRATEGY)
         context.applyStrategy(DESTROY_STRATEGY)
