@@ -1,11 +1,14 @@
 import AL, {
     Character,
     InviteData,
+    Mage,
     Merchant,
+    MonsterName,
     PingCompensatedCharacter,
     Ranger,
     ServerIdentifier,
     ServerRegion,
+    Warrior,
 } from "alclient"
 import { Loop, LoopName, Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
@@ -22,8 +25,10 @@ import { RangerAttackStrategy } from "./strategy_pattern/strategies/attack_range
 import { NewMerchantStrategy, defaultNewMerchantStrategyOptions } from "./merchant/strategy.js"
 import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
 import { ToggleStandStrategy } from "./strategy_pattern/strategies/stand.js"
-import { RETURN_HIGHEST } from "./strategy_pattern/setups/equipment.js"
+import { RETURN_HIGHEST, UNEQUIP } from "./strategy_pattern/setups/equipment.js"
 import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.js"
+import { WarriorAttackStrategy } from "./strategy_pattern/strategies/attack_warrior.js"
+import { MageAttackStrategy } from "./strategy_pattern/strategies/attack_mage.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
@@ -59,20 +64,50 @@ const ATTACK_STRATEGY_WOLFIE = new RangerAttackStrategy({
     typeList: ["wolfie"],
 })
 const MOVE_STRATEGY_WOLFIE = new ImprovedMoveStrategy(["wolfie"])
-const ATTACK_STRATEGY_BAT = new RangerAttackStrategy({
+const BAT_PRIORITY: MonsterName[] = ["goldenbat", "mvampire", "bat"]
+// const ATTACK_STRATEGY_BAT_RANGER = new RangerAttackStrategy({
+//     contexts: CONTEXTS,
+//     generateEnsureEquipped: {
+//         prefer: {
+//             mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
+//             chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
+//             ring1: { name: "zapper", filters: RETURN_HIGHEST },
+//             ring2: { name: "cring", filters: RETURN_HIGHEST },
+//             orb: { name: "vorb", filters: RETURN_HIGHEST },
+//         },
+//     },
+//     typeList: BAT_PRIORITY,
+// })
+const ATTACK_STRATEGY_BAT_WARRIOR = new WarriorAttackStrategy({
+    contexts: CONTEXTS,
+    enableGreedyAggro: true,
+    generateEnsureEquipped: {
+        prefer: {
+            mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
+            offhand: { name: "ololipop", filters: RETURN_HIGHEST },
+            chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
+            gloves: { name: "mpgloves", filters: RETURN_HIGHEST },
+            ring1: { name: "zapper", filters: RETURN_HIGHEST },
+            ring2: { name: "cring", filters: RETURN_HIGHEST },
+        },
+    },
+    typeList: BAT_PRIORITY,
+})
+const ATTACK_STRATEGY_BAT_MAGE = new MageAttackStrategy({
     contexts: CONTEXTS,
     generateEnsureEquipped: {
         prefer: {
-            mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
+            mainhand: { name: "gstaff", filters: RETURN_HIGHEST },
+            offhand: UNEQUIP,
             chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
-            ring1: { name: "zapper", filters: RETURN_HIGHEST },
+            gloves: { name: "mpgloves", filters: RETURN_HIGHEST },
+            ring1: { name: "cring", filters: RETURN_HIGHEST },
             ring2: { name: "cring", filters: RETURN_HIGHEST },
-            orb: { name: "vorb", filters: RETURN_HIGHEST },
         },
     },
-    typeList: ["bat", "goldenbat", "mvampire"],
+    typeList: BAT_PRIORITY,
 })
-const MOVE_STRATEGY_BAT = new ImprovedMoveStrategy(["bat", "goldenbat", "mvampire"])
+const MOVE_STRATEGY_BAT = new ImprovedMoveStrategy(BAT_PRIORITY)
 
 class PolioPartyStrategy<Type extends Character> implements Strategy<Type> {
     private onInvite: (data: { name: string }) => Promise<void>
@@ -116,22 +151,35 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
     merchantContext.applyStrategy(MERCHANT_STAND_STRATEGY)
     merchantContext.applyStrategy(PARTY_ACCEPT_STRATEGY)
 
-    for (const name of ["earthiverse"]) {
-        const ranger = await AL.Game.startRanger(name, serverRegion, serverIdentifier)
-        const context = new Strategist<Ranger>(ranger, BASE_STRATEGY)
-        CONTEXTS.push(context)
-        context.applyStrategy(ATTACK_STRATEGY_WOLFIE)
-        context.applyStrategy(MOVE_STRATEGY_WOLFIE)
-        context.applyStrategy(POLIO_PARTY_STRATEGY)
-    }
-    for (const name of ["earthRan2", "earthRan3"]) {
-        const ranger = await AL.Game.startRanger(name, serverRegion, serverIdentifier)
-        const context = new Strategist<Ranger>(ranger, BASE_STRATEGY)
-        CONTEXTS.push(context)
-        context.applyStrategy(ATTACK_STRATEGY_BAT)
-        context.applyStrategy(MOVE_STRATEGY_BAT)
-        context.applyStrategy(POLIO_PARTY_STRATEGY)
-    }
+    const ranger = await AL.Game.startRanger("earthiverse", serverRegion, serverIdentifier)
+    const context = new Strategist<Ranger>(ranger, BASE_STRATEGY)
+    CONTEXTS.push(context)
+    context.applyStrategy(ATTACK_STRATEGY_WOLFIE)
+    context.applyStrategy(MOVE_STRATEGY_WOLFIE)
+    context.applyStrategy(POLIO_PARTY_STRATEGY)
+
+    const mage = await AL.Game.startMage("earthMag", serverRegion, serverIdentifier)
+    const context2 = new Strategist<Mage>(mage, BASE_STRATEGY)
+    CONTEXTS.push(context2)
+    context2.applyStrategy(ATTACK_STRATEGY_BAT_MAGE)
+    context2.applyStrategy(MOVE_STRATEGY_BAT)
+    context2.applyStrategy(POLIO_PARTY_STRATEGY)
+
+    const warrior = await AL.Game.startWarrior("earthWar", serverRegion, serverIdentifier)
+    const context3 = new Strategist<Warrior>(warrior, BASE_STRATEGY)
+    CONTEXTS.push(context3)
+    context3.applyStrategy(ATTACK_STRATEGY_BAT_WARRIOR)
+    context3.applyStrategy(MOVE_STRATEGY_BAT)
+    context3.applyStrategy(POLIO_PARTY_STRATEGY)
+
+    // for (const name of ["earthRan2", "earthRan3"]) {
+    //     const ranger = await AL.Game.startRanger(name, serverRegion, serverIdentifier)
+    //     const context = new Strategist<Ranger>(ranger, BASE_STRATEGY)
+    //     CONTEXTS.push(context)
+    //     context.applyStrategy(ATTACK_STRATEGY_BAT_RANGER)
+    //     context.applyStrategy(MOVE_STRATEGY_BAT)
+    //     context.applyStrategy(POLIO_PARTY_STRATEGY)
+    // }
 
     for (const context of CONTEXTS) {
         context.applyStrategy(AVOID_DEATH_STRATEGY)
