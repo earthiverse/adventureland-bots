@@ -189,11 +189,14 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
         context.applyStrategy(ITEM_STRATEGY)
         context.applyStrategy(BUY_STRATEGY)
         context.applyStrategy(SELL_STRATEGY)
-        context.applyStrategy(ELIXIR_STRATEGY)
         context.applyStrategy(RESPAWN_STRATEGY)
         context.applyStrategy(TRACKER_STRATEGY)
         context.applyStrategy(DESTROY_STRATEGY)
         context.applyStrategy(TRACK_UPGRADES_STRATEGY)
+
+        if (context.bot.ctype !== "merchant") {
+            context.applyStrategy(ELIXIR_STRATEGY)
+        }
     }
 }
 start("US", "I")
