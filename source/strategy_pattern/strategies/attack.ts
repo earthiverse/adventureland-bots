@@ -545,7 +545,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (this.options.disableZapper) return
         if (!bot.canUse("zapperzap")) return // We can't zap
 
-        if (this.options.enableGreedyAggro) {
+        if (this.options.enableGreedyAggro && !this.options.disableZapperGreedyAggro) {
             const entities = bot.getEntities({
                 canDamage: "zapperzap",
                 hasTarget: false,
