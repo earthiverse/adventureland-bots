@@ -204,7 +204,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         )
                             continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
-                        if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
+                        if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.cburst.range) continue
                         cbursts.push([monster.id, 1])
                     }
                     for (const monster of bot.getEntities({

@@ -1,4 +1,4 @@
-import AL, { ItemData, SlotType, Warrior } from "alclient"
+import AL, { ItemData, SlotType, Tools, Warrior } from "alclient"
 import { sleep } from "../../base/general.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions, IDLE_ATTACK_MONSTERS } from "./attack.js"
 import { suppress_errors } from "../logging.js"
@@ -79,6 +79,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
             const numIfAgitate = bot.getEntities({
                 hasTarget: false,
+                hasIncomingProjectile: false,
                 typeList: Array.isArray(this.options.enableGreedyAggro)
                     ? this.options.enableGreedyAggro
                     : this.options.typeList,
@@ -87,6 +88,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
             const numIfCleave = bot.getEntities({
                 hasTarget: false,
+                hasIncomingProjectile: false,
                 typeList: Array.isArray(this.options.enableGreedyAggro)
                     ? this.options.enableGreedyAggro
                     : this.options.typeList,
@@ -106,14 +108,25 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         if (unwantedEntity) return // Something we don't want to agitate is nearby
 
         // Agitate all nearby enemies if there are no others nearby
-        const wantedEntity = bot.getEntity({
+        const ifAgitate = bot.getEntities({
             hasTarget: false,
+            hasIncomingProjectile: false,
             typeList: Array.isArray(this.options.enableGreedyAggro)
                 ? this.options.enableGreedyAggro
                 : this.options.typeList,
             withinRange: "agitate",
         })
-        if (wantedEntity) return bot.agitate()
+        if (ifAgitate.length === 0) return // Nothing to agitate
+        if (
+            ifAgitate.length === 1 &&
+            bot.canUse("taunt") &&
+            AL.Game.G.skills.taunt.range < Tools.distance(bot, ifAgitate[0])
+        ) {
+            // Taunt if there's only one, and we have it within range
+            return bot.taunt(ifAgitate[0].id)
+        }
+        // Agitate if there's more than one target
+        return bot.agitate()
     }
 
     protected async cleave(bot: Warrior) {
