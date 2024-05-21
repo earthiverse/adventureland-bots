@@ -120,7 +120,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         if (
             ifAgitate.length === 1 &&
             bot.canUse("taunt") &&
-            AL.Game.G.skills.taunt.range < Tools.distance(bot, ifAgitate[0])
+            AL.Game.G.skills.taunt.range >= Tools.distance(bot, ifAgitate[0])
         ) {
             // Taunt if there's only one, and we have it within range
             return bot.taunt(ifAgitate[0].id)
