@@ -31,6 +31,7 @@ import { WarriorAttackStrategy } from "./strategy_pattern/strategies/attack_warr
 import { MageAttackStrategy } from "./strategy_pattern/strategies/attack_mage.js"
 import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
+import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
@@ -45,6 +46,7 @@ const RESPAWN_STRATEGY = new RespawnStrategy()
 const TRACKER_STRATEGY = new TrackerStrategy()
 const DESTROY_STRATEGY = new DestroyStrategy({ itemConfig: DEFAULT_ITEM_CONFIG })
 const CHARGE_STRATEGY = new ChargeStrategy()
+const HOME_STRATEGY = new HomeServerStrategy("US", "I")
 const ELIXIR_STRATEGY = new ElixirStrategy("elixirluck")
 const TRACK_UPGRADES_STRATEGY = new TrackUpgradeStrategy()
 const PARTY_ACCEPT_STRATEGY = new AcceptPartyRequestStrategy()
@@ -203,6 +205,7 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
         context.applyStrategy(TRACKER_STRATEGY)
         context.applyStrategy(DESTROY_STRATEGY)
         context.applyStrategy(TRACK_UPGRADES_STRATEGY)
+        context.applyStrategy(HOME_STRATEGY)
 
         if (context.bot.ctype !== "merchant") {
             context.applyStrategy(ELIXIR_STRATEGY)
