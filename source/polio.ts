@@ -109,6 +109,7 @@ const ATTACK_STRATEGY_BAT_WARRIOR = new WarriorAttackStrategy({
 })
 const ATTACK_STRATEGY_BAT_MAGE = new MageAttackStrategy({
     contexts: CONTEXTS,
+    disableScare: true,
     generateEnsureEquipped: {
         prefer: {
             mainhand: { name: "gstaff", filters: RETURN_HIGHEST },
