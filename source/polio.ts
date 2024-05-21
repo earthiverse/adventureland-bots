@@ -94,10 +94,10 @@ const ATTACK_STRATEGY_BAT_WARRIOR = new WarriorAttackStrategy({
             mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
             offhand: { name: "ololipop", filters: RETURN_HIGHEST },
             shoes: { name: "wingedboots", filters: RETURN_HIGHEST },
-            chest: { name: "coat", filters: RETURN_HIGHEST },
+            // chest: { name: "coat", filters: RETURN_HIGHEST },
             pants: { name: "pants", filters: RETURN_HIGHEST },
             helmet: { name: "helmet", filters: RETURN_HIGHEST },
-            // chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
+            chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
             gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
             ring1: { name: "zapper", filters: RETURN_HIGHEST },
             ring2: { name: "cring", filters: RETURN_HIGHEST },
