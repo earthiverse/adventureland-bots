@@ -157,13 +157,13 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             }
             bot.socket.on("action", this.stealOnAction)
         }
-        if (this.options.enableGreedyAggro && !this.options.disableZapperGreedyAggro) {
+        if (this.options.enableGreedyAggro) {
             this.greedyOnEntities = (data: EntitiesData) => {
                 if (data.monsters.length == 0) return // No monsters
                 if (this.options.maximumTargets !== undefined && bot.targets >= this.options.maximumTargets) return // Don't want any more targets
 
                 if (!this.shouldAttack(bot)) return
-                if (!this.options.disableZapper && bot.canUse("zapperzap")) {
+                if (!this.options.disableZapper && !this.options.disableZapperGreedyAggro && bot.canUse("zapperzap")) {
                     for (const monster of data.monsters) {
                         if (monster.target) continue // Already has a target
                         if (
