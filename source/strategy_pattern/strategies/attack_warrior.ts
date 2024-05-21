@@ -37,7 +37,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
                 if (this.shouldScare(bot)) await this.scare(bot).catch(suppress_errors)
                 await this.attack(bot)
             },
-            interval: this.interval
+            interval: this.interval,
         })
 
         if (!options.disableCleave) this.interval.push("cleave")
@@ -56,8 +56,6 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         await this.ensureEquipped(bot)
 
-        // TODO: If we have cleave enabled, cleave to agitate
-        // TODO: Add `hasIncomingProjectile` to entity filter
         if (!this.options.disableAgitate) await this.agitateTargets(bot).catch(suppress_errors)
         if (!this.options.disableStomp) await this.stomp(bot).catch(suppress_errors)
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority).catch(suppress_errors)
@@ -69,55 +67,86 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
     }
 
     protected async agitateTargets(bot: Warrior) {
-        if (!bot.canUse("agitate")) return // Can't agitate
+        if (!this.options.enableGreedyAggro) return // Only agitate if we're greedy
 
-        if (this.options.enableGreedyAggro) {
-            // Agitate all nearby enemies if there are no others nearby
+        if (bot.canUse("cleave", { ignoreEquipped: this.options.enableEquipForCleave ?? false })) {
             const unwantedEntity = bot.getEntity({
                 hasTarget: false,
                 notTypeList: this.options.typeList,
-                withinRange: "agitate"
+                withinRange: "cleave",
             })
-            if (unwantedEntity) return // Something we don't want to agitate is nearby
-            const wantedEntity = bot.getEntity({
+            if (unwantedEntity) return // Something we don't want to cleave is nearby
+
+            const numIfAgitate = bot.getEntities({
                 hasTarget: false,
-                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
-                withinRange: "agitate"
-            })
-            if (wantedEntity) return bot.agitate()
+                typeList: Array.isArray(this.options.enableGreedyAggro)
+                    ? this.options.enableGreedyAggro
+                    : this.options.typeList,
+                withinRange: "agitate",
+            }).length
+
+            const numIfCleave = bot.getEntities({
+                hasTarget: false,
+                typeList: Array.isArray(this.options.enableGreedyAggro)
+                    ? this.options.enableGreedyAggro
+                    : this.options.typeList,
+                withinRange: "cleave",
+            }).length
+
+            // We can reach the same number of targets (or more!?) if we cleave, so cleave instead
+            if (numIfAgitate >= numIfCleave) return this.cleave(bot)
         }
+
+        if (!bot.canUse("agitate")) return // Can't agitate
+        const unwantedEntity = bot.getEntity({
+            hasTarget: false,
+            notTypeList: this.options.typeList,
+            withinRange: "agitate",
+        })
+        if (unwantedEntity) return // Something we don't want to agitate is nearby
+
+        // Agitate all nearby enemies if there are no others nearby
+        const wantedEntity = bot.getEntity({
+            hasTarget: false,
+            typeList: Array.isArray(this.options.enableGreedyAggro)
+                ? this.options.enableGreedyAggro
+                : this.options.typeList,
+            withinRange: "agitate",
+        })
+        if (wantedEntity) return bot.agitate()
     }
 
     protected async cleave(bot: Warrior) {
-        if (this.options.enableEquipForCleave) {
-            if (
-                !(
-                    bot.canUse("cleave", { ignoreEquipped: true }) // We can cleave
-                    && (bot.isEquipped("bataxe") || bot.isEquipped("scythe") || bot.hasItem(["bataxe", "scythe"])) // We have an item that can cleave
-                )
-            ) return
-        } else if (!bot.canUse("cleave")) return
+        if (!bot.canUse("cleave", { ignoreEquipped: this.options.enableEquipForCleave ?? false })) return // We can't cleave
+        if (
+            this.options.enableEquipForCleave &&
+            !(bot.isEquipped("bataxe") || bot.isEquipped("scythe") || bot.hasItem(["bataxe", "scythe"]))
+        )
+            return // We don't have a cleave item
 
         if (bot.isPVP()) {
             const nearby = bot.getPlayers({
                 // TODO: Confirm that we can't do damage to party members and friends with cleave on PvP
                 isFriendly: true,
-                withinRange: "cleave"
+                withinRange: "cleave",
             })
             if (nearby.length > 0) return
         }
 
         const unwantedEntity = bot.getEntity({
             hasTarget: false,
-            notTypeList: [...(this.options.typeList ?? []), ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS)],
-            withinRange: "cleave"
+            notTypeList: [
+                ...(this.options.typeList ?? []),
+                ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS),
+            ],
+            withinRange: "cleave",
         })
         if (unwantedEntity) return // Something we don't want to cleave is nearby
 
         // Find all targets within range of cleave
         const entities = bot.getEntities({
             withinRange: "cleave",
-            canDamage: "cleave"
+            canDamage: "cleave",
         })
         if (entities.length == 0) return // No targets to attack
 
@@ -130,8 +159,10 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         let newTargets = 0
 
         for (const entity of entities) {
-            if ((this.options.targetingPartyMember && !entity.target)
-                || (this.options.targetingPlayer && !entity.target)) {
+            if (
+                (this.options.targetingPartyMember && !entity.target) ||
+                (this.options.targetingPlayer && !entity.target)
+            ) {
                 // We want to avoid aggro
                 return
             }
@@ -145,11 +176,13 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             if (bot.canKillInOneShot(entity, "cleave")) continue // It won't change our fear
             switch (entity.damage_type) {
                 case "magical":
-                    if (bot.mcourage > targetingMe.magical) targetingMe.magical += 1 // We can tank one more magical monster
+                    if (bot.mcourage > targetingMe.magical)
+                        targetingMe.magical += 1 // We can tank one more magical monster
                     else return // We can't tank any more, don't cleave
                     break
                 case "physical":
-                    if (bot.courage > targetingMe.physical) targetingMe.physical += 1 // We can tank one more physical monster
+                    if (bot.courage > targetingMe.physical)
+                        targetingMe.physical += 1 // We can tank one more physical monster
                     else return // We can't tank any more, don't cleave
                     break
                 case "pure":
@@ -170,7 +203,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         let mainhand: ItemData
         let offhand: ItemData
         if (this.options.enableEquipForCleave) {
-            if (!(bot.isEquipped(["bataxe", "scythe"]))) {
+            if (!bot.isEquipped(["bataxe", "scythe"])) {
                 // Unequip offhand if we have it
                 if (bot.slots.offhand) {
                     if (bot.esize <= 0) return // We don't have an inventory slot to unequip the offhand
@@ -187,16 +220,30 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         if (this.options.enableEquipForCleave) {
             // Re-equip items
-            const equipBatch: { num: number, slot: SlotType }[] = []
+            const equipBatch: { num: number; slot: SlotType }[] = []
 
             if (mainhand) {
-                equipBatch.push({ num: bot.locateItem(mainhand.name, bot.items, { level: mainhand.level, special: mainhand.p, statType: mainhand.stat_type }), slot: "mainhand" })
+                equipBatch.push({
+                    num: bot.locateItem(mainhand.name, bot.items, {
+                        level: mainhand.level,
+                        special: mainhand.p,
+                        statType: mainhand.stat_type,
+                    }),
+                    slot: "mainhand",
+                })
             } else {
                 await bot.unequip("mainhand")
             }
 
             if (offhand) {
-                equipBatch.push({ num: bot.locateItem(offhand.name, bot.items, { level: offhand.level, special: offhand.p, statType: offhand.stat_type }), slot: "offhand" })
+                equipBatch.push({
+                    num: bot.locateItem(offhand.name, bot.items, {
+                        level: offhand.level,
+                        special: offhand.p,
+                        statType: offhand.stat_type,
+                    }),
+                    slot: "offhand",
+                })
             }
 
             if (equipBatch.length) await bot.equipBatch(equipBatch)
@@ -207,17 +254,20 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         if (this.options.enableEquipForStomp) {
             if (
                 !(
-                    bot.canUse("stomp", { ignoreEquipped: true }) // We can stomp
-                    && (bot.isEquipped("basher") || bot.isEquipped("wbasher") || bot.hasItem(["basher", "wbasher"])) // We have an item that can stomp
+                    (
+                        bot.canUse("stomp", { ignoreEquipped: true }) && // We can stomp
+                        (bot.isEquipped("basher") || bot.isEquipped("wbasher") || bot.hasItem(["basher", "wbasher"]))
+                    ) // We have an item that can stomp
                 )
-            ) return
+            )
+                return
         } else if (!bot.canUse("stomp")) return
 
         if (bot.isPVP()) {
             const nearby = bot.getPlayers({
                 // TODO: Confirm that we can't stun party members and friends with stomp on PvP
                 isFriendly: true,
-                withinRange: "stomp"
+                withinRange: "stomp",
             })
             if (nearby.length > 0) return
         }
@@ -232,7 +282,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         let mainhand: ItemData
         let offhand: ItemData
         if (this.options.enableEquipForStomp) {
-            if (!(bot.isEquipped(["basher", "wbasher"]))) {
+            if (!bot.isEquipped(["basher", "wbasher"])) {
                 // Unequip offhand if we have it
                 if (bot.slots.offhand) {
                     if (bot.esize <= 0) return // We don't have an inventory slot to unequip the offhand
@@ -249,16 +299,30 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         if (this.options.enableEquipForStomp) {
             // Re-equip items
-            const equipBatch: { num: number, slot: SlotType }[] = []
+            const equipBatch: { num: number; slot: SlotType }[] = []
 
             if (mainhand) {
-                equipBatch.push({ num: bot.locateItem(mainhand.name, bot.items, { level: mainhand.level, special: mainhand.p, statType: mainhand.stat_type }), slot: "mainhand" })
+                equipBatch.push({
+                    num: bot.locateItem(mainhand.name, bot.items, {
+                        level: mainhand.level,
+                        special: mainhand.p,
+                        statType: mainhand.stat_type,
+                    }),
+                    slot: "mainhand",
+                })
             } else {
                 await bot.unequip("mainhand")
             }
 
             if (offhand) {
-                equipBatch.push({ num: bot.locateItem(offhand.name, bot.items, { level: offhand.level, special: offhand.p, statType: offhand.stat_type }), slot: "offhand" })
+                equipBatch.push({
+                    num: bot.locateItem(offhand.name, bot.items, {
+                        level: offhand.level,
+                        special: offhand.p,
+                        statType: offhand.stat_type,
+                    }),
+                    slot: "offhand",
+                })
             }
 
             if (equipBatch.length) await bot.equipBatch(equipBatch)
