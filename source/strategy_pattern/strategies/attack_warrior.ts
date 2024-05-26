@@ -141,6 +141,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             const nearby = bot.getPlayers({
                 // TODO: Confirm that we can't do damage to party members and friends with cleave on PvP
                 isFriendly: true,
+                isNPC: false,
                 withinRange: "cleave",
             })
             if (nearby.length > 0) return
