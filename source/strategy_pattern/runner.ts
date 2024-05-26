@@ -172,6 +172,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
         moveStrategy = new NewMerchantStrategy({
             ...defaultNewMerchantStrategyOptions,
             ...(options.merchantOverrides ?? {}),
+            contexts: CONTEXTS,
             itemConfig: options.itemConfig,
             defaultPosition: defaultPosition,
             goldToHold: 50_000_000
@@ -184,7 +185,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
         }))
     }
 
-    const logicLoop = async () => {
+    const logicLoop = () => {
         try {
             if (!context.isReady() || !context.bot.ready || context.bot.rip) {
                 return
@@ -223,7 +224,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
         } catch (e) {
             console.error(e)
         } finally {
-            setTimeout(async () => { logicLoop() }, 1000)
+            setTimeout(() => { logicLoop() }, 1000)
         }
     }
     logicLoop()
