@@ -14,11 +14,7 @@ import AL, {
     Rogue,
     Attribute,
 } from "alclient"
-import {
-    NewMerchantStrategyOptions,
-    defaultNewMerchantStrategyOptions,
-    startMerchant,
-} from "./merchant/strategy.js"
+import { NewMerchantStrategyOptions, defaultNewMerchantStrategyOptions, startMerchant } from "./merchant/strategy.js"
 import { filterContexts, Strategist, Strategy } from "./strategy_pattern/context.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
@@ -62,7 +58,13 @@ import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
 import { CRYPT_MONSTERS } from "./base/crypt.js"
 import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
 import { DestroyStrategy, MerchantDestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, REPLENISH_ITEM_CONFIG, adjustItemConfig, runSanityCheckOnItemConfig } from "./base/itemsNew.js"
+import {
+    DEFAULT_ITEM_CONFIG,
+    ItemConfig,
+    REPLENISH_ITEM_CONFIG,
+    adjustItemConfig,
+    runSanityCheckOnItemConfig,
+} from "./base/itemsNew.js"
 import { getRecentCryptMonsters, getRecentSpecialMonsters, getRecentXMages } from "./base/monsters.js"
 import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.js"
 
@@ -122,7 +124,7 @@ const baseStrategy = new BaseStrategy(ALL_CONTEXTS)
 const privateBuyStrategy = new BuyStrategy({
     contexts: PRIVATE_CONTEXTS,
     itemConfig: DEFAULT_ITEM_CONFIG,
-    enableBuyForProfit: true
+    enableBuyForProfit: true,
 })
 adjustItemConfig(DEFAULT_ITEM_CONFIG)
 
@@ -278,7 +280,10 @@ class AdminCommandStrategy implements Strategy<PingCompensatedCharacter> {
 }
 const adminCommandStrategy = new AdminCommandStrategy()
 
-const currentSetups = new Map<Strategist<PingCompensatedCharacter>, { attack: Strategy<PingCompensatedCharacter>; move: Strategy<PingCompensatedCharacter> }>()
+const currentSetups = new Map<
+    Strategist<PingCompensatedCharacter>,
+    { attack: Strategy<PingCompensatedCharacter>; move: Strategy<PingCompensatedCharacter> }
+>()
 const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], setups: Setups) => {
     // Setup a list of ready contexts
     const setupContexts = filterContexts(contexts)
@@ -464,7 +469,12 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 }
             }
 
-            for (const type of await getRecentSpecialMonsters(PARTY_ALLOWLIST, SPECIAL_MONSTERS, context.bot.serverData.name, context.bot.serverData.region)) {
+            for (const type of await getRecentSpecialMonsters(
+                PARTY_ALLOWLIST,
+                SPECIAL_MONSTERS,
+                context.bot.serverData.name,
+                context.bot.serverData.region,
+            )) {
                 priority.push(type)
             }
 
@@ -490,7 +500,10 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 }
             }
 
-            for (const type of await getRecentCryptMonsters(context.bot.serverData.name, context.bot.serverData.region)) {
+            for (const type of await getRecentCryptMonsters(
+                context.bot.serverData.name,
+                context.bot.serverData.region,
+            )) {
                 priority.push(type)
             }
         }
@@ -579,9 +592,10 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
 
             if (
                 // Valentines event can overlap with lunar new year
-                TARGET_REGION == DEFAULT_REGION
-                && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER
-                && bot1.S.valentines) {
+                TARGET_REGION == DEFAULT_REGION &&
+                TARGET_IDENTIFIER == DEFAULT_IDENTIFIER &&
+                bot1.S.valentines
+            ) {
                 // Valentines
                 const monster = (await getValentinesMonsterPriority(true))[0]
                 if (monster) {
@@ -781,12 +795,12 @@ const startMerchantContext = async () => {
         ...defaultNewMerchantStrategyOptions,
         enableInstanceProvider: {
             crypt: {
-                maxInstances: 20
+                maxInstances: 20,
             },
             winter_instance: {
-                maxInstances: 1
-            }
-        }
+                maxInstances: 1,
+            },
+        },
     })
     CONTEXT.applyStrategy(adminCommandStrategy)
     CONTEXT.applyStrategy(guiStrategy)
@@ -896,7 +910,9 @@ const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 
 export type PublicSettings = {
     itemConfig?: ItemConfig
-    merchantConfig?: Partial<Pick<NewMerchantStrategyOptions, "defaultPosition" | "goldToHold" | "enableInstanceProvider">>
+    merchantConfig?: Partial<
+        Pick<NewMerchantStrategyOptions, "defaultPosition" | "goldToHold" | "enableInstanceProvider">
+    >
 }
 
 // Allow others to join me
@@ -1050,7 +1066,7 @@ const startPublicContext = async (
                     y: randomIntFromInterval(-50, 50),
                 },
                 goldToHold: 50_000_000,
-                itemConfig: settings?.itemConfig ?? REPLENISH_ITEM_CONFIG
+                itemConfig: settings?.itemConfig ?? REPLENISH_ITEM_CONFIG,
             }
             if (context.bot.canUse("mluck", { ignoreCooldown: true, ignoreLocation: true, ignoreMP: true })) {
                 merchantOptions.enableMluck = {
@@ -1093,8 +1109,12 @@ const startPublicContext = async (
     context.applyStrategy(disconnectOnCommandStrategy)
 
     context.applyStrategy(new SellStrategy({ itemConfig: settings.itemConfig ?? REPLENISH_ITEM_CONFIG }))
-    context.applyStrategy(new ItemStrategy({ contexts: PUBLIC_CONTEXTS, itemConfig: settings.itemConfig ?? REPLENISH_ITEM_CONFIG }))
-    context.applyStrategy(new BuyStrategy({ contexts: PUBLIC_CONTEXTS, itemConfig: settings.itemConfig ?? REPLENISH_ITEM_CONFIG }))
+    context.applyStrategy(
+        new ItemStrategy({ contexts: PUBLIC_CONTEXTS, itemConfig: settings.itemConfig ?? REPLENISH_ITEM_CONFIG }),
+    )
+    context.applyStrategy(
+        new BuyStrategy({ contexts: PUBLIC_CONTEXTS, itemConfig: settings.itemConfig ?? REPLENISH_ITEM_CONFIG }),
+    )
 
     SETTINGS_CACHE[bot.id] = settings
     PUBLIC_CONTEXTS.push(context)

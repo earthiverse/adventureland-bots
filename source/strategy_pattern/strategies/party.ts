@@ -43,8 +43,10 @@ export class RequestPartyStrategy<Type extends Character> implements Strategy<Ty
         this.partyLeader = partyLeader
 
         this.loops.set("party", {
-            fn: async (bot: Type) => { await this.requestPartyInvite(bot) },
-            interval: 2000
+            fn: async (bot: Type) => {
+                await this.requestPartyInvite(bot)
+            },
+            interval: 2000,
         })
     }
 
@@ -52,6 +54,42 @@ export class RequestPartyStrategy<Type extends Character> implements Strategy<Ty
         if (!bot.partyData?.list?.includes(this.partyLeader)) {
             // They're not in our party, send a request
             return bot.sendPartyRequest(this.partyLeader).catch(console.error)
+        }
+    }
+}
+
+/**
+ * Polio's party code requires a CM, then they'll invite you.
+ */
+export class PolioPartyStrategy<Type extends Character> implements Strategy<Type> {
+    private onInvite: (data: { name: string }) => Promise<void>
+    public loops = new Map<LoopName, Loop<Character>>()
+
+    public constructor() {
+        this.loops.set("party", {
+            fn: async (bot: Character) => {
+                await this.requestPartyInvite(bot)
+            },
+            interval: 2000,
+        })
+    }
+
+    public onApply(bot: Type) {
+        this.onInvite = async (data: InviteData) => {
+            if (data.name !== "Polio") return // Not Polio
+            await bot.acceptPartyInvite(data.name).catch(console.error)
+        }
+        bot.socket.on("invite", this.onInvite)
+    }
+
+    public onRemove(bot: Type) {
+        if (this.onInvite) bot.socket.off("invite", this.onInvite)
+    }
+
+    private async requestPartyInvite(bot: Character) {
+        if (!bot.partyData?.list?.includes("Polio")) {
+            // They're not in our party, send a request
+            await bot.sendCM(["Polio"], { data: "partyInvite", id: bot.id })
         }
     }
 }
