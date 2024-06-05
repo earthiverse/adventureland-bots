@@ -60,6 +60,8 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
             contexts: CONTEXTS,
             generateEnsureEquipped: {
                 prefer: {
+                    amulet: { name: "mpxamulet", filters: RETURN_HIGHEST },
+                    gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
                     mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
                     chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
                     ring1: { name: "zapper", filters: RETURN_HIGHEST },
@@ -85,6 +87,8 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
                 contexts: CONTEXTS,
                 generateEnsureEquipped: {
                     prefer: {
+                        amulet: { name: "mpxamulet", filters: RETURN_HIGHEST },
+                        gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
                         mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
                         chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
                         ring1: { name: "zapper", filters: RETURN_HIGHEST },
