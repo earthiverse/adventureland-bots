@@ -41,19 +41,6 @@ const MERCHANT_STAND_STRATEGY = new ToggleStandStrategy({
     offWhenMoving: true,
     onWhenNear: [{ distance: 100, position: defaultNewMerchantStrategyOptions.defaultPosition }],
 })
-const ATTACK_STRATEGY_WOLFIE = new RangerAttackStrategy({
-    contexts: CONTEXTS,
-    generateEnsureEquipped: {
-        prefer: {
-            mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
-            chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
-            ring1: { name: "zapper", filters: RETURN_HIGHEST },
-            ring2: { name: "cring", filters: RETURN_HIGHEST },
-            orb: { name: "vorb", filters: RETURN_HIGHEST },
-        },
-    },
-    typeList: ["wolfie"],
-})
 const MOVE_STRATEGY_WOLFIE = new ImprovedMoveStrategy(["wolfie"])
 const PARTY_MEMBER_STRATEGY = new RequestPartyStrategy("earthiverse")
 
@@ -68,7 +55,23 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
     const ranger = await AL.Game.startRanger("earthiverse", serverRegion, serverIdentifier)
     const context = new Strategist<Ranger>(ranger, BASE_STRATEGY)
     CONTEXTS.push(context)
-    context.applyStrategy(ATTACK_STRATEGY_WOLFIE)
+    context.applyStrategy(
+        new RangerAttackStrategy({
+            contexts: CONTEXTS,
+            generateEnsureEquipped: {
+                prefer: {
+                    mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
+                    chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
+                    ring1: { name: "zapper", filters: RETURN_HIGHEST },
+                    ring2: { name: "cring", filters: RETURN_HIGHEST },
+                    orb: { name: "vorb", filters: RETURN_HIGHEST },
+                },
+            },
+            typeList: ["wolfie"],
+            enableGreedyAggro: true,
+            maximumTargets: context.bot.courage,
+        }),
+    )
     context.applyStrategy(MOVE_STRATEGY_WOLFIE)
     context.applyStrategy(PARTY_ACCEPT_STRATEGY)
 
@@ -76,7 +79,23 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
         const ranger = await AL.Game.startRanger(name, serverRegion, serverIdentifier)
         const context = new Strategist<Ranger>(ranger, BASE_STRATEGY)
         CONTEXTS.push(context)
-        context.applyStrategy(ATTACK_STRATEGY_WOLFIE)
+        context.applyStrategy(
+            new RangerAttackStrategy({
+                contexts: CONTEXTS,
+                generateEnsureEquipped: {
+                    prefer: {
+                        mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
+                        chest: { name: "tshirt9", filters: RETURN_HIGHEST }, // MP Shirt
+                        ring1: { name: "zapper", filters: RETURN_HIGHEST },
+                        ring2: { name: "cring", filters: RETURN_HIGHEST },
+                        orb: { name: "vorb", filters: RETURN_HIGHEST },
+                    },
+                },
+                typeList: ["wolfie"],
+                enableGreedyAggro: true,
+                maximumTargets: context.bot.courage,
+            }),
+        )
         context.applyStrategy(MOVE_STRATEGY_WOLFIE)
         context.applyStrategy(PARTY_ACCEPT_STRATEGY)
         context.applyStrategy(PARTY_MEMBER_STRATEGY)
