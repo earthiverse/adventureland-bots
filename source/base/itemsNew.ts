@@ -684,8 +684,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellPrice: "npc",
     },
     vitring: {
-        upgradeUntilLevel: 2,
-        sellExcess: 5,
+        // upgradeUntilLevel: 2,
+        sell: true,
+        sellPrice: "npc",
     },
     wand: {
         destroyBelowLevel: 1,
