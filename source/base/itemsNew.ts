@@ -29,7 +29,7 @@ export type ExchangeConfig = {
     /** If set, we should try to exchange it. */
     exchange?: true
     /**
-     * If set, we should only exchange it at the given level. 
+     * If set, we should only exchange it at the given level.
      * This is for items like `goldenearring` that can be combined.
      * Each level has a different drop table.
      */
@@ -93,341 +93,335 @@ export type UpgradeConfig = {
     useOfferingFromLevel?: number
 }
 
-type CombinedConfig =
-    & BuyConfig
-    & CraftConfig
-    & ExchangeConfig
-    & HoldConfig
-    & SellConfig
-    & UpgradeConfig;
-export type ItemConfig = Partial<Record<ItemName, CombinedConfig>>;
+type CombinedConfig = BuyConfig & CraftConfig & ExchangeConfig & HoldConfig & SellConfig & UpgradeConfig
+export type ItemConfig = Partial<Record<ItemName, CombinedConfig>>
 
 export const REPLENISH_ITEM_CONFIG: ItemConfig = {
-    "hpot1": {
+    hpot1: {
         hold: true,
         holdSlot: 39,
-        replenish: 1000
+        replenish: 1000,
     },
-    "mpot1": {
+    mpot1: {
         hold: true,
         holdSlot: 38,
-        replenish: 1000
+        replenish: 1000,
     },
-    "xptome": {
+    xptome: {
         hold: true,
-        replenish: 1
-    }
+        replenish: 1,
+    },
 }
 
 export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     ...REPLENISH_ITEM_CONFIG,
     "5bucks": {
         buy: true,
-        buyPrice: 100_000_000
+        buyPrice: 100_000_000,
     },
-    "amuletofm": {
+    amuletofm: {
         buy: true,
-        buyPrice: 500_000_000
+        buyPrice: 500_000_000,
     },
-    "angelwings": {
-        buy: true,
-        buyPrice: "ponty"
-    },
-    "armorbox": {
+    angelwings: {
         buy: true,
         buyPrice: "ponty",
-        exchange: true
     },
-    "armorring": {
+    armorbox: {
+        buy: true,
+        buyPrice: "ponty",
+        exchange: true,
+    },
+    armorring: {
         buy: true,
         buyPrice: 1_000_000,
-        craft: true
-    },
-    "basher": {
-        destroyBelowLevel: 1
-    },
-    "basketofeggs": {
         craft: true,
-        exchange: true
     },
-    "bataxe": {
-        destroyBelowLevel: 1
+    basher: {
+        destroyBelowLevel: 1,
     },
-    "bcape": {
+    basketofeggs: {
+        craft: true,
+        exchange: true,
+    },
+    bataxe: {
+        destroyBelowLevel: 1,
+    },
+    bcape: {
         // We can craft other capes at level 7
         upgradeUntilLevel: 7,
-        usePrimlingFromLevel: 5
+        usePrimlingFromLevel: 5,
     },
-    "bfangamulet": {
+    bfangamulet: {
         buy: true,
         buyPrice: "ponty",
-        craft: true
+        craft: true,
     },
-    "blade": {
+    blade: {
         // destroyBelowLevel: 1
         sellExcess: 5,
-        upgradeUntilLevel: 0
+        upgradeUntilLevel: 0,
     },
-    "bow": {
+    bow: {
         // destroyBelowLevel: 1
         sellExcess: 5,
-        upgradeUntilLevel: 0
+        upgradeUntilLevel: 0,
     },
-    "bowofthedead": {
-        destroyBelowLevel: 1
+    bowofthedead: {
+        destroyBelowLevel: 1,
     },
-    "cake": {
+    cake: {
         craft: true,
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
     /** Blue Candy */
-    "candy0": {
-        exchange: true
+    candy0: {
+        exchange: true,
     },
     /** Pink Candy */
-    "candy1": {
-        exchange: true
+    candy1: {
+        exchange: true,
     },
-    "candycane": {
-        exchange: true
+    candycane: {
+        exchange: true,
     },
-    "candycanesword": {
-        destroyBelowLevel: 1
+    candycanesword: {
+        destroyBelowLevel: 1,
     },
-    "candypop": {
-        exchange: true
+    candypop: {
+        exchange: true,
     },
-    "carrotsword": {
+    carrotsword: {
         craft: true,
-        destroyBelowLevel: 1
+        destroyBelowLevel: 1,
     },
-    "cclaw": {
+    cclaw: {
         craft: true,
-        destroyBelowLevel: 1
+        destroyBelowLevel: 1,
     },
-    "cdragon": {
-        sellExcess: 5
+    cdragon: {
+        sellExcess: 5,
     },
-    "claw": {
+    claw: {
         // destroyBelowLevel: 1
         sellExcess: 5,
-        upgradeUntilLevel: 0
+        upgradeUntilLevel: 0,
     },
-    "coat": {
-        destroyBelowLevel: 1
+    coat: {
+        destroyBelowLevel: 1,
     },
-    "coat1": {
-        destroyBelowLevel: 1
+    coat1: {
+        destroyBelowLevel: 1,
     },
-    "computer": {
+    computer: {
         hold: true,
-        holdSlot: 40
+        holdSlot: 40,
     },
-    "crossbow": {
+    crossbow: {
         usePrimlingFromLevel: 4,
-        useOfferingFromLevel: 7
+        useOfferingFromLevel: 7,
     },
-    "cscroll0": {
+    cscroll0: {
         hold: ["merchant"],
-        holdSlot: 28
+        holdSlot: 28,
     },
-    "cscroll1": {
+    cscroll1: {
         hold: ["merchant"],
-        holdSlot: 29
+        holdSlot: 29,
     },
-    "cscroll2": {
+    cscroll2: {
         hold: ["merchant"],
-        holdSlot: 30
+        holdSlot: 30,
     },
-    "cupid": {
-        destroyBelowLevel: 1
+    cupid: {
+        destroyBelowLevel: 1,
     },
-    "dagger": {
-        destroyBelowLevel: 1
+    dagger: {
+        destroyBelowLevel: 1,
     },
-    "daggerofthedead": {
-        destroyBelowLevel: 1
+    daggerofthedead: {
+        destroyBelowLevel: 1,
     },
-    "dexring": {
+    dexring: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "ecape": {
-        destroyBelowLevel: 1
+    ecape: {
+        destroyBelowLevel: 1,
     },
-    "eears": {
-        destroyBelowLevel: 1
+    eears: {
+        destroyBelowLevel: 1,
     },
-    "eggnog": {
-        sellExcess: 9999 * 3
+    eggnog: {
+        sellExcess: 9999 * 3,
     },
-    "elixirdex1": {
-        craft: true
+    elixirdex1: {
+        craft: true,
     },
-    "elixirdex2": {
-        craft: true
+    elixirdex2: {
+        craft: true,
     },
-    "elixirint1": {
-        craft: true
+    elixirint1: {
+        craft: true,
     },
-    "elixirint2": {
-        craft: true
+    elixirint2: {
+        craft: true,
     },
-    "elixirstr1": {
-        craft: true
+    elixirstr1: {
+        craft: true,
     },
-    "elixirstr2": {
-        craft: true
+    elixirstr2: {
+        craft: true,
     },
-    "elixirvit1": {
-        craft: true
+    elixirvit1: {
+        craft: true,
     },
-    "elixirvit2": {
-        craft: true
+    elixirvit2: {
+        craft: true,
     },
-    "epyjamas": {
-        destroyBelowLevel: 1
+    epyjamas: {
+        destroyBelowLevel: 1,
     },
-    "eslippers": {
-        destroyBelowLevel: 1
+    eslippers: {
+        destroyBelowLevel: 1,
     },
-    "essenceoflife": {
-        sellExcess: 9999 * 5
+    essenceoflife: {
+        sellExcess: 9999 * 5,
     },
-    "exoarm": {
+    exoarm: {
         usePrimlingFromLevel: 0,
-        useOfferingFromLevel: 1
+        useOfferingFromLevel: 1,
     },
-    "fieldgen0": {
-        sellExcess: 20
+    fieldgen0: {
+        sellExcess: 20,
     },
-    "fireblade": {
-        destroyBelowLevel: 1
+    fireblade: {
+        destroyBelowLevel: 1,
     },
-    "firestaff": {
-        destroyBelowLevel: 1
+    firestaff: {
+        destroyBelowLevel: 1,
     },
-    "firestars": {
-        craft: true
+    firestars: {
+        craft: true,
     },
-    "frankypants": {
-        destroyBelowLevel: 1
+    frankypants: {
+        destroyBelowLevel: 1,
     },
-    "frostbow": {
-        craft: true
+    frostbow: {
+        craft: true,
     },
-    "fury": {
+    fury: {
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2
+        useOfferingFromLevel: 2,
     },
-    "gcape": {
-        destroyBelowLevel: 1
+    gcape: {
+        destroyBelowLevel: 1,
     },
-    "gem0": { /** Green Gem */
-        exchange: true
+    gem0: {
+        /** Green Gem */ exchange: true,
     },
-    "gem1": { /** Red Gem */
-        exchange: true
+    gem1: {
+        /** Red Gem */ exchange: true,
     },
-    "gemfragment": {
-        exchange: true
+    gemfragment: {
+        exchange: true,
     },
-    "gloves": {
-        destroyBelowLevel: 1
+    gloves: {
+        destroyBelowLevel: 1,
     },
-    "gloves1": {
-        destroyBelowLevel: 1
+    gloves1: {
+        destroyBelowLevel: 1,
     },
-    "goldbooster": {
-        hold: true
+    goldbooster: {
+        hold: true,
     },
-    "gphelmet": {
-        destroyBelowLevel: 1
+    gphelmet: {
+        destroyBelowLevel: 1,
     },
-    "greenenvelope": {
-        exchange: true
+    greenenvelope: {
+        exchange: true,
     },
-    "harbringer": {
-        destroyBelowLevel: 1
+    harbringer: {
+        destroyBelowLevel: 1,
     },
-    "harmor": {
+    harmor: {
         buy: true,
         buyPrice: "ponty",
         usePrimlingFromLevel: 7,
         useOfferingFromLevel: 9,
     },
-    "hboots": {
+    hboots: {
         buy: true,
         buyPrice: "ponty",
         usePrimlingFromLevel: 7,
         useOfferingFromLevel: 9,
     },
-    "hbow": {
-        destroyBelowLevel: 1
+    hbow: {
+        destroyBelowLevel: 1,
     },
-    "helmet": {
-        destroyBelowLevel: 1
+    helmet: {
+        destroyBelowLevel: 1,
     },
-    "helmet1": {
-        destroyBelowLevel: 1
+    helmet1: {
+        destroyBelowLevel: 1,
     },
-    "hgloves": {
+    hgloves: {
         buy: true,
         buyPrice: "ponty",
         usePrimlingFromLevel: 7,
         useOfferingFromLevel: 9,
     },
-    "hhelmet": {
+    hhelmet: {
         buy: true,
         buyPrice: "ponty",
         usePrimlingFromLevel: 7,
         useOfferingFromLevel: 9,
     },
-    "hotchocolate": {
-        sellExcess: 9999 * 3
+    hotchocolate: {
+        sellExcess: 9999 * 3,
     },
-    "hpamulet": {
+    hpamulet: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "hpants": {
+    hpants: {
         buy: true,
         buyPrice: "ponty",
         usePrimlingFromLevel: 7,
         useOfferingFromLevel: 9,
     },
-    "hpbelt": {
+    hpbelt: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "hpot0": {
+    hpot0: {
         // sell: true,
         // sellPrice: "npc"
-        sellExcess: 9999
+        sellExcess: 9999,
     },
-    "iceskates": {
-        destroyBelowLevel: 1
+    iceskates: {
+        destroyBelowLevel: 1,
     },
-    "intearring": {
+    intearring: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "intring": {
+    intring: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "lantern": {
+    lantern: {
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 3
+        useOfferingFromLevel: 3,
     },
     // "lbelt": {
     //     craft: true
     // },
-    "leather": {
-        exchange: true
+    leather: {
+        exchange: true,
     },
-    "lostearring": {
+    lostearring: {
         exchange: true,
         exchangeAtLevel: 2,
         upgradeUntilLevel: 2,
@@ -435,362 +429,362 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 99,
         usePrimlingFromLevel: 98,
     },
-    "luckbooster": {
-        hold: true
+    luckbooster: {
+        hold: true,
     },
-    "mace": {
-        destroyBelowLevel: 1
+    mace: {
+        destroyBelowLevel: 1,
     },
-    "maceofthedead": {
-        destroyBelowLevel: 1
+    maceofthedead: {
+        destroyBelowLevel: 1,
     },
-    "mpxgloves": {
+    mpxgloves: {
         // Don't upgrade, it's special
         upgradeUntilLevel: 0,
     },
-    "merry": {
-        destroyBelowLevel: 1
+    merry: {
+        destroyBelowLevel: 1,
     },
-    "mistletoe": {
-        exchange: true
+    mistletoe: {
+        exchange: true,
     },
-    "mittens": {
-        destroyBelowLevel: 1
+    mittens: {
+        destroyBelowLevel: 1,
     },
-    "monstertoken": {
+    monstertoken: {
         sell: true,
-        sellPrice: 250_000
+        sellPrice: 250_000,
     },
-    "mpot0": {
+    mpot0: {
         // sell: true,
         // sellPrice: "npc"
-        sellExcess: 9999
+        sellExcess: 9999,
     },
-    "mushroomstaff": {
-        destroyBelowLevel: 1
+    mushroomstaff: {
+        destroyBelowLevel: 1,
     },
-    "offering": {
+    offering: {
         hold: ["merchant"],
     },
-    "offeringp": {
+    offeringp: {
         hold: ["merchant"],
         buy: true,
         buyPrice: 2_500_000,
     },
-    "oozingterror": {
-        destroyBelowLevel: 1
+    oozingterror: {
+        destroyBelowLevel: 1,
     },
-    "ornamentstaff": {
-        destroyBelowLevel: 1
+    ornamentstaff: {
+        destroyBelowLevel: 1,
     },
-    "pants": {
-        destroyBelowLevel: 1
+    pants: {
+        destroyBelowLevel: 1,
     },
-    "pants1": {
-        destroyBelowLevel: 1
+    pants1: {
+        destroyBelowLevel: 1,
     },
-    "phelmet": {
-        destroyBelowLevel: 1
+    phelmet: {
+        destroyBelowLevel: 1,
     },
-    "pickaxe": {
+    pickaxe: {
         hold: ["merchant"],
         sell: true,
-        sellPrice: 1_000_000
+        sellPrice: 1_000_000,
     },
-    "pmace": {
-        destroyBelowLevel: 1
+    pmace: {
+        destroyBelowLevel: 1,
     },
-    "pmaceofthedead": {
-        destroyBelowLevel: 1
+    pmaceofthedead: {
+        destroyBelowLevel: 1,
     },
-    "pouchbow": {
+    pouchbow: {
         craft: true,
-        destroyBelowLevel: 1
+        destroyBelowLevel: 1,
     },
-    "pumpkinspice": {
-        sellExcess: 9999 * 3
+    pumpkinspice: {
+        sellExcess: 9999 * 3,
     },
-    "pyjamas": {
-        destroyBelowLevel: 1
+    pyjamas: {
+        destroyBelowLevel: 1,
     },
-    "quiver": {
-        destroyBelowLevel: 1
+    quiver: {
+        destroyBelowLevel: 1,
     },
-    "rabbitsfoot": {
+    rabbitsfoot: {
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2
+        useOfferingFromLevel: 2,
     },
-    "resistancering": {
-        craft: true
+    resistancering: {
+        craft: true,
     },
-    "ringsj": {
+    ringsj: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "rod": {
+    rod: {
         hold: ["merchant"],
         sell: true,
-        sellPrice: 1_000_000
+        sellPrice: 1_000_000,
     },
-    "scroll0": {
+    scroll0: {
         hold: ["merchant"],
-        holdSlot: 35
+        holdSlot: 35,
     },
-    "scroll1": {
+    scroll1: {
         hold: ["merchant"],
-        holdSlot: 36
+        holdSlot: 36,
     },
-    "scroll2": {
+    scroll2: {
         hold: ["merchant"],
-        holdSlot: 37
+        holdSlot: 37,
     },
-    "seashell": {
-        exchange: true
+    seashell: {
+        exchange: true,
     },
-    "shoes": {
+    shoes: {
         // destroyBelowLevel: 1,
         sellExcess: 1,
-        upgradeUntilLevel: 0
+        upgradeUntilLevel: 0,
     },
-    "shoes1": {
-        destroyBelowLevel: 1
+    shoes1: {
+        destroyBelowLevel: 1,
     },
-    "slimestaff": {
-        destroyBelowLevel: 1
+    slimestaff: {
+        destroyBelowLevel: 1,
     },
-    "smoke": {
-        sellExcess: 200
+    smoke: {
+        sellExcess: 200,
     },
-    "snakeoil": {
-        craft: true
+    snakeoil: {
+        craft: true,
     },
-    "snowball": {
-        sellExcess: 200 * 3
+    snowball: {
+        sellExcess: 200 * 3,
     },
-    "snowflakes": {
-        craft: true
+    snowflakes: {
+        craft: true,
     },
-    "spear": {
-        destroyBelowLevel: 1
+    spear: {
+        destroyBelowLevel: 1,
     },
-    "spookyamulet": {
-        sellExcess: 5
+    spookyamulet: {
+        sellExcess: 5,
     },
-    "staff": {
-        destroyBelowLevel: 1
+    staff: {
+        destroyBelowLevel: 1,
     },
-    "staffofthedead": {
-        destroyBelowLevel: 1
+    staffofthedead: {
+        destroyBelowLevel: 1,
     },
-    "stand0": {
+    stand0: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "starkillers": {
+    starkillers: {
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2
+        useOfferingFromLevel: 2,
     },
-    "stick": {
+    stick: {
         // We can craft sticks at level 9
-        upgradeUntilLevel: 9
+        upgradeUntilLevel: 9,
     },
-    "stinger": {
-        destroyBelowLevel: 1
+    stinger: {
+        destroyBelowLevel: 1,
     },
-    "stramulet": {
+    stramulet: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "strearring": {
+    strearring: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "suckerpunch": {
+    suckerpunch: {
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2
+        useOfferingFromLevel: 2,
     },
-    "supercomputer": {
-        hold: true
-    },
-    "supermittens": {
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2
-    },
-    "swifty": {
-        destroyBelowLevel: 1
-    },
-    "sword": {
-        destroyBelowLevel: 1
-    },
-    "swordofthedead": {
-        destroyBelowLevel: 1
-    },
-    "t2bow": {
-        destroyBelowLevel: 1
-    },
-    "t2quiver": {
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2
-    },
-    "t3bow": {
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2
-    },
-    "test_orb": {
-        upgradeUntilLevel: 0
-    },
-    "throwingstars": {
-        // We use level 0 to craft other stars
-        upgradeUntilLevel: 0
-    },
-    "tigerhelmet": {
-        destroyBelowLevel: 1
-    },
-    "tracker": {
+    supercomputer: {
         hold: true,
-        holdSlot: 41
     },
-    "tshirt88": {
+    supermittens: {
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 2,
+    },
+    swifty: {
+        destroyBelowLevel: 1,
+    },
+    sword: {
+        destroyBelowLevel: 1,
+    },
+    swordofthedead: {
+        destroyBelowLevel: 1,
+    },
+    t2bow: {
+        destroyBelowLevel: 1,
+    },
+    t2quiver: {
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 2,
+    },
+    t3bow: {
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 2,
+    },
+    test_orb: {
+        upgradeUntilLevel: 0,
+    },
+    throwingstars: {
+        // We use level 0 to craft other stars
+        upgradeUntilLevel: 0,
+    },
+    tigerhelmet: {
+        destroyBelowLevel: 1,
+    },
+    tracker: {
+        hold: true,
+        holdSlot: 41,
+    },
+    tshirt88: {
         // Don't upgrade, it's special
-        upgradeUntilLevel: 0
+        upgradeUntilLevel: 0,
     },
-    "vattire": {
+    vattire: {
         buy: true,
         buyPrice: "ponty",
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4
+        useOfferingFromLevel: 4,
     },
-    "vboots": {
-        destroyBelowLevel: 1
+    vboots: {
+        destroyBelowLevel: 1,
     },
-    "vcape": {
+    vcape: {
         buy: true,
         buyPrice: "ponty",
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4
+        useOfferingFromLevel: 4,
     },
-    "vdagger": {
+    vdagger: {
         buy: true,
         buyPrice: "ponty",
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4
+        useOfferingFromLevel: 4,
     },
-    "vgloves": {
-        destroyBelowLevel: 1
+    vgloves: {
+        destroyBelowLevel: 1,
     },
-    "vhammer": {
+    vhammer: {
         buy: true,
         buyPrice: "ponty",
         sell: true,
         sellPrice: 100_000_000,
-        upgradeUntilLevel: 0
+        upgradeUntilLevel: 0,
     },
-    "vitearring": {
+    vitearring: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "vitring": {
-        // We use level 2 to craft other rings
-        upgradeUntilLevel: 2
+    vitring: {
+        upgradeUntilLevel: 2,
+        sellExcess: 5,
     },
-    "wand": {
-        destroyBelowLevel: 1
+    wand: {
+        destroyBelowLevel: 1,
     },
-    "warmscarf": {
-        destroyBelowLevel: 1
+    warmscarf: {
+        destroyBelowLevel: 1,
     },
-    "wattire": {
+    wattire: {
         craft: true,
-        destroyBelowLevel: 1
+        destroyBelowLevel: 1,
     },
-    "wbasher": {
-        destroyBelowLevel: 1
+    wbasher: {
+        destroyBelowLevel: 1,
     },
-    "wbook0": {
+    wbook0: {
         usePrimlingFromLevel: 3,
-        useOfferingFromLevel: 4
+        useOfferingFromLevel: 4,
     },
-    "wbook1": {
+    wbook1: {
         usePrimlingFromLevel: 0,
-        useOfferingFromLevel: 1
+        useOfferingFromLevel: 1,
     },
-    "wbookhs": {
+    wbookhs: {
         usePrimlingFromLevel: 0,
-        useOfferingFromLevel: 1
+        useOfferingFromLevel: 1,
     },
-    "wbreeches": {
+    wbreeches: {
         craft: true,
-        destroyBelowLevel: 1
+        destroyBelowLevel: 1,
     },
-    "wcap": {
+    wcap: {
         craft: true,
-        destroyBelowLevel: 1
+        destroyBelowLevel: 1,
     },
-    "weaponbox": {
-        exchange: true
+    weaponbox: {
+        exchange: true,
     },
-    "wgloves": {
+    wgloves: {
         craft: true,
-        destroyBelowLevel: 1
+        destroyBelowLevel: 1,
     },
-    "wingedboots": {
-        craft: true
-    },
-    "wshoes": {
+    wingedboots: {
         craft: true,
-        destroyBelowLevel: 1
     },
-    "xarmor": {
+    wshoes: {
+        craft: true,
+        destroyBelowLevel: 1,
+    },
+    xarmor: {
         buy: true,
         buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4
+        useOfferingFromLevel: 4,
     },
-    "xboots": {
+    xboots: {
         buy: true,
         buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4
+        useOfferingFromLevel: 4,
     },
-    "xbox": {
-        craft: true
+    xbox: {
+        craft: true,
     },
-    "xgloves": {
+    xgloves: {
         buy: true,
         buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4
+        useOfferingFromLevel: 4,
     },
-    "xhelmet": {
+    xhelmet: {
         buy: true,
         buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4
+        useOfferingFromLevel: 4,
     },
-    "xmace": {
-        destroyBelowLevel: 1
+    xmace: {
+        destroyBelowLevel: 1,
     },
-    "xmashat": {
-        destroyBelowLevel: 1
+    xmashat: {
+        destroyBelowLevel: 1,
     },
-    "xmaspants": {
-        destroyBelowLevel: 1
+    xmaspants: {
+        destroyBelowLevel: 1,
     },
-    "xmasshoes": {
-        destroyBelowLevel: 1
+    xmasshoes: {
+        destroyBelowLevel: 1,
     },
-    "xmassweater": {
-        destroyBelowLevel: 1
+    xmassweater: {
+        destroyBelowLevel: 1,
     },
-    "xpants": {
+    xpants: {
         buy: true,
         buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4
+        useOfferingFromLevel: 4,
     },
-    "xpbooster": {
-        hold: true
-    }
+    xpbooster: {
+        hold: true,
+    },
 }
 
 export function wantToDestroy(itemConfig: ItemConfig, item: ItemData): boolean {
@@ -853,7 +847,12 @@ export function wantToSellToPlayer(itemConfig: ItemConfig, item: TradeItem) {
     return true
 }
 
-export function wantToSellToNpc(itemConfig: ItemConfig, item: Item, bot: Character, itemCounts: ItemCounts = null): boolean {
+export function wantToSellToNpc(
+    itemConfig: ItemConfig,
+    item: Item,
+    bot: Character,
+    itemCounts: ItemCounts = null,
+): boolean {
     if (wantToHold(itemConfig, item, bot)) return false
     if (item.p) return false // We don't want to sell special items to NPCs
 
@@ -933,8 +932,8 @@ export function wantToUpgrade(item: Item, itemConfig: UpgradeConfig, itemCounts:
             }
         }
     }
-    let numToKeep = (classMultiplier * numEquippableMultiplier)
-    numToKeep += (item.compound ? 2 : 0) // We need 3 to compound, only compound if we have extra
+    let numToKeep = classMultiplier * numEquippableMultiplier
+    numToKeep += item.compound ? 2 : 0 // We need 3 to compound, only compound if we have extra
     if (numItem <= numToKeep) return false // We don't want to lose this item
 
     return true
@@ -948,25 +947,19 @@ export async function adjustItemConfig(itemConfig: ItemConfig) {
         const itemName = iN as ItemName
         const gItem = AL.Game.G.items[itemName]
         let config = itemConfig[itemName]
-        if (
-            config
-            && (
-                config.buy
-                || config.sell
-            )
-        ) continue // Buy (or sell) is already set, don't change it
+        if (config && (config.buy || config.sell)) continue // Buy (or sell) is already set, don't change it
 
         if (!config) config = {}
 
         // TODO: Add more logic for things to buy
 
         if (
-            gItem.e // Buy all exchangables
-            || gItem.type === "token" // Buy all tokens
-            || gItem.type === "bank_key"
-            || gItem.type === "dungeon_key" // Buy all keys
-            || gItem.tier >= 4 // Buy all super high tier items
-            || gItem.name.includes("Darkforge") // Buy all darkforge items
+            gItem.e || // Buy all exchangables
+            gItem.type === "token" || // Buy all tokens
+            gItem.type === "bank_key" ||
+            gItem.type === "dungeon_key" || // Buy all keys
+            gItem.tier >= 4 || // Buy all super high tier items
+            gItem.name.includes("Darkforge") // Buy all darkforge items
         ) {
             config.buy = true
             config.buyPrice = "ponty"
@@ -1048,7 +1041,9 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
                     if (gNpc.items?.includes(itemName)) {
                         const npcPrice = gItem.g * (gItem.markup ?? 1)
                         if (config.buyPrice === "ponty" || config.buyPrice > npcPrice) {
-                            console.warn(`We can buy ${itemName} from ${npc} for ${npcPrice}, reducing from ${config.buyPrice} to ${npcPrice}`)
+                            console.warn(
+                                `We can buy ${itemName} from ${npc} for ${npcPrice}, reducing from ${config.buyPrice} to ${npcPrice}`,
+                            )
                             config.buyPrice = npcPrice
                             break
                         }
@@ -1059,14 +1054,10 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
             if (config.sell) {
                 // TODO: Add more comparisons, for example, between numbers and strings
                 if (
-                    (
-                        typeof config.buyPrice === "number"
-                        && typeof config.sellPrice === "number"
-                        && config.buyPrice >= config.sellPrice
-                    ) || (
-                        config.buyPrice === "ponty"
-                        && config.sellPrice === "npc"
-                    )
+                    (typeof config.buyPrice === "number" &&
+                        typeof config.sellPrice === "number" &&
+                        config.buyPrice >= config.sellPrice) ||
+                    (config.buyPrice === "ponty" && config.sellPrice === "npc")
                 ) {
                     console.warn(`We are selling ${itemName} for less than we're buying it for, removing 'sell: true'`)
                     delete config.sell
@@ -1086,8 +1077,8 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
                         console.warn(`${itemName} requires ${itemName2} to craft, but we are selling ${itemName2}.`)
                     }
                     if (
-                        (itemLevel === undefined && config2.destroyBelowLevel)
-                        || (itemLevel < config2.destroyBelowLevel)
+                        (itemLevel === undefined && config2.destroyBelowLevel) ||
+                        itemLevel < config2.destroyBelowLevel
                     ) {
                         console.warn(`${itemName} requires ${itemName2} to craft, but we are destroying ${itemName2}.`)
                     }
@@ -1100,7 +1091,9 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
                 console.warn(`${itemName} is not exchangable, removing 'exchange'`)
                 delete config.exchange
             } else if ((gItem.upgrade || gItem.compound) && config.exchangeAtLevel === undefined) {
-                console.warn(`${itemName} is compoundable / upgradable, but is missing exchangeAtLevevl, removing 'exchange'`)
+                console.warn(
+                    `${itemName} is compoundable / upgradable, but is missing exchangeAtLevevl, removing 'exchange'`,
+                )
                 delete config.exchange
             }
         }
@@ -1108,11 +1101,17 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
         if (config.hold) {
             if (config.holdSlot !== undefined) {
                 if (config.holdSlot > 41) {
-                    console.warn(`${itemName} cannot be put in to slot ${config.holdSlot}, removing 'slot: ${config.holdSlot}'`)
+                    console.warn(
+                        `${itemName} cannot be put in to slot ${config.holdSlot}, removing 'slot: ${config.holdSlot}'`,
+                    )
                     delete config.holdSlot
                 } else {
                     if (holdSlots.has(config.holdSlot)) {
-                        console.warn(`${itemName} overlaps with ${holdSlots.get(config.holdSlot)} hold_slot, removing '${config.holdSlot}'`)
+                        console.warn(
+                            `${itemName} overlaps with ${holdSlots.get(config.holdSlot)} hold_slot, removing '${
+                                config.holdSlot
+                            }'`,
+                        )
                         delete config.holdSlot
                     } else {
                         holdSlots.set(config.holdSlot, itemName)
@@ -1132,7 +1131,9 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
                 delete config.sell
             } else if (typeof config.sellPrice === "number") {
                 if (config.sellPrice < gItem.g) {
-                    console.warn(`${itemName} has a lower sell price than G, increasing from ${config.sellPrice} to ${gItem.g}`)
+                    console.warn(
+                        `${itemName} has a lower sell price than G, increasing from ${config.sellPrice} to ${gItem.g}`,
+                    )
                     config.sellPrice = gItem.g
                 }
                 if (config.destroyBelowLevel) {
@@ -1158,14 +1159,18 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
                     const itemInfo = new Item({ name: itemName, level: parseInt(level) }, AL.Game.G)
                     const npcValue = itemInfo.calculateNpcValue()
                     if (sellPrice < npcValue) {
-                        console.warn(`${itemName} @ level ${level} has a lower sell price than NPC, increasing from ${sellPrice} to ${npcValue}`)
+                        console.warn(
+                            `${itemName} @ level ${level} has a lower sell price than NPC, increasing from ${sellPrice} to ${npcValue}`,
+                        )
                         config.sellPrice = npcValue
                     }
                 }
                 if (config.destroyBelowLevel) {
                     for (let level = 0; level < config.destroyBelowLevel; level++) {
                         if (config.sellPrice[level] === undefined) continue
-                        console.warn(`${itemName} has both 'sell' and 'destroyBelowLevel' set, removing 'config.sellPrice[${level}]'`)
+                        console.warn(
+                            `${itemName} has both 'sell' and 'destroyBelowLevel' set, removing 'config.sellPrice[${level}]'`,
+                        )
                         delete config.sellPrice[level]
                     }
                 }
@@ -1182,7 +1187,9 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
 
         if (config.useOfferingFromLevel !== undefined && config.usePrimlingFromLevel !== undefined) {
             if (config.useOfferingFromLevel <= config.usePrimlingFromLevel) {
-                console.warn(`${itemName} has 'useOfferingFromLevel' <= and 'usePrimlingFromLevel'. Removing 'usePrimlingFromLevel'`)
+                console.warn(
+                    `${itemName} has 'useOfferingFromLevel' <= and 'usePrimlingFromLevel'. Removing 'usePrimlingFromLevel'`,
+                )
                 delete config.usePrimlingFromLevel
             }
         }
@@ -1196,12 +1203,15 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
     }
 }
 
-type LevelCounts = Map<number | undefined, {
-    /** How many of this item @ this level do we have? */
-    q: number
-    /** How many spaces are the items taking up in inventory / bank space? */
-    inventorySpaces: number
-}>
+type LevelCounts = Map<
+    number | undefined,
+    {
+        /** How many of this item @ this level do we have? */
+        q: number
+        /** How many spaces are the items taking up in inventory / bank space? */
+        inventorySpaces: number
+    }
+>
 type ItemCounts = Map<ItemName, LevelCounts>
 type OwnerItemCounts = Map<string, ItemCounts>
 
