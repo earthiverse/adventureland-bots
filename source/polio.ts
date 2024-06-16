@@ -50,7 +50,15 @@ const TRACK_UPGRADES_STRATEGY = new TrackUpgradeStrategy()
 const PARTY_ACCEPT_STRATEGY = new AcceptPartyRequestStrategy()
 const PARTY_MEMBER_STRATEGY = new RequestPartyStrategy("earthiverse")
 const AVOID_DEATH_STRATEGY = new AvoidDeathStrategy()
-const MERCHANT_STRATEGY = new NewMerchantStrategy({ ...defaultNewMerchantStrategyOptions, contexts: CONTEXTS })
+const MERCHANT_STRATEGY = new NewMerchantStrategy({
+    ...defaultNewMerchantStrategyOptions,
+    contexts: CONTEXTS,
+    enableInstanceProvider: {
+        crypt: {
+            maxInstances: 25
+        },
+    },
+})
 const MERCHANT_STAND_STRATEGY = new ToggleStandStrategy({
     offWhenMoving: true,
     onWhenNear: [{ distance: 100, position: defaultNewMerchantStrategyOptions.defaultPosition }],
