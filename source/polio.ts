@@ -96,7 +96,7 @@ const ATTACK_STRATEGY_SCORPION_WARRIOR = new WarriorAttackStrategy({
             ring1: { name: "zapper", filters: RETURN_HIGHEST },
             ring2: { name: "cring", filters: RETURN_HIGHEST },
             orb: { name: "orbofstr", filters: RETURN_HIGHEST },
-            amulet: { name: "snring", filters: RETURN_HIGHEST },
+            amulet: { name: "mpxamulet", filters: RETURN_HIGHEST },
         },
     },
     typeList: SCORPION_PRIORITY,
