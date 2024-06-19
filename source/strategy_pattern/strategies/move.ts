@@ -12,6 +12,7 @@ import AL, {
     ItemName,
     Tools,
     Warrior,
+    GData,
 } from "alclient"
 import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
@@ -731,7 +732,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             const sInfo = bot.S?.[type] as ServerInfoDataLive
             if (sInfo?.live && sInfo.map && bot.map !== sInfo.map) {
                 // We're not on the right map but the default spawn is better than nothing
-                const gInfo: GMap = AL.Game.G.maps[sInfo.map]
+                const gInfo: GMap = AL.Game.G.maps[sInfo.map as keyof GData["maps"]]
                 return { map: sInfo.map, x: gInfo.spawns[0][0], y: gInfo.spawns[0][1] }
             }
         }
@@ -739,7 +740,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         const maps = new Set<MapName>(this.spawns.map((s) => s.map))
         if (maps.size > 0 && !maps.has(bot.map)) {
             // Go to a map that has this monster
-            const gInfo: GMap = AL.Game.G.maps[this.spawns[0].map]
+            const gInfo: GMap = AL.Game.G.maps[this.spawns[0].map as keyof GData["maps"]]
             return { map: this.spawns[0].map, x: gInfo.spawns[0][0], y: gInfo.spawns[0][1] }
         }
 
@@ -790,11 +791,12 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         }
 
         // Look through all spawns on the current map for it
-        const gMap = bot.G.maps[bot.map] as GMap
+        const gMap: GMap = bot.G.maps[bot.map as keyof GData["maps"]]
         const spawns: IPosition[] = []
         for (const spawn of gMap.monsters) {
             // Add monster spawns
             const gMonster = bot.G.monsters[spawn.type]
+
             if (gMonster.aggro >= 100 || gMonster.rage >= 100) continue // Skip aggro spawns
             if (spawn.boundary) {
                 spawns.push({
