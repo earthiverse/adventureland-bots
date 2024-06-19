@@ -486,7 +486,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         const angleFromBotToTarget = Math.atan2(target.y - bot.y, target.x - bot.x)
         const destination: IPosition = {
             x: bot.x + Math.cos(angleFromBotToTarget) * 49.9,
-            y: bot.y + Math.sin(angleFromBotToTarget) * 49.9
+            y: bot.y + Math.sin(angleFromBotToTarget) * 49.9,
         }
         if (!Pathfinder.canWalkPath(destination, target)) return // Something is in the way
         return (bot as Warrior).dash(destination)
@@ -499,7 +499,7 @@ export type SpreadOutImprovedMoveStrategyOptions = ImprovedMoveStrategyOptions &
 }
 
 export class SpreadOutImprovedMoveStrategy extends ImprovedMoveStrategy {
-    protected options: SpreadOutImprovedMoveStrategyOptions
+    protected declare options: SpreadOutImprovedMoveStrategyOptions
 
     public constructor(type: MonsterName | MonsterName[], options?: SpreadOutImprovedMoveStrategyOptions) {
         super(type, options)
@@ -711,7 +711,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 serverRegion: bot.serverData.region,
                 type: { $in: this.options.typeList },
                 x: { $exists: true },
-                y: { $exists: true }
+                y: { $exists: true },
             })
                 .sort({ lastSeen: -1 })
                 .lean()
@@ -721,8 +721,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 // Check if one of our contexts should be able to see it
                 for (const context of this.options.contexts) {
                     if (!context.isReady()) continue
-                    if (AL.Tools.distance(context.bot, target) < AL.Constants.MAX_VISIBLE_RANGE / 2)
-                        continue targets // We should be able to see it, the data is not valid
+                    if (AL.Tools.distance(context.bot, target) < AL.Constants.MAX_VISIBLE_RANGE / 2) continue targets // We should be able to see it, the data is not valid
                 }
                 return target
             }
