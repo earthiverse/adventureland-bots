@@ -53,6 +53,7 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
+                            enableHealStrangers: true,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "attack"]
                             },
@@ -83,6 +84,7 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableEnergize: true,
                             enableGreedyAggro: true,
+                            enableHealStrangers: true,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "attack"]
                             },
@@ -136,7 +138,7 @@ export function constructIceGolemHelperSetup(contexts: Strategist<PingCompensate
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, type: "icegolem", hasTarget: true }),
+                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, enableHealStrangers: true, type: "icegolem", hasTarget: true }),
                         move: new ImprovedMoveStrategy("icegolem")
                     }
                 ]
