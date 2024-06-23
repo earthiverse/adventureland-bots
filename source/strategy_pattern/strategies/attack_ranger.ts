@@ -10,7 +10,7 @@ export type RangerAttackStrategyOptions = BaseAttackStrategyOptions & {
 }
 
 export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
-    public options: RangerAttackStrategyOptions
+    declare public options: RangerAttackStrategyOptions
 
     public constructor(options?: RangerAttackStrategyOptions) {
         super(options)
