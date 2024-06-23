@@ -8,7 +8,7 @@ export type MageAttackStrategyOptions = BaseAttackStrategyOptions & {
 }
 
 export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
-    protected options: MageAttackStrategyOptions
+    protected declare options: MageAttackStrategyOptions
 
     protected stealOnActionCburst: (data: ActionData) => void
 

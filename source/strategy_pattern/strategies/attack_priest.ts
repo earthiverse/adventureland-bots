@@ -12,9 +12,12 @@ export type PriestAttackStrategyOptions = BaseAttackStrategyOptions & {
 }
 
 export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
-    public options: PriestAttackStrategyOptions
+    public declare options: PriestAttackStrategyOptions
 
-    protected healPriority = new Map<string, (a: PingCompensatedCharacter | Player, b: PingCompensatedCharacter | Player) => boolean>()
+    protected healPriority = new Map<
+        string,
+        (a: PingCompensatedCharacter | Player, b: PingCompensatedCharacter | Player) => boolean
+    >()
 
     public constructor(options?: PriestAttackStrategyOptions) {
         super(options)
@@ -77,7 +80,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
         const entities = bot.getEntities({
             ...this.options,
             canDamage: "attack",
-            withinRange: "attack"
+            withinRange: "attack",
         })
         if (entities.length == 0) return // No targets to attack
 
@@ -112,10 +115,11 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
             if (bot.canKillInOneShot(target)) this.preventOverkill(bot, target)
 
             if (
-                !canKill
-                || targets.size > 0 // Energize if there are more targets around
-                || bot.mp < bot.max_mp * 0.25 // Energize if we are low on MP
-            ) this.getEnergizeFromOther(bot).catch(suppress_errors)
+                !canKill ||
+                targets.size > 0 || // Energize if there are more targets around
+                bot.mp < bot.max_mp * 0.25 // Energize if we are low on MP
+            )
+                this.getEnergizeFromOther(bot).catch(suppress_errors)
 
             return bot.basicAttack(target.id)
         }
@@ -171,7 +175,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
             const entity = bot.getEntity({
                 ...this.options,
                 targetingMe: false,
-                targetingPartyMember: true
+                targetingPartyMember: true,
             })
             if (entity) {
                 const player = bot.players.get(entity.target)
@@ -189,7 +193,12 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
         if (entity.s.curse) return // Already cursed
         if (entity.immune && !AL.Game.G.skills.curse.pierces_immunity) return // Can't curse
         if (!bot.canUse("curse")) return
-        if (bot.canKillInOneShot(entity) || entity.willBurnToDeath() || entity.willDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)) return // Would be a waste to use if we can kill it right away
+        if (
+            bot.canKillInOneShot(entity) ||
+            entity.willBurnToDeath() ||
+            entity.willDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities)
+        )
+            return // Would be a waste to use if we can kill it right away
 
         return bot.curse(entity.id)
     }

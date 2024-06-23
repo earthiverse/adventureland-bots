@@ -10,7 +10,7 @@ export type PaladinAttackStrategyOptions = BaseAttackStrategyOptions & {
 }
 
 export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
-    public options: PaladinAttackStrategyOptions
+    public declare options: PaladinAttackStrategyOptions
 
     public constructor(options?: PaladinAttackStrategyOptions) {
         super(options)
@@ -63,12 +63,12 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
             const entities = bot.getEntities({
                 canDamage: "purify",
                 hasTarget: false,
-                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
-                withinRange: "purify"
+                typeList: Array.isArray(this.options.enableGreedyAggro)
+                    ? this.options.enableGreedyAggro
+                    : this.options.typeList,
+                withinRange: "purify",
             })
-            if (
-                entities.length
-                && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
+            if (entities.length && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
                 // Prioritize the entities
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
@@ -83,7 +83,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
         const entities = bot.getEntities({
             ...this.options,
             canDamage: "purify",
-            withinRange: "purify"
+            withinRange: "purify",
         })
         if (entities.length == 0) return // No targets to purify
 
@@ -128,11 +128,9 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
                 canDamage: "smash",
                 hasTarget: false,
                 typeList: this.options.typeList,
-                withinRange: "smash"
+                withinRange: "smash",
             })
-            if (
-                entities.length
-                && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
+            if (entities.length && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
                 // Prioritize the entities
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
@@ -147,7 +145,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
         const entities = bot.getEntities({
             ...this.options,
             canDamage: "smash",
-            withinRange: "smash"
+            withinRange: "smash",
         })
         if (entities.length == 0) return // No targets to smash
 
@@ -179,10 +177,11 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
             const canKill = bot.canKillInOneShot(target, "smash")
             if (canKill) this.preventOverkill(bot, target)
             if (
-                !canKill
-                || targets.size > 0 // Energize if there are more targets around
-                || bot.mp < bot.max_mp * 0.25 // Energize if we are low on MP
-            ) this.getEnergizeFromOther(bot).catch(suppress_errors)
+                !canKill ||
+                targets.size > 0 || // Energize if there are more targets around
+                bot.mp < bot.max_mp * 0.25 // Energize if we are low on MP
+            )
+                this.getEnergizeFromOther(bot).catch(suppress_errors)
             return bot.smash(target.id)
         }
     }

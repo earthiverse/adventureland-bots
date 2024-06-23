@@ -26,7 +26,7 @@ export type WarriorAttackStrategyOptions = BaseAttackStrategyOptions & {
 }
 
 export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
-    public options: WarriorAttackStrategyOptions
+    public declare options: WarriorAttackStrategyOptions
 
     public constructor(options?: WarriorAttackStrategyOptions) {
         super(options)

@@ -11,7 +11,7 @@ export type RogueAttackStrategyOptions = BaseAttackStrategyOptions & {
 }
 
 export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
-    public options: RogueAttackStrategyOptions
+    public declare options: RogueAttackStrategyOptions
 
     public constructor(options?: RogueAttackStrategyOptions) {
         super(options)
@@ -61,7 +61,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
             couldGiveCredit: true,
             notTypeList: KILL_STEAL_AVOID_MONSTERS,
             couldDieToProjectiles: false,
-            withinRange: "mentalburst"
+            withinRange: "mentalburst",
         })
         if (entities.length) {
             // We can kill something with mentalburst, which will give us extra mp. Sort highest hp first to get the most MP
@@ -77,10 +77,10 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
 
     /**
      * Mental burst for extra damage
-     * 
-     * @param bot 
-     * @param priority 
-     * @returns 
+     *
+     * @param bot
+     * @param priority
+     * @returns
      */
     protected async mentalBurstForDamage(bot: Rogue, priority: (a: Entity, b: Entity) => boolean) {
         if (this.options.enableGreedyAggro) {
@@ -89,13 +89,12 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
                 canDamage: "mentalburst",
                 couldDieToProjectiles: false,
                 hasTarget: false,
-                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
-                withinRange: "mentalburst"
+                typeList: Array.isArray(this.options.enableGreedyAggro)
+                    ? this.options.enableGreedyAggro
+                    : this.options.typeList,
+                withinRange: "mentalburst",
             })
-            if (
-                entities.length
-                && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)
-            ) {
+            if (entities.length && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
                 // Prioritize the entities
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
@@ -112,7 +111,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
         const entities = bot.getEntities({
             ...this.options,
             canDamage: "mentalburst",
-            withinRange: "mentalburst"
+            withinRange: "mentalburst",
         })
         if (entities.length == 0) return // No targets to mental burst
 
@@ -153,13 +152,12 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
             const entities = bot.getEntities({
                 canDamage: "quickpunch",
                 hasTarget: false,
-                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
-                withinRange: "quickpunch"
+                typeList: Array.isArray(this.options.enableGreedyAggro)
+                    ? this.options.enableGreedyAggro
+                    : this.options.typeList,
+                withinRange: "quickpunch",
             })
-            if (
-                entities.length
-                && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)
-            ) {
+            if (entities.length && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
                 // Prioritize the entities
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
@@ -178,7 +176,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
         const entities = bot.getEntities({
             ...this.options,
             canDamage: "quickpunch",
-            withinRange: "quickpunch"
+            withinRange: "quickpunch",
         })
         if (entities.length == 0) return // No targets to quick punch
 
@@ -222,12 +220,12 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
             const entities = bot.getEntities({
                 canDamage: "quickstab",
                 hasTarget: false,
-                typeList: Array.isArray(this.options.enableGreedyAggro) ? this.options.enableGreedyAggro : this.options.typeList,
-                withinRange: "quickstab"
+                typeList: Array.isArray(this.options.enableGreedyAggro)
+                    ? this.options.enableGreedyAggro
+                    : this.options.typeList,
+                withinRange: "quickstab",
             })
-            if (
-                entities.length
-                && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
+            if (entities.length && !(this.options.maximumTargets && bot.targets >= this.options.maximumTargets)) {
                 // Prioritize the entities
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
@@ -246,7 +244,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
         const entities = bot.getEntities({
             ...this.options,
             canDamage: "quickstab",
-            withinRange: "quickstab"
+            withinRange: "quickstab",
         })
         if (entities.length == 0) return // No targets to quick stab
 
