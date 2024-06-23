@@ -2584,7 +2584,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
     }
 
     protected async goSellItems(bot: Merchant): Promise<void> {
-        if(!Database.connection) return
+        if (!Database.connection) return
 
         const key = `goSellItems_${bot.serverData.region}${bot.serverData.name}`
         if (!checkOnlyEveryMS(key, 60_000)) return // We've already checked recently
@@ -2801,6 +2801,8 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         await joinNearby()
 
         // Travel to join giveaways
+        if (!Database.connection) return
+
         const key = `joinGiveaways_${bot.serverData.region}${bot.serverData.name}`
         if (!checkOnlyEveryMS(key, 60_000)) return
         const giveawayMerchants = await AL.PlayerModel.find({
