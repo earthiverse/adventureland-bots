@@ -1,7 +1,7 @@
 import { IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Tools, Warrior } from "alclient"
 import { KiteMonsterMoveStrategy } from "../strategies/move.js"
 import { Strategist, filterContexts } from "../context.js"
-import { offsetPositionParty } from "../../base/locations.js"
+import { offsetPositionParty, winterlandXmageEntrance } from "../../base/locations.js"
 import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategies/attack_warrior.js"
@@ -42,11 +42,8 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
 
         if (xmage) {
             if (
-                xmage.type === "xmagefi"
-                && (
-                    bot.ctype === "mage"
-                    || this.options.disableCheckDB // We set this on our helpers, don't have helpers attack xmagefi
-                )
+                xmage.type === "xmagefi" &&
+                (bot.ctype === "mage" || this.options.disableCheckDB) // We set this on our helpers, don't have helpers attack xmagefi
             ) {
                 // Priest can't keep up with healing too many characters, so have the mage go to arctic bees
                 const arcticBee = bot.getEntity({ type: "arcticbee" })
@@ -66,22 +63,18 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
             nearbyMage = bot.getEntity({ typeList: XMAGE_MONSTERS })
             if (!nearbyMage) return // We still can't see it?
 
-            // if (nearbyMage.type === "xmagex") {
-            //     if (bot.ctype === "priest") {
-            //         // Priest should go to xmage
-            //         await bot.smartMove(offsetPositionParty(xmage, bot, 20))
-            //     } else {
-            //         // Other bots should kite
-            //         await this.kite(bot, nearbyMage)
-            //         return
-            //     }
-            // } else {
-            //     // Surround other mages
-            //     await bot.smartMove(offsetPositionParty(xmage, bot, 20))
-            // }
+            if (bot.ctype !== "priest") {
+                let priestNearby = false
+                for (const friend of XMageMoveStrategy.activeBots.values()) {
+                    if (friend.ctype !== "priest") continue
+                    if (friend.map !== xmage.map) continue
+                    priestNearby = true
+                    break
+                }
+                if (!priestNearby) return bot.smartMove(offsetPositionParty(winterlandXmageEntrance, bot, 20)) // Wait outside
+            }
 
-            await bot.smartMove(offsetPositionParty(xmage, bot, 20))
-            return
+            return bot.smartMove(offsetPositionParty(xmage, bot, 20))
         } else if (this.options.disableCheckDB) {
             // Have other bots farm the downtime monsters
             this.options.typeList = DOWNTIME_MONSTERS
@@ -388,7 +381,7 @@ export function constructXmageHelperSetup(contexts: Strategist<PingCompensatedCh
                                 prefer: {
                                     // Stab for extra stacked damage
                                     mainhand: { name: "claw", filters: { returnHighestLevel: true } },
-                                }
+                                },
                             },
                             targetingPartyMember: true,
                         }),
