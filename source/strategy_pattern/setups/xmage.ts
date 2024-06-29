@@ -79,6 +79,9 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
             // Have other bots farm the downtime monsters
             this.options.typeList = DOWNTIME_MONSTERS
         }
+
+        if (bot.ctype !== "priest") return bot.smartMove(offsetPositionParty(winterlandXmageEntrance, bot, 20)) // Wait outside
+
         return super.move(bot)
     }
 }
