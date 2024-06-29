@@ -55,14 +55,6 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
                 return
             }
 
-            let nearbyMage = bot.getEntity({ typeList: XMAGE_MONSTERS })
-            if (!nearbyMage) {
-                await bot.smartMove(xmage, { getWithin: 800 })
-            }
-
-            nearbyMage = bot.getEntity({ typeList: XMAGE_MONSTERS })
-            if (!nearbyMage) return // We still can't see it?
-
             if (bot.ctype !== "priest") {
                 let priestNearby = false
                 for (const friend of XMageMoveStrategy.activeBots.values()) {
@@ -73,6 +65,14 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
                 }
                 if (!priestNearby) return bot.smartMove(offsetPositionParty(winterlandXmageEntrance, bot, 20)) // Wait outside
             }
+
+            let nearbyMage = bot.getEntity({ typeList: XMAGE_MONSTERS })
+            if (!nearbyMage) {
+                await bot.smartMove(xmage, { getWithin: 800 })
+            }
+
+            nearbyMage = bot.getEntity({ typeList: XMAGE_MONSTERS })
+            if (!nearbyMage) return // We still can't see it?
 
             return bot.smartMove(offsetPositionParty(xmage, bot, 20))
         } else if (this.options.disableCheckDB) {
