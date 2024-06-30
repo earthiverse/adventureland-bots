@@ -173,7 +173,7 @@ class PriestXMageAttackStrategy extends PriestAttackStrategy {
                 this.options.generateEnsureEquipped.attributes = ["resistance"]
                 break
             case "xmagex":
-                if (entity.hp < 100_000) {
+                if (entity.hp < 30_000) {
                     this.options.generateEnsureEquipped.prefer.orb.name = "rabbitsfoot"
                     this.options.generateEnsureEquipped.attributes = ["luck"]
                 } else {
