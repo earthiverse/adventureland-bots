@@ -51,11 +51,11 @@ export function getCryptWaitTime(map: MapName): number {
 
     if (
         // From the beginning of October
-        (month >= 9) ||
+        month >= 9 ||
         // To the end of April
-        (month <= 3)
+        month <= 3
     ) {
-        // Anytime the server resets, 
+        // Don't wait for crypts to open
         return 0
     }
 
@@ -89,7 +89,7 @@ export async function refreshCryptMonsters(bot: Character, map = bot.map, instan
 export async function cleanInstances() {
     if (!AL.Database.connection) return
 
-    const instances = await AL.InstanceModel.find().lean().exec();
+    const instances = await AL.InstanceModel.find().lean().exec()
     for (const instance of instances) {
         if (!instance.killed) continue // Nothing has been killed yet
 
@@ -108,7 +108,13 @@ export async function cleanInstances() {
         if (deleteInstance) {
             console.debug(`Removing ${instance.map} ${instance.in}...`)
             await AL.InstanceModel.deleteOne({ _id: instance._id }).lean().exec()
-            await AL.EntityModel.deleteMany({ in: instance.in, serverIdentifier: instance.serverIdentifier, serverRegion: instance.serverRegion }).lean().exec()
+            await AL.EntityModel.deleteMany({
+                in: instance.in,
+                serverIdentifier: instance.serverIdentifier,
+                serverRegion: instance.serverRegion,
+            })
+                .lean()
+                .exec()
         }
     }
 }

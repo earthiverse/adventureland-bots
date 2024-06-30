@@ -2,8 +2,6 @@
     "arrowParens": "always",
     "bracketSpacing": true,
     "endOfLine": "lf",
-    "jsxBracketSameLine": false,
-    "jsxSingleQuote": false,
     "printWidth": 120,
     "proseWrap": "preserve",
     "quoteProps": "as-needed",

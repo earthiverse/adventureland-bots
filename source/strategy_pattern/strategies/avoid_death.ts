@@ -18,6 +18,7 @@ export class AvoidDeathStrategy<Type extends Character> implements Strategy<Type
 
     public onApply(bot: Type) {
         this.onAction = async (data: ActionData) => {
+            if (bot.rip) return // We're already dead
             if (data.target !== bot.id) return // Not for us
 
             if (data.source === "multi_burn" && bot.ctype === "mage" && bot.canUse("blink")) {
@@ -43,8 +44,20 @@ export class AvoidDeathStrategy<Type extends Character> implements Strategy<Type
     }
 
     protected async checkIncomingDamage(bot: Type) {
+        if (bot.rip) return // We're already dead
+
+        if (bot.s.burned) {
+            // Check if we're going to burn to death
+            const numIntervals = Math.floor(bot.s.burned.ms / AL.Game.G.conditions.burned.interval) - 1
+            const burnDamage = numIntervals * (bot.s.burned.intensity / 5)
+            if (burnDamage > bot.hp) {
+                console.info(`Harakiri-ing ${bot.id} to avoid burning to death (checkIncomingDamage)!`)
+                bot.socket.emit("harakiri")
+                return
+            }
+        }
+
         if (!bot.targets) return // Nothing attacking us
-        if (bot.canUse("scare")) return // We could scare
 
         // If we could die due to attacks from incoming monsters
         let potentialIncomingDamage = 0
@@ -63,14 +76,10 @@ export class AvoidDeathStrategy<Type extends Character> implements Strategy<Type
         }
         if (potentialIncomingDamage < bot.hp) return // Not in immediate danger
 
-        // TODO: Should make a "blocked" function for ALClient
-        if (bot.s.stoned || bot.s.deepfreezed) {
-            // TODO: Should make a "force disconnect" function for ALClient
-            console.info(`Force disconnecting ${bot.id} to avoid death (checkIncomingDamage)!`)
-            for(let i = 0; i < 500; i++) {
-                // @ts-ignore
-                bot.socket.emit("cruise", 999)
-            }
+        // TODO: Is this the same as bot.isDisabled() on ALClient?
+        if (bot.s.stoned || bot.s.deepfreezed || bot.s.stunned || bot.s.fingered) {
+            console.info(`Harakiri-ing ${bot.id} (checkIncomingDamage)!`)
+            bot.socket.emit("harakiri")
         } else {
             console.info(`Warping ${bot.id} to jail to avoid death (checkIncomingDamage)!`)
             await bot.warpToJail()
