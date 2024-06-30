@@ -684,9 +684,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellPrice: "npc",
     },
     vitring: {
-        // upgradeUntilLevel: 2,
-        sell: true,
-        sellPrice: "npc",
+        upgradeUntilLevel: 2,
     },
     wand: {
         destroyBelowLevel: 1,
@@ -873,6 +871,7 @@ export function wantToSellToNpc(
                 if (item.level && item.level >= level) return false // We don't have an excess at this or a higher level
                 continue // We don't have an excess yet
             }
+            // TODO: Add logic to check if there are players buying for more than NPC
             return true // We have an excess, we can sell this item
         }
         return false
