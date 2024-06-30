@@ -643,8 +643,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
     /**
      * Call this function if we are going to kill the target
      *
-     * If we have `options.characters` set, calling this will remove the target from the other
-     * characters so they won't attack it.
+     * If we have `options.contexts` set, calling this will remove the target from the other
+     * contexts so they won't attack it.
      *
      * @param bot The bot that is performing the attack
      * @param target The target we will kill
