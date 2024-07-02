@@ -122,6 +122,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     amuletofm: {
         buy: true,
         buyPrice: 500_000_000,
+        useOfferingFromLevel: 0,
     },
     angelwings: {
         buy: true,
@@ -290,6 +291,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellExcess: 9999 * 5,
     },
     exoarm: {
+        buy: true,
+        buyPrice: 250_000_000,
         usePrimlingFromLevel: 0,
         useOfferingFromLevel: 1,
     },
@@ -438,10 +441,6 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     maceofthedead: {
         destroyBelowLevel: 1,
     },
-    mpxgloves: {
-        // Don't upgrade, it's special
-        upgradeUntilLevel: 0,
-    },
     merry: {
         destroyBelowLevel: 1,
     },
@@ -460,8 +459,23 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         // sellPrice: "npc"
         sellExcess: 9999,
     },
+    mpxamulet: {
+        buy: true,
+        buyPrice: 500_000_000,
+        useOfferingFromLevel: 0,
+    },
+    mpxgloves: {
+        buy: true,
+        buyPrice: 500_000_000,
+        useOfferingFromLevel: 0,
+    },
     mushroomstaff: {
         destroyBelowLevel: 1,
+    },
+    northstar: {
+        buy: true,
+        buyPrice: 250_000_000,
+        useOfferingFromLevel: 0,
     },
     offering: {
         hold: ["merchant"],
@@ -526,6 +540,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sell: true,
         sellPrice: 1_000_000,
     },
+    sanguine: {
+        buy: true,
+        buyPrice: 500_000_000,
+        useOfferingFromLevel: 0,
+    },
     scroll0: {
         hold: ["merchant"],
         holdSlot: 35,
@@ -563,6 +582,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     snowflakes: {
         craft: true,
+    },
+    snring: {
+        buy: true,
+        buyPrice: 250_000_000,
+        useOfferingFromLevel: 0,
     },
     spear: {
         destroyBelowLevel: 1,
@@ -623,6 +647,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         destroyBelowLevel: 1,
     },
     t2quiver: {
+        buy: true,
+        buyPrice: 25_000_000,
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 2,
     },
@@ -643,6 +669,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     tracker: {
         hold: true,
         holdSlot: 41,
+    },
+    trigger: {
+        buy: true,
+        buyPrice: 500_000_000,
+        useOfferingFromLevel: 0,
     },
     tshirt88: {
         // Don't upgrade, it's special
@@ -686,6 +717,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     vitring: {
         upgradeUntilLevel: 2,
     },
+    vorb: {
+        buy: true,
+        buyPrice: 250_000_000,
+        useOfferingFromLevel: 0,
+    },
     wand: {
         destroyBelowLevel: 1,
     },
@@ -698,6 +734,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     wbasher: {
         destroyBelowLevel: 1,
+    },
+    wblade: {
+        buy: true,
+        buyPrice: 500_000_000,
+        useOfferingFromLevel: 0,
     },
     wbook0: {
         usePrimlingFromLevel: 3,
@@ -783,6 +824,16 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     xpbooster: {
         hold: true,
+    },
+    xshield: {
+        buy: true,
+        buyPrice: 50_000_000,
+        useOfferingFromLevel: 0,
+    },
+    zapper: {
+        buy: true,
+        buyPrice: 500_000_000,
+        useOfferingFromLevel: 0,
     },
 }
 
