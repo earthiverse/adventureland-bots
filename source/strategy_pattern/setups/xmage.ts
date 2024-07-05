@@ -48,10 +48,13 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
                 // Priest can't keep up with healing too many characters, so have the mage go to arctic bees
                 const arcticBee = bot.getEntity({ type: "arcticbee" })
                 if (!arcticBee) {
-                    await bot.smartMove("arcticbee", { avoidTownWarps: true, resolveOnFinalMoveStart: true })
+                    await bot.smartMove("arcticbee", {
+                        avoidTownWarps: bot.map === "frozencave",
+                        resolveOnFinalMoveStart: true,
+                    })
                 } else if (Tools.distance(bot, arcticBee) > bot.range) {
                     await bot.smartMove(arcticBee, {
-                        avoidTownWarps: true,
+                        avoidTownWarps: bot.map === "frozencave",
                         getWithin: bot.range,
                         resolveOnFinalMoveStart: true,
                     })
@@ -78,14 +81,16 @@ class XMageMoveStrategy extends KiteMonsterMoveStrategy {
             nearbyMage = bot.getEntity({ typeList: XMAGE_MONSTERS })
             if (!nearbyMage) return // We still can't see it?
 
-            return bot.smartMove(offsetPositionParty(xmage, bot, 20), { avoidTownWarps: true })
+            return bot.smartMove(offsetPositionParty(xmage, bot, 20), { avoidTownWarps: bot.map === "frozencave" })
         } else if (this.options.disableCheckDB) {
             // Have other bots farm the downtime monsters
             this.options.typeList = DOWNTIME_MONSTERS
         }
 
         if (bot.ctype !== "priest")
-            return bot.smartMove(offsetPositionParty(winterlandXmageEntrance, bot, 20), { avoidTownWarps: true }) // Wait outside
+            return bot.smartMove(offsetPositionParty(winterlandXmageEntrance, bot, 20), {
+                avoidTownWarps: bot.map === "frozencave",
+            }) // Wait outside
 
         return super.move(bot)
     }
