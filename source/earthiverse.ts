@@ -88,6 +88,7 @@ const SPECIAL_MONSTERS: MonsterName[] = [
     "icegolem",
     "jr",
     "mvampire",
+    "rharpy",
     "skeletor",
     "snowman",
     "stompy",
