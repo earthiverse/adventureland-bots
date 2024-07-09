@@ -27,6 +27,7 @@ import { WarriorAttackStrategy } from "./strategy_pattern/strategies/attack_warr
 import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
 import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
+import { RETURN_HIGHEST } from "./strategy_pattern/setups/equipment.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
@@ -145,11 +146,45 @@ const MERCHANT_STAND_STRATEGY = new ToggleStandStrategy({
     onWhenNear: [{ distance: 100, position: defaultNewMerchantStrategyOptions.defaultPosition }],
 })
 const SCORPION_PRIORITY: MonsterName[] = ["gscorpion"]
-const ATTACK_STRATEGY_SCORPION_WARRIOR = new WarriorAttackStrategy({
-    contexts: CONTEXTS,
-    disableAgitate: true,
-    typeList: SCORPION_PRIORITY,
-})
+const ATTACK_STRATEGIES: { [T in string]: WarriorAttackStrategy } = {
+    earthWar: new WarriorAttackStrategy({
+        contexts: CONTEXTS,
+        disableAgitate: true,
+        enableEquipForCleave: true,
+        generateEnsureEquipped: {
+            prefer: {
+                mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
+                offhand: { name: "ololipop", filters: RETURN_HIGHEST },
+            },
+        },
+        typeList: SCORPION_PRIORITY,
+    }),
+    earthWar2: new WarriorAttackStrategy({
+        contexts: CONTEXTS,
+        disableAgitate: true,
+        enableEquipForCleave: true,
+        generateEnsureEquipped: {
+            prefer: {
+                mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
+                offhand: { name: "ololipop", filters: RETURN_HIGHEST },
+            },
+        },
+        typeList: SCORPION_PRIORITY,
+    }),
+    earthWar3: new WarriorAttackStrategy({
+        contexts: CONTEXTS,
+        disableAgitate: true,
+        enableEquipForCleave: true,
+        generateEnsureEquipped: {
+            prefer: {
+                mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
+                offhand: { name: "glolipop", filters: RETURN_HIGHEST },
+            },
+        },
+        typeList: SCORPION_PRIORITY,
+    }),
+}
+
 const MOVE_STRATEGY_SCORPION = new SpreadOutImprovedMoveStrategy(SCORPION_PRIORITY)
 
 async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentifier) {
@@ -164,7 +199,7 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
         const warrior = await AL.Game.startWarrior(warriorName, serverRegion, serverIdentifier)
         const context = new Strategist<Warrior>(warrior, BASE_STRATEGY)
         CONTEXTS.push(context)
-        context.applyStrategy(ATTACK_STRATEGY_SCORPION_WARRIOR)
+        context.applyStrategy(ATTACK_STRATEGIES[warriorName])
         context.applyStrategy(MOVE_STRATEGY_SCORPION)
         context.applyStrategy(PARTY_ACCEPT_STRATEGY)
         context.applyStrategy(CHARGE_STRATEGY)
