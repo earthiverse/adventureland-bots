@@ -148,7 +148,6 @@ const SCORPION_PRIORITY: MonsterName[] = ["gscorpion"]
 const ATTACK_STRATEGY_SCORPION_WARRIOR = new WarriorAttackStrategy({
     contexts: CONTEXTS,
     disableAgitate: true,
-    enableEquipForCleave: true,
     typeList: SCORPION_PRIORITY,
 })
 const MOVE_STRATEGY_SCORPION = new SpreadOutImprovedMoveStrategy(SCORPION_PRIORITY)
