@@ -16,7 +16,7 @@ import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
 import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
 import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
 import { DestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
-import { SpreadOutImprovedMoveStrategy } from "./strategy_pattern/strategies/move.js"
+import { ImprovedMoveStrategy } from "./strategy_pattern/strategies/move.js"
 import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategy_pattern/strategies/party.js"
 import { NewMerchantStrategy, defaultNewMerchantStrategyOptions } from "./merchant/strategy.js"
@@ -185,7 +185,7 @@ const ATTACK_STRATEGIES: { [T in string]: WarriorAttackStrategy } = {
     }),
 }
 
-const MOVE_STRATEGY_SCORPION = new SpreadOutImprovedMoveStrategy(SCORPION_PRIORITY)
+const MOVE_STRATEGY_SCORPION = new ImprovedMoveStrategy(SCORPION_PRIORITY)
 
 async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentifier) {
     const merchant = await AL.Game.startMerchant("earthMer", serverRegion, serverIdentifier)
