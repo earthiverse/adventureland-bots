@@ -152,6 +152,7 @@ const ATTACK_STRATEGIES: { [T in string]: WarriorAttackStrategy } = {
         disableAgitate: true,
         enableEquipForCleave: true,
         generateEnsureEquipped: {
+            attributes: ["apiercing"],
             prefer: {
                 mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
                 offhand: { name: "ololipop", filters: RETURN_HIGHEST },
@@ -164,6 +165,7 @@ const ATTACK_STRATEGIES: { [T in string]: WarriorAttackStrategy } = {
         disableAgitate: true,
         enableEquipForCleave: true,
         generateEnsureEquipped: {
+            attributes: ["apiercing"],
             prefer: {
                 mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
                 offhand: { name: "ololipop", filters: RETURN_HIGHEST },
@@ -176,6 +178,7 @@ const ATTACK_STRATEGIES: { [T in string]: WarriorAttackStrategy } = {
         disableAgitate: true,
         enableEquipForCleave: true,
         generateEnsureEquipped: {
+            attributes: ["apiercing"],
             prefer: {
                 mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
                 offhand: { name: "glolipop", filters: RETURN_HIGHEST },
