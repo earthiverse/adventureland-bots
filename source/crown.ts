@@ -32,6 +32,11 @@ import { RETURN_HIGHEST } from "./strategy_pattern/setups/equipment.js"
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
 
+// We're using pumpkinspice for the elixir in this script
+DEFAULT_ITEM_CONFIG["pumpkinspice"] = {
+    hold: true,
+}
+
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 
 class BaseStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
