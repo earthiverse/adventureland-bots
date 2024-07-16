@@ -161,6 +161,7 @@ const ATTACK_STRATEGIES: { [T in string]: WarriorAttackStrategy } = {
             prefer: {
                 mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
                 offhand: { name: "ololipop", filters: RETURN_HIGHEST },
+                orb: { name: "orbofstr", filters: RETURN_HIGHEST },
             },
         },
         typeList: SCORPION_PRIORITY,
@@ -174,6 +175,7 @@ const ATTACK_STRATEGIES: { [T in string]: WarriorAttackStrategy } = {
             prefer: {
                 mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
                 offhand: { name: "ololipop", filters: RETURN_HIGHEST },
+                orb: { name: "orbofstr", filters: RETURN_HIGHEST },
             },
         },
         typeList: SCORPION_PRIORITY,
@@ -187,6 +189,7 @@ const ATTACK_STRATEGIES: { [T in string]: WarriorAttackStrategy } = {
             prefer: {
                 mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
                 offhand: { name: "glolipop", filters: RETURN_HIGHEST },
+                orb: { name: "orbofstr", filters: RETURN_HIGHEST },
             },
         },
         typeList: SCORPION_PRIORITY,
