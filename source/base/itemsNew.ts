@@ -706,9 +706,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     vhammer: {
         buy: true,
         buyPrice: "ponty",
-        sell: true,
-        sellPrice: 100_000_000,
-        upgradeUntilLevel: 0,
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 4,
     },
     vitearring: {
         sell: true,
