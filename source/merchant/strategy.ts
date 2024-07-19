@@ -2539,11 +2539,8 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
                 if (!shouldMluck(context.bot)) continue
 
-                await bot.smartMove(context.bot, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
-                if (
-                    AL.Tools.squaredDistance(bot, context.bot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED &&
-                    shouldMluck(context.bot)
-                ) {
+                await bot.smartMove(context.bot, { getWithin: AL.Game.G.skills.mluck.range - 50 })
+                if (AL.Tools.distance(bot, context.bot) > AL.Game.G.skills.mluck.range && shouldMluck(context.bot)) {
                     // They moved somewhere, try again
                     return this.goMluck(bot)
                 }
@@ -2576,7 +2573,24 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 .exec()
 
             for (const other of others) {
-                await bot.smartMove(other, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+                await bot.smartMove(other, {
+                    getWithin: AL.Game.G.skills.mluck.range - 50,
+                    // Stop if we get within range of them
+                    stopIfTrue: async () =>
+                        bot.players.has(other.name) &&
+                        AL.Tools.distance(bot, bot.players.get(other.name)) < AL.Game.G.skills.mluck.range - 50,
+                })
+
+                // Wait a bit if we're on cooldown
+                if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
+
+                for (let i = 0; i < 5; i++) {
+                    const otherBot = bot.players.get(other.name)
+                    if (!otherBot) break // They moved somewhere
+                    if (!shouldMluck(otherBot)) break // We don't care about mlucking them anymore
+                    await bot.smartMove(otherBot, { getWithin: AL.Game.G.skills.mluck.range - 50 })
+                    await sleep(250)
+                }
             }
         }
 
