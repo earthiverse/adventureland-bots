@@ -205,7 +205,7 @@ const ATTACK_STRATEGIES: { [T in string]: WarriorAttackStrategy } = {
                 ring1: { name: "suckerpunch", filters: RETURN_HIGHEST },
                 ring2: { name: "suckerpunch", filters: RETURN_HIGHEST },
                 orb: { name: "orbofstr", filters: RETURN_HIGHEST },
-                gloves: { name: "supermittens", filters: RETURN_HIGHEST },
+                gloves: { name: "mittens", filters: RETURN_HIGHEST },
             },
         },
         typeList: SCORPION_PRIORITY,
