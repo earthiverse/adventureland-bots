@@ -44,6 +44,13 @@ import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js
 import { BEE_DUNGEON_MONSTERS } from "./strategy_pattern/setups/beedungeon.js"
 import { DEFAULT_ITEM_CONFIG } from "./base/itemsNew.js"
 
+process.on("uncaughtException", (error) => {
+    console.error("Uncaught exception:", error)
+})
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("Unhandled rejection:", reason)
+})
+
 AL.Game.setServer("http://thmsn.adventureland.community")
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.thmsn.json", false), AL.Game.getGData(false)])

@@ -158,6 +158,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         upgradeUntilLevel: 7,
         usePrimlingFromLevel: 5,
     },
+    bee_pollen: {
+        sell: true,
+        sellPrice: "npc"
+    },
     "beekey": {
         sellExcess: 10
     },
