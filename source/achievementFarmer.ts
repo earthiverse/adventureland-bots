@@ -63,17 +63,21 @@ const SETUPS = constructSetups(CONTEXTS)
 function getCharactersForConfig(config: Config, selectedCharacters: string[] = []): string[] {
     const characters = Object.values(AL.Game.characters)
 
+    const newCharacters = []
     for (const characterConfig of config.characters) {
-        const chosen = characters
-            .filter((c) => c.type === characterConfig.ctype && !c.online && !selectedCharacters.includes(c.name))
-            .reduce((highest, current) => (highest.level > current.level ? highest : current))?.name
+        try {
+            const chosen = characters
+                .filter((c) => c.type === characterConfig.ctype && !c.online && !selectedCharacters.includes(c.name))
+                .reduce((highest, current) => (highest.level > current.level ? highest : current))?.name
 
-        if (!chosen) return [] // We don't have the right composition for this setup
-
-        selectedCharacters.push(chosen)
+            newCharacters.push(chosen)
+            selectedCharacters.push(chosen)
+        } catch {
+            continue
+        }
     }
 
-    return selectedCharacters
+    return newCharacters
 }
 
 async function start() {
@@ -165,11 +169,12 @@ async function start() {
                     config,
                     chosenCharacters.map((c) => c[0]),
                 )
-                if (!doableCharacters) break
+                if (doableCharacters.length === 0) break // Not doable
                 if (doableCharacters.length + chosenCharacters.length > 3) break // Too many characters
 
                 // We can choose these characters to help farm it
                 for (const doableCharacter of doableCharacters) {
+                    console.debug(`choosing ${doableCharacter} for ${config.id}`)
                     chosenCharacters.push([doableCharacter, config])
                 }
             } while (chosenCharacters.length < 3)
