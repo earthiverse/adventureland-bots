@@ -26,12 +26,27 @@ import { NewMerchantStrategy, defaultNewMerchantStrategyOptions } from "./mercha
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
+import { BEE_DUNGEON_MONSTERS } from "./strategy_pattern/setups/beedungeon.js"
 
-await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
-await AL.Pathfinder.prepare(AL.Game.G)
+process.on("uncaughtException", (error) => {
+    console.error("Uncaught exception:", error)
+})
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("Unhandled rejection:", reason)
+})
+
+AL.Game.setServer("http://thmsn.adventureland.community")
+
+await Promise.all([AL.Game.loginJSONFile("../credentials.thmsn.json", false), AL.Game.getGData(false)])
+await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
+await AL.Game.updateServersAndCharacters()
+
+//// ALClient Hacks
+// Hack to add bee_queen as a special monster
+AL.Constants.SPECIAL_MONSTERS.push(...BEE_DUNGEON_MONSTERS)
 
 // Tweakable
-const SERVER_REGION: ServerRegion = "US"
+const SERVER_REGION: ServerRegion = "EU"
 const SERVER_ID: ServerIdentifier = "I"
 const FARMABLE_MONSTERS: MonsterName[] = ["bee", "crab", "goo", "poisio"]
 
