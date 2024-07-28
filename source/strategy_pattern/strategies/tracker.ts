@@ -1,33 +1,38 @@
 import AL, { Character } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
 
+const DEFAULT_INTERVAL = 900_000 // 15 minutes
+
 export type TrackerStrategyOptions = {
-    /** How often to call to update statistics */
+    /** How often to call to update statistics in ms */
     interval: number
 }
 
 export class TrackerStrategy implements Strategy<Character> {
     public loops = new Map<LoopName, Loop<Character>>()
 
-    public constructor(options: TrackerStrategyOptions = { interval: 900_000 }) {
+    public constructor(options: TrackerStrategyOptions = { interval: DEFAULT_INTERVAL }) {
         this.loops.set("tracker", {
-            fn: async (bot: Character) => { await this.checkTracker(bot) },
-            interval: options?.interval ?? 900_000
+            fn: async (bot: Character) => {
+                await this.checkTracker(bot)
+            },
+            interval: options?.interval ?? DEFAULT_INTERVAL,
         })
     }
 
-    private async checkTracker(bot: Character) {
+    private async checkTracker(bot: Character, attemptNum = 1) {
         // This strategy is only useful if we have a database connection, because the only reason we're calling
         // `tracker` is to update the database with achievement progress.
         if (!AL.Database.connection) return
 
-        if (bot.hasItem(["tracker", "supercomputer"]) && bot.cc < 100) {
-            await bot.getTrackerData()
-        } else {
-            console.debug(`[${bot.id}] Didn't check tracker!?`)
-            console.debug(`[${bot.id}] tracker: ${bot.hasItem("tracker")}`)
-            console.debug(`[${bot.id}] supercomputer: ${bot.hasItem("supercomputer")}`)
-            console.debug(`[${bot.id}] bot.cc: ${bot.cc}`)
+        if (!bot.hasItem(["tracker", "supercomputer"])) return // No tracker
+
+        if (bot.cc > 100 && attemptNum < 5) {
+            // We're at a high CC, wait a bit to avoid having the tracker disconnect us
+            setTimeout(() => this.checkTracker(bot, attemptNum++), 10_000)
+            return
         }
+
+        await bot.getTrackerData()
     }
 }
