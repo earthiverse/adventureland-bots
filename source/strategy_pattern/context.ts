@@ -18,6 +18,7 @@ export type LoopName =
     | "buy"
     | "charge"
     | "compound"
+    | "connect"
     | "destroy"
     | "elixir"
     | "equip"
@@ -300,6 +301,8 @@ export class Strategist<Type extends PingCompensatedCharacter> {
             this.bot.disconnect()
         }
 
+        if (this.stopped) return
+
         let newBot: PingCompensatedCharacter
         try {
             switch (this.bot.ctype) {
@@ -390,16 +393,28 @@ export class Strategist<Type extends PingCompensatedCharacter> {
             if (retry) {
                 const wait = /wait_(\d+)_second/.exec(e)
                 if (wait && wait[1]) {
-                    setTimeout(() => this.reconnect(), 2000 + Number.parseInt(wait[1]) * 1000)
+                    this.timeouts.set(
+                        "connect",
+                        setTimeout(() => this.reconnect(), 2000 + Number.parseInt(wait[1]) * 1000),
+                    )
                 } else if (/limits/.test(e)) {
-                    setTimeout(() => this.reconnect(), AL.Constants.RECONNECT_TIMEOUT_MS)
+                    this.timeouts.set(
+                        "connect",
+                        setTimeout(() => this.reconnect(), AL.Constants.RECONNECT_TIMEOUT_MS),
+                    )
                 } else if (/ingame/.test(e)) {
-                    setTimeout(() => this.reconnect(), 500)
+                    this.timeouts.set(
+                        "connect",
+                        setTimeout(() => this.reconnect(), 500),
+                    )
                 } else if (/nouser/.test(e)) {
                     this.stop()
                     throw new Error(`Authorization failed for ${this.bot.name}! No longer trying to reconnect...`)
                 } else {
-                    setTimeout(() => this.reconnect(), 10000)
+                    this.timeouts.set(
+                        "connect",
+                        setTimeout(() => this.reconnect(), 10000),
+                    )
                 }
             }
         }
