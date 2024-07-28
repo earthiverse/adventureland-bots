@@ -7,12 +7,42 @@ import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
+import { MageAttackStrategy } from "../strategies/attack_mage.js"
 
 export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("iceroamer")
 
     return {
         configs: [
+            {
+                id: "iceroamer_mage,priest",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "attack"]
+                            },
+                            type: "iceroamer"
+                        }),
+                        move: moveStrategy
+                    },
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "int", "attack"]
+                            },
+                            type: "iceroamer",
+                        }),
+                        move: moveStrategy
+                    }
+                ]
+            },
             {
                 id: "iceroamer_priest",
                 characters: [
