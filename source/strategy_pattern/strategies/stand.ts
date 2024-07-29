@@ -6,8 +6,10 @@ export class ToggleStandByMovementStrategy implements Strategy<Merchant> {
 
     public constructor() {
         this.loops.set("merchant_stand", {
-            fn: async (bot: Merchant) => { await this.checkStand(bot) },
-            interval: 100
+            fn: async (bot: Merchant) => {
+                await this.checkStand(bot)
+            },
+            interval: 100,
         })
     }
 
@@ -44,12 +46,16 @@ export class ToggleStandStrategy implements Strategy<Merchant> {
         this.options = options
 
         this.loops.set("merchant_stand", {
-            fn: async (bot: Merchant) => { await this.checkStand(bot) },
-            interval: 100
+            fn: async (bot: Merchant) => {
+                await this.checkStand(bot)
+            },
+            interval: 100,
         })
     }
 
     private async checkStand(bot: Merchant) {
+        if (!bot.hasItem(["stand0", "stand1", "computer", "supercomputer"])) return // No stand
+
         if (this.options.offWhenMoving) {
             if (bot.moving || bot.smartMoving) {
                 return bot.closeMerchantStand()
