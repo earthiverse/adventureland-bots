@@ -82,6 +82,9 @@ function getCharactersForConfig(config: Config, selectedCharacters: string[] = [
 
 async function start() {
     try {
+        // Get the latest data for our characters
+        await AL.Game.updateServersAndCharacters()
+
         /**
          * STEP 1
          * Have our merchant get the tracker data
@@ -161,7 +164,6 @@ async function start() {
          */
         CURRENT_MONSTER = nextMonster
         console.debug(`Creating strategy for ${CURRENT_MONSTER}! (${nextScore.toLocaleString()} to next achievement)`)
-        await AL.Game.updateServersAndCharacters()
         const chosenCharacters: [string, Config][] = []
         for (const config of SETUPS[CURRENT_MONSTER].configs) {
             do {
