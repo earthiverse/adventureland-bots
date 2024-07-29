@@ -2065,7 +2065,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 // We can craft it if we buy the rest of the recipe from NPCs
                 const gCraft = AL.Game.G.craft[itemName]
                 for (const [requiredQuantity, requiredItem] of gCraft.items) {
-                    if (bot.countItem(requiredItem) > requiredQuantity) continue // We have enough of this item
+                    if (bot.countItem(requiredItem) >= requiredQuantity) continue // We have enough of this item
                     if (!bot.canBuy(requiredItem)) {
                         // We need to move to buy it
                         await bot.smartMove(requiredItem, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
