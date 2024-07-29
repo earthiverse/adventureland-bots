@@ -35,7 +35,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             fn: async (bot: Warrior) => {
                 if (this.shouldHardshell(bot)) await bot.hardshell().catch(suppress_errors)
                 if (this.shouldScare(bot)) await this.scare(bot).catch(suppress_errors)
-                await this.attack(bot)
+                await this.attack(bot).catch(suppress_errors)
             },
             interval: this.interval,
         })
@@ -123,10 +123,10 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             AL.Game.G.skills.taunt.range >= Tools.distance(bot, ifAgitate[0])
         ) {
             // Taunt if there's only one, and we have it within range
-            return bot.taunt(ifAgitate[0].id)
+            return bot.taunt(ifAgitate[0].id).catch(suppress_errors)
         }
         // Agitate if there's more than one target
-        return bot.agitate()
+        return bot.agitate().catch(suppress_errors)
     }
 
     protected async cleave(bot: Warrior) {

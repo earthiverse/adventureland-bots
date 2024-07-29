@@ -122,7 +122,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         this.loops.set("attack", {
             fn: async (bot: Type) => {
                 if (this.shouldScare(bot)) await this.scare(bot)
-                await this.attack(bot)
+                await this.attack(bot).catch(suppress_errors)
             },
             interval: this.interval,
         })
@@ -190,7 +190,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
                         bot.nextSkill.set("taunt", new Date(Date.now() + bot.ping * 2))
-                        return (bot as unknown as Warrior).taunt(monster.id).catch()
+                        return (bot as unknown as Warrior).taunt(monster.id).catch(suppress_errors)
                     }
                 }
                 // TODO: Refactor so this can be put in attack_mage
