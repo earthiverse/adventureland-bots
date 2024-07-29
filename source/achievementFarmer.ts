@@ -48,7 +48,41 @@ AL.Constants.SPECIAL_MONSTERS.push(...BEE_DUNGEON_MONSTERS)
 // Tweakable
 const SERVER_REGION: ServerRegion = "EU"
 const SERVER_ID: ServerIdentifier = "I"
-const FARMABLE_MONSTERS: MonsterName[] = ["bee", "crab", "goo", "poisio"]
+const FARMABLE_MONSTERS: MonsterName[] = [
+    "arcticbee",
+    "armadillo",
+    "bat",
+    "bbpompom",
+    // "bee", COMPLETE
+    "bigbird",
+    "boar",
+    "booboo",
+    "crab",
+    "crabx",
+    "croc",
+    "ghost",
+    "goo",
+    "gscorpion",
+    "harpy",
+    "iceroamer",
+    "minimush",
+    "mole",
+    "mummy",
+    "poisio",
+    "porcupine",
+    "pppompom",
+    "prat",
+    "rat",
+    "scorpion",
+    "snake",
+    "spider",
+    "squig",
+    "stoneworm",
+    "tortoise",
+    "wolf",
+    "wolfie",
+    "xscorpion",
+]
 
 // Important variables
 let CURRENT_MONSTER: MonsterName = FARMABLE_MONSTERS[0]
