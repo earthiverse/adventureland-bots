@@ -38,7 +38,7 @@ process.on("unhandledRejection", (reason, promise) => {
 AL.Game.setServer("http://thmsn.adventureland.community")
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.thmsn.json", false), AL.Game.getGData(false)])
-await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
+await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true, cheat: true }) // We need to cheat until we get a better harpy strategy
 await AL.Game.updateServersAndCharacters()
 
 //// ALClient Hacks
