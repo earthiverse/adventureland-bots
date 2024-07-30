@@ -925,7 +925,7 @@ const startRogueContext = async (name: string) => {
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
-for (const name of PALADINS) startRogueContext(name)
+for (const name of ROGUES) startRogueContext(name)
 
 class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> {
     private onCodeEval: (data: string) => Promise<void>
