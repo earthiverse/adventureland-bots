@@ -792,10 +792,14 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
         // Look through all spawns on the current map for it
         const gMap: GMap = bot.G.maps[bot.map as keyof GData["maps"]]
+
+        let canRoam = false
         const spawns: IPosition[] = []
         for (const spawn of gMap.monsters) {
             // Add monster spawns
             const gMonster = bot.G.monsters[spawn.type]
+
+            canRoam = spawn.roam ? true : spawn.roam
 
             if (gMonster.aggro >= 100 || gMonster.rage >= 100) continue // Skip aggro spawns
             if (spawn.boundary) {
@@ -815,6 +819,8 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 }
             }
         }
+
+        if (!canRoam) return // No need to look for extra spawns if nothing is roaming
 
         for (const spawn of gMap.spawns) {
             // Add map spawns
