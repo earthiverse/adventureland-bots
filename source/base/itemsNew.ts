@@ -138,16 +138,16 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: 1_000_000,
         craft: true,
     },
-    basher: {
-        destroyBelowLevel: 1,
-    },
+    // basher: {
+    //     destroyBelowLevel: 1,
+    // },
     basketofeggs: {
         craft: true,
         exchange: true,
     },
-    bataxe: {
-        destroyBelowLevel: 1,
-    },
+    // bataxe: {
+    //     destroyBelowLevel: 1,
+    // },
     bcape: {
         // We can craft other capes at level 7
         upgradeUntilLevel: 7,
@@ -169,19 +169,19 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
         craft: true,
     },
-    blade: {
-        // destroyBelowLevel: 1
-        sellExcess: 5,
-        upgradeUntilLevel: 0,
-    },
-    bow: {
-        // destroyBelowLevel: 1
-        sellExcess: 5,
-        upgradeUntilLevel: 0,
-    },
-    bowofthedead: {
-        destroyBelowLevel: 1,
-    },
+    // blade: {
+    //     // destroyBelowLevel: 1
+    //     sellExcess: 5,
+    //     upgradeUntilLevel: 0,
+    // },
+    // bow: {
+    //     // destroyBelowLevel: 1
+    //     sellExcess: 5,
+    //     upgradeUntilLevel: 0,
+    // },
+    // bowofthedead: {
+    //     destroyBelowLevel: 1,
+    // },
     cake: {
         craft: true,
         sell: true,
@@ -198,19 +198,19 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     candycane: {
         exchange: true,
     },
-    candycanesword: {
-        destroyBelowLevel: 1,
-    },
+    // candycanesword: {
+    //     destroyBelowLevel: 1,
+    // },
     candypop: {
         exchange: true,
     },
     carrotsword: {
         craft: true,
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
     },
     cclaw: {
         craft: true,
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
     },
     cdragon: {
         sellExcess: 5,
@@ -220,12 +220,12 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellExcess: 5,
         upgradeUntilLevel: 0,
     },
-    coat: {
-        destroyBelowLevel: 1,
-    },
-    coat1: {
-        destroyBelowLevel: 1,
-    },
+    // coat: {
+    //     destroyBelowLevel: 1,
+    // },
+    // coat1: {
+    //     destroyBelowLevel: 1,
+    // },
     computer: {
         hold: true,
         holdSlot: 40,
@@ -246,25 +246,25 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: ["merchant"],
         holdSlot: 30,
     },
-    cupid: {
-        destroyBelowLevel: 1,
-    },
-    dagger: {
-        destroyBelowLevel: 1,
-    },
-    daggerofthedead: {
-        destroyBelowLevel: 1,
-    },
-    dexring: {
-        sell: true,
-        sellPrice: "npc",
-    },
-    ecape: {
-        destroyBelowLevel: 1,
-    },
-    eears: {
-        destroyBelowLevel: 1,
-    },
+    // cupid: {
+    //     destroyBelowLevel: 1,
+    // },
+    // dagger: {
+    //     destroyBelowLevel: 1,
+    // },
+    // daggerofthedead: {
+    //     destroyBelowLevel: 1,
+    // },
+    // dexring: {
+    //     sell: true,
+    //     sellPrice: "npc",
+    // },
+    // ecape: {
+    //     destroyBelowLevel: 1,
+    // },
+    // eears: {
+    //     destroyBelowLevel: 1,
+    // },
     eggnog: {
         sellExcess: 9999 * 3,
     },
@@ -292,12 +292,12 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     elixirvit2: {
         craft: true,
     },
-    epyjamas: {
-        destroyBelowLevel: 1,
-    },
-    eslippers: {
-        destroyBelowLevel: 1,
-    },
+    // epyjamas: {
+    //     destroyBelowLevel: 1,
+    // },
+    // eslippers: {
+    //     destroyBelowLevel: 1,
+    // },
     essenceoflife: {
         sellExcess: 9999 * 5,
     },
@@ -310,18 +310,18 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     fieldgen0: {
         sellExcess: 20,
     },
-    fireblade: {
-        destroyBelowLevel: 1,
-    },
-    firestaff: {
-        destroyBelowLevel: 1,
-    },
+    // fireblade: {
+    //     destroyBelowLevel: 1,
+    // },
+    // firestaff: {
+    //     destroyBelowLevel: 1,
+    // },
     firestars: {
         craft: true,
     },
-    frankypants: {
-        destroyBelowLevel: 1,
-    },
+    // frankypants: {
+    //     destroyBelowLevel: 1,
+    // },
     frostbow: {
         craft: true,
     },
@@ -329,9 +329,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 2,
     },
-    gcape: {
-        destroyBelowLevel: 1,
-    },
+    // gcape: {
+    //     destroyBelowLevel: 1,
+    // },
     gem0: {
         /** Green Gem */ exchange: true,
     },
@@ -341,24 +341,24 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     gemfragment: {
         exchange: true,
     },
-    gloves: {
-        destroyBelowLevel: 1,
-    },
-    gloves1: {
-        destroyBelowLevel: 1,
-    },
+    // gloves: {
+    //     destroyBelowLevel: 1,
+    // },
+    // gloves1: {
+    //     destroyBelowLevel: 1,
+    // },
     goldbooster: {
         hold: true,
     },
-    gphelmet: {
-        destroyBelowLevel: 1,
-    },
+    // gphelmet: {
+    //     destroyBelowLevel: 1,
+    // },
     greenenvelope: {
         exchange: true,
     },
-    harbringer: {
-        destroyBelowLevel: 1,
-    },
+    // harbringer: {
+    //     destroyBelowLevel: 1,
+    // },
     harmor: {
         buy: true,
         buyPrice: "ponty",
@@ -371,15 +371,15 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         usePrimlingFromLevel: 7,
         useOfferingFromLevel: 9,
     },
-    hbow: {
-        destroyBelowLevel: 1,
-    },
-    helmet: {
-        destroyBelowLevel: 1,
-    },
-    helmet1: {
-        destroyBelowLevel: 1,
-    },
+    // hbow: {
+    //     destroyBelowLevel: 1,
+    // },
+    // helmet: {
+    //     destroyBelowLevel: 1,
+    // },
+    // helmet1: {
+    //     destroyBelowLevel: 1,
+    // },
     hgloves: {
         buy: true,
         buyPrice: "ponty",
@@ -417,17 +417,17 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         // sellPrice: "npc"
         sellExcess: 9999,
     },
-    iceskates: {
-        destroyBelowLevel: 1,
-    },
-    intearring: {
-        sell: true,
-        sellPrice: "npc",
-    },
-    intring: {
-        sell: true,
-        sellPrice: "npc",
-    },
+    // iceskates: {
+    //     destroyBelowLevel: 1,
+    // },
+    // intearring: {
+    //     sell: true,
+    //     sellPrice: "npc",
+    // },
+    // intring: {
+    //     sell: true,
+    //     sellPrice: "npc",
+    // },
     lantern: {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 3,
@@ -449,25 +449,25 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     luckbooster: {
         hold: true,
     },
-    mace: {
-        destroyBelowLevel: 1,
-    },
-    maceofthedead: {
-        destroyBelowLevel: 1,
-    },
-    merry: {
-        destroyBelowLevel: 1,
-    },
+    // mace: {
+    //     destroyBelowLevel: 1,
+    // },
+    // maceofthedead: {
+    //     destroyBelowLevel: 1,
+    // },
+    // merry: {
+    //     destroyBelowLevel: 1,
+    // },
     mistletoe: {
         exchange: true,
     },
-    mittens: {
-        destroyBelowLevel: 1,
-    },
-    monstertoken: {
-        sell: true,
-        sellPrice: 250_000,
-    },
+    // mittens: {
+    //     destroyBelowLevel: 1,
+    // },
+    // monstertoken: {
+    //     sell: true,
+    //     sellPrice: 250_000,
+    // },
     mpot0: {
         // sell: true,
         // sellPrice: "npc"
@@ -483,9 +483,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: 500_000_000,
         useOfferingFromLevel: 0,
     },
-    mushroomstaff: {
-        destroyBelowLevel: 1,
-    },
+    // mushroomstaff: {
+    //     destroyBelowLevel: 1,
+    // },
     northstar: {
         buy: true,
         buyPrice: 250_000_000,
@@ -499,45 +499,45 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: 2_500_000,
     },
-    oozingterror: {
-        destroyBelowLevel: 1,
-    },
-    ornamentstaff: {
-        destroyBelowLevel: 1,
-    },
-    pants: {
-        destroyBelowLevel: 1,
-    },
-    pants1: {
-        destroyBelowLevel: 1,
-    },
-    phelmet: {
-        destroyBelowLevel: 1,
-    },
+    // oozingterror: {
+    //     destroyBelowLevel: 1,
+    // },
+    // ornamentstaff: {
+    //     destroyBelowLevel: 1,
+    // },
+    // pants: {
+    //     destroyBelowLevel: 1,
+    // },
+    // pants1: {
+    //     destroyBelowLevel: 1,
+    // },
+    // phelmet: {
+    //     destroyBelowLevel: 1,
+    // },
     pickaxe: {
         hold: ["merchant"],
         sell: true,
         sellPrice: 1_000_000,
     },
-    pmace: {
-        destroyBelowLevel: 1,
-    },
-    pmaceofthedead: {
-        destroyBelowLevel: 1,
-    },
+    // pmace: {
+    //     destroyBelowLevel: 1,
+    // },
+    // pmaceofthedead: {
+    //     destroyBelowLevel: 1,
+    // },
     pouchbow: {
         craft: true,
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
     },
     pumpkinspice: {
         sellExcess: 9999 * 3,
     },
-    pyjamas: {
-        destroyBelowLevel: 1,
-    },
-    quiver: {
-        destroyBelowLevel: 1,
-    },
+    // pyjamas: {
+    //     destroyBelowLevel: 1,
+    // },
+    // quiver: {
+    //     destroyBelowLevel: 1,
+    // },
     rabbitsfoot: {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 2,
@@ -545,10 +545,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     resistancering: {
         craft: true,
     },
-    ringsj: {
-        sell: true,
-        sellPrice: "npc",
-    },
+    // ringsj: {
+    //     sell: true,
+    //     sellPrice: "npc",
+    // },
     rod: {
         hold: ["merchant"],
         sell: true,
@@ -579,12 +579,12 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellExcess: 1,
         upgradeUntilLevel: 0,
     },
-    shoes1: {
-        destroyBelowLevel: 1,
-    },
-    slimestaff: {
-        destroyBelowLevel: 1,
-    },
+    // shoes1: {
+    //     destroyBelowLevel: 1,
+    // },
+    // slimestaff: {
+    //     destroyBelowLevel: 1,
+    // },
     smoke: {
         sellExcess: 200,
     },
@@ -602,18 +602,18 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: 250_000_000,
         useOfferingFromLevel: 0,
     },
-    spear: {
-        destroyBelowLevel: 1,
-    },
+    // spear: {
+    //     destroyBelowLevel: 1,
+    // },
     spookyamulet: {
         sellExcess: 5,
     },
-    staff: {
-        destroyBelowLevel: 1,
-    },
-    staffofthedead: {
-        destroyBelowLevel: 1,
-    },
+    // staff: {
+    //     destroyBelowLevel: 1,
+    // },
+    // staffofthedead: {
+    //     destroyBelowLevel: 1,
+    // },
     stand0: {
         sell: true,
         sellPrice: "npc",
@@ -626,17 +626,17 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         // We can craft sticks at level 9
         upgradeUntilLevel: 9,
     },
-    stinger: {
-        destroyBelowLevel: 1,
-    },
-    stramulet: {
-        sell: true,
-        sellPrice: "npc",
-    },
-    strearring: {
-        sell: true,
-        sellPrice: "npc",
-    },
+    // stinger: {
+    //     destroyBelowLevel: 1,
+    // },
+    // stramulet: {
+    //     sell: true,
+    //     sellPrice: "npc",
+    // },
+    // strearring: {
+    //     sell: true,
+    //     sellPrice: "npc",
+    // },
     suckerpunch: {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 2,
@@ -648,18 +648,18 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 2,
     },
-    swifty: {
-        destroyBelowLevel: 1,
-    },
-    sword: {
-        destroyBelowLevel: 1,
-    },
-    swordofthedead: {
-        destroyBelowLevel: 1,
-    },
-    t2bow: {
-        destroyBelowLevel: 1,
-    },
+    // swifty: {
+    //     destroyBelowLevel: 1,
+    // },
+    // sword: {
+    //     destroyBelowLevel: 1,
+    // },
+    // swordofthedead: {
+    //     destroyBelowLevel: 1,
+    // },
+    // t2bow: {
+    //     destroyBelowLevel: 1,
+    // },
     t2quiver: {
         buy: true,
         buyPrice: 25_000_000,
@@ -677,9 +677,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         // We use level 0 to craft other stars
         upgradeUntilLevel: 0,
     },
-    tigerhelmet: {
-        destroyBelowLevel: 1,
-    },
+    // tigerhelmet: {
+    //     destroyBelowLevel: 1,
+    // },
     tracker: {
         hold: true,
         holdSlot: 41,
@@ -699,9 +699,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 4,
     },
-    vboots: {
-        destroyBelowLevel: 1,
-    },
+    // vboots: {
+    //     destroyBelowLevel: 1,
+    // },
     vcape: {
         buy: true,
         buyPrice: "ponty",
@@ -714,9 +714,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 4,
     },
-    vgloves: {
-        destroyBelowLevel: 1,
-    },
+    // vgloves: {
+    //     destroyBelowLevel: 1,
+    // },
     vhammer: {
         buy: true,
         buyPrice: "ponty",
@@ -735,19 +735,19 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: 250_000_000,
         useOfferingFromLevel: 0,
     },
-    wand: {
-        destroyBelowLevel: 1,
-    },
-    warmscarf: {
-        destroyBelowLevel: 1,
-    },
+    // wand: {
+    //     destroyBelowLevel: 1,
+    // },
+    // warmscarf: {
+    //     destroyBelowLevel: 1,
+    // },
     wattire: {
         craft: true,
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
     },
-    wbasher: {
-        destroyBelowLevel: 1,
-    },
+    // wbasher: {
+    //     destroyBelowLevel: 1,
+    // },
     wblade: {
         buy: true,
         buyPrice: 500_000_000,
@@ -767,25 +767,25 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     wbreeches: {
         craft: true,
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
     },
     wcap: {
         craft: true,
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
     },
     weaponbox: {
         exchange: true,
     },
     wgloves: {
         craft: true,
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
     },
     wingedboots: {
         craft: true,
     },
     wshoes: {
         craft: true,
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
     },
     xarmor: {
         buy: true,
@@ -814,21 +814,21 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 4,
     },
-    xmace: {
-        destroyBelowLevel: 1,
-    },
-    xmashat: {
-        destroyBelowLevel: 1,
-    },
-    xmaspants: {
-        destroyBelowLevel: 1,
-    },
-    xmasshoes: {
-        destroyBelowLevel: 1,
-    },
-    xmassweater: {
-        destroyBelowLevel: 1,
-    },
+    // xmace: {
+    //     destroyBelowLevel: 1,
+    // },
+    // xmashat: {
+    //     destroyBelowLevel: 1,
+    // },
+    // xmaspants: {
+    //     destroyBelowLevel: 1,
+    // },
+    // xmasshoes: {
+    //     destroyBelowLevel: 1,
+    // },
+    // xmassweater: {
+    //     destroyBelowLevel: 1,
+    // },
     xpants: {
         buy: true,
         buyPrice: 15_000_000,
