@@ -78,6 +78,7 @@ import { constructXMageSetup, constructXmageHelperSetup } from "./xmage.js"
 export type Requirements = {
     [T in Attribute]?: number
 } & {
+    level?: number
     items?: ItemName[]
 }
 

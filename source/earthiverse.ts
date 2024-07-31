@@ -306,6 +306,10 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 const context = tempContexts[i]
                 if (context.bot.ctype !== characterConfig.ctype) continue // Wrong character type
                 if (characterConfig.require) {
+                    // Check level
+                    if (characterConfig.require.level && context.bot.level < characterConfig.require.level)
+                        continue nextContext // Not high enough level
+
                     // Check attributes
                     for (const a in characterConfig.require) {
                         if (a === "items") continue
