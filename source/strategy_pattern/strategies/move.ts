@@ -683,7 +683,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         bot: Character,
         disableCheckDB = this.options.disableCheckDB,
     ): Promise<{ map: MapName; x: number; y: number; type?: MonsterName }> {
-        // Look for it nearby
+        // Look for something nearby
         const target = bot.getEntity({ returnNearest: true, typeList: this.options.typeList })
         if (target) return this.returnUndefinedIfMapIgnored(target)
 
@@ -705,15 +705,18 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
         if (!disableCheckDB && AL.Database.connection && this.options.contexts) {
             // Look for it in our database
-            const targets = await AL.EntityModel.find({
-                lastSeen: { $gt: Date.now() - 60_000 },
-                map: { $nin: this.options.ignoreMaps, $exists: true },
-                serverIdentifier: bot.serverData.name,
-                serverRegion: bot.serverData.region,
-                type: { $in: this.options.typeList },
-                x: { $exists: true },
-                y: { $exists: true },
-            })
+            const targets = await AL.EntityModel.find(
+                {
+                    lastSeen: { $gt: Date.now() - 60_000 },
+                    map: { $nin: this.options.ignoreMaps, $exists: true },
+                    serverIdentifier: bot.serverData.name,
+                    serverRegion: bot.serverData.region,
+                    type: { $in: this.options.typeList },
+                    x: { $exists: true },
+                    y: { $exists: true },
+                },
+                { _id: 0, hp: 1, map: 1, type: 1, x: 1, y: 1 },
+            )
                 .sort({ lastSeen: -1 })
                 .lean()
                 .exec()
@@ -726,6 +729,19 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 }
                 return target
             }
+
+            const respawningTargets = await AL.RespawnModel.find(
+                {
+                    estimatedRespawn: { $gt: Date.now() }, // Not respawning yet
+                    serverIdentifier: bot.serverData.name,
+                    serverRegion: bot.serverData.region,
+                    type: { $in: this.options.typeList },
+                },
+                { _id: 0, map: 1, x: 1, y: 1 },
+            )
+                .lean()
+                .exec()
+            if (respawningTargets.length === this.options.typeList.length) return bot // Everything is respawning, don't move anywhere
         }
 
         for (const type of this.options.typeList) {
