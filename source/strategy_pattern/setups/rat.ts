@@ -21,13 +21,13 @@ export function constructRatSetup(contexts: Strategist<PingCompensatedCharacter>
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                prefer: { ...MAGE_FAST }
+                                prefer: { ...MAGE_FAST },
                             },
-                            type: "rat"
+                            type: "rat",
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "rat_priest",
@@ -38,13 +38,13 @@ export function constructRatSetup(contexts: Strategist<PingCompensatedCharacter>
                             contexts: contexts,
                             disableCurse: true,
                             generateEnsureEquipped: {
-                                prefer: { ...PRIEST_FAST }
+                                prefer: { ...PRIEST_FAST },
                             },
-                            type: "rat"
+                            type: "rat",
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "rat_ranger",
@@ -52,9 +52,9 @@ export function constructRatSetup(contexts: Strategist<PingCompensatedCharacter>
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, type: "rat" }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "rat_warrior",
@@ -67,14 +67,14 @@ export function constructRatSetup(contexts: Strategist<PingCompensatedCharacter>
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                prefer: { ...WARRIOR_SPLASH }
+                                prefer: { ...WARRIOR_SPLASH },
                             },
-                            type: "rat"
+                            type: "rat",
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
