@@ -6,7 +6,7 @@
   "dependencies": {
     "@pyroscope/nodejs": "^0.2.6",
     "@types/cors": "^2.8.17",
-    "alclient": "^0.21.4",
+    "alclient": "^0.21.5",
     "algui": "^0.1.22",
     "axios": "^1.6.7",
     "body-parser": "^1.20.2",
