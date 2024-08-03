@@ -196,8 +196,10 @@ async function start() {
 
         // Setup characters
         const joinPartyStrategy = new RequestPartyStrategy(merchantName)
+        const promises = []
         for (const [chosenCharacter, chosenConfig] of chosenCharacters) {
-            const character = await AL.Game.startCharacter(chosenCharacter, SERVER_REGION, SERVER_ID)
+            const promise = await AL.Game.startCharacter(chosenCharacter, SERVER_REGION, SERVER_ID).then(
+                (character) => {
             const context = new Strategist(character, BASE_STRATEGY)
             CONTEXTS.push(context)
             const config = chosenConfig.characters.find((c) => c.ctype === character.ctype)
@@ -210,7 +212,13 @@ async function start() {
             } else if (character.ctype === "warrior") {
                 context.applyStrategies([CHARGE_STRATEGY])
             }
+                },
+            )
+            promises.push(promise)
         }
+
+        // Wait for all characters to start
+        Promise.all(promises)
 
         // Setup shared
         for (const context of CONTEXTS) {
