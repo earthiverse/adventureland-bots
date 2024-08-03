@@ -29,6 +29,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
 
                 const attacker = bot.players.get(data.attacker)
                 if (!attacker) return // Not a player
+                if (attacker.isFriendly(bot)) return
 
                 const target = bot.entities.get(data.target)
                 if (!target) return // Not an entity
