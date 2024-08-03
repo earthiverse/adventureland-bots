@@ -15,11 +15,20 @@ class MageSnowmanAttackStrategy extends MageAttackStrategy {
         this.options.generateEnsureEquipped.prefer = this.options.generateEnsureEquipped.prefer ?? {}
         if (bot.isPVP()) {
             // No splash damage
-            this.options.generateEnsureEquipped.prefer.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
-            this.options.generateEnsureEquipped.prefer.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = {
+                name: "firestaff",
+                filters: { returnHighestLevel: true },
+            }
+            this.options.generateEnsureEquipped.prefer.offhand = {
+                name: "wbookhs",
+                filters: { returnHighestLevel: true },
+            }
         } else {
             // Splash damage & additional monsters
-            this.options.generateEnsureEquipped.prefer.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = {
+                name: "gstaff",
+                filters: { returnHighestLevel: true },
+            }
             delete this.options.generateEnsureEquipped.prefer.offhand
         }
         super.onApply(bot)
@@ -49,15 +58,30 @@ class WarriorSnowmanAttackStrategy extends WarriorAttackStrategy {
             // No Splash Damage
             this.options.disableCleave = true
             delete this.options.enableEquipForCleave
-            this.options.generateEnsureEquipped.prefer.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } }
-            this.options.generateEnsureEquipped.prefer.offhand = { name: "fireblade", filters: { returnHighestLevel: true } }
-            this.options.generateEnsureEquipped.prefer.ring1 = { name: "strring", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = {
+                name: "fireblade",
+                filters: { returnHighestLevel: true },
+            }
+            this.options.generateEnsureEquipped.prefer.offhand = {
+                name: "fireblade",
+                filters: { returnHighestLevel: true },
+            }
+            this.options.generateEnsureEquipped.prefer.ring1 = {
+                name: "strring",
+                filters: { returnHighestLevel: true },
+            }
         } else {
             // Splash Damage & additional monsters
             delete this.options.disableCleave
             this.options.enableEquipForCleave = true
-            this.options.generateEnsureEquipped.prefer.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } }
-            this.options.generateEnsureEquipped.prefer.offhand = { name: "ololipop", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = {
+                name: "vhammer",
+                filters: { returnHighestLevel: true },
+            }
+            this.options.generateEnsureEquipped.prefer.offhand = {
+                name: "ololipop",
+                filters: { returnHighestLevel: true },
+            }
             this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
         }
         super.onApply(bot)
@@ -73,11 +97,11 @@ export function constructSnowmanSetup(contexts: Strategist<PingCompensatedCharac
             contexts: contexts,
             disableEnergize: true,
             generateEnsureEquipped: {
-                attributes: ["blast", "explosion", "frequency"]
+                attributes: ["blast", "explosion", "frequency"],
             },
-            typeList: ["snowman", "arcticbee"]
+            typeList: ["snowman", "arcticbee"],
         }),
-        move: snowmanMoveStrategy
+        move: snowmanMoveStrategy,
     }
     const priestConfig: CharacterConfig = {
         ctype: "priest",
@@ -85,11 +109,11 @@ export function constructSnowmanSetup(contexts: Strategist<PingCompensatedCharac
             contexts: contexts,
             disableEnergize: true,
             generateEnsureEquipped: {
-                attributes: ["frequency"]
+                attributes: ["frequency"],
             },
             typeList: ["snowman", "arcticbee"],
         }),
-        move: snowmanMoveStrategy
+        move: snowmanMoveStrategy,
     }
     const warriorConfig: CharacterConfig = {
         ctype: "warrior",
@@ -98,36 +122,36 @@ export function constructSnowmanSetup(contexts: Strategist<PingCompensatedCharac
             enableEquipForCleave: true,
             enableGreedyAggro: true,
             generateEnsureEquipped: {
-                attributes: ["blast", "explosion", "frequency"]
+                attributes: ["blast", "explosion", "frequency"],
             },
-            typeList: ["snowman", "arcticbee"]
+            typeList: ["snowman", "arcticbee"],
         }),
-        move: snowmanMoveStrategy
+        move: snowmanMoveStrategy,
     }
 
     return {
         configs: [
             {
                 id: "snowman_mage,priest,warrior",
-                characters: [mageConfig, priestConfig, warriorConfig]
+                characters: [mageConfig, priestConfig, warriorConfig],
             },
             {
                 id: "snowman_priest,warrior",
-                characters: [priestConfig, warriorConfig]
+                characters: [priestConfig, warriorConfig],
             },
             {
                 id: "snowman_mage",
-                characters: [mageConfig]
+                characters: [mageConfig],
             },
             {
                 id: "snowman_priest",
-                characters: [priestConfig]
+                characters: [priestConfig],
             },
             {
                 id: "snowman_warrior",
-                characters: [warriorConfig]
+                characters: [warriorConfig],
             },
-        ]
+        ],
     }
 }
 
@@ -144,11 +168,11 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: { attributes: ["frequency"] },
-                            typeList: ["snowman", "arcticbee"]
+                            typeList: ["snowman", "arcticbee"],
                         }),
-                        move: snowmanMoveStrategy
-                    }
-                ]
+                        move: snowmanMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "snowman_helper_paladin",
@@ -158,11 +182,11 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                         attack: new PaladinAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: { attributes: ["frequency"] },
-                            typeList: ["snowman", "arcticbee"]
+                            typeList: ["snowman", "arcticbee"],
                         }),
-                        move: snowmanMoveStrategy
-                    }
-                ]
+                        move: snowmanMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "snowman_helper_priest",
@@ -173,11 +197,11 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                             contexts: contexts,
                             generateEnsureEquipped: { attributes: ["frequency"] },
                             disableAbsorb: true,
-                            typeList: ["snowman", "arcticbee"]
+                            typeList: ["snowman", "arcticbee"],
                         }),
-                        move: snowmanMoveStrategy
-                    }
-                ]
+                        move: snowmanMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "snowman_helper_ranger",
@@ -187,11 +211,11 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: { attributes: ["frequency"] },
-                            typeList: ["snowman", "arcticbee"]
+                            typeList: ["snowman", "arcticbee"],
                         }),
-                        move: snowmanMoveStrategy
-                    }
-                ]
+                        move: snowmanMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "snowman_helper_rogue",
@@ -201,11 +225,11 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                         attack: new RogueAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: { attributes: ["frequency"] },
-                            typeList: ["snowman", "arcticbee"]
+                            typeList: ["snowman", "arcticbee"],
                         }),
-                        move: snowmanMoveStrategy
-                    }
-                ]
+                        move: snowmanMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "snowman_helper_warrior",
@@ -216,12 +240,12 @@ export function constructSnowmanHelperSetup(contexts: Strategist<PingCompensated
                             contexts: contexts,
                             generateEnsureEquipped: { attributes: ["frequency"] },
                             disableAgitate: true,
-                            typeList: ["snowman", "arcticbee"]
+                            typeList: ["snowman", "arcticbee"],
                         }),
-                        move: snowmanMoveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: snowmanMoveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }

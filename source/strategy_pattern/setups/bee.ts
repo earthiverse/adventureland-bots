@@ -6,6 +6,8 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base.js"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
+import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
 
 export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("bee")
@@ -20,13 +22,29 @@ export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                attributes: ["frequency", "blast", "explosion"]
+                                attributes: ["frequency", "blast", "explosion"],
                             },
-                            type: "bee"
+                            type: "bee",
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "bee_paladin",
+                characters: [
+                    {
+                        ctype: "paladin",
+                        attack: new PaladinAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["frequency"],
+                            },
+                            type: "bee",
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "bee_priest",
@@ -37,13 +55,13 @@ export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>
                             contexts: contexts,
                             disableCurse: true,
                             generateEnsureEquipped: {
-                                attributes: ["frequency"]
+                                attributes: ["frequency"],
                             },
-                            type: "bee"
+                            type: "bee",
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "bee_ranger",
@@ -53,13 +71,29 @@ export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                attributes: ["frequency", "blast", "explosion"]
+                                attributes: ["frequency", "blast", "explosion"],
                             },
-                            type: "bee"
+                            type: "bee",
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "bee_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["frequency"],
+                            },
+                            type: "bee",
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "bee_warrior",
@@ -72,14 +106,14 @@ export function constructBeeSetup(contexts: Strategist<PingCompensatedCharacter>
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                attributes: ["frequency", "blast", "explosion"]
+                                attributes: ["frequency", "blast", "explosion"],
                             },
-                            type: "bee"
+                            type: "bee",
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }

@@ -24,12 +24,15 @@ export function constructCGooSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
-                            generateEnsureEquipped: { attributes: ["armor", "str", "attack"] },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "attack"],
+                                avoidAttributes: ["blast", "explosion"],
+                            },
                             typeList: typeList,
                         }),
                         move: cgooMoveStrategy,
-                    }
-                ]
+                    },
+                ],
             },
             {
                 id: "cgoo_mage",
@@ -38,12 +41,15 @@ export function constructCGooSetup(contexts: Strategist<PingCompensatedCharacter
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "attack"],
+                                avoidAttributes: ["blast", "explosion"],
+                            },
                             typeList: typeList,
                         }),
-                        move: cgooMoveStrategy
+                        move: cgooMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "cgoo_paladin",
@@ -52,11 +58,12 @@ export function constructCGooSetup(contexts: Strategist<PingCompensatedCharacter
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({
                             contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["armor", "str", "attack"] },
                             typeList: typeList,
                         }),
-                        move: cgooMoveStrategy
+                        move: cgooMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "cgoo_ranger",
@@ -65,12 +72,15 @@ export function constructCGooSetup(contexts: Strategist<PingCompensatedCharacter
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
-                            generateEnsureEquipped: { attributes: ["armor", "dex", "attack"] },
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "dex", "attack"],
+                                avoidAttributes: ["blast", "explosion"],
+                            },
                             typeList: typeList,
                         }),
-                        move: cgooMoveStrategy
+                        move: cgooMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "cgoo_rogue",
@@ -82,9 +92,9 @@ export function constructCGooSetup(contexts: Strategist<PingCompensatedCharacter
                             generateEnsureEquipped: { attributes: ["armor", "dex", "attack"] },
                             typeList: typeList,
                         }),
-                        move: cgooMoveStrategy
+                        move: cgooMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "cgoo_priest",
@@ -96,10 +106,10 @@ export function constructCGooSetup(contexts: Strategist<PingCompensatedCharacter
                             generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
                             typeList: typeList,
                         }),
-                        move: cgooMoveStrategy
+                        move: cgooMoveStrategy,
                     },
-                ]
+                ],
             },
-        ]
+        ],
     }
 }
