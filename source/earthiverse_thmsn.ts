@@ -50,23 +50,13 @@ process.on("unhandledRejection", (reason, promise) => {
 
 AL.Game.setServer("http://thmsn.adventureland.community")
 
-await Promise.all([AL.Game.loginJSONFile("../credentials.thmsn.json", false), AL.Game.getGData(false)])
+await Promise.all([AL.Game.loginJSONFile("../credentials.thmsn.json", true), AL.Game.getGData(false)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
 await AL.Game.updateServersAndCharacters()
 
 //// ALClient Hacks
 // Hack to add bee_queen as a special monster
 AL.Constants.SPECIAL_MONSTERS.push(...BEE_DUNGEON_MONSTERS)
-
-//// Game Hacks
-// Hack to fix URLs
-for (const region in AL.Game.servers) {
-    for (const id in AL.Game.servers[region]) {
-        console.debug(`before: ${AL.Game.servers[region][id].addr}`)
-        AL.Game.servers[region][id].addr = "thmsn.adventureland.community"
-        console.debug(`after: ${AL.Game.servers[region][id].addr}`)
-    }
-}
 
 // Toggles
 const ENABLE_EVENTS = true
