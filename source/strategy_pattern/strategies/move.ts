@@ -715,7 +715,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                     x: { $exists: true },
                     y: { $exists: true },
                 },
-                { _id: 0, hp: 1, map: 1, type: 1, x: 1, y: 1 },
+                { _id: 0, hp: 1, map: 1, in: 1, type: 1, x: 1, y: 1 },
             )
                 .sort({ lastSeen: -1 })
                 .lean()
