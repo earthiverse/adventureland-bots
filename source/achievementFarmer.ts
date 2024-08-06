@@ -70,8 +70,8 @@ const FARMABLE_MONSTERS: MonsterName[] = [
     "mummy",
     "poisio",
     "porcupine",
-    "pppompom",
-    // "prat", Not doable unless we delevel them, get better equipment, or get a new strategy
+    // "pppompom", not doable at the moment
+    // "prat", not doable at the moment
     "rat",
     "scorpion",
     "snake",
