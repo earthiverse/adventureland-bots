@@ -222,7 +222,7 @@ async function start() {
         }
 
         // Wait for all characters to start
-        Promise.all(promises)
+        await Promise.all(promises)
 
         // Setup shared
         for (const context of CONTEXTS) {
