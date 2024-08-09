@@ -1,10 +1,16 @@
 <script setup lang="ts">
+import LoginForm, { type LoginFormData } from '../components/LoginForm.vue'
+
+function doStuff(data: LoginFormData) {
+  // TODO: Login with the API or whatever
+  console.debug(data)
+  console.debug(data.email)
+  console.debug(data.password)
+}
 </script>
 
 <template>
-  <main>
-    <h1 className="text-3xl font-bold underline">
-      This is styled with classes from tailwindcss
-    </h1>
+  <main class="flex items-center justify-center h-screen">
+    <LoginForm @submit="doStuff" />
   </main>
 </template>
