@@ -1,0 +1,9 @@
+{
+  "name": "adventureland-bots-server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
