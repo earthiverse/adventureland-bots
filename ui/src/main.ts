@@ -8,7 +8,9 @@ import router from './router'
 
 const app = createApp(App)
 
+// Pinia is used to store things
 app.use(createPinia())
+
 app.use(router)
 
 app.mount('#app')

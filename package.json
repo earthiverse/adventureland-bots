@@ -1,6 +1,14 @@
 {
   "name": "adventureland-bots",
+  "type": "module",
   "workspaces": [
+    "server",
     "ui"
-  ]
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces"
+  },
+  "dependencies": {
+    "rimraf": "^6.0.1"
+  }
 }

@@ -1,5 +1,5 @@
 <template>
-    <form @submit="handleSubmit" class="flex flex-col gap-2">
+    <form @submit.prevent="handleSubmit" class="flex flex-col gap-2">
         <input type="email" placeholder="Email" class="input input-bordered w-96" v-model="data.email" required />
         <input type="password" placeholder="Password" class="input input-bordered w-96" v-model="data.password"
             required />
