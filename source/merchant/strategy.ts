@@ -2295,6 +2295,9 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         if (bot.c.fishing) await sleep(bot.c.fishing.ms) // We're already fishing!?
 
         if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
+            const key = `find_rod_${bot.name}${bot.serverData.region}${bot.serverData.name}`
+            if (!checkOnlyEveryMS(key, 900_000, false)) return
+
             // Check the bank for a rod
             await bot.smartMove(bankingPosition)
             const rods = locateItemsInBank(bot, "rod")
@@ -2330,7 +2333,10 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                             break
                         }
 
-                        if (!bot.hasItem("spidersilk")) return // We couldn't get any
+                        if (!bot.hasItem("spidersilk")) {
+                            setLastCheck(key)
+                            return // We couldn't get any
+                        }
                     }
 
                     await goAndWithdrawItem(bot, spiderSilk[0][0], spiderSilk[0][1][0])
@@ -2426,7 +2432,11 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
     protected async goMining(bot: Merchant): Promise<void> {
         if (!bot.canUse("mining", { ignoreEquipped: true, ignoreLocation: true })) return // We can't mine
         if (bot.c.mining) await sleep(bot.c.mining.ms) // We're already mining!?
+
         if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) {
+            const key = `find_pickaxe_${bot.name}${bot.serverData.region}${bot.serverData.name}`
+            if (!checkOnlyEveryMS(key, 900_000, false)) return
+
             // Check the bank for a pickaxe
             await bot.smartMove(bankingPosition)
             const pickaxes = locateItemsInBank(bot, "pickaxe")
@@ -2462,7 +2472,10 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                             break
                         }
 
-                        if (!bot.hasItem("spidersilk")) return // We couldn't get any
+                        if (!bot.hasItem("spidersilk")) {
+                            setLastCheck(key)
+                            return // We couldn't get any
+                        }
                     }
                     await goAndWithdrawItem(bot, spiderSilk[0][0], spiderSilk[0][1][0])
                 }
