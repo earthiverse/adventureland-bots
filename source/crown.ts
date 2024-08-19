@@ -1,15 +1,5 @@
-import AL, {
-    Attribute,
-    Game,
-    ItemName,
-    Merchant,
-    MonsterName,
-    PingCompensatedCharacter,
-    ServerIdentifier,
-    ServerRegion,
-    Warrior,
-} from "alclient"
-import { Loop, LoopName, Strategist, Strategy } from "./strategy_pattern/context.js"
+import AL, { Merchant, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import { Strategist } from "./strategy_pattern/context.js"
 import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
 import { DEFAULT_ITEM_CONFIG } from "./base/itemsNew.js"
 import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
@@ -28,6 +18,7 @@ import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
 import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
 import { RETURN_HIGHEST } from "./strategy_pattern/setups/equipment.js"
+import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
@@ -37,96 +28,11 @@ DEFAULT_ITEM_CONFIG["pumpkinspice"] = {
     hold: true,
 }
 
+const PARTY_LEADER = "earthWar"
+const SERVER_REGION: ServerRegion = "US"
+const SERVER_ID: ServerIdentifier = "III"
+
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
-
-class BaseStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
-    public loops = new Map<LoopName, Loop<Type>>()
-
-    /**
-     * A list of potions to use
-     * TODO: Move this to a config option
-     * */
-    protected static potions: ItemName[] = ["hpot0", "mpot0", "hpot1", "mpot1"]
-
-    public constructor() {
-        this.loops.set("heal", {
-            fn: async (bot: Type) => {
-                await this.heal(bot)
-            },
-            interval: ["use_hp"],
-        })
-    }
-
-    private async heal(bot: Type) {
-        if (bot.rip) return // Don't heal if dead
-
-        const missingHP = bot.max_hp - bot.hp
-        const missingMP = bot.max_mp - bot.mp
-
-        if (missingHP == 0 && missingMP == 0) return // We have full HP and MP
-
-        let maxGiveHp = Math.min(50, missingHP) // If we use `regen_hp` skill
-        let maxGiveHpPotion: ItemName | "regen_hp" = "regen_hp"
-        let maxGiveMp = Math.min(100, missingMP) // If we use `regen_mp` skill
-        let maxGiveMpPotion: ItemName | "regen_mp" = "regen_mp"
-        let maxGiveBoth = Math.max(maxGiveHp, maxGiveMp)
-        let maxGiveBothPotion: ItemName
-
-        const hpRatio = bot.hp / bot.max_hp
-        const mpRatio = bot.mp / bot.max_mp
-
-        if (bot.c.town || bot.c.fishing || bot.c.mining || bot.c.pickpocket) {
-            // Channeled skills will stop chanelling if you use a potion
-            if (hpRatio <= mpRatio) return bot.regenHP()
-            else return bot.regenMP()
-        }
-
-        for (const potion of BaseStrategy.potions) {
-            const gItem = Game.G.items[potion]
-            if (!gItem?.gives) continue // It's missing give information!?
-            if (!bot.hasItem(potion)) continue // We don't have any
-            let couldGiveHp = 0
-            let couldGiveMp = 0
-            for (const give of [
-                ...gItem.gives,
-                ...(((gItem[bot.map] as unknown as any)?.gives as [Attribute, number][]) ?? []), // Map bonuses
-                ...(((gItem[bot.ctype] as unknown as any)?.gives as [Attribute, number][]) ?? []), // Character bonuses
-            ]) {
-                if (give[0] === "hp") couldGiveHp += Math.max(0, Math.min(give[1], missingHP))
-                else if (give[0] === "mp") couldGiveMp += Math.max(0, Math.min(give[1], missingMP))
-            }
-            if (couldGiveHp > maxGiveHp) {
-                maxGiveHp = couldGiveHp
-                maxGiveHpPotion = potion
-            }
-            if (couldGiveMp > maxGiveMp) {
-                maxGiveMp = couldGiveMp
-                maxGiveMpPotion = potion
-            }
-            const couldGiveBoth = couldGiveHp + couldGiveMp
-            if (couldGiveBoth > maxGiveBoth) {
-                maxGiveBoth = couldGiveBoth
-                maxGiveBothPotion = potion
-            }
-        }
-
-        if (Math.abs(hpRatio - mpRatio) < 0.25) {
-            // Our ratios are pretty similar, prefer both
-            if (maxGiveBothPotion)
-                return bot.usePotion(bot.locateItem(maxGiveBothPotion, bot.items, { returnLowestQuantity: true }))
-        }
-
-        if (hpRatio <= mpRatio) {
-            // HP ratio is the same, or lower than the MP ratio, prefer HP
-            if (maxGiveHpPotion === "regen_hp") return bot.regenHP()
-            else return bot.usePotion(bot.locateItem(maxGiveHpPotion, bot.items, { returnLowestQuantity: true }))
-        }
-
-        // MP ratio is lower, prefer MP
-        if (maxGiveMpPotion === "regen_mp") return bot.regenMP()
-        else return bot.usePotion(bot.locateItem(maxGiveMpPotion, bot.items, { returnLowestQuantity: true }))
-    }
-}
 
 const BASE_STRATEGY = new BaseStrategy()
 const ITEM_STRATEGY = new ItemStrategy({ contexts: CONTEXTS, itemConfig: DEFAULT_ITEM_CONFIG })
@@ -136,11 +42,11 @@ const RESPAWN_STRATEGY = new RespawnStrategy()
 const TRACKER_STRATEGY = new TrackerStrategy()
 const DESTROY_STRATEGY = new DestroyStrategy({ itemConfig: DEFAULT_ITEM_CONFIG })
 const CHARGE_STRATEGY = new ChargeStrategy()
-const HOME_STRATEGY = new HomeServerStrategy("US", "III")
+const HOME_STRATEGY = new HomeServerStrategy(SERVER_REGION, SERVER_ID)
 const ELIXIR_STRATEGY = new ElixirStrategy("pumpkinspice")
 const TRACK_UPGRADES_STRATEGY = new TrackUpgradeStrategy()
 const PARTY_ACCEPT_STRATEGY = new AcceptPartyRequestStrategy()
-const PARTY_MEMBER_STRATEGY = new RequestPartyStrategy("CrownsAnal")
+const PARTY_MEMBER_STRATEGY = new RequestPartyStrategy(PARTY_LEADER)
 const AVOID_DEATH_STRATEGY = new AvoidDeathStrategy()
 const MERCHANT_STRATEGY = new NewMerchantStrategy({
     ...defaultNewMerchantStrategyOptions,
@@ -230,7 +136,7 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
         context.applyStrategy(MOVE_STRATEGY_SCORPION)
         context.applyStrategy(PARTY_ACCEPT_STRATEGY)
         context.applyStrategy(CHARGE_STRATEGY)
-        context.applyStrategy(PARTY_MEMBER_STRATEGY)
+        if (warriorName !== PARTY_LEADER) context.applyStrategy(PARTY_MEMBER_STRATEGY)
     }
 
     for (const context of CONTEXTS) {
@@ -249,4 +155,4 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
         }
     }
 }
-start("US", "III")
+start(SERVER_REGION, SERVER_ID)
