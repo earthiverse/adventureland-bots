@@ -4,7 +4,7 @@ import path from "path"
 
 import { mean, median, standardDeviation } from "simple-statistics"
 
-const directoryPath = "../data/earthMer2"
+const directoryPath = "../data/atlus"
 const sorter = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" })
 
 // Get stats
