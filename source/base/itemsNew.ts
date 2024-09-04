@@ -1,6 +1,6 @@
 import AL, { Character, CharacterType, Item, ItemData, ItemName, NPCName } from "alclient"
-import { checkOnlyEveryMS } from "./general.js"
 import { TradeItem } from "alclient/build/TradeItem.js"
+import { checkOnlyEveryMS } from "./general.js"
 
 // TODO: Figure out how to require buy_price if buy is set
 export type BuyConfig = {
@@ -297,6 +297,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 1,
     },
     fieldgen0: {
+        sell: true,
+        sellPrice: 5_000_000,
         sellExcess: 20,
     },
     fireblade: {
@@ -605,6 +607,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellPrice: "npc",
     },
     starkillers: {
+        buy: true,
+        buyPrice: 250_000_000,
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 2,
     },
@@ -624,6 +628,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellPrice: "npc",
     },
     suckerpunch: {
+        buy: true,
+        buyPrice: 250_000_000,
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 2,
     },
@@ -706,8 +712,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     vhammer: {
         buy: true,
         buyPrice: "ponty",
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
+        sell: true,
+        sellPrice: 100_000_000,
+        upgradeUntilLevel: 0,
+        // usePrimlingFromLevel: 1,
+        // useOfferingFromLevel: 4,
     },
     vitearring: {
         sell: true,

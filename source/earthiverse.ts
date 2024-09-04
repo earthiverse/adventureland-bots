@@ -1,35 +1,20 @@
 import AL, {
+    Attribute,
+    CharacterType,
+    Mage,
     Merchant,
+    MonsterName,
+    Paladin,
     PingCompensatedCharacter,
     Priest,
-    Mage,
-    Warrior,
-    ServerRegion,
-    ServerIdentifier,
-    MonsterName,
-    ServerInfoDataLive,
-    CharacterType,
-    Paladin,
     Ranger,
     Rogue,
-    Attribute,
+    ServerIdentifier,
+    ServerInfoDataLive,
+    ServerRegion,
+    Warrior,
 } from "alclient"
-import { NewMerchantStrategyOptions, defaultNewMerchantStrategyOptions, startMerchant } from "./merchant/strategy.js"
-import { filterContexts, Strategist, Strategy } from "./strategy_pattern/context.js"
-import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
-import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
-import {
-    FinishMonsterHuntStrategy,
-    GetHolidaySpiritStrategy,
-    GetMonsterHuntStrategy,
-} from "./strategy_pattern/strategies/move.js"
-import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategy_pattern/strategies/party.js"
-import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
-import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
-import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
-import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
-import { Config, constructHelperSetups, constructSetups, Setups } from "./strategy_pattern/setups/base.js"
-import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
+import { randomIntFromInterval, sleep } from "./base/general.js"
 import {
     getHalloweenMonsterPriority,
     getHolidaySeasonMonsterPriority,
@@ -37,35 +22,50 @@ import {
     getServerHopMonsterPriority,
     getValentinesMonsterPriority,
 } from "./base/serverhop.js"
-import { randomIntFromInterval, sleep } from "./base/general.js"
-import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
+import { defaultNewMerchantStrategyOptions, NewMerchantStrategyOptions, startMerchant } from "./merchant/strategy.js"
+import { filterContexts, Strategist, Strategy } from "./strategy_pattern/context.js"
+import { Config, constructHelperSetups, constructSetups, Setups } from "./strategy_pattern/setups/base.js"
+import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
+import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
+import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
+import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
+import {
+    FinishMonsterHuntStrategy,
+    GetHolidaySpiritStrategy,
+    GetMonsterHuntStrategy,
+} from "./strategy_pattern/strategies/move.js"
+import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategy_pattern/strategies/party.js"
+import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
+import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
+import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
+import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
 
 import bodyParser from "body-parser"
 import cors from "cors"
 import express from "express"
+import { body, validationResult } from "express-validator"
 import fs from "fs"
 import path from "path"
-import { body, validationResult } from "express-validator"
-import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
-import { GuiStrategy } from "./strategy_pattern/strategies/gui.js"
-import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
-import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
-import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
-import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
-import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
-import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
 import { CRYPT_MONSTERS } from "./base/crypt.js"
-import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
-import { DestroyStrategy, MerchantDestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
 import {
+    adjustItemConfig,
     DEFAULT_ITEM_CONFIG,
     ItemConfig,
     REPLENISH_ITEM_CONFIG,
-    adjustItemConfig,
     runSanityCheckOnItemConfig,
 } from "./base/itemsNew.js"
 import { getRecentCryptMonsters, getRecentSpecialMonsters, getRecentXMages } from "./base/monsters.js"
+import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
+import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
+import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
+import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
+import { DestroyStrategy, MerchantDestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
+import { GuiStrategy } from "./strategy_pattern/strategies/gui.js"
+import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
+import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
+import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
@@ -446,6 +446,11 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             // Ice Golem
             if (context.bot.S.icegolem) {
                 if ((context.bot.S.icegolem as ServerInfoDataLive)?.live) priority.push("icegolem")
+            }
+
+            // Giant Crab
+            if (context.bot.S.crabxx) {
+                if ((context.bot.S.crabxx as ServerInfoDataLive)?.live) priority.push("crabxx")
             }
 
             // Snowman
