@@ -1,0 +1,32 @@
+{
+  "name": "adventureland-bots",
+  "type": "module",
+  "version": "2.0.0",
+  "description": "Adventureland Bots based on ALClient",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/earthiverse/adventureland-bots.git"
+  },
+  "keywords": [
+    "alclient",
+    "adventureland"
+  ],
+  "author": "Kent Rasmussen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/earthiverse/adventureland-bots/issues"
+  },
+  "homepage": "https://github.com/earthiverse/adventureland-bots#readme",
+  "dependencies": {
+    "alclient": "file:../ALClient/alclient-1.0.0.tgz"
+  },
+  "devDependencies": {
+    "@total-typescript/tsconfig": "^1.0.4",
+    "@types/node": "^22.5.4",
+    "typescript": "^5.5.4"
+  }
+}
