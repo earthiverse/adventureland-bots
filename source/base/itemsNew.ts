@@ -605,7 +605,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellExcess: 5,
     },
     staff: {
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
+        sellExcess: 5,
+        upgradeUntilLevel: 0,
     },
     staffofthedead: {
         destroyBelowLevel: 1,
