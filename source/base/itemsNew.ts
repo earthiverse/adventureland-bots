@@ -313,7 +313,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     frankypants: {
         destroyBelowLevel: 1,
     },
-    frostbow: {
+    // frostbow: {
+    //     craft: true,
+    // },
+    froststaff: {
         craft: true,
     },
     fury: {
