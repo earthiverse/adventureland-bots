@@ -5,7 +5,7 @@ export const setup = (character: Character) => {
     try {
       await character.openChest(data.id);
     } catch (e) {
-      console.error("loot error", e);
+      // console.error("loot error", e);
     }
   });
 };
