@@ -1,0 +1,6 @@
+{
+  "pingCompensation": {
+    "maxPings": 20,
+    "pingEveryMs": 10000
+  }
+}

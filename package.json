@@ -22,11 +22,14 @@
   },
   "homepage": "https://github.com/earthiverse/adventureland-bots#readme",
   "dependencies": {
-    "alclient": "file:../ALClient/alclient-1.0.0.tgz"
+    "alclient": "file:../ALClient/alclient-1.0.0.tgz",
+    "config": "^3.3.12"
   },
   "devDependencies": {
     "@total-typescript/tsconfig": "^1.0.4",
+    "@types/config": "^3.3.5",
     "@types/node": "^22.5.4",
+    "eslint-plugin-import": "^2.30.0",
     "typescript": "^5.5.4"
   }
 }

@@ -1,3 +1,15 @@
+# Dependencies
 node_modules
+
+# Builds
 dist
+
+# Secrets
 *.env
+# TODO: Move these to config
+credentials*.json
+
+# Data
+data
+# TODO: Move these to data folder
+G_*json
