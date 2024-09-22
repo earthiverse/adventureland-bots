@@ -1,5 +1,14 @@
-import { Game, Ranger } from "alclient";
+import {
+  Game,
+  type Mage,
+  type Paladin,
+  type Priest,
+  type Ranger,
+  type Rogue,
+  type Warrior,
+} from "alclient";
 import credentials from "../credentials.thmsn.json";
+import { setup } from "./setups/simple/base.js";
 
 // Plugins
 import "./plugins/auto_reconnect.js";
@@ -12,57 +21,25 @@ await Promise.all([game.updateG(), game.updateServers()]);
 const player = await game.login(credentials.email, credentials.password);
 
 const earthiverse = player.createCharacter<Ranger>("earthiverse");
-
 await earthiverse.start("EU", "I");
+setup(earthiverse);
 
-const pingLoop = async () => {
-  try {
-    if (earthiverse.socket.disconnected) return;
+const earthMag = player.createCharacter<Mage>("earthMag");
+await earthMag.start("EU", "I");
+setup(earthMag);
 
-    await earthiverse.ping().catch();
-  } catch (e) {
-    // console.error(e);
-  } finally {
-    setTimeout(pingLoop, 10_000);
-  }
-};
-pingLoop();
+const earthPri = player.createCharacter<Priest>("earthPri");
+await earthPri.start("EU", "I");
+setup(earthPri);
 
-const regenLoop = async () => {
-  try {
-    if (earthiverse.socket.disconnected) return;
+const earthWar = player.createCharacter<Warrior>("earthWar");
+await earthWar.start("EU", "I");
+setup(earthWar);
 
-    await earthiverse.regenMp().catch();
-  } catch (e) {
-    // console.error(e);
-  } finally {
-    setTimeout(regenLoop, Math.max(100, earthiverse.getTimeout("use_mp")));
-  }
-};
-regenLoop();
+const earthRog = player.createCharacter<Rogue>("earthRog");
+await earthRog.start("EU", "I");
+setup(earthRog);
 
-const attackLoop = async () => {
-  try {
-    if (earthiverse.socket.disconnected) return;
-
-    const entity = [...earthiverse.monsters.values()].filter((m) => {
-      if (!m) return false;
-      if (m.type !== "goo") return false;
-      if (
-        (m.getDistanceTo(earthiverse) ?? Number.POSITIVE_INFINITY) >
-        earthiverse.range
-      )
-        return false;
-      return true;
-    })[0];
-    if (!entity) return;
-
-    console.log("attacking", entity.id);
-    await earthiverse.basicAttack(entity).catch();
-  } catch (e) {
-    // console.error(e);
-  } finally {
-    setTimeout(attackLoop, Math.max(100, earthiverse.getTimeout("attack")));
-  }
-};
-attackLoop();
+const earthPal = player.createCharacter<Paladin>("earthPal");
+await earthPal.start("EU", "I");
+setup(earthPal);

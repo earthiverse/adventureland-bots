@@ -22,8 +22,10 @@
   },
   "homepage": "https://github.com/earthiverse/adventureland-bots#readme",
   "dependencies": {
+    "@isaacs/ttlcache": "^1.4.1",
     "alclient": "file:../ALClient/alclient-1.0.0.tgz",
-    "config": "^3.3.12"
+    "config": "^3.3.12",
+    "lru-cache": "^11.0.1"
   },
   "devDependencies": {
     "@total-typescript/tsconfig": "^1.0.4",
