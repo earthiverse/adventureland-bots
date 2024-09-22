@@ -14,6 +14,7 @@ import { getGFromCache } from "./utilities/cache.js";
 // Plugins
 import "./plugins/auto_reconnect.js";
 import "./plugins/g_cache.js";
+import "./plugins/party.js";
 import "./plugins/ping_compensation.js";
 
 const g = getGFromCache();

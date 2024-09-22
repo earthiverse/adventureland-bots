@@ -1,4 +1,8 @@
 {
+  "party": {
+    "allowed": true,
+    "checkEveryMs": 10000
+  },
   "pingCompensation": {
     "maxPings": 20,
     "pingEveryMs": 10000

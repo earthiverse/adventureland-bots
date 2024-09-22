@@ -14,13 +14,15 @@ const minPings = new Map<string, number>();
 
 const pingLoop = async () => {
   try {
+    const pings = [];
     for (const observer of observers) {
       if (observer.socket.disconnected) continue;
 
-      observer.ping().catch();
+      pings.push(observer.ping());
     }
+    await Promise.allSettled(pings);
   } catch (e) {
-    console.error(e);
+    // console.error("ping error", e);
   } finally {
     setTimeout(pingLoop, PING_EVERY_MS);
   }
