@@ -9,14 +9,22 @@ import {
 } from "alclient";
 import credentials from "../credentials.thmsn.json";
 import { setup } from "./setups/simple/base.js";
+import { getGFromCache } from "./utilities/cache.js";
 
 // Plugins
 import "./plugins/auto_reconnect.js";
 import "./plugins/g_cache.js";
 import "./plugins/ping_compensation.js";
 
-const game = new Game({ url: "https://thmsn.adventureland.community" });
-await Promise.all([game.updateG(), game.updateServers()]);
+const g = getGFromCache();
+const game = new Game({
+  url: "https://thmsn.adventureland.community",
+  G: g,
+});
+
+const promises = [game.updateServers()];
+if (!g) promises.push(game.updateG());
+await Promise.all(promises);
 
 const player = await game.login(credentials.email, credentials.password);
 
