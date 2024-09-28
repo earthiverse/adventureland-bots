@@ -1,6 +1,18 @@
 import AL, { Item, ItemName, Merchant, PingCompensatedCharacter, Player } from "alclient"
-import { Strategy, LoopName, Loop, Strategist, filterContexts } from "../context.js"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, UpgradeConfig, getItemCounts, reduceCount, wantToExchange, wantToHold, wantToSellToNpc, wantToUpgrade } from "../../base/itemsNew.js"
+import {
+    DEFAULT_ITEM_CONFIG,
+    ItemConfig,
+    MailConfig,
+    UpgradeConfig,
+    getItemCounts,
+    reduceCount,
+    wantToExchange,
+    wantToHold,
+    wantToMail,
+    wantToSellToNpc,
+    wantToUpgrade,
+} from "../../base/itemsNew.js"
+import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 
 /**
  * There are slots that give a slightly better chance to succeed when upgrading
@@ -22,7 +34,7 @@ export type ItemStrategyOptions = {
 }
 
 export const defaultNewItemStrategyOptions: ItemStrategyOptions = {
-    itemConfig: DEFAULT_ITEM_CONFIG
+    itemConfig: DEFAULT_ITEM_CONFIG,
 }
 
 export class ItemStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
@@ -41,22 +53,23 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
                 await this.transferItems(bot).catch(console.error)
                 await this.transferSellableItems(bot).catch(console.error)
                 await this.transferStackableItems(bot).catch(console.error)
+                await this.mail(bot).catch(console.error)
             },
-            interval: 5_000
-        })
-
-        this.loops.set("exchange", {
-            fn: async (bot: Type) => {
-                if (bot.q.exchange) return // Waiting for another exchange to finish
-                await this.exchange(bot).catch(console.error)
-            },
-            interval: 250,
+            interval: 5_000,
         })
 
         this.loops.set("compound", {
             fn: async (bot: Type) => {
                 if (bot.q.compound) return // Waiting for another compound to finish
                 await this.compound(bot).catch(console.error)
+            },
+            interval: 250,
+        })
+
+        this.loops.set("exchange", {
+            fn: async (bot: Type) => {
+                if (bot.q.exchange) return // Waiting for another exchange to finish
+                await this.exchange(bot).catch(console.error)
             },
             interval: 250,
         })
@@ -174,7 +187,12 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
             if (player instanceof PingCompensatedCharacter && player.esize === 0) {
                 if (!item.q) continue // It's not stackable, and they have no space
-                if (!player.hasItem(item.name, player.items, { quantityLessThan: AL.Game.G.items[item.name].s + 1 - item.q })) continue // We can't stack it
+                if (
+                    !player.hasItem(item.name, player.items, {
+                        quantityLessThan: AL.Game.G.items[item.name].s + 1 - item.q,
+                    })
+                )
+                    continue // We can't stack it
             }
 
             await bot.sendItem(this.options.transferItemsTo, slot, item.q ?? 1)
@@ -226,7 +244,9 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
                     if (itemConfig.hold === true || itemConfig.hold?.includes(bot.ctype)) continue // We want to hold this item
                 }
 
-                const friendSlot = friend.locateItem(item.name, friend.items, { quantityLessThan: AL.Game.G.items[item.name].s + 1 - item.q }) // We can't stack it
+                const friendSlot = friend.locateItem(item.name, friend.items, {
+                    quantityLessThan: AL.Game.G.items[item.name].s + 1 - item.q,
+                }) // We can't stack it
                 if (friendSlot === undefined) continue // They don't have this item to stack
                 const friendItem = friend.items[friendSlot]
                 if (friendItem.q < item.q) continue // We have more
@@ -278,6 +298,25 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
             reduceCount(bot.owner, item)
 
             return bot.compound(items[0], items[1], items[2], cscrollSlot, offeringSlot)
+        }
+    }
+
+    private async mail(bot: Type) {
+        for (const [slot, item] of bot.getItems()) {
+            if (!item.upgrade) continue // Not upgradable
+            if (!wantToMail(this.options.itemConfig, item)) continue // Don't want to mail
+
+            const config: MailConfig = this.options.itemConfig[item.name]
+
+            // Swap it in to slot 0 and mail it
+            if (slot !== 0) await bot.swapItems(slot, 0)
+            await bot.sendMail(
+                config.mailTo,
+                item.name,
+                `Sent automatically from ${bot.id}.\n If you didn't expect this, a message reaching out would be much appreciated!`,
+                true,
+            )
+            break
         }
     }
 

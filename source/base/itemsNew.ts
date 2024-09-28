@@ -57,6 +57,11 @@ export type HoldConfig = {
     holdSlot?: number
 }
 
+export type MailConfig = {
+    mail?: true
+    mailTo?: string
+}
+
 // TODO: Figure out how to require sell_price if sell is set
 export type SellConfig = {
     /** If set, we should sell it to other players or NPCs */
@@ -93,7 +98,7 @@ export type UpgradeConfig = {
     useOfferingFromLevel?: number
 }
 
-type CombinedConfig = BuyConfig & CraftConfig & ExchangeConfig & HoldConfig & SellConfig & UpgradeConfig
+type CombinedConfig = BuyConfig & CraftConfig & ExchangeConfig & HoldConfig & MailConfig & SellConfig & UpgradeConfig
 export type ItemConfig = Partial<Record<ItemName, CombinedConfig>>
 
 export const REPLENISH_ITEM_CONFIG: ItemConfig = {
@@ -715,8 +720,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     vhammer: {
         buy: true,
         buyPrice: "ponty",
-        sell: true,
-        sellPrice: 100_000_000,
+        mail: true,
+        mailTo: "Diocles",
+        // sell: true,
+        // sellPrice: 100_000_000,
         upgradeUntilLevel: 0,
         // usePrimlingFromLevel: 1,
         // useOfferingFromLevel: 4,
@@ -883,6 +890,16 @@ export function wantToHold(itemConfig: ItemConfig, item: ItemData, bot: Characte
     if (config.hold.includes(bot.ctype)) return true
 
     return false
+}
+
+export function wantToMail(itemConfig: ItemConfig, item: ItemData) {
+    if (item.l) return false // Don't send locked items
+    if (item.p) return false // Don't sell special items
+    if (item.level) return false // Don't mail leveled items
+
+    const config = itemConfig[item.name]
+
+    if (config.mail) return true
 }
 
 export function wantToSellToPlayer(itemConfig: ItemConfig, item: TradeItem) {
