@@ -1,0 +1,9 @@
+{
+  "credentials": {
+    "email": "AL_EMAIL",
+    "password": "AL_PASSWORD"
+  },
+  "party": {
+    "leader": "AL_PARTY_LEADER"
+  }
+}

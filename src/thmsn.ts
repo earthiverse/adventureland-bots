@@ -7,7 +7,7 @@ import {
   type Rogue,
   type Warrior,
 } from "alclient";
-import credentials from "../credentials.thmsn.json";
+import config from "config";
 import { setup } from "./setups/simple/base.js";
 import { getGFromCache } from "./utilities/cache.js";
 
@@ -17,17 +17,19 @@ import "./plugins/g_cache.js";
 import "./plugins/party.js";
 import "./plugins/ping_compensation.js";
 
+// Config
+const server = config.get<string>("credentials.server");
+const email = config.get<string>("credentials.email");
+const password = config.get<string>("credentials.password");
+
 const g = getGFromCache();
-const game = new Game({
-  url: "https://thmsn.adventureland.community",
-  G: g,
-});
+const game = new Game({ url: server, G: g });
 
 const promises = [game.updateServers()];
 if (!g) promises.push(game.updateG());
 await Promise.all(promises);
 
-const player = await game.login(credentials.email, credentials.password);
+const player = await game.login(email, password);
 
 const earthiverse = player.createCharacter<Ranger>("earthiverse");
 await earthiverse.start("EU", "I");

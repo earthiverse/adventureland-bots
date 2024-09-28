@@ -1,4 +1,7 @@
 {
+  "credentials": {
+    "server": "https://adventure.land"
+  },
   "party": {
     "allowed": true,
     "checkEveryMs": 10000
