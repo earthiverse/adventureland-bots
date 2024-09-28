@@ -1,19 +1,19 @@
 import type { Character } from "alclient";
-import { ignore } from "./attack.js";
+import { getBestTarget } from "../../utilities/monster.js";
 
 export const setup = (character: Character, monster: string = "goo") => {
   const moveLoop = async () => {
     try {
       if (character.socket.disconnected) return;
 
-      const closestEntity = [...character.monsters.values()]
-        .filter((m) => m.type === monster && !ignore.has(m.id))
-        .reduce((a, b) =>
-          character.getDistanceTo(a) <= character.getDistanceTo(b) ? a : b
-        );
+      const entity = getBestTarget(character, { monster: monster });
+      if (!entity) return;
 
-      if (character.getDistanceTo(closestEntity) > character.range) {
-        character.move(closestEntity.x, closestEntity.y).catch();
+      // Move if far away
+      if (character.getDistanceTo(entity) > character.range) {
+        character
+          .move((entity.x + character.x) / 2, (entity.y + character.y) / 2)
+          .catch();
       }
     } catch (e) {
       // console.error("movement error", e);
