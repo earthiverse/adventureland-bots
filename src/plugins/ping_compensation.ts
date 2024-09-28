@@ -75,3 +75,28 @@ EventBus.on("progress_set", (character, q) => {
     if (progress.ms <= 0) delete q["conditionName"];
   }
 });
+
+// Ping compensation for entity positions
+EventBus.on("entities_updated", (observer, monsters, characters) => {
+  const key = `${observer.server.key}${observer.server.name}`;
+  const ping = minPings.get(key);
+  if (!ping) return;
+
+  for (const entity of [...monsters, ...characters]) {
+    if (!entity.moving) continue;
+
+    const distanceTraveled = (entity.speed * ping) / 1000;
+    const yToGoal = entity.going_y - entity.y;
+    const xToGoal = entity.going_x - entity.x;
+    const distanceToGoal = Math.hypot(xToGoal, yToGoal);
+    if (distanceTraveled >= distanceToGoal) {
+      entity.updateData({ x: entity.going_x, y: entity.going_y });
+    } else {
+      const percentTraveled = distanceTraveled / distanceToGoal;
+      entity.updateData({
+        x: entity.x + xToGoal * percentTraveled,
+        y: entity.y + yToGoal * percentTraveled,
+      });
+    }
+  }
+});

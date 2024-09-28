@@ -25,7 +25,8 @@
     "@isaacs/ttlcache": "^1.4.1",
     "alclient": "file:../ALClient/alclient-1.0.0.tgz",
     "config": "^3.3.12",
-    "lru-cache": "^11.0.1"
+    "lru-cache": "^11.0.1",
+    "tinyqueue": "^3.0.0"
   },
   "devDependencies": {
     "@total-typescript/tsconfig": "^1.0.4",
