@@ -7,5 +7,5 @@
     "sourceMap": true,
     "stripInternal": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["config/**/*.ts", "src/**/*.ts"]
 }

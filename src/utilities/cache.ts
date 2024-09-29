@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import type { GData } from "typed-adventureland";
 import url from "url";
 
 export const G_CACHE_FOLDER = path.join(
@@ -7,7 +8,7 @@ export const G_CACHE_FOLDER = path.join(
   "../../data/g/"
 );
 
-export function getGFromCache(): unknown | undefined {
+export function getGFromCache(): GData | undefined {
   const files = fs.readdirSync(G_CACHE_FOLDER);
   if (files.length === 0) return undefined;
   const newestVersion = files.reduce((a, b) => {

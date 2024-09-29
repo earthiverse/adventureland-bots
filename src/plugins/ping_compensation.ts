@@ -1,5 +1,7 @@
 import { EventBus, Observer } from "alclient";
 import config from "config";
+import type { ConditionKey, StatusInfoBase } from "typed-adventureland";
+import type { CharacterEntityQInfos } from "typed-adventureland/dist/src/entities/character-entity.js";
 
 /**
  * This plugin adds ping compensation.
@@ -58,9 +60,9 @@ EventBus.on("conditions_set", (character, s) => {
   const ping = minPings.get(key);
   if (!ping) return;
   for (const conditionName in s) {
-    const condition = s[conditionName];
+    const condition = s[conditionName as ConditionKey] as StatusInfoBase;
     condition.ms -= ping;
-    if (condition.ms <= 0) delete s["conditionName"];
+    if (condition.ms <= 0) delete s[conditionName as ConditionKey];
   }
 });
 
@@ -70,9 +72,11 @@ EventBus.on("progress_set", (character, q) => {
   const ping = minPings.get(key);
   if (!ping) return;
   for (const progressName in q) {
-    const progress = q[progressName];
+    const progress = q[progressName as keyof CharacterEntityQInfos] as {
+      ms: number;
+    };
     progress.ms -= ping;
-    if (progress.ms <= 0) delete q["conditionName"];
+    if (progress.ms <= 0) delete q[progressName as keyof CharacterEntityQInfos];
   }
 });
 

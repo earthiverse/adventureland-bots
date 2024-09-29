@@ -1,6 +1,7 @@
 import { Game, Observer } from "alclient";
 import fs from "fs";
 import path from "path";
+import type { ServerIdentifier, ServerRegion } from "typed-adventureland";
 import url from "url";
 
 const game = new Game();
@@ -84,7 +85,7 @@ for (const [server, region] of [
   ["EU", "I"],
   ["EU", "II"],
   ["ASIA", "I"],
-]) {
+] as [ServerRegion, ServerIdentifier][]) {
   const o = new Observer(game);
   o.start(server, region);
 }
