@@ -11,8 +11,8 @@ const DEFAULT_COMPARATOR: Comparator<EntityMonster> = (a, b) => {
   // Prioritize monsters that aren't ignored
   const aIgnored = IGNORED_MONSTERS.has(a.id);
   const bIgnored = IGNORED_MONSTERS.has(b.id);
-  if (aIgnored && !bIgnored) return -1;
-  if (bIgnored && !aIgnored) return 1;
+  if (aIgnored && !bIgnored) return 1;
+  if (bIgnored && !aIgnored) return -1;
 
   // Prioritize monsters with higher levels
   if (a.level !== b.level) return b.level - a.level;
