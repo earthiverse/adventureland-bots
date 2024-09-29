@@ -56,7 +56,7 @@ export function getBestTargets(
 ): EntityMonster[] {
   const bestEntities = new TinyQueue<EntityMonster>([], options.comparator ?? DEFAULT_COMPARATOR);
 
-  for (const [_id, monster] of character.monsters) {
+  for (const [, monster] of character.monsters) {
     // Filter out unwanted monsters
     if (options.monster && monster.type !== options.monster) continue; // Not the wanted monster
     if (options.withinRange && character.getDistanceTo(monster) > options.withinRange) continue; // Too far away
@@ -66,7 +66,7 @@ export function getBestTargets(
   }
 
   // Return an array of the monsters
-  let entities: EntityMonster[] = [];
+  const entities: EntityMonster[] = [];
   while (bestEntities.length && entities.length < options.numTargets)
     entities.push(bestEntities.pop() as EntityMonster);
   return entities;

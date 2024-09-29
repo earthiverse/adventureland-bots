@@ -1,8 +1,9 @@
 import type { Character } from "alclient";
+import { logDebug } from "../../utilities/logging.js";
 import { getBestTarget } from "../../utilities/monster.js";
 
 export const setup = (character: Character, monster: string = "goo") => {
-  const moveLoop = async () => {
+  const moveLoop = () => {
     try {
       if (character.socket.disconnected) return;
 
@@ -11,10 +12,10 @@ export const setup = (character: Character, monster: string = "goo") => {
 
       // Move if far away
       if (character.getDistanceTo(entity) > character.range) {
-        character.move((entity.x + character.x) / 2, (entity.y + character.y) / 2).catch();
+        character.move((entity.x + character.x) / 2, (entity.y + character.y) / 2).catch(logDebug);
       }
     } catch (e) {
-      // console.error("movement error", e);
+      logDebug(e as Error);
     } finally {
       setTimeout(moveLoop, 100);
     }

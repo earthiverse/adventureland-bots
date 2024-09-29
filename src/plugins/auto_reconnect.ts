@@ -1,4 +1,5 @@
 import { Configuration, EventBus } from "alclient";
+import { logDebug } from "../utilities/logging.js";
 
 /**
  * This plugin automatically restarts characters if they get disconnected
@@ -10,7 +11,7 @@ EventBus.on("character_started", (character) => {
       // Reconnect
       setTimeout(() => character.socket.connect(), Configuration.SOCKET_RECONNECT_DELAY_MS);
     } catch (e) {
-      // console.error(e);
+      logDebug(e as Error);
     }
   });
 });

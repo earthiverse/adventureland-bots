@@ -18,5 +18,5 @@ export function getGFromCache(): GData | undefined {
     fs.readFileSync(path.join(G_CACHE_FOLDER, newestVersion), {
       encoding: "utf8",
     }),
-  );
+  ) as GData;
 }

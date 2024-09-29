@@ -1,5 +1,6 @@
 import { Character, EventBus } from "alclient";
 import config from "config";
+import { logDebug, logInformational } from "../utilities/logging.js";
 
 /**
  * This plugin adds party support
@@ -24,24 +25,28 @@ const partyLoop = async () => {
     }
     await Promise.allSettled(requests);
   } catch (e) {
-    // console.error("party error", e);
+    logDebug(e as Error);
   } finally {
-    setTimeout(partyLoop, CHECK_EVERY_MS);
+    setTimeout(() => void partyLoop(), CHECK_EVERY_MS);
   }
 };
-partyLoop();
+void partyLoop();
 
 // Send party requests
 EventBus.on("character_started", (character) => {
   characters.add(character);
-  if (character.id !== LEADER) character.sendPartyRequest(LEADER).catch();
+  if (character.id !== LEADER) character.sendPartyRequest(LEADER).catch(logDebug);
 });
 EventBus.on("observer_stopped", (observer) => characters.delete(observer as Character));
 
 // Accept party requests
 EventBus.on("party_request_received", (character, name) => {
-  if (ALLOWED === true) return character.acceptPartyRequest(name).catch(); // We're accepting everyone
-  if (ALLOWED.includes(name)) return character.acceptPartyRequest(name).catch(); // They're in our list
-
-  // TODO: Log?
+  if (
+    ALLOWED === true || // We're accepting everyone
+    ALLOWED.includes(name) // They're in our list
+  ) {
+    character.acceptPartyRequest(name).catch(logDebug);
+  } else {
+    logInformational(`Ignoring party request from ${name}`);
+  }
 });

@@ -1,4 +1,5 @@
 import type { Character } from "alclient";
+import { logDebug } from "../../utilities/logging.js";
 import { getBestTarget, ignoreMonster, unignoreMonster } from "../../utilities/monster.js";
 
 export const setup = (character: Character, monster: string = "goo") => {
@@ -19,10 +20,10 @@ export const setup = (character: Character, monster: string = "goo") => {
       await character.basicAttack(entity);
     } catch (e) {
       if (entity) unignoreMonster(entity);
-      // console.error("attack error", e);
+      logDebug(e as Error);
     } finally {
-      setTimeout(attackLoop, Math.max(100, character.getTimeout("attack")));
+      setTimeout(() => void attackLoop(), Math.max(100, character.getTimeout("attack")));
     }
   };
-  attackLoop();
+  void attackLoop();
 };
