@@ -36,7 +36,7 @@ export const DEFAULT_BEST_TARGET_OPTIONS: BestTargetOptions = {
 
 export function getBestTarget(
   character: Character,
-  options: BestTargetOptions = DEFAULT_BEST_TARGET_OPTIONS
+  options: BestTargetOptions = DEFAULT_BEST_TARGET_OPTIONS,
 ): EntityMonster | undefined {
   return getBestTargets(character, { ...options, numTargets: 1 })[0];
 }
@@ -52,21 +52,14 @@ export const DEFAULT_BEST_TARGETS_OPTIONS: BestTargetsOptions = {
 
 export function getBestTargets(
   character: Character,
-  options: BestTargetsOptions = DEFAULT_BEST_TARGETS_OPTIONS
+  options: BestTargetsOptions = DEFAULT_BEST_TARGETS_OPTIONS,
 ): EntityMonster[] {
-  const bestEntities = new TinyQueue<EntityMonster>(
-    [],
-    options.comparator ?? DEFAULT_COMPARATOR
-  );
+  const bestEntities = new TinyQueue<EntityMonster>([], options.comparator ?? DEFAULT_COMPARATOR);
 
   for (const [_id, monster] of character.monsters) {
     // Filter out unwanted monsters
     if (options.monster && monster.type !== options.monster) continue; // Not the wanted monster
-    if (
-      options.withinRange &&
-      character.getDistanceTo(monster) > options.withinRange
-    )
-      continue; // Too far away
+    if (options.withinRange && character.getDistanceTo(monster) > options.withinRange) continue; // Too far away
 
     // The monster is OK
     bestEntities.push(monster);

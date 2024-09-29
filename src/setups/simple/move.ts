@@ -11,9 +11,7 @@ export const setup = (character: Character, monster: string = "goo") => {
 
       // Move if far away
       if (character.getDistanceTo(entity) > character.range) {
-        character
-          .move((entity.x + character.x) / 2, (entity.y + character.y) / 2)
-          .catch();
+        character.move((entity.x + character.x) / 2, (entity.y + character.y) / 2).catch();
       }
     } catch (e) {
       // console.error("movement error", e);

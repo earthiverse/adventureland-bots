@@ -8,10 +8,7 @@ EventBus.on("character_started", (character) => {
   character.socket.on("disconnect", () => {
     try {
       // Reconnect
-      setTimeout(
-        () => character.socket.connect(),
-        Configuration.SOCKET_RECONNECT_DELAY_MS
-      );
+      setTimeout(() => character.socket.connect(), Configuration.SOCKET_RECONNECT_DELAY_MS);
     } catch (e) {
       // console.error(e);
     }

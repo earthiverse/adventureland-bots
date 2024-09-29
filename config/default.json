@@ -2,6 +2,14 @@
   "credentials": {
     "server": "https://adventure.land"
   },
+  "logging": {
+    "map": {
+      "0": "console",
+      "1": "console",
+      "2": "console",
+      "3": "console"
+    }
+  },
   "party": {
     "allowed": true,
     "checkEveryMs": 10000

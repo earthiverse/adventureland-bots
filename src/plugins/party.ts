@@ -36,9 +36,7 @@ EventBus.on("character_started", (character) => {
   characters.add(character);
   if (character.id !== LEADER) character.sendPartyRequest(LEADER).catch();
 });
-EventBus.on("observer_stopped", (observer) =>
-  characters.delete(observer as Character)
-);
+EventBus.on("observer_stopped", (observer) => characters.delete(observer as Character));
 
 // Accept party requests
 EventBus.on("party_request_received", (character, name) => {

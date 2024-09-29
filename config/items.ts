@@ -28,9 +28,7 @@ export type SellConfig = {
   specialMultiplier?: number;
 };
 
-export type Config = Partial<
-  Record<ItemKey, HoldConfig | ListConfig | MailConfig | SellConfig>
->;
+export type Config = Partial<Record<ItemKey, HoldConfig | ListConfig | MailConfig | SellConfig>>;
 
 const config: Config = {
   slimestaff: {

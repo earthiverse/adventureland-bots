@@ -1,9 +1,5 @@
 import type { Character } from "alclient";
-import {
-  getBestTarget,
-  ignoreMonster,
-  unignoreMonster,
-} from "../../utilities/monster.js";
+import { getBestTarget, ignoreMonster, unignoreMonster } from "../../utilities/monster.js";
 
 export const setup = (character: Character, monster: string = "goo") => {
   const attackLoop = async () => {

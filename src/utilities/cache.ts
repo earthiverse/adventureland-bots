@@ -3,10 +3,7 @@ import path from "path";
 import type { GData } from "typed-adventureland";
 import url from "url";
 
-export const G_CACHE_FOLDER = path.join(
-  path.dirname(url.fileURLToPath(import.meta.url)),
-  "../../data/g/"
-);
+export const G_CACHE_FOLDER = path.join(path.dirname(url.fileURLToPath(import.meta.url)), "../../data/g/");
 
 export function getGFromCache(): GData | undefined {
   const files = fs.readdirSync(G_CACHE_FOLDER);
@@ -20,6 +17,6 @@ export function getGFromCache(): GData | undefined {
   return JSON.parse(
     fs.readFileSync(path.join(G_CACHE_FOLDER, newestVersion), {
       encoding: "utf8",
-    })
+    }),
   );
 }
