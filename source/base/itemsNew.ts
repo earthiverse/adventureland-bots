@@ -898,6 +898,7 @@ export function wantToMail(itemConfig: ItemConfig, item: ItemData) {
     if (item.level) return false // Don't mail leveled items
 
     const config = itemConfig[item.name]
+    if (!config) return false // No config
 
     if (config.mail) return true
 }
