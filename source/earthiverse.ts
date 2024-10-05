@@ -29,7 +29,10 @@ import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
 import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
 import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
-import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
+import {
+    MagiportOthersSmartMovingToUsStrategy,
+    MagiportServiceStrategy,
+} from "./strategy_pattern/strategies/magiport.js"
 import {
     FinishMonsterHuntStrategy,
     GetHolidaySpiritStrategy,
@@ -158,6 +161,7 @@ const partyAcceptStrategy =
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 // Mage
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(ALL_CONTEXTS)
+const magiportServiceStrategy = new MagiportServiceStrategy()
 // Merchant
 const merchantDestroyStrategy = new MerchantDestroyStrategy()
 // Priest
@@ -767,6 +771,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
 async function startMage(context: Strategist<Mage>, privateContext = false) {
     startShared(context, privateContext)
     context.applyStrategy(magiportStrategy)
+    context.applyStrategy(magiportServiceStrategy)
 }
 
 async function startPaladin(context: Strategist<Paladin>, privateContext = false) {

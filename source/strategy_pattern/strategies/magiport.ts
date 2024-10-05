@@ -1,4 +1,4 @@
-import AL, { Mage, PingCompensatedCharacter } from "alclient"
+import AL, { CMData, Mage, PingCompensatedCharacter } from "alclient"
 import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 
 export class MagiportOthersSmartMovingToUsStrategyOptions {
@@ -66,5 +66,38 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
                 console.error(e)
             }
         }
+    }
+}
+
+export class MagiportServiceStrategyOptions {
+    /** If set, we will only allow magiport requests from these characters */
+    allowList?: string[]
+}
+
+export class MagiportServiceStrategy implements Strategy<Mage> {
+    public loops = new Map<LoopName, Loop<PingCompensatedCharacter>>()
+
+    protected options: MagiportServiceStrategyOptions
+
+    protected inviteListener: (data: CMData) => Promise<unknown>
+
+    public constructor(options: MagiportServiceStrategyOptions = {}) {
+        this.options = options
+    }
+
+    public onApply(bot: Mage) {
+        this.inviteListener = async (data: CMData) => {
+            if (this.options.allowList && !this.options.allowList.includes(data.name)) return // Not in allow list
+            if (!data.message.includes("magiport")) return // Different CM
+            if (bot.players.get(data.name)) return // They're "nearby"
+            if (!bot.canUse("magiport")) return // We can't use magiport (probably no MP)
+            return bot.magiport(data.name)
+        }
+
+        bot.socket.on("cm", this.inviteListener)
+    }
+
+    public onRemove(bot: Mage) {
+        if (this.inviteListener) bot.socket.removeListener("cm", this.inviteListener)
     }
 }
