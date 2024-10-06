@@ -7,7 +7,11 @@
       "0": "console",
       "1": "console",
       "2": "console",
-      "3": "console"
+      "3": "console",
+      "4": "console",
+      "5": "console",
+      "6": "ignore",
+      "7": "ignore"
     }
   },
   "party": {
