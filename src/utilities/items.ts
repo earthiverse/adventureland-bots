@@ -23,6 +23,30 @@ export function calculateNpcBuyPrice(item: ItemInfo, g: GData): number {
   return value;
 }
 
+export function getItemDescription(item: ItemInfo): string {
+  let description = `${item.name}`;
+
+  if (item.level !== undefined) {
+    description = `Level ${item.level} ${description}`;
+  }
+
+  if (item.p) {
+    description = `${item.p.replace(/\b\w/g, (s) => s.toUpperCase())} ${description}`;
+  }
+
+  return description;
+}
+
+export function wantToDestroy(item: ItemInfo): boolean {
+  if (item.l) return false; // We can't destroy locked items
+
+  const config = Config[item.name];
+  if (!config || config.action !== "destroy") return false; // We have no destroy config for this item
+  if (config.destroySpecial && item.p) return false; // We don't want to destroy special items
+
+  return true;
+}
+
 /**
  * @param character
  * @param item
@@ -34,7 +58,9 @@ export function wantToHold(character: Character, item: ItemInfo): boolean {
   const config = Config[item.name];
   if (!config || config.action !== "hold") return false; // We have no hold config for this item
   if (config.characterTypes === "all") return true; // We want all classes to hold this item
-  return config.characterTypes.includes(character.ctype);
+  if (!config.characterTypes.includes(character.ctype)) return false; // We don't want this class to hold this item
+
+  return true;
 }
 
 /**
@@ -70,15 +96,37 @@ export function wantToMail(item: ItemInfo): boolean {
  * @param atPrice the price we are checking if we want to sell at
  * @returns true if we want to sell the item
  */
-export function wantToSell(item: ItemInfo, atPrice?: number | "npc"): boolean {
+export function wantToSell(item: ItemInfo, atPrice: number | "npc" = "npc"): boolean {
   if (item.l) return false; // We can't sell locked items
 
   const config = Config[item.name];
   if (!config || config.action !== "sell") return false; // We have no sell config for this item
   if (item.p && !config.specialMultiplier) return false; // We don't want to sell special items
+  if (!Array.isArray(config.sellPrice) && (item.level ?? 0) > 0) return false; // Only sell leveled items if we have sellPrice as an array
 
+  if (
+    (item.level ?? 0) === 0 &&
+    (config.sellPrice === "npc" || (Array.isArray(config.sellPrice) && config.sellPrice["0"] === "npc")) &&
+    atPrice === "npc"
+  )
+    return true; // We want to sell it at the NPC price
+
+  return false; // TODO: Finish this
+  // throw new Error("TODO: Finish this");
+
+  // if (Array.isArray(config.sellPrice) && config.sellPrice[item.level ?? 0] !== undefined) {
+
+  // }
+
+  // if (
+  //   (item.level ?? 0) === 0 &&
+  //   (config.sellPrice === "npc" || (Array.isArray(config.sellPrice) && config.sellPrice[0]))
+  // ) {
+  //   // TODO
+  // }
+
+  // if (config.sellPrice === "npc" && atPrice === "npc")
   // TODO: Finish this
-  throw new Error("TODO: Finish this");
 
   //   if (atPrice !== undefined) {
   //     // const price = config.sellPrice === "npc" ?
