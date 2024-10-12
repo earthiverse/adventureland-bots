@@ -1,4 +1,17 @@
-import { Character, Mage, MonsterName, PingCompensatedCharacter, Priest, Rogue, Warrior } from "alclient"
+import {
+    Character,
+    Database,
+    IPosition,
+    Mage,
+    MonsterName,
+    NPCModel,
+    PingCompensatedCharacter,
+    Priest,
+    Rogue,
+    ServerInfoDataLive,
+    Warrior,
+} from "alclient"
+import { offsetPositionParty } from "../../base/locations.js"
 import { getMsToDeath } from "../../base/timetokill.js"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
@@ -8,10 +21,45 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
-import { CharacterConfig, Setup } from "./base"
+import { CharacterConfig, Setup } from "./base.js"
 import { UNEQUIP } from "./equipment.js"
 
 const NON_PVP_MONSTERS: MonsterName[] = ["mrpumpkin", "phoenix", "xscorpion", "minimush", "tinyp"]
+
+class MrPumpkinMoveStrategy extends ImprovedMoveStrategy {
+    protected async move(bot: Character): Promise<void> {
+        if (
+            Database.connection &&
+            bot.S.mrpumpkin &&
+            (bot.S.mrpumpkin as ServerInfoDataLive).live &&
+            (bot.S.mrpumpkin as ServerInfoDataLive).hp < 500_000
+        ) {
+            let kane: IPosition = bot.players.get("$Kane")
+            if (!kane) {
+                kane = await NPCModel.findOne(
+                    {
+                        name: "Kane",
+                        serverRegion: bot.serverData.region,
+                        serverIdentifier: bot.serverData.name,
+                    },
+                    {
+                        _id: 0,
+                        map: 1,
+                        x: 1,
+                        y: 1,
+                    },
+                )
+                    .lean()
+                    .exec()
+            }
+            if (kane) {
+                await bot.smartMove(offsetPositionParty(kane, bot))
+                return
+            }
+        }
+        return super.move(bot)
+    }
+}
 
 class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
@@ -169,7 +217,7 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
 }
 
 export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy("mrpumpkin", { idlePosition: { map: "halloween", x: -250, y: 725 } })
+    const moveStrategy = new MrPumpkinMoveStrategy("mrpumpkin", { idlePosition: { map: "halloween", x: -250, y: 725 } })
 
     const mageConfig: CharacterConfig = {
         ctype: "mage",

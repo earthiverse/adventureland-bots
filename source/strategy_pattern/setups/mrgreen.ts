@@ -1,4 +1,13 @@
-import { Character, PingCompensatedCharacter, Warrior } from "alclient"
+import {
+    Character,
+    Database,
+    IPosition,
+    NPCModel,
+    PingCompensatedCharacter,
+    ServerInfoDataLive,
+    Warrior,
+} from "alclient"
+import { offsetPositionParty } from "../../base/locations.js"
 import { getMsToDeath } from "../../base/timetokill.js"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
@@ -8,7 +17,42 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
-import { CharacterConfig, Setup } from "./base"
+import { CharacterConfig, Setup } from "./base.js"
+
+class MrGreenMoveStrategy extends ImprovedMoveStrategy {
+    protected async move(bot: Character): Promise<void> {
+        if (
+            Database.connection &&
+            bot.S.mrgreen &&
+            (bot.S.mrgreen as ServerInfoDataLive).live &&
+            (bot.S.mrgreen as ServerInfoDataLive).hp < 500_000
+        ) {
+            let kane: IPosition = bot.players.get("$Kane")
+            if (!kane) {
+                kane = await NPCModel.findOne(
+                    {
+                        name: "Kane",
+                        serverRegion: bot.serverData.region,
+                        serverIdentifier: bot.serverData.name,
+                    },
+                    {
+                        _id: 0,
+                        map: 1,
+                        x: 1,
+                        y: 1,
+                    },
+                )
+                    .lean()
+                    .exec()
+            }
+            if (kane) {
+                await bot.smartMove(offsetPositionParty(kane, bot))
+                return
+            }
+        }
+        return super.move(bot)
+    }
+}
 
 class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
@@ -56,7 +100,7 @@ class PriestMrGreenAttackStrategy extends PriestAttackStrategy {
 }
 
 export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy("mrgreen")
+    const moveStrategy = new MrGreenMoveStrategy("mrgreen")
 
     const mageConfig: CharacterConfig = {
         ctype: "mage",

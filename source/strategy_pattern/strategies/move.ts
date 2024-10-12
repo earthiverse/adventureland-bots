@@ -1,18 +1,18 @@
 import AL, {
+    Character,
+    Entity,
+    GData,
+    GMap,
     IPosition,
+    ItemName,
+    MapName,
     MonsterName,
     Pathfinder,
-    Character,
     PingCompensatedCharacter,
-    Entity,
     ServerInfoDataLive,
-    MapName,
-    GMap,
     SmartMoveOptions,
-    ItemName,
     Tools,
     Warrior,
-    GData,
 } from "alclient"
 import { sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
@@ -385,7 +385,7 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
         this.sort.set(bot.id, sortTypeThenClosest(bot, this.types))
     }
 
-    private async move(bot: Character) {
+    protected async move(bot: Character) {
         if (!AL.Pathfinder.canStand(bot) && bot.moving) return // We're cheating
 
         const targets = bot.getEntities({
