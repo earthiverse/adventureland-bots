@@ -27,5 +27,7 @@ export function getMsToDeath(monster: Entity) {
         totalTime += timeDifference
     }
 
-    return totalTime > 0 ? totalDamage / totalTime : Number.POSITIVE_INFINITY
+    const damagePerMs = totalDamage / totalTime
+
+    return totalTime > 0 ? monster.hp / damagePerMs : Number.POSITIVE_INFINITY
 }
