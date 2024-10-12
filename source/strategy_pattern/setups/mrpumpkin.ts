@@ -32,7 +32,7 @@ class MrPumpkinMoveStrategy extends ImprovedMoveStrategy {
             Database.connection &&
             bot.S.mrpumpkin &&
             (bot.S.mrpumpkin as ServerInfoDataLive).live &&
-            (bot.S.mrpumpkin as ServerInfoDataLive).hp < 750_000
+            (bot.S.mrpumpkin as ServerInfoDataLive).hp < 1_250_000
         ) {
             let kane: IPosition = bot.players.get("$Kane")
             if (!kane) {
@@ -53,7 +53,7 @@ class MrPumpkinMoveStrategy extends ImprovedMoveStrategy {
                     .exec()
             }
             if (kane) {
-                await bot.smartMove(offsetPositionParty(kane, bot), { avoidTownWarps: true })
+                await bot.smartMove(offsetPositionParty(kane, bot), { avoidTownWarps: true, useBlink: true })
                 return
             }
         }

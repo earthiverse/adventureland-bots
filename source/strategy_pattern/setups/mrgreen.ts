@@ -25,7 +25,7 @@ class MrGreenMoveStrategy extends ImprovedMoveStrategy {
             Database.connection &&
             bot.S.mrgreen &&
             (bot.S.mrgreen as ServerInfoDataLive).live &&
-            (bot.S.mrgreen as ServerInfoDataLive).hp < 1_000_000
+            (bot.S.mrgreen as ServerInfoDataLive).hp < 2_000_000
         ) {
             let kane: IPosition = bot.players.get("$Kane")
             if (!kane) {
@@ -46,7 +46,7 @@ class MrGreenMoveStrategy extends ImprovedMoveStrategy {
                     .exec()
             }
             if (kane) {
-                await bot.smartMove(offsetPositionParty(kane, bot), { avoidTownWarps: true })
+                await bot.smartMove(offsetPositionParty(kane, bot), { avoidTownWarps: true, useBlink: true })
                 return
             }
         }
