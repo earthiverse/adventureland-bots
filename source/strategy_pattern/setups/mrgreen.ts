@@ -72,6 +72,9 @@ class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
 
     protected shouldAttack(bot: Character): boolean {
         const mrgreen = bot.getEntity({ type: "mrgreen" })
+        if (bot.s.coop && (bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000)) {
+            return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
+        }
         if (mrgreen && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrgreen)) {
             return false // Stop attacking, we won't be off hopsickness before it dies
         }
@@ -82,6 +85,9 @@ class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
 class MageMrGreenAttackStrategy extends MageAttackStrategy {
     protected shouldAttack(bot: Character): boolean {
         const mrgreen = bot.getEntity({ type: "mrgreen" })
+        if (bot.s.coop && (bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000)) {
+            return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
+        }
         if (mrgreen && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrgreen)) {
             return false // Stop attacking, we won't be off hopsickness before it dies
         }
@@ -92,6 +98,9 @@ class MageMrGreenAttackStrategy extends MageAttackStrategy {
 class PriestMrGreenAttackStrategy extends PriestAttackStrategy {
     protected shouldAttack(bot: Character): boolean {
         const mrgreen = bot.getEntity({ type: "mrgreen" })
+        if (bot.s.coop && (bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000)) {
+            return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
+        }
         if (mrgreen && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrgreen)) {
             return false // Stop attacking, we won't be off hopsickness before it dies
         }
