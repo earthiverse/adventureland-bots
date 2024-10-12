@@ -17,8 +17,8 @@ export function getMsToDeath(monster: Entity) {
     let totalDamage = 0
     let totalTime = 0
     for (let i = 1; i < monsterData.length; i++) {
-        const [previousTime, previousHP] = data[i - 1]
-        const [currentTime, currentHP] = data[i]
+        const [previousTime, previousHP] = monsterData[i - 1]
+        const [currentTime, currentHP] = monsterData[i]
 
         const damage = previousHP - currentHP
         const timeDifference = currentTime - previousTime
