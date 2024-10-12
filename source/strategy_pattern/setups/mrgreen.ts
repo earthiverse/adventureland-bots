@@ -1,4 +1,5 @@
-import { PingCompensatedCharacter, Warrior } from "alclient"
+import { Character, PingCompensatedCharacter, Warrior } from "alclient"
+import { getMsToDeath } from "../../base/timetokill.js"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -7,7 +8,7 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base"
+import { CharacterConfig, Setup } from "./base"
 
 class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
@@ -24,77 +25,85 @@ class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
         }
         super.onApply(bot)
     }
+
+    protected shouldAttack(bot: Character): boolean {
+        const mrgreen = bot.getEntity({ type: "mrgreen" })
+        if (mrgreen && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrgreen)) {
+            return false // Stop attacking, we won't be off hopsickness before it dies
+        }
+        return super.shouldAttack(bot)
+    }
+}
+
+class MageMrGreenAttackStrategy extends MageAttackStrategy {
+    protected shouldAttack(bot: Character): boolean {
+        const mrgreen = bot.getEntity({ type: "mrgreen" })
+        if (mrgreen && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrgreen)) {
+            return false // Stop attacking, we won't be off hopsickness before it dies
+        }
+        return super.shouldAttack(bot)
+    }
+}
+
+class PriestMrGreenAttackStrategy extends PriestAttackStrategy {
+    protected shouldAttack(bot: Character): boolean {
+        const mrgreen = bot.getEntity({ type: "mrgreen" })
+        if (mrgreen && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrgreen)) {
+            return false // Stop attacking, we won't be off hopsickness before it dies
+        }
+        return super.shouldAttack(bot)
+    }
 }
 
 export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("mrgreen")
 
+    const mageConfig: CharacterConfig = {
+        ctype: "mage",
+        attack: new MageMrGreenAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            disableZapper: true,
+            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
+            type: "mrgreen",
+        }),
+        move: moveStrategy,
+    }
+
+    const priestConfig: CharacterConfig = {
+        ctype: "priest",
+        attack: new PriestMrGreenAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            enableGreedyAggro: true,
+            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
+            type: "mrgreen",
+        }),
+        move: moveStrategy,
+    }
+
+    const warriorConfig: CharacterConfig = {
+        ctype: "warrior",
+        attack: new WarriorMrGreenAttackStrategy({
+            contexts: contexts,
+            disableCleave: true,
+            generateEnsureEquipped: { attributes: ["armor", "str", "attack"] },
+            type: "mrgreen",
+        }),
+        move: moveStrategy,
+    }
+
     return {
         configs: [
             {
                 id: "mrgreen_mage,priest,warrior",
-                characters: [
-                    {
-                        ctype: "mage",
-                        attack: new MageAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            disableZapper: true,
-                            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
-                            type: "mrgreen",
-                        }),
-                        move: moveStrategy
-                    },
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            enableGreedyAggro: true,
-                            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
-                            type: "mrgreen",
-                        }),
-                        move: moveStrategy
-                    },
-                    {
-                        ctype: "warrior",
-                        attack: new WarriorMrGreenAttackStrategy({
-                            contexts: contexts,
-                            disableCleave: true,
-                            generateEnsureEquipped: { attributes: ["armor", "str", "attack"] },
-                            type: "mrgreen",
-                        }),
-                        move: moveStrategy
-                    }
-                ]
+                characters: [mageConfig, priestConfig, warriorConfig],
             },
             {
                 id: "mrgreen_priest,warrior",
-                characters: [
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            enableGreedyAggro: true,
-                            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
-                            type: "mrgreen",
-                        }),
-                        move: moveStrategy
-                    },
-                    {
-                        ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
-                            contexts: contexts,
-                            disableCleave: true,
-                            generateEnsureEquipped: { attributes: ["armor", "str", "attack"] },
-                            type: "mrgreen",
-                        }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                characters: [priestConfig, warriorConfig],
+            },
+        ],
     }
 }
 
@@ -110,11 +119,11 @@ export function constructMrGreenHelperSetup(contexts: Strategist<PingCompensated
                             contexts: contexts,
                             generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
                             type: "mrgreen",
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: new ImprovedMoveStrategy("mrgreen")
-                    }
-                ]
+                        move: new ImprovedMoveStrategy("mrgreen"),
+                    },
+                ],
             },
             {
                 id: "mrgreen_paladin",
@@ -124,11 +133,11 @@ export function constructMrGreenHelperSetup(contexts: Strategist<PingCompensated
                         attack: new PaladinAttackStrategy({
                             contexts: contexts,
                             type: "mrgreen",
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: new ImprovedMoveStrategy("mrgreen")
-                    }
-                ]
+                        move: new ImprovedMoveStrategy("mrgreen"),
+                    },
+                ],
             },
             {
                 id: "mrgreen_priest",
@@ -140,11 +149,11 @@ export function constructMrGreenHelperSetup(contexts: Strategist<PingCompensated
                             generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
                             disableAbsorb: true,
                             type: "mrgreen",
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: new ImprovedMoveStrategy("mrgreen")
-                    }
-                ]
+                        move: new ImprovedMoveStrategy("mrgreen"),
+                    },
+                ],
             },
             {
                 id: "mrgreen_ranger",
@@ -155,11 +164,11 @@ export function constructMrGreenHelperSetup(contexts: Strategist<PingCompensated
                             contexts: contexts,
                             generateEnsureEquipped: { attributes: ["armor", "dex", "attack"] },
                             type: "mrgreen",
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: new ImprovedMoveStrategy("mrgreen")
-                    }
-                ]
+                        move: new ImprovedMoveStrategy("mrgreen"),
+                    },
+                ],
             },
             {
                 id: "mrgreen_rogue",
@@ -170,11 +179,11 @@ export function constructMrGreenHelperSetup(contexts: Strategist<PingCompensated
                             contexts: contexts,
                             generateEnsureEquipped: { attributes: ["armor", "dex", "attack"] },
                             type: "mrgreen",
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: new ImprovedMoveStrategy("mrgreen")
-                    }
-                ]
+                        move: new ImprovedMoveStrategy("mrgreen"),
+                    },
+                ],
             },
             {
                 id: "mrgreen_warrior",
@@ -187,12 +196,12 @@ export function constructMrGreenHelperSetup(contexts: Strategist<PingCompensated
                             disableCleave: true,
                             generateEnsureEquipped: { attributes: ["armor", "str", "attack"] },
                             type: "mrgreen",
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: new ImprovedMoveStrategy("mrgreen")
-                    }
-                ]
-            }
-        ]
+                        move: new ImprovedMoveStrategy("mrgreen"),
+                    },
+                ],
+            },
+        ],
     }
 }

@@ -1,4 +1,5 @@
-import AL, { Mage, MonsterName, PingCompensatedCharacter, Priest, Rogue, Warrior } from "alclient"
+import { Character, Mage, MonsterName, PingCompensatedCharacter, Priest, Rogue, Warrior } from "alclient"
+import { getMsToDeath } from "../../base/timetokill.js"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -6,8 +7,8 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy, } from "../strategies/move.js"
-import { Setup } from "./base"
+import { ImprovedMoveStrategy } from "../strategies/move.js"
+import { CharacterConfig, Setup } from "./base"
 import { UNEQUIP } from "./equipment.js"
 
 const NON_PVP_MONSTERS: MonsterName[] = ["mrpumpkin", "phoenix", "xscorpion", "minimush", "tinyp"]
@@ -17,11 +18,20 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
         this.options.generateEnsureEquipped.prefer = this.options.generateEnsureEquipped.prefer ?? {}
         if (bot.isPVP() || !(bot.hasItem("gstaff") || bot.isEquipped("gstaff"))) {
             // No splash damage
-            this.options.generateEnsureEquipped.prefer.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
-            this.options.generateEnsureEquipped.prefer.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = {
+                name: "firestaff",
+                filters: { returnHighestLevel: true },
+            }
+            this.options.generateEnsureEquipped.prefer.offhand = {
+                name: "wbookhs",
+                filters: { returnHighestLevel: true },
+            }
         } else {
             // Splash damage & additional monsters
-            this.options.generateEnsureEquipped.prefer.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = {
+                name: "gstaff",
+                filters: { returnHighestLevel: true },
+            }
             this.options.generateEnsureEquipped.prefer.offhand = UNEQUIP
         }
 
@@ -34,6 +44,14 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
             this.options.enableGreedyAggro = ["minimush"]
             this.options.maximumTargets = bot.mcourage
         }
+    }
+
+    protected shouldAttack(bot: Character): boolean {
+        const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
+        if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
+            return false // Stop attacking, we won't be off hopsickness before it dies
+        }
+        return super.shouldAttack(bot)
     }
 }
 
@@ -58,6 +76,14 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
             this.options.maximumTargets = bot.mcourage
         }
     }
+
+    protected shouldAttack(bot: Character): boolean {
+        const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
+        if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
+            return false // Stop attacking, we won't be off hopsickness before it dies
+        }
+        return super.shouldAttack(bot)
+    }
 }
 
 class RogueMrPumpkinAttackStrategy extends RogueAttackStrategy {
@@ -78,19 +104,45 @@ class RogueMrPumpkinAttackStrategy extends RogueAttackStrategy {
             this.options.typeList = NON_PVP_MONSTERS
         }
     }
+
+    protected shouldAttack(bot: Character): boolean {
+        const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
+        if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
+            return false // Stop attacking, we won't be off hopsickness before it dies
+        }
+        return super.shouldAttack(bot)
+    }
 }
 
 class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
         this.options.generateEnsureEquipped.prefer = this.options.generateEnsureEquipped.prefer ?? {}
-        if (bot.isPVP() || !((bot.hasItem("vhammer") || bot.isEquipped("vhammer")) && (bot.hasItem("ololipop") || bot.isEquipped("ololipop")))) {
+        if (
+            bot.isPVP() ||
+            !(
+                (bot.hasItem("vhammer") || bot.isEquipped("vhammer")) &&
+                (bot.hasItem("ololipop") || bot.isEquipped("ololipop"))
+            )
+        ) {
             // No Splash Damage
-            this.options.generateEnsureEquipped.prefer.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } }
-            this.options.generateEnsureEquipped.prefer.offhand = { name: "fireblade", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = {
+                name: "fireblade",
+                filters: { returnHighestLevel: true },
+            }
+            this.options.generateEnsureEquipped.prefer.offhand = {
+                name: "fireblade",
+                filters: { returnHighestLevel: true },
+            }
         } else {
             // Splash Damage & additional monsters
-            this.options.generateEnsureEquipped.prefer.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } }
-            this.options.generateEnsureEquipped.prefer.offhand = { name: "ololipop", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = {
+                name: "vhammer",
+                filters: { returnHighestLevel: true },
+            }
+            this.options.generateEnsureEquipped.prefer.offhand = {
+                name: "ololipop",
+                filters: { returnHighestLevel: true },
+            }
         }
 
         super.onApply(bot)
@@ -106,97 +158,77 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             this.options.enableGreedyAggro = ["mrpumpkin", "xscorpion"]
         }
     }
+
+    protected shouldAttack(bot: Character): boolean {
+        const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
+        if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
+            return false // Stop attacking, we won't be off hopsickness before it dies
+        }
+        return super.shouldAttack(bot)
+    }
 }
 
 export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("mrpumpkin", { idlePosition: { map: "halloween", x: -250, y: 725 } })
 
+    const mageConfig: CharacterConfig = {
+        ctype: "mage",
+        attack: new MageMrPumpkinAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            disableZapper: true,
+            generateEnsureEquipped: {
+                attributes: ["resistance", "int", "attack"],
+            },
+        }),
+        move: moveStrategy,
+        require: {
+            items: ["firestaff", "wbookhs"],
+        },
+    }
+
+    const priestConfig: CharacterConfig = {
+        ctype: "priest",
+        attack: new PriestMrPumpkinAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            enableGreedyAggro: true,
+            generateEnsureEquipped: {
+                attributes: ["resistance", "int", "attack"],
+            },
+        }),
+        move: moveStrategy,
+        require: {
+            items: ["jacko", "cring"],
+        },
+    }
+
+    const warriorConfig: CharacterConfig = {
+        ctype: "warrior",
+        attack: new WarriorMrPumpkinAttackStrategy({
+            contexts: contexts,
+            generateEnsureEquipped: {
+                attributes: ["resistance", "str", "attack"],
+            },
+        }),
+        move: moveStrategy,
+        require: {
+            // TODO: We don't have a way to require 2 of a given item, but we require 2
+            items: ["fireblade"],
+        },
+    }
+
     return {
         configs: [
             {
                 id: "mrpumpkin_mage,priest,warrior",
-                characters: [
-                    {
-                        ctype: "mage",
-                        attack: new MageMrPumpkinAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            disableZapper: true,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"],
-                            }
-                        }),
-                        move: moveStrategy,
-                        require: {
-                            items: ["firestaff", "wbookhs"]
-                        }
-                    },
-                    {
-                        ctype: "priest",
-                        attack: new PriestMrPumpkinAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            enableGreedyAggro: true,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"],
-                            }
-                        }),
-                        move: moveStrategy,
-                        require: {
-                            items: ["jacko", "cring"]
-                        }
-                    },
-                    {
-                        ctype: "warrior",
-                        attack: new WarriorMrPumpkinAttackStrategy({
-                            contexts: contexts,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "str", "attack"],
-                            }
-                        }),
-                        move: moveStrategy,
-                        require: {
-                            // TODO: We don't have a way to require 2 of a given item, but we require 2
-                            items: ["fireblade"]
-                        }
-                    }
-                ]
+                characters: [mageConfig, priestConfig, warriorConfig],
             },
             {
                 id: "mrpumpkin_priest,warrior",
-                characters: [
-                    {
-                        ctype: "priest",
-                        attack: new PriestMrPumpkinAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            enableGreedyAggro: true,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"],
-                            }
-                        }),
-                        move: moveStrategy,
-                        require: {
-                            items: ["jacko", "cring"]
-                        }
-                    },
-                    {
-                        ctype: "warrior",
-                        attack: new WarriorMrPumpkinAttackStrategy({
-                            contexts: contexts,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "str", "attack"],
-                            }
-                        }),
-                        move: moveStrategy,
-                        require: {
-                            // TODO: We don't have a way to require 2 of a given item, but we require 2
-                            items: ["fireblade"]
-                        }
-                    }
-                ]
-            }
-        ]
+                characters: [priestConfig, warriorConfig],
+            },
+        ],
     }
 }
 
@@ -213,11 +245,11 @@ export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensat
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             type: "mrpumpkin",
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "mrpumpkin_paladin",
@@ -227,11 +259,11 @@ export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensat
                         attack: new PaladinAttackStrategy({
                             contexts: contexts,
                             type: "mrpumpkin",
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "mrpumpkin_priest",
@@ -242,11 +274,11 @@ export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensat
                             contexts: contexts,
                             disableAbsorb: true,
                             type: "mrpumpkin",
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "mrpumpkin_ranger",
@@ -256,11 +288,11 @@ export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensat
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
                             type: "mrpumpkin",
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "mrpumpkin_rogue",
@@ -270,11 +302,11 @@ export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensat
                         attack: new RogueAttackStrategy({
                             contexts: contexts,
                             type: "mrpumpkin",
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "mrpumpkin_warrior",
@@ -286,12 +318,12 @@ export function constructMrPumpkinHelperSetup(contexts: Strategist<PingCompensat
                             disableAgitate: true,
                             disableCleave: true,
                             type: "mrpumpkin",
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }

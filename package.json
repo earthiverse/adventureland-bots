@@ -4,6 +4,7 @@
   "description": "My own bots to interact with Adventure.land.",
   "type": "module",
   "dependencies": {
+    "@isaacs/ttlcache": "^1.4.1",
     "@pyroscope/nodejs": "^0.2.6",
     "@types/cors": "^2.8.17",
     "alclient": "^0.21.5",
