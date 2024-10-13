@@ -686,6 +686,7 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
                     TARGET_REGION,
                     TARGET_IDENTIFIER,
                 )
+                for (const [id] of bot.chests) await bot.openChest(id).catch(console.error)
                 context.changeServer(TARGET_REGION, TARGET_IDENTIFIER).catch(console.error)
                 continue
             }
