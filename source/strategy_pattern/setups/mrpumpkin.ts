@@ -96,7 +96,7 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
 
     protected shouldAttack(bot: Character): boolean {
         const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
-        if (!bot.s.coop || (bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000)) {
+        if (!bot.s.coop || bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000) {
             return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
         }
         if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
@@ -130,7 +130,7 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
 
     protected shouldAttack(bot: Character): boolean {
         const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
-        if (!bot.s.coop || (bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000)) {
+        if (!bot.s.coop || bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000) {
             return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
         }
         if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
@@ -161,7 +161,7 @@ class RogueMrPumpkinAttackStrategy extends RogueAttackStrategy {
 
     protected shouldAttack(bot: Character): boolean {
         const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
-        if (!bot.s.coop || (bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000)) {
+        if (!bot.s.coop || bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000) {
             return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
         }
         if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
@@ -218,7 +218,7 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
 
     protected shouldAttack(bot: Character): boolean {
         const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
-        if (!bot.s.coop || (bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000)) {
+        if (!bot.s.coop || bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000) {
             return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
         }
         if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
@@ -283,6 +283,10 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
             {
                 id: "mrpumpkin_mage,priest,warrior",
                 characters: [mageConfig, priestConfig, warriorConfig],
+            },
+            {
+                id: "mrpumpkin_mage,priest",
+                characters: [mageConfig, priestConfig],
             },
             {
                 id: "mrpumpkin_priest,warrior",
