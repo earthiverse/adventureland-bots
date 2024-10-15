@@ -8,11 +8,15 @@ export const SERVER_HOP_SERVERS: [ServerRegion, ServerIdentifier][] = [
     ["EU", "I"],
     ["EU", "II"],
     ["US", "PVP"],
-    ["EU", "PVP"]
+    ["EU", "PVP"],
 ]
 const NUM_PVP = 2
 
-export function getTargetServerFromCurrentServer(currentRegion: ServerRegion, currentIdentifier: ServerIdentifier, avoidPVP = false): [ServerRegion, ServerIdentifier] {
+export function getTargetServerFromCurrentServer(
+    currentRegion: ServerRegion,
+    currentIdentifier: ServerIdentifier,
+    avoidPVP = false,
+): [ServerRegion, ServerIdentifier] {
     for (let i = 0; i < SERVER_HOP_SERVERS.length; i++) {
         const server = SERVER_HOP_SERVERS[i]
         if (server[0] == currentRegion && server[1] == currentIdentifier) {
@@ -53,18 +57,29 @@ export function getTargetServerFromDate(offset = 0, avoidPVP = false): [ServerRe
  * @param defaultIdentifier The default identifier to hang out on if no special monsters are found
  * @returns
  */
-export async function getTargetServerFromMonsters(G: GData, defaultRegion: ServerRegion, defaultIdentifier: ServerIdentifier,
-    coop: MonsterName[] = [
-        "dragold", "grinch", "icegolem", "mrpumpkin", "mrgreen", "franky"
-    ],
+export async function getTargetServerFromMonsters(
+    G: GData,
+    defaultRegion: ServerRegion,
+    defaultIdentifier: ServerIdentifier,
+    coop: MonsterName[] = ["dragold", "grinch", "icegolem", "mrpumpkin", "mrgreen", "franky"],
     solo: MonsterName[] = [
         // Very Rare Monsters
-        "goldenbat", "cutebee",
+        "goldenbat",
+        "cutebee",
         // Event Monsters
-        "pinkgoo", "wabbit", "tiger",
+        "pinkgoo",
+        "wabbit",
+        "tiger",
         // Rare Monsters
-        "snowman", "greenjr", "jr", "skeletor", "mvampire", "fvampire", "stompy"
-    ]): Promise<[ServerRegion, ServerIdentifier, MonsterName]> {
+        "snowman",
+        "greenjr",
+        "jr",
+        "skeletor",
+        "mvampire",
+        "fvampire",
+        "stompy",
+    ],
+): Promise<[ServerRegion, ServerIdentifier, MonsterName]> {
     // Look for entities in the database
     if (coop.length || solo.length) {
         const coopEntities: IEntity[] = await AL.EntityModel.aggregate([
@@ -73,32 +88,29 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
                     $or: [
                         {
                             // Grinch hops around a lot, stay on the server where he's the lowest HP until he's dead
-                            type: { $in: ["grinch"] }
+                            type: { $in: ["grinch"] },
                         },
                         {
                             // We only want to attack most coop monsters if others are attacking too, since they're high HP
                             target: { $ne: undefined },
-                            type: { $in: coop }
+                            type: { $in: coop },
                         },
                         {
                             // These monsters don't need us to target them specifically, since they're co-op.
-                            $or: [
-                                { target: undefined },
-                                { type: { $in: ["pinkgoo", "snowman", "tiger", "wabbit"] } }
-                            ],
+                            $or: [{ target: undefined }, { type: { $in: ["pinkgoo", "snowman", "tiger", "wabbit"] } }],
                             type: { $in: solo },
-
-                        }
+                        },
                     ],
                     serverIdentifier: { $nin: ["PVP"] },
                     lastSeen: { $gt: Date.now() - 120_000 },
-                }
+                },
             },
             { $addFields: { __order: { $indexOfArray: [[...coop, ...solo], "$type"] } } },
             // eslint-disable-next-line sort-keys
-            { $sort: { "__order": 1, "level": -1, "hp": 1 } },
-            { $project: { "_id": 0, "serverIdentifier": 1, "serverRegion": 1, "type": 1 } },
-            { $limit: 1 }]).exec()
+            { $sort: { __order: 1, level: -1, hp: 1 } },
+            { $project: { _id: 0, serverIdentifier: 1, serverRegion: 1, type: 1 } },
+            { $limit: 1 },
+        ]).exec()
         for (const entity of coopEntities) return [entity.serverRegion, entity.serverIdentifier, entity.type]
     }
 
@@ -114,8 +126,15 @@ export async function getTargetServerFromMonsters(G: GData, defaultRegion: Serve
  * @param lastSeen How recently the player has to have been seen (in ms) to be considered active
  * @returns The server/region the player is currently active on
  */
-export async function getTargetServerFromPlayer(defaultRegion: ServerRegion, defaultIdentifier: ServerIdentifier, playerID: string, lastSeen = 120_000): Promise<[ServerRegion, ServerIdentifier]> {
-    const player = await AL.PlayerModel.findOne({ lastSeen: { $gt: Date.now() - lastSeen }, name: playerID }).lean().exec()
+export async function getTargetServerFromPlayer(
+    defaultRegion: ServerRegion,
+    defaultIdentifier: ServerIdentifier,
+    playerID: string,
+    lastSeen = 120_000,
+): Promise<[ServerRegion, ServerIdentifier]> {
+    const player = await AL.PlayerModel.findOne({ lastSeen: { $gt: Date.now() - lastSeen }, name: playerID })
+        .lean()
+        .exec()
     if (player && player.serverRegion && player.serverIdentifier) return [player.serverRegion, player.serverIdentifier]
     return [defaultRegion, defaultIdentifier]
 }
@@ -154,10 +173,7 @@ export async function getServerHopMonsterPriority(avoidPVP = false) {
     const toReturn = []
     for (const entity of entities) {
         if (entity.in && entity.in !== entity.map) continue // Don't include instanced monsters
-        if (
-            entity.target
-            && (entity.type == "goldenbat" || entity.type == "cutebee")
-        ) continue
+        if (entity.target && (entity.type == "goldenbat" || entity.type == "cutebee")) continue
 
         toReturn.push({
             hp: entity.hp,
@@ -170,7 +186,7 @@ export async function getServerHopMonsterPriority(avoidPVP = false) {
             target: entity.target,
             type: entity.type,
             x: entity.x,
-            y: entity.y
+            y: entity.y,
         })
     }
 
@@ -184,19 +200,16 @@ export async function getLunarNewYearMonsterPriority(avoidPVP = false) {
     const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
 
     const entitiesFilters = {
-        $and: [{
-            $or: [
-                { "s.fullguardx": undefined },
-                { "s.fullguardx.ms": { $lt: 30000 } }
-            ],
-        }, {
-            $or: [
-                { "s.fullguard": undefined },
-                { "s.fullguard.ms": { $lt: 30000 } }
-            ]
-        }],
+        $and: [
+            {
+                $or: [{ "s.fullguardx": undefined }, { "s.fullguardx.ms": { $lt: 30000 } }],
+            },
+            {
+                $or: [{ "s.fullguard": undefined }, { "s.fullguard.ms": { $lt: 30000 } }],
+            },
+        ],
         lastSeen: { $gt: Date.now() - 30000 },
-        type: { $in: monsterPriority }
+        type: { $in: monsterPriority },
     }
     if (avoidPVP) entitiesFilters["serverIdentifier"] = { $ne: "PVP" }
 
@@ -236,7 +249,7 @@ export async function getLunarNewYearMonsterPriority(avoidPVP = false) {
             target: entity.target,
             type: entity.type,
             x: entity.x,
-            y: entity.y
+            y: entity.y,
         })
     }
 
@@ -250,19 +263,16 @@ export async function getValentinesMonsterPriority(avoidPVP = false) {
     const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
 
     const entitiesFilters = {
-        $and: [{
-            $or: [
-                { "s.fullguardx": undefined },
-                { "s.fullguardx.ms": { $lt: 30000 } }
-            ],
-        }, {
-            $or: [
-                { "s.fullguard": undefined },
-                { "s.fullguard.ms": { $lt: 30000 } }
-            ]
-        }],
+        $and: [
+            {
+                $or: [{ "s.fullguardx": undefined }, { "s.fullguardx.ms": { $lt: 30000 } }],
+            },
+            {
+                $or: [{ "s.fullguard": undefined }, { "s.fullguard.ms": { $lt: 30000 } }],
+            },
+        ],
         lastSeen: { $gt: Date.now() - 30000 },
-        type: { $in: monsterPriority }
+        type: { $in: monsterPriority },
     }
     if (avoidPVP) entitiesFilters["serverIdentifier"] = { $ne: "PVP" }
 
@@ -302,7 +312,7 @@ export async function getValentinesMonsterPriority(avoidPVP = false) {
             target: entity.target,
             type: entity.type,
             x: entity.x,
-            y: entity.y
+            y: entity.y,
         })
     }
 
@@ -313,9 +323,9 @@ export async function getHalloweenMonsterPriority(avoidPVP = false) {
     if (!AL.Database.connection) return []
 
     const monsterPriority: MonsterName[] = ["mrpumpkin", "mrgreen"]
-    const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
+    const serverPriority = ["USI", "EUI", "USII", "USIII", "EUII", "ASIAI", "EUPVP", "USPVP"]
 
-    const entitiesFilters = { lastSeen: { $gt: Date.now() - 30000 }, type: { $in: monsterPriority } }
+    const entitiesFilters = { lastSeen: { $gt: Date.now() - 600_000 }, type: { $in: monsterPriority } }
     if (avoidPVP) entitiesFilters["serverIdentifier"] = { $ne: "PVP" }
 
     const entitiesP = await AL.EntityModel.find(entitiesFilters).lean().exec()
@@ -354,7 +364,7 @@ export async function getHalloweenMonsterPriority(avoidPVP = false) {
             target: entity.target,
             type: entity.type,
             x: entity.x,
-            y: entity.y
+            y: entity.y,
         })
     }
 
@@ -368,19 +378,16 @@ export async function getHolidaySeasonMonsterPriority(avoidPVP = false) {
     const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
 
     const entityFilters = {
-        $and: [{
-            $or: [
-                { "s.fullguardx": undefined },
-                { "s.fullguardx.ms": { $lt: 30000 } }
-            ],
-        }, {
-            $or: [
-                { "s.fullguard": undefined },
-                { "s.fullguard.ms": { $lt: 30000 } }
-            ]
-        }],
+        $and: [
+            {
+                $or: [{ "s.fullguardx": undefined }, { "s.fullguardx.ms": { $lt: 30000 } }],
+            },
+            {
+                $or: [{ "s.fullguard": undefined }, { "s.fullguard.ms": { $lt: 30000 } }],
+            },
+        ],
         lastSeen: { $gt: Date.now() - 30000 },
-        type: { $in: monsterPriority }
+        type: { $in: monsterPriority },
     }
     const serverFilters = {}
     if (avoidPVP) {
@@ -405,21 +412,26 @@ export async function getHolidaySeasonMonsterPriority(avoidPVP = false) {
             target: entity.target,
             type: entity.type,
             x: entity.x,
-            y: entity.y
+            y: entity.y,
         })
     }
     for (const server of servers) {
         if (
-            server.S.grinch
-            && (server.S.grinch as ServerInfoDataLive).live
-            && !toReturn.some(e => e.serverIdentifier === server.serverIdentifier && e.serverRegion === server.serverRegion && e.type === "grinch")
+            server.S.grinch &&
+            (server.S.grinch as ServerInfoDataLive).live &&
+            !toReturn.some(
+                (e) =>
+                    e.serverIdentifier === server.serverIdentifier &&
+                    e.serverRegion === server.serverRegion &&
+                    e.type === "grinch",
+            )
         ) {
             // It's live, but we don't have it in entities, add it
             toReturn.push({
                 hp: (server.S.grinch as ServerInfoDataLive).hp,
                 serverIdentifier: server.serverIdentifier,
                 serverRegion: server.serverRegion,
-                type: "grinch"
+                type: "grinch",
             })
         }
     }
