@@ -129,6 +129,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
             contexts: contexts,
             disableEnergize: true,
             enableGreedyAggro: true,
+            enableHealStrangers: true,
             generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
             type: "mrgreen",
         }),

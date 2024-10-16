@@ -253,6 +253,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
             contexts: contexts,
             disableEnergize: true,
             enableGreedyAggro: true,
+            enableHealStrangers: true,
             generateEnsureEquipped: {
                 attributes: ["resistance", "int", "attack"],
             },
