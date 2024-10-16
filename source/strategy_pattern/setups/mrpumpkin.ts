@@ -22,7 +22,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base.js"
-import { UNEQUIP } from "./equipment.js"
+import { RETURN_HIGHEST, UNEQUIP } from "./equipment.js"
 
 const NON_PVP_MONSTERS: MonsterName[] = ["mrpumpkin", "phoenix", "xscorpion", "minimush", "tinyp"]
 
@@ -143,12 +143,12 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
 class RogueMrPumpkinAttackStrategy extends RogueAttackStrategy {
     public onApply(bot: Rogue): void {
         this.options.generateEnsureEquipped.prefer = this.options.generateEnsureEquipped.prefer ?? {}
-        this.options.generateEnsureEquipped.prefer.orb = { name: "jacko", filters: { returnHighestLevel: true } }
+        this.options.generateEnsureEquipped.prefer.orb = { name: "jacko", filters: RETURN_HIGHEST }
 
         if (bot.serverData.name === "PVP" || !(bot.hasItem("zapper") || bot.isEquipped("zapper"))) {
-            this.options.generateEnsureEquipped.prefer.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "cring", filters: RETURN_HIGHEST }
         } else {
-            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: RETURN_HIGHEST }
         }
 
         super.onApply(bot)
@@ -184,21 +184,21 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             // No Splash Damage
             this.options.generateEnsureEquipped.prefer.mainhand = {
                 name: "fireblade",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
             this.options.generateEnsureEquipped.prefer.offhand = {
                 name: "fireblade",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
         } else {
             // Splash Damage & additional monsters
             this.options.generateEnsureEquipped.prefer.mainhand = {
                 name: "vhammer",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
             this.options.generateEnsureEquipped.prefer.offhand = {
                 name: "ololipop",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
         }
 

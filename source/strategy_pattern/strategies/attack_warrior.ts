@@ -1,7 +1,8 @@
 import AL, { ItemData, SlotType, Tools, Warrior } from "alclient"
 import { sleep } from "../../base/general.js"
-import { BaseAttackStrategy, BaseAttackStrategyOptions, IDLE_ATTACK_MONSTERS } from "./attack.js"
 import { suppress_errors } from "../logging.js"
+import { RETURN_HIGHEST } from "../setups/equipment.js"
+import { BaseAttackStrategy, BaseAttackStrategyOptions, IDLE_ATTACK_MONSTERS } from "./attack.js"
 
 export type WarriorAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableAgitate?: true
@@ -225,7 +226,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
                     await bot.unequip("offhand")
                 }
                 if (bot.slots.mainhand) mainhand = { ...bot.slots.mainhand }
-                await bot.equip(bot.locateItem(["bataxe", "scythe"], bot.items, { returnHighestLevel: true }))
+                await bot.equip(bot.locateItem(["bataxe", "scythe"], bot.items, RETURN_HIGHEST))
                 if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms) // Await the penalty cooldown so we can cleave right away
             }
         }
@@ -236,28 +237,38 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             // Re-equip items
             const equipBatch: { num: number; slot: SlotType }[] = []
 
-            if (mainhand) {
-                equipBatch.push({
-                    num: bot.locateItem(mainhand.name, bot.items, {
-                        level: mainhand.level,
-                        special: mainhand.p,
-                        statType: mainhand.stat_type,
-                    }),
-                    slot: "mainhand",
+            if (this.options.ensureEquipped.mainhand && !this.options.ensureEquipped.mainhand.unequip) {
+                const num = bot.locateItem(
+                    this.options.ensureEquipped.mainhand.name,
+                    bot.items,
+                    this.options.ensureEquipped.mainhand.filters,
+                )
+                if (num !== undefined) equipBatch.push({ num, slot: "mainhand" })
+            } else if (mainhand) {
+                const num = bot.locateItem(mainhand.name, bot.items, {
+                    level: mainhand.level,
+                    special: mainhand.p,
+                    statType: mainhand.stat_type,
                 })
+                if (num !== undefined) equipBatch.push({ num, slot: "mainhand" })
             } else {
                 await bot.unequip("mainhand")
             }
 
-            if (offhand) {
-                equipBatch.push({
-                    num: bot.locateItem(offhand.name, bot.items, {
-                        level: offhand.level,
-                        special: offhand.p,
-                        statType: offhand.stat_type,
-                    }),
-                    slot: "offhand",
+            if (this.options.ensureEquipped.offhand && !this.options.ensureEquipped.offhand.unequip) {
+                const num = bot.locateItem(
+                    this.options.ensureEquipped.offhand.name,
+                    bot.items,
+                    this.options.ensureEquipped.offhand.filters,
+                )
+                if (num !== undefined) equipBatch.push({ num, slot: "offhand" })
+            } else if (offhand) {
+                const num = bot.locateItem(offhand.name, bot.items, {
+                    level: offhand.level,
+                    special: offhand.p,
+                    statType: offhand.stat_type,
                 })
+                if (num !== undefined) equipBatch.push({ num, slot: "offhand" })
             }
 
             if (equipBatch.length) await bot.equipBatch(equipBatch)
@@ -315,28 +326,38 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             // Re-equip items
             const equipBatch: { num: number; slot: SlotType }[] = []
 
-            if (mainhand) {
-                equipBatch.push({
-                    num: bot.locateItem(mainhand.name, bot.items, {
-                        level: mainhand.level,
-                        special: mainhand.p,
-                        statType: mainhand.stat_type,
-                    }),
-                    slot: "mainhand",
+            if (this.options.ensureEquipped.mainhand && !this.options.ensureEquipped.mainhand.unequip) {
+                const num = bot.locateItem(
+                    this.options.ensureEquipped.mainhand.name,
+                    bot.items,
+                    this.options.ensureEquipped.mainhand.filters,
+                )
+                if (num !== undefined) equipBatch.push({ num, slot: "mainhand" })
+            } else if (mainhand) {
+                const num = bot.locateItem(mainhand.name, bot.items, {
+                    level: mainhand.level,
+                    special: mainhand.p,
+                    statType: mainhand.stat_type,
                 })
+                if (num !== undefined) equipBatch.push({ num, slot: "mainhand" })
             } else {
                 await bot.unequip("mainhand")
             }
 
-            if (offhand) {
-                equipBatch.push({
-                    num: bot.locateItem(offhand.name, bot.items, {
-                        level: offhand.level,
-                        special: offhand.p,
-                        statType: offhand.stat_type,
-                    }),
-                    slot: "offhand",
+            if (this.options.ensureEquipped.offhand && !this.options.ensureEquipped.offhand.unequip) {
+                const num = bot.locateItem(
+                    this.options.ensureEquipped.offhand.name,
+                    bot.items,
+                    this.options.ensureEquipped.offhand.filters,
+                )
+                if (num !== undefined) equipBatch.push({ num, slot: "offhand" })
+            } else if (offhand) {
+                const num = bot.locateItem(offhand.name, bot.items, {
+                    level: offhand.level,
+                    special: offhand.p,
+                    statType: offhand.stat_type,
                 })
+                if (num !== undefined) equipBatch.push({ num, slot: "offhand" })
             }
 
             if (equipBatch.length) await bot.equipBatch(equipBatch)
