@@ -211,7 +211,7 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
         } else {
             delete this.options.disableCleave
             this.options.enableEquipForCleave = true
-            this.options.typeList = ["mrpumpkin", "phoenix", "xscorpion", "tinyp"]
+            this.options.typeList = ["mrpumpkin", "phoenix", "xscorpion", "tinyp", "minimush"]
             this.options.enableGreedyAggro = ["mrpumpkin", "xscorpion"]
         }
     }

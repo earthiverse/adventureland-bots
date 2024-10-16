@@ -18,6 +18,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base.js"
+import { RETURN_HIGHEST } from "./equipment.js"
 
 class MrGreenMoveStrategy extends ImprovedMoveStrategy {
     protected async move(bot: Character): Promise<void> {
@@ -117,7 +118,10 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
             contexts: contexts,
             disableEnergize: true,
             disableZapper: true,
-            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
+            generateEnsureEquipped: {
+                attributes: ["armor", "int", "attack"],
+                prefer: { mainhand: { name: "fireblade", filters: RETURN_HIGHEST } },
+            },
             type: "mrgreen",
         }),
         move: moveStrategy,
@@ -130,7 +134,12 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
             disableEnergize: true,
             enableGreedyAggro: true,
             enableHealStrangers: true,
-            generateEnsureEquipped: { attributes: ["armor", "int", "attack"] },
+            generateEnsureEquipped: {
+                attributes: ["armor", "int", "attack"],
+                prefer: {
+                    mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
+                },
+            },
             type: "mrgreen",
         }),
         move: moveStrategy,
@@ -141,7 +150,13 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
         attack: new WarriorMrGreenAttackStrategy({
             contexts: contexts,
             disableCleave: true,
-            generateEnsureEquipped: { attributes: ["armor", "str", "attack"] },
+            generateEnsureEquipped: {
+                attributes: ["armor", "str", "attack"],
+                prefer: {
+                    mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
+                    offhand: { name: "fireblade", filters: RETURN_HIGHEST },
+                },
+            },
             type: "mrgreen",
         }),
         move: moveStrategy,
