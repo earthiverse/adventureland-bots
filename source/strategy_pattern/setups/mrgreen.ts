@@ -120,7 +120,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
             disableZapper: true,
             generateEnsureEquipped: {
                 attributes: ["armor", "int", "attack"],
-                prefer: { mainhand: { name: "fireblade", filters: RETURN_HIGHEST } },
+                prefer: { mainhand: { name: "firestaff", filters: RETURN_HIGHEST } },
             },
             type: "mrgreen",
         }),
