@@ -28,6 +28,7 @@ const NON_PVP_MONSTERS: MonsterName[] = ["mrpumpkin", "phoenix", "xscorpion", "m
 
 class MrPumpkinMoveStrategy extends ImprovedMoveStrategy {
     protected async move(bot: Character): Promise<void> {
+        // Go to Kane if the pumpkin will die soon
         if (
             Database.connection &&
             bot.S.mrpumpkin &&
@@ -57,6 +58,19 @@ class MrPumpkinMoveStrategy extends ImprovedMoveStrategy {
                 return
             }
         }
+
+        // Farm xscorpions if we
+        const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
+        if (!bot.s.coop || bot.s.coop.ms < 60_000 || bot.s.coop.ms < 300_000) {
+            // We might miss out on coop share
+            this.types = ["mrpumpkin"]
+        } else if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
+            // We're killing it too fast
+            this.types = ["xscorpion"]
+        } else {
+            this.types = ["mrpumpkin"]
+        }
+
         return super.move(bot)
     }
 }
@@ -95,12 +109,15 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
     }
 
     protected shouldAttack(bot: Character): boolean {
+        if (!this.options.typeList.includes("mrpumpkin")) this.options.typeList.push("mrpumpkin")
+
         const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
         if (!bot.s.coop || bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000) {
             return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
         }
         if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
-            return false // Stop attacking, we won't be off hopsickness before it dies
+            // Stop attacking, we won't be off hopsickness before it dies
+            this.options.typeList.splice(this.options.typeList.indexOf("mrpumpkin"), 1)
         }
         return super.shouldAttack(bot)
     }
@@ -129,12 +146,15 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
     }
 
     protected shouldAttack(bot: Character): boolean {
+        if (!this.options.typeList.includes("mrpumpkin")) this.options.typeList.push("mrpumpkin")
+
         const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
         if (!bot.s.coop || bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000) {
             return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
         }
         if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
-            return false // Stop attacking, we won't be off hopsickness before it dies
+            // Stop attacking, we won't be off hopsickness before it dies
+            this.options.typeList.splice(this.options.typeList.indexOf("mrpumpkin"), 1)
         }
         return super.shouldAttack(bot)
     }
@@ -160,12 +180,15 @@ class RogueMrPumpkinAttackStrategy extends RogueAttackStrategy {
     }
 
     protected shouldAttack(bot: Character): boolean {
+        if (!this.options.typeList.includes("mrpumpkin")) this.options.typeList.push("mrpumpkin")
+
         const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
         if (!bot.s.coop || bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000) {
             return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
         }
         if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
-            return false // Stop attacking, we won't be off hopsickness before it dies
+            // Stop attacking, we won't be off hopsickness before it dies
+            this.options.typeList.splice(this.options.typeList.indexOf("mrpumpkin"), 1)
         }
         return super.shouldAttack(bot)
     }
@@ -217,12 +240,15 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
     }
 
     protected shouldAttack(bot: Character): boolean {
+        if (!this.options.typeList.includes("mrpumpkin")) this.options.typeList.push("mrpumpkin")
+
         const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
         if (!bot.s.coop || bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000) {
             return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
         }
         if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
-            return false // Stop attacking, we won't be off hopsickness before it dies
+            // Stop attacking, we won't be off hopsickness before it dies
+            this.options.typeList.splice(this.options.typeList.indexOf("mrpumpkin"), 1)
         }
         return super.shouldAttack(bot)
     }
