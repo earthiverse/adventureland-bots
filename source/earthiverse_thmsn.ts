@@ -1,45 +1,45 @@
 import AL, {
+    Attribute,
+    Mage,
     Merchant,
+    MonsterName,
+    Paladin,
     PingCompensatedCharacter,
     Priest,
-    Mage,
-    Warrior,
-    ServerRegion,
-    ServerIdentifier,
-    MonsterName,
-    ServerInfoDataLive,
-    Paladin,
     Ranger,
     Rogue,
-    Attribute,
+    ServerIdentifier,
+    ServerInfoDataLive,
+    ServerRegion,
+    Warrior,
 } from "alclient"
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
+import { DEFAULT_ITEM_CONFIG } from "./base/itemsNew.js"
 import { defaultNewMerchantStrategyOptions, startMerchant } from "./merchant/strategy.js"
 import { filterContexts, Strategist, Strategy } from "./strategy_pattern/context.js"
+import { Config, constructSetups, Setups } from "./strategy_pattern/setups/base.js"
+import { BEE_DUNGEON_MONSTERS } from "./strategy_pattern/setups/beedungeon.js"
+import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
+import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
 import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
+import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
+import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
+import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
+import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
+import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
+import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
 import {
     FinishMonsterHuntStrategy,
     GetHolidaySpiritStrategy,
     GetMonsterHuntStrategy,
 } from "./strategy_pattern/strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategy_pattern/strategies/party.js"
-import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
-import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
-import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
-import { Config, constructSetups, Setups } from "./strategy_pattern/setups/base.js"
-import { DebugStrategy } from "./strategy_pattern/strategies/debug.js"
-import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
-import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
-import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
-import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
-import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
-import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
+import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
 import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
-import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
-import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
-import { BEE_DUNGEON_MONSTERS } from "./strategy_pattern/setups/beedungeon.js"
-import { DEFAULT_ITEM_CONFIG } from "./base/itemsNew.js"
+import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
+import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
 
 process.on("uncaughtException", (error) => {
     console.error("Uncaught exception:", error)
@@ -80,7 +80,7 @@ const SPECIAL_MONSTERS: MonsterName[] = [
 
 const MERCHANT = "earthMer"
 const WARRIORS = ["earthWar"]
-const MAGES = ["earthMag"]
+const MAGES = ["earthMag", "earthMag2", "earthMag3"]
 const PRIESTS = ["earthPri"]
 const RANGERS = ["earthiverse"]
 const PALADINS = ["earthPal"]
@@ -309,6 +309,22 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 (context.bot.map == "goobrawl" && context.bot.getEntity({ typeList: ["rgoo", "bgoo"] }))
             ) {
                 priority.push("rgoo")
+            }
+
+            // Invasion
+            const desertlandInvasion = (context.bot.S as { invasion_desertland: unknown }).invasion_desertland as {
+                stage?: number
+                mtype?: MonsterName
+            }
+            const mainInvasion = (context.bot.S as { invasion_main: unknown }).invasion_main as {
+                stage?: number
+                mtype?: MonsterName
+            }
+            if (mainInvasion.stage !== undefined) {
+                priority.push(mainInvasion.mtype)
+            }
+            if (desertlandInvasion.stage !== undefined) {
+                priority.push(desertlandInvasion.mtype)
             }
 
             // Lunar New Year
@@ -653,7 +669,7 @@ const startWarriorContext = async (name: string) => {
     startWarrior(CONTEXT).catch(console.error)
     CONTEXTS.push(CONTEXT)
 }
-for (const name of WARRIORS) startWarriorContext(name)
+for (const name of WARRIORS) await startWarriorContext(name)
 
 const startMageContext = async (name: string) => {
     let mage: Mage
@@ -669,7 +685,7 @@ const startMageContext = async (name: string) => {
     startMage(CONTEXT).catch(console.error)
     CONTEXTS.push(CONTEXT)
 }
-for (const name of MAGES) startMageContext(name)
+for (const name of MAGES) await startMageContext(name)
 
 const startPaladinContext = async (name: string) => {
     let paladin: Paladin
@@ -685,7 +701,7 @@ const startPaladinContext = async (name: string) => {
     startPaladin(CONTEXT).catch(console.error)
     CONTEXTS.push(CONTEXT)
 }
-for (const name of PALADINS) startPaladinContext(name)
+for (const name of PALADINS) await startPaladinContext(name)
 
 const startPriestContext = async (name: string) => {
     let priest: Priest
@@ -701,7 +717,7 @@ const startPriestContext = async (name: string) => {
     startPriest(CONTEXT).catch(console.error)
     CONTEXTS.push(CONTEXT)
 }
-for (const name of PRIESTS) startPriestContext(name)
+for (const name of PRIESTS) await startPriestContext(name)
 
 const startRangerContext = async (name: string) => {
     let ranger: Ranger
@@ -717,7 +733,7 @@ const startRangerContext = async (name: string) => {
     startRanger(CONTEXT).catch(console.error)
     CONTEXTS.push(CONTEXT)
 }
-for (const name of RANGERS) startRangerContext(name)
+for (const name of RANGERS) await startRangerContext(name)
 
 const startRogueContext = async (name: string) => {
     let rogue: Rogue
@@ -733,4 +749,4 @@ const startRogueContext = async (name: string) => {
     startRogue(CONTEXT).catch(console.error)
     CONTEXTS.push(CONTEXT)
 }
-for (const name of ROGUES) startRogueContext(name)
+for (const name of ROGUES) await startRogueContext(name)
