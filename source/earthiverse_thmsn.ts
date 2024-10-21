@@ -62,7 +62,7 @@ AL.Constants.SPECIAL_MONSTERS.push(...BEE_DUNGEON_MONSTERS)
 const ENABLE_EVENTS = true
 const ENABLE_SPECIAL_MONSTERS = true
 let ENABLE_MONSTERHUNTS = true
-const DEFAULT_MONSTERS: MonsterName[] = ["bee"]
+const DEFAULT_MONSTERS: MonsterName[] = ["crab"]
 const SPECIAL_MONSTERS: MonsterName[] = [
     "cutebee",
     ...BEE_DUNGEON_MONSTERS,
