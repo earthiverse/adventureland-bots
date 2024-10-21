@@ -112,133 +112,50 @@ export const REPLENISH_ITEM_CONFIG: ItemConfig = {
         holdSlot: 38,
         replenish: 1000,
     },
-    xptome: {
-        hold: true,
-        replenish: 1,
-    },
+}
+
+const BUY: BuyConfig = {
+    buy: true,
+    buyPrice: "ponty",
+}
+
+const SELL: SellConfig = {
+    sell: true,
+    sellPrice: "npc",
 }
 
 export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     ...REPLENISH_ITEM_CONFIG,
-    "5bucks": {
-        buy: true,
-        buyPrice: 100_000_000,
-    },
-    amuletofm: {
-        buy: true,
-        buyPrice: 500_000_000,
-        useOfferingFromLevel: 0,
-    },
-    angelwings: {
-        buy: true,
-        buyPrice: "ponty",
-    },
-    armorbox: {
-        buy: true,
-        buyPrice: "ponty",
-        exchange: true,
-    },
-    armorring: {
-        buy: true,
-        buyPrice: 1_000_000,
-        craft: true,
-    },
-    // basher: {
-    //     destroyBelowLevel: 1,
-    // },
-    basketofeggs: {
-        craft: true,
-        exchange: true,
-    },
-    // bataxe: {
-    //     destroyBelowLevel: 1,
-    // },
-    bcape: {
-        // We can craft other capes at level 7
-        upgradeUntilLevel: 7,
-        usePrimlingFromLevel: 5,
-    },
-    bee_pollen: {
-        sell: true,
-        sellPrice: "npc"
-    },
-    "beekey": {
-        sellExcess: 10
-    },
-    "beewings": {
-        sell: true,
-        sellPrice: "npc"
-    },
-    "bfangamulet": {
-        buy: true,
-        buyPrice: "ponty",
-        craft: true,
-    },
-    // blade: {
-    //     // destroyBelowLevel: 1
-    //     sellExcess: 5,
-    //     upgradeUntilLevel: 0,
-    // },
-    // bow: {
-    //     // destroyBelowLevel: 1
-    //     sellExcess: 5,
-    //     upgradeUntilLevel: 0,
-    // },
-    // bowofthedead: {
-    //     destroyBelowLevel: 1,
-    // },
-    cake: {
-        craft: true,
-        sell: true,
-        sellPrice: "npc",
-    },
-    /** Blue Candy */
-    candy0: {
-        exchange: true,
-    },
-    /** Pink Candy */
-    candy1: {
-        exchange: true,
-    },
-    candycane: {
-        exchange: true,
-    },
-    // candycanesword: {
-    //     destroyBelowLevel: 1,
-    // },
-    candypop: {
-        exchange: true,
-    },
-    carrotsword: {
-        craft: true,
-        // destroyBelowLevel: 1,
-    },
-    cclaw: {
-        craft: true,
-        // destroyBelowLevel: 1,
-    },
-    cdragon: {
-        sellExcess: 5,
-    },
-    claw: {
-        // destroyBelowLevel: 1
-        sellExcess: 5,
-        upgradeUntilLevel: 0,
-    },
-    // coat: {
-    //     destroyBelowLevel: 1,
-    // },
-    // coat1: {
-    //     destroyBelowLevel: 1,
-    // },
-    computer: {
-        hold: true,
-        holdSlot: 40,
-    },
-    crossbow: {
-        usePrimlingFromLevel: 4,
-        useOfferingFromLevel: 7,
-    },
+    "5bucks": BUY,
+    amuletofm: BUY,
+    angelwings: SELL,
+    armorbox: BUY,
+    armorring: SELL,
+    basher: SELL,
+    basketofeggs: BUY,
+    bataxe: SELL,
+    bcape: BUY,
+    bee_pollen: SELL,
+    beekey: SELL,
+    beewings: SELL,
+    bfangamulet: BUY,
+    blade: SELL,
+    bow: SELL,
+    bowofthedead: SELL,
+    cake: SELL,
+    candy0: BUY,
+    candy1: BUY,
+    candycane: BUY,
+    candycanesword: SELL,
+    candypop: BUY,
+    carrotsword: SELL,
+    cclaw: SELL,
+    cdragon: SELL,
+    claw: SELL,
+    coat: SELL,
+    coat1: SELL,
+    computer: BUY,
+    crossbow: SELL,
     cscroll0: {
         hold: ["merchant"],
         holdSlot: 28,
@@ -251,321 +168,111 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: ["merchant"],
         holdSlot: 30,
     },
-    // cupid: {
-    //     destroyBelowLevel: 1,
-    // },
-    // dagger: {
-    //     destroyBelowLevel: 1,
-    // },
-    // daggerofthedead: {
-    //     destroyBelowLevel: 1,
-    // },
-    // dexring: {
-    //     sell: true,
-    //     sellPrice: "npc",
-    // },
-    // ecape: {
-    //     destroyBelowLevel: 1,
-    // },
-    // eears: {
-    //     destroyBelowLevel: 1,
-    // },
-    eggnog: {
-        sellExcess: 9999 * 3,
-    },
-    elixirdex1: {
-        craft: true,
-    },
-    elixirdex2: {
-        craft: true,
-    },
-    elixirint1: {
-        craft: true,
-    },
-    elixirint2: {
-        craft: true,
-    },
-    elixirstr1: {
-        craft: true,
-    },
-    elixirstr2: {
-        craft: true,
-    },
-    elixirvit1: {
-        craft: true,
-    },
-    elixirvit2: {
-        craft: true,
-    },
-    // epyjamas: {
-    //     destroyBelowLevel: 1,
-    // },
-    // eslippers: {
-    //     destroyBelowLevel: 1,
-    // },
-    essenceoflife: {
-        sellExcess: 9999 * 5,
-    },
-    exoarm: {
-        buy: true,
-        buyPrice: 250_000_000,
-        usePrimlingFromLevel: 0,
-        useOfferingFromLevel: 1,
-    },
-    fieldgen0: {
-        sell: true,
-        sellPrice: 5_000_000,
-        sellExcess: 20,
-    },
-    // fireblade: {
-    //     destroyBelowLevel: 1,
-    // },
-    // firestaff: {
-    //     destroyBelowLevel: 1,
-    // },
-    firestars: {
-        craft: true,
-    },
-    // frankypants: {
-    //     destroyBelowLevel: 1,
-    // },
-    frostbow: {
-        craft: true,
-    },
-    fury: {
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2,
-    },
-    // gcape: {
-    //     destroyBelowLevel: 1,
-    // },
-    gem0: {
-        /** Green Gem */ exchange: true,
-    },
-    gem1: {
-        /** Red Gem */ exchange: true,
-    },
-    gemfragment: {
-        exchange: true,
-    },
-    // gloves: {
-    //     destroyBelowLevel: 1,
-    // },
-    // gloves1: {
-    //     destroyBelowLevel: 1,
-    // },
-    goldbooster: {
-        hold: true,
-    },
-    // gphelmet: {
-    //     destroyBelowLevel: 1,
-    // },
-    greenenvelope: {
-        exchange: true,
-    },
-    // harbringer: {
-    //     destroyBelowLevel: 1,
-    // },
-    harmor: {
-        buy: true,
-        buyPrice: "ponty",
-        usePrimlingFromLevel: 7,
-        useOfferingFromLevel: 9,
-    },
-    hboots: {
-        buy: true,
-        buyPrice: "ponty",
-        usePrimlingFromLevel: 7,
-        useOfferingFromLevel: 9,
-    },
-    // hbow: {
-    //     destroyBelowLevel: 1,
-    // },
-    // helmet: {
-    //     destroyBelowLevel: 1,
-    // },
-    // helmet1: {
-    //     destroyBelowLevel: 1,
-    // },
-    hgloves: {
-        buy: true,
-        buyPrice: "ponty",
-        usePrimlingFromLevel: 7,
-        useOfferingFromLevel: 9,
-    },
-    hhelmet: {
-        buy: true,
-        buyPrice: "ponty",
-        usePrimlingFromLevel: 7,
-        useOfferingFromLevel: 9,
-    },
-    "honeypot": {
-        craft: true
-    },
-    "hotchocolate": {
-        sellExcess: 9999 * 3
-    },
-    hpamulet: {
-        sell: true,
-        sellPrice: "npc",
-    },
-    hpants: {
-        buy: true,
-        buyPrice: "ponty",
-        usePrimlingFromLevel: 7,
-        useOfferingFromLevel: 9,
-    },
-    hpbelt: {
-        sell: true,
-        sellPrice: "npc",
-    },
-    hpot0: {
-        // sell: true,
-        // sellPrice: "npc"
-        sellExcess: 9999,
-    },
-    // iceskates: {
-    //     destroyBelowLevel: 1,
-    // },
-    // intearring: {
-    //     sell: true,
-    //     sellPrice: "npc",
-    // },
-    // intring: {
-    //     sell: true,
-    //     sellPrice: "npc",
-    // },
-    lantern: {
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 3,
-    },
-    // "lbelt": {
-    //     craft: true
-    // },
-    leather: {
-        exchange: true,
-    },
-    lostearring: {
-        exchange: true,
-        exchangeAtLevel: 2,
-        upgradeUntilLevel: 2,
-        // Don't use offerings or primlings
-        useOfferingFromLevel: 99,
-        usePrimlingFromLevel: 98,
-    },
+    cupid: SELL,
+    dagger: SELL,
+    daggerofthedead: SELL,
+    dexamulet: SELL,
+    dexearring: SELL,
+    dexring: SELL,
+    ecape: SELL,
+    eears: SELL,
+    eggnog: SELL,
+    elixirdex1: SELL,
+    elixirdex2: SELL,
+    elixirint1: SELL,
+    elixirint2: SELL,
+    elixirstr1: SELL,
+    elixirstr2: SELL,
+    elixirvit1: SELL,
+    elixirvit2: SELL,
+    epyjamas: SELL,
+    eslippers: SELL,
+    essenceoflife: SELL,
+    exoarm: BUY,
+    fieldgen0: SELL,
+    fireblade: SELL,
+    firestaff: SELL,
+    firestars: SELL,
+    frankypants: SELL,
+    frostbow: SELL,
+    fury: BUY,
+    gcape: SELL,
+    gem0: BUY,
+    gem1: BUY,
+    gemfragment: BUY,
+    gloves: SELL,
+    gloves1: SELL,
+    gphelmet: SELL,
+    greenenvelope: BUY,
+    harbringer: SELL,
+    harmor: SELL,
+    harpybow: SELL,
+    hboots: SELL,
+    hbow: SELL,
+    helmet: SELL,
+    helmet1: SELL,
+    hgloves: SELL,
+    hhelmet: SELL,
+    honeypot: SELL,
+    hotchocolate: SELL,
+    hpamulet: SELL,
+    hpants: SELL,
+    hpbelt: SELL,
+    hpot0: SELL,
+    iceskates: SELL,
+    intamulet: SELL,
+    intbelt: SELL,
+    intearring: SELL,
+    intring: SELL,
+    lantern: SELL,
+    lbelt: SELL,
+    leather: BUY,
+    lostearring: SELL,
     luckbooster: {
         hold: true,
     },
-    // mace: {
-    //     destroyBelowLevel: 1,
-    // },
-    // maceofthedead: {
-    //     destroyBelowLevel: 1,
-    // },
-    // merry: {
-    //     destroyBelowLevel: 1,
-    // },
-    mistletoe: {
-        exchange: true,
-    },
-    // mittens: {
-    //     destroyBelowLevel: 1,
-    // },
-    // monstertoken: {
-    //     sell: true,
-    //     sellPrice: 250_000,
-    // },
-    mpot0: {
-        // sell: true,
-        // sellPrice: "npc"
-        sellExcess: 9999,
-    },
-    mpxamulet: {
-        buy: true,
-        buyPrice: 500_000_000,
-        useOfferingFromLevel: 0,
-    },
-    mpxgloves: {
-        buy: true,
-        buyPrice: 500_000_000,
-        useOfferingFromLevel: 0,
-    },
-    // mushroomstaff: {
-    //     destroyBelowLevel: 1,
-    // },
-    northstar: {
-        buy: true,
-        buyPrice: 250_000_000,
-        useOfferingFromLevel: 0,
-    },
+    mace: SELL,
+    maceofthedead: SELL,
+    merry: SELL,
+    mistletoe: BUY,
+    mittens: SELL,
+    monstertoken: BUY,
+    mpot0: SELL,
+    mpxamulet: BUY,
+    mpxgloves: BUY,
+    mushroomstaff: SELL,
+    northstar: BUY,
     offering: {
         hold: ["merchant"],
     },
     offeringp: {
         hold: ["merchant"],
-        buy: true,
-        buyPrice: 2_500_000,
     },
-    // oozingterror: {
-    //     destroyBelowLevel: 1,
-    // },
-    // ornamentstaff: {
-    //     destroyBelowLevel: 1,
-    // },
-    // pants: {
-    //     destroyBelowLevel: 1,
-    // },
-    // pants1: {
-    //     destroyBelowLevel: 1,
-    // },
-    // phelmet: {
-    //     destroyBelowLevel: 1,
-    // },
+    oozingterror: SELL,
+    ornamentstaff: SELL,
+    pants: SELL,
+    pants1: SELL,
+    phelmet: SELL,
     pickaxe: {
         hold: ["merchant"],
         sell: true,
         sellPrice: 1_000_000,
     },
-    // pmace: {
-    //     destroyBelowLevel: 1,
-    // },
-    // pmaceofthedead: {
-    //     destroyBelowLevel: 1,
-    // },
-    pouchbow: {
-        craft: true,
-        // destroyBelowLevel: 1,
-    },
-    pumpkinspice: {
-        sellExcess: 9999 * 3,
-    },
-    // pyjamas: {
-    //     destroyBelowLevel: 1,
-    // },
-    // quiver: {
-    //     destroyBelowLevel: 1,
-    // },
-    rabbitsfoot: {
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2,
-    },
-    resistancering: {
-        craft: true,
-    },
-    // ringsj: {
-    //     sell: true,
-    //     sellPrice: "npc",
-    // },
+    pmace: SELL,
+    pmaceofthedead: SELL,
+    pouchbow: SELL,
+    pumpkinspice: SELL,
+    pyjamas: SELL,
+    quiver: SELL,
+    rabbitsfoot: BUY,
+    resistancering: SELL,
+    ringsj: SELL,
     rod: {
         hold: ["merchant"],
         sell: true,
         sellPrice: 1_000_000,
     },
-    sanguine: {
-        buy: true,
-        buyPrice: 500_000_000,
-        useOfferingFromLevel: 0,
-    },
+    sanguine: BUY,
     scroll0: {
         hold: ["merchant"],
         holdSlot: 35,
@@ -578,292 +285,89 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: ["merchant"],
         holdSlot: 37,
     },
-    seashell: {
-        exchange: true,
-    },
-    shoes: {
-        // destroyBelowLevel: 1,
-        sellExcess: 1,
-        upgradeUntilLevel: 0,
-    },
-    // shoes1: {
-    //     destroyBelowLevel: 1,
-    // },
-    // slimestaff: {
-    //     destroyBelowLevel: 1,
-    // },
-    smoke: {
-        sellExcess: 200,
-    },
-    snakeoil: {
-        craft: true,
-    },
-    snowball: {
-        sellExcess: 200 * 3,
-    },
-    snowflakes: {
-        craft: true,
-    },
-    snring: {
-        buy: true,
-        buyPrice: 250_000_000,
-        useOfferingFromLevel: 0,
-    },
-    // spear: {
-    //     destroyBelowLevel: 1,
-    // },
-    spookyamulet: {
-        sellExcess: 5,
-    },
-    // staff: {
-    //     destroyBelowLevel: 1,
-    // },
-    // staffofthedead: {
-    //     destroyBelowLevel: 1,
-    // },
-    stand0: {
-        sell: true,
-        sellPrice: "npc",
-    },
-    starkillers: {
-        buy: true,
-        buyPrice: 250_000_000,
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2,
-    },
-    stick: {
-        // We can craft sticks at level 9
-        upgradeUntilLevel: 9,
-    },
-    // stinger: {
-    //     destroyBelowLevel: 1,
-    // },
-    // stramulet: {
-    //     sell: true,
-    //     sellPrice: "npc",
-    // },
-    // strearring: {
-    //     sell: true,
-    //     sellPrice: "npc",
-    // },
-    suckerpunch: {
-        buy: true,
-        buyPrice: 250_000_000,
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2,
-    },
-    supercomputer: {
-        hold: true,
-    },
-    supermittens: {
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2,
-    },
-    // swifty: {
-    //     destroyBelowLevel: 1,
-    // },
-    // sword: {
-    //     destroyBelowLevel: 1,
-    // },
-    // swordofthedead: {
-    //     destroyBelowLevel: 1,
-    // },
-    // t2bow: {
-    //     destroyBelowLevel: 1,
-    // },
-    t2quiver: {
-        buy: true,
-        buyPrice: 25_000_000,
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2,
-    },
-    t3bow: {
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2,
-    },
-    test_orb: {
-        upgradeUntilLevel: 0,
-    },
-    throwingstars: {
-        // We use level 0 to craft other stars
-        upgradeUntilLevel: 0,
-    },
-    // tigerhelmet: {
-    //     destroyBelowLevel: 1,
-    // },
+    seashell: SELL,
+    shoes: SELL,
+    shoes1: SELL,
+    slimestaff: SELL,
+    smoke: SELL,
+    snakeoil: SELL,
+    snowball: SELL,
+    snowflakes: SELL,
+    snring: BUY,
+    spear: SELL,
+    spookyamulet: SELL,
+    spores: SELL,
+    staff: SELL,
+    staffofthedead: SELL,
+    stand0: SELL,
+    starkillers: BUY,
+    stick: SELL,
+    stinger: SELL,
+    stramulet: SELL,
+    strbelt: SELL,
+    strearring: SELL,
+    strring: SELL,
+    suckerpunch: BUY,
+    supercomputer: BUY,
+    supermittens: BUY,
+    swifty: SELL,
+    sword: SELL,
+    swordofthedead: SELL,
+    t2bow: SELL,
+    t2quiver: SELL,
+    t3bow: SELL,
+    test_orb: SELL,
+    throwingstars: SELL,
+    tigercape: SELL,
+    tigerhelmet: SELL,
+    tigershield: SELL,
+    tigerstone: SELL,
     tracker: {
         hold: true,
         holdSlot: 41,
     },
-    trigger: {
-        buy: true,
-        buyPrice: 500_000_000,
-        useOfferingFromLevel: 0,
-    },
-    tshirt88: {
-        // Don't upgrade, it's special
-        upgradeUntilLevel: 0,
-    },
-    vattire: {
-        buy: true,
-        buyPrice: "ponty",
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
-    },
-    // vboots: {
-    //     destroyBelowLevel: 1,
-    // },
-    vcape: {
-        buy: true,
-        buyPrice: "ponty",
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
-    },
-    vdagger: {
-        buy: true,
-        buyPrice: "ponty",
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
-    },
-    // vgloves: {
-    //     destroyBelowLevel: 1,
-    // },
-    vhammer: {
-        buy: true,
-        buyPrice: "ponty",
-        mail: true,
-        mailTo: "Diocles",
-        // sell: true,
-        // sellPrice: 100_000_000,
-        upgradeUntilLevel: 0,
-        // usePrimlingFromLevel: 1,
-        // useOfferingFromLevel: 4,
-    },
-    vitearring: {
-        sell: true,
-        sellPrice: "npc",
-    },
-    vitring: {
-        upgradeUntilLevel: 2,
-    },
-    vorb: {
-        buy: true,
-        buyPrice: 250_000_000,
-        useOfferingFromLevel: 0,
-    },
-    // wand: {
-    //     destroyBelowLevel: 1,
-    // },
-    // warmscarf: {
-    //     destroyBelowLevel: 1,
-    // },
-    wattire: {
-        craft: true,
-        // destroyBelowLevel: 1,
-    },
-    // wbasher: {
-    //     destroyBelowLevel: 1,
-    // },
-    wblade: {
-        buy: true,
-        buyPrice: 500_000_000,
-        useOfferingFromLevel: 0,
-    },
-    wbook0: {
-        usePrimlingFromLevel: 3,
-        useOfferingFromLevel: 4,
-    },
-    wbook1: {
-        usePrimlingFromLevel: 0,
-        useOfferingFromLevel: 1,
-    },
-    wbookhs: {
-        usePrimlingFromLevel: 0,
-        useOfferingFromLevel: 1,
-    },
-    wbreeches: {
-        craft: true,
-        // destroyBelowLevel: 1,
-    },
-    wcap: {
-        craft: true,
-        // destroyBelowLevel: 1,
-    },
-    weaponbox: {
-        exchange: true,
-    },
-    wgloves: {
-        craft: true,
-        // destroyBelowLevel: 1,
-    },
-    wingedboots: {
-        craft: true,
-    },
-    wshoes: {
-        craft: true,
-        // destroyBelowLevel: 1,
-    },
-    xarmor: {
-        buy: true,
-        buyPrice: 15_000_000,
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
-    },
-    xboots: {
-        buy: true,
-        buyPrice: 15_000_000,
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
-    },
-    xbox: {
-        craft: true,
-    },
-    xgloves: {
-        buy: true,
-        buyPrice: 15_000_000,
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
-    },
-    xhelmet: {
-        buy: true,
-        buyPrice: 15_000_000,
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
-    },
-    // xmace: {
-    //     destroyBelowLevel: 1,
-    // },
-    // xmashat: {
-    //     destroyBelowLevel: 1,
-    // },
-    // xmaspants: {
-    //     destroyBelowLevel: 1,
-    // },
-    // xmasshoes: {
-    //     destroyBelowLevel: 1,
-    // },
-    // xmassweater: {
-    //     destroyBelowLevel: 1,
-    // },
-    xpants: {
-        buy: true,
-        buyPrice: 15_000_000,
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
-    },
+    trigger: BUY,
+    tshirt88: BUY,
+    vattire: SELL,
+    vboots: SELL,
+    vcape: SELL,
+    vdagger: SELL,
+    vgloves: SELL,
+    vhammer: SELL,
+    vitearring: SELL,
+    vitring: SELL,
+    vorb: SELL,
+    wand: SELL,
+    warmscarf: SELL,
+    wattire: SELL,
+    wbasher: SELL,
+    wblade: BUY,
+    wbook0: SELL,
+    wbook1: SELL,
+    wbookhs: SELL,
+    wbreeches: SELL,
+    wcap: SELL,
+    weaponbox: BUY,
+    wgloves: SELL,
+    whiteegg: SELL,
+    wingedboots: SELL,
+    wshoes: SELL,
+    xarmor: SELL,
+    xboots: SELL,
+    xbox: SELL,
+    xgloves: SELL,
+    xhelmet: SELL,
+    xmace: SELL,
+    xmashat: SELL,
+    xmaspants: SELL,
+    xmasshoes: SELL,
+    xmassweater: SELL,
+    xpants: SELL,
     xpbooster: {
         hold: true,
     },
-    xshield: {
-        buy: true,
-        buyPrice: 50_000_000,
-        useOfferingFromLevel: 0,
-    },
-    zapper: {
-        buy: true,
-        buyPrice: 500_000_000,
-        useOfferingFromLevel: 0,
-    },
+    xshield: SELL,
+    zapper: BUY,
 } as ItemConfig
 
 export function wantToDestroy(itemConfig: ItemConfig, item: ItemData): boolean {
