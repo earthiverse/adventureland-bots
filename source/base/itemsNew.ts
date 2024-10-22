@@ -538,74 +538,7 @@ export function wantToUpgrade(item: Item, itemConfig: UpgradeConfig, itemCounts:
  * Programatically adds some additional items to buy
  */
 export async function adjustItemConfig(itemConfig: ItemConfig) {
-    for (const iN in AL.Game.G.items) {
-        const itemName = iN as ItemName
-        const gItem = AL.Game.G.items[itemName]
-        let config = itemConfig[itemName]
-        if (config && (config.buy || config.sell)) continue // Buy (or sell) is already set, don't change it
-
-        if (!config) config = {}
-
-        // TODO: Add more logic for things to buy
-
-        if (
-            gItem.e || // Buy all exchangables
-            gItem.type === "token" || // Buy all tokens
-            gItem.type === "bank_key" ||
-            gItem.type === "dungeon_key" || // Buy all keys
-            gItem.tier >= 4 || // Buy all super high tier items
-            gItem.name.includes("Darkforge") // Buy all darkforge items
-        ) {
-            config.buy = true
-            config.buyPrice = "ponty"
-            continue
-        }
-
-        // Use primlings and offerings for higher level items
-        if (gItem.compound && gItem.grades) {
-            let primlingFrom = 3
-            if (gItem.grades[1] == 0) {
-                // Rare at level 0
-                primlingFrom = 1
-            } else if (gItem.grades[0] == 0) {
-                // High at level 0
-                primlingFrom = 2
-            }
-
-            if (config.usePrimlingFromLevel === undefined) config.usePrimlingFromLevel = primlingFrom
-            if (config.useOfferingFromLevel === undefined) config.useOfferingFromLevel = primlingFrom + 1
-        }
-        if (gItem.upgrade && gItem.grades) {
-            let primlingFrom = 8
-            let offeringFrom = 9
-            if (gItem.grades[1] == 0) {
-                // Rare at level 0
-                primlingFrom = 4
-                offeringFrom = 7
-            } else if (gItem.grades[0] == 0) {
-                // High at level 0
-                primlingFrom = 6
-                offeringFrom = 8
-            }
-
-            if (config.usePrimlingFromLevel === undefined) config.usePrimlingFromLevel = primlingFrom
-            if (config.useOfferingFromLevel === undefined) config.useOfferingFromLevel = offeringFrom
-        }
-
-        if (Object.keys(config).length === 0) {
-            // Remove it from our config
-            delete itemConfig[itemName]
-        } else {
-            // Make sure it's in our config
-            itemConfig[itemName] = config
-        }
-    }
-
-    // TODO: If we are selling things for more than ponty price,
-    //       Add buy with buyPrice: "ponty" unless "buy" is already set
-
-    // TODO: If we are using primlings on things,
-    //       Add buy with buyPrice: "ponty" unless "buy" is already set
+    // Don't
 }
 
 /**
