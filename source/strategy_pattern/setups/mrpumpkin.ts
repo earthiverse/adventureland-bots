@@ -1,18 +1,4 @@
-import {
-    Character,
-    Database,
-    IPosition,
-    Mage,
-    MonsterName,
-    NPCModel,
-    PingCompensatedCharacter,
-    Priest,
-    Rogue,
-    ServerInfoDataLive,
-    Warrior,
-} from "alclient"
-import { offsetPositionParty } from "../../base/locations.js"
-import { getMsToDeath } from "../../base/timetokill.js"
+import { Mage, MonsterName, PingCompensatedCharacter, Priest, Rogue, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -25,55 +11,6 @@ import { CharacterConfig, Setup } from "./base.js"
 import { RETURN_HIGHEST, UNEQUIP } from "./equipment.js"
 
 const NON_PVP_MONSTERS: MonsterName[] = ["mrpumpkin", "phoenix", "xscorpion", "minimush", "tinyp"]
-
-class MrPumpkinMoveStrategy extends ImprovedMoveStrategy {
-    protected async move(bot: Character): Promise<void> {
-        // Go to Kane if the pumpkin will die soon
-        if (
-            Database.connection &&
-            bot.S.mrpumpkin &&
-            (bot.S.mrpumpkin as ServerInfoDataLive).live &&
-            (bot.S.mrpumpkin as ServerInfoDataLive).hp < 1_250_000
-        ) {
-            let kane: IPosition = bot.players.get("$Kane")
-            if (!kane) {
-                kane = await NPCModel.findOne(
-                    {
-                        name: "Kane",
-                        serverRegion: bot.serverData.region,
-                        serverIdentifier: bot.serverData.name,
-                    },
-                    {
-                        _id: 0,
-                        map: 1,
-                        x: 1,
-                        y: 1,
-                    },
-                )
-                    .lean()
-                    .exec()
-            }
-            if (kane) {
-                await bot.smartMove(offsetPositionParty(kane, bot), { avoidTownWarps: true, useBlink: true })
-                return
-            }
-        }
-
-        // Farm xscorpions if we
-        const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
-        if (!bot.s.coop || bot.s.coop.ms < 60_000 || bot.s.coop.p < 300_000) {
-            // We might miss out on coop share
-            this.types = ["mrpumpkin"]
-        } else if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
-            // We're killing it too fast
-            this.types = ["xscorpion"]
-        } else {
-            this.types = ["mrpumpkin"]
-        }
-
-        return super.move(bot)
-    }
-}
 
 class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
@@ -107,20 +44,6 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
             this.options.maximumTargets = bot.mcourage
         }
     }
-
-    protected shouldAttack(bot: Character): boolean {
-        if (!this.options.typeList.includes("mrpumpkin")) this.options.typeList.push("mrpumpkin")
-
-        const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
-        if (!bot.s.coop || bot.s.coop.ms < 60_000 || bot.s.coop.p < 300_000) {
-            return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
-        }
-        if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
-            // Stop attacking, we won't be off hopsickness before it dies
-            this.options.typeList.splice(this.options.typeList.indexOf("mrpumpkin"), 1)
-        }
-        return super.shouldAttack(bot)
-    }
 }
 
 class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
@@ -144,20 +67,6 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
             this.options.maximumTargets = bot.mcourage
         }
     }
-
-    protected shouldAttack(bot: Character): boolean {
-        if (!this.options.typeList.includes("mrpumpkin")) this.options.typeList.push("mrpumpkin")
-
-        const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
-        if (!bot.s.coop || bot.s.coop.ms < 60_000 || bot.s.coop.p < 300_000) {
-            return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
-        }
-        if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
-            // Stop attacking, we won't be off hopsickness before it dies
-            this.options.typeList.splice(this.options.typeList.indexOf("mrpumpkin"), 1)
-        }
-        return super.shouldAttack(bot)
-    }
 }
 
 class RogueMrPumpkinAttackStrategy extends RogueAttackStrategy {
@@ -177,20 +86,6 @@ class RogueMrPumpkinAttackStrategy extends RogueAttackStrategy {
         } else {
             this.options.typeList = NON_PVP_MONSTERS
         }
-    }
-
-    protected shouldAttack(bot: Character): boolean {
-        if (!this.options.typeList.includes("mrpumpkin")) this.options.typeList.push("mrpumpkin")
-
-        const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
-        if (!bot.s.coop || bot.s.coop.ms < 60_000 || bot.s.coop.p < 300_000) {
-            return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
-        }
-        if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
-            // Stop attacking, we won't be off hopsickness before it dies
-            this.options.typeList.splice(this.options.typeList.indexOf("mrpumpkin"), 1)
-        }
-        return super.shouldAttack(bot)
     }
 }
 
@@ -238,24 +133,10 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             this.options.enableGreedyAggro = ["mrpumpkin", "xscorpion"]
         }
     }
-
-    protected shouldAttack(bot: Character): boolean {
-        if (!this.options.typeList.includes("mrpumpkin")) this.options.typeList.push("mrpumpkin")
-
-        const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
-        if (!bot.s.coop || bot.s.coop.ms < 60_000 || bot.s.coop.p < 300_000) {
-            return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
-        }
-        if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
-            // Stop attacking, we won't be off hopsickness before it dies
-            this.options.typeList.splice(this.options.typeList.indexOf("mrpumpkin"), 1)
-        }
-        return super.shouldAttack(bot)
-    }
 }
 
 export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new MrPumpkinMoveStrategy("mrpumpkin", { idlePosition: { map: "halloween", x: -250, y: 725 } })
+    const moveStrategy = new ImprovedMoveStrategy("mrpumpkin", { idlePosition: { map: "halloween", x: -250, y: 725 } })
 
     const mageConfig: CharacterConfig = {
         ctype: "mage",

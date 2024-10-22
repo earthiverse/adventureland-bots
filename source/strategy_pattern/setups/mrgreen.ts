@@ -1,14 +1,4 @@
-import {
-    Character,
-    Database,
-    IPosition,
-    NPCModel,
-    PingCompensatedCharacter,
-    ServerInfoDataLive,
-    Warrior,
-} from "alclient"
-import { offsetPositionParty } from "../../base/locations.js"
-import { getMsToDeath } from "../../base/timetokill.js"
+import { PingCompensatedCharacter, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -19,41 +9,6 @@ import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base.js"
 import { RETURN_HIGHEST } from "./equipment.js"
-
-class MrGreenMoveStrategy extends ImprovedMoveStrategy {
-    protected async move(bot: Character): Promise<void> {
-        if (
-            Database.connection &&
-            bot.S.mrgreen &&
-            (bot.S.mrgreen as ServerInfoDataLive).live &&
-            (bot.S.mrgreen as ServerInfoDataLive).hp < 2_000_000
-        ) {
-            let kane: IPosition = bot.players.get("$Kane")
-            if (!kane) {
-                kane = await NPCModel.findOne(
-                    {
-                        name: "Kane",
-                        serverRegion: bot.serverData.region,
-                        serverIdentifier: bot.serverData.name,
-                    },
-                    {
-                        _id: 0,
-                        map: 1,
-                        x: 1,
-                        y: 1,
-                    },
-                )
-                    .lean()
-                    .exec()
-            }
-            if (kane) {
-                await bot.smartMove(offsetPositionParty(kane, bot), { avoidTownWarps: true, useBlink: true })
-                return
-            }
-        }
-        return super.move(bot)
-    }
-}
 
 class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
@@ -70,51 +25,14 @@ class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
         }
         super.onApply(bot)
     }
-
-    protected shouldAttack(bot: Character): boolean {
-        const mrgreen = bot.getEntity({ type: "mrgreen" })
-        if (!bot.s.coop || bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000) {
-            return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
-        }
-        if (mrgreen && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrgreen)) {
-            return false // Stop attacking, we won't be off hopsickness before it dies
-        }
-        return super.shouldAttack(bot)
-    }
-}
-
-class MageMrGreenAttackStrategy extends MageAttackStrategy {
-    protected shouldAttack(bot: Character): boolean {
-        const mrgreen = bot.getEntity({ type: "mrgreen" })
-        if (!bot.s.coop || bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000) {
-            return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
-        }
-        if (mrgreen && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrgreen)) {
-            return false // Stop attacking, we won't be off hopsickness before it dies
-        }
-        return super.shouldAttack(bot)
-    }
-}
-
-class PriestMrGreenAttackStrategy extends PriestAttackStrategy {
-    protected shouldAttack(bot: Character): boolean {
-        const mrgreen = bot.getEntity({ type: "mrgreen" })
-        if (!bot.s.coop || bot.s.coop.ms < 10_000 || bot.s.coop.p < 300_000) {
-            return super.shouldAttack(bot) // Low time remaining, or might lose contribution bonus
-        }
-        if (mrgreen && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrgreen)) {
-            return false // Stop attacking, we won't be off hopsickness before it dies
-        }
-        return super.shouldAttack(bot)
-    }
 }
 
 export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new MrGreenMoveStrategy("mrgreen")
+    const moveStrategy = new ImprovedMoveStrategy("mrgreen")
 
     const mageConfig: CharacterConfig = {
         ctype: "mage",
-        attack: new MageMrGreenAttackStrategy({
+        attack: new MageAttackStrategy({
             contexts: contexts,
             disableEnergize: true,
             disableZapper: true,
@@ -129,7 +47,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
 
     const priestConfig: CharacterConfig = {
         ctype: "priest",
-        attack: new PriestMrGreenAttackStrategy({
+        attack: new PriestAttackStrategy({
             contexts: contexts,
             disableEnergize: true,
             enableGreedyAggro: true,
