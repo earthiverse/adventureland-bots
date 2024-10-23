@@ -56,7 +56,7 @@ observer.socket?.on("entities", (data) => {
   }
 });
 
-setInterval(async () => {
+const logStatus = async () => {
   console.clear();
   console.log("Connected:", observer.socket?.connected ?? "deleted");
   console.log("Server:", observer.server.region, observer.server.name);
@@ -68,6 +68,9 @@ setInterval(async () => {
   console.log("Ping: ", await observer.ping());
   console.log();
   console.log(assumption);
+};
+setInterval(() => {
+  logStatus().catch(console.error);
 }, 1000);
 
 for (const [server, region] of [
@@ -78,5 +81,5 @@ for (const [server, region] of [
   ["ASIA", "I"],
 ] as [ServerRegion, ServerIdentifier][]) {
   const o = new Observer(game);
-  o.start(server, region);
+  o.start(server, region).catch(console.error);
 }

@@ -1,45 +1,41 @@
 import type { ClassKey, ItemKey } from "typed-adventureland";
 
-export type DestroyConfig = {
-  /** We want to destroy the item */
-  action: "destroy";
+// TODO: Buy config
+
+export type DestroyConfigBase = {
   /** If set, we will destroy special items (items with a `.p`), too */
   destroySpecial?: true;
+  /** If set, we will destroy items up to this level (we only destroy level 0 items by default) */
+  destroyUpToLevel?: number;
 };
 
-export type HoldConfig = {
-  /** We want to hold the item */
-  action: "hold";
+export type HoldConfigBase = {
   /**
    * If set to "all", we will hold the item on all character types.
    * If set to an array, we will hold the item on the specified character types.
    */
   characterTypes: "all" | ClassKey[];
+  /** If set, we should try to keep this many of the given item on our bots */
+  replenish?: number;
   /** If set, we should attempt to place the specified item in the specified position in the inventory */
   position?: number;
 };
 
-export type ListConfig = {
-  /** We want to list the item for sale on our stand */
-  action: "list";
+export type ListConfigBase = {
   /** How much we want to list the item for */
   listPrice: number;
   /** If set, we will list special items (items with a `.p`), too */
   specialMultiplier?: number;
 };
 
-export type MailConfig = {
-  /** We want to mail the item to ourselves, or another player */
-  action: "mail";
+export type MailConfigBase = {
   /** Who we want to mail the item to */
   recipient: string;
   /** If set, we will mail special items (items with a `.p`, too) */
   mailSpecial?: true;
 };
 
-export type SellConfig = {
-  /** We want to sell the item to either a player or NPC */
-  action: "sell";
+export type SellConfigBase = {
   /**
    * If set to "npc" or a number, we will sell level 0 items to an NPC or at the specified price to other players.
    * If set to an array, we will sell that level of item to an NPC or at the specified price to other players.
@@ -51,30 +47,49 @@ export type SellConfig = {
 
 // TODO: Upgrade config
 
-export type Config = Partial<Record<ItemKey, DestroyConfig | HoldConfig | ListConfig | MailConfig | SellConfig>>;
+export type ItemConfig = {
+  /** We want to destroy the item */
+  destroy?: DestroyConfigBase;
+  /** We want to hold the item */
+  hold?: HoldConfigBase;
+  /** We want to list the item for sale on our stand */
+  list?: ListConfigBase;
+  /** We want to mail the item to ourselves, or another player */
+  mail?: MailConfigBase;
+  /** We want to sell the item to either a player or NPC */
+  sell?: SellConfigBase;
+};
+
+export type Config = Partial<Record<ItemKey, ItemConfig>>;
+
+const DESTROY: ItemConfig = { destroy: {} };
+const HOLD_FULL_STACK: ItemConfig = { hold: { characterTypes: "all", replenish: 9999 } };
+const SELL_TO_NPC: ItemConfig = { sell: { sellPrice: "npc" } };
 
 const config: Config = {
   cclaw: {
-    action: "destroy",
+    ...DESTROY,
   },
   crabclaw: {
-    action: "sell",
-    sellPrice: "npc",
+    ...SELL_TO_NPC,
   },
   hpamulet: {
-    action: "sell",
-    sellPrice: "npc",
+    ...SELL_TO_NPC,
   },
   hpbelt: {
-    action: "sell",
-    sellPrice: "npc",
+    ...SELL_TO_NPC,
+  },
+  hpot1: {
+    ...HOLD_FULL_STACK,
+  },
+  mpot1: {
+    ...HOLD_FULL_STACK,
   },
   slimestaff: {
-    action: "destroy",
+    ...DESTROY,
   },
   vitring: {
-    action: "sell",
-    sellPrice: "npc",
+    ...SELL_TO_NPC,
   },
 };
 

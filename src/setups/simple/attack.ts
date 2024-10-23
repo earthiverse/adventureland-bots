@@ -19,7 +19,7 @@ export const setup = (character: Character, monster: string = "goo") => {
 
       await character.basicAttack(entity);
     } catch (e) {
-      if (entity) unignoreMonster(entity);
+      if (entity !== undefined) unignoreMonster(entity);
       logDebug(e as Error);
     } finally {
       setTimeout(() => void attackLoop(), Math.max(100, character.getTimeout("attack")));

@@ -5,6 +5,8 @@
   "description": "Adventureland Bots based on ALClient",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "lint": "eslint",
     "test": "jest"
   },
   "repository": {

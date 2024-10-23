@@ -81,5 +81,5 @@ for (const [server, region] of [
   ["ASIA", "I"],
 ] as [ServerRegion, ServerIdentifier][]) {
   const o = new Observer(game);
-  o.start(server, region);
+  o.start(server, region).catch(console.error);;
 }

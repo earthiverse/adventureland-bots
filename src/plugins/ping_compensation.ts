@@ -51,7 +51,7 @@ EventBus.on("ping", (_observer, server, ping) => {
 EventBus.on("next_skill_set", (character, skill, when) => {
   const key = `${character.server.key}${character.server.name}`;
   const ping = minPings.get(key);
-  if (!ping) return;
+  if (ping === undefined) return;
   character.setNextSkill(skill, when - ping);
 });
 
@@ -59,7 +59,7 @@ EventBus.on("next_skill_set", (character, skill, when) => {
 EventBus.on("conditions_set", (character, s) => {
   const key = `${character.server.key}${character.server.name}`;
   const ping = minPings.get(key);
-  if (!ping) return;
+  if (ping === undefined) return;
   for (const conditionName in s) {
     const condition = s[conditionName as ConditionKey] as StatusInfoBase;
     condition.ms -= ping;
@@ -71,7 +71,7 @@ EventBus.on("conditions_set", (character, s) => {
 EventBus.on("progress_set", (character, q) => {
   const key = `${character.server.key}${character.server.name}`;
   const ping = minPings.get(key);
-  if (!ping) return;
+  if (ping === undefined) return;
   for (const progressName in q) {
     const progress = q[progressName as keyof CharacterEntityQInfos] as {
       ms: number;
@@ -85,7 +85,7 @@ EventBus.on("progress_set", (character, q) => {
 EventBus.on("entities_updated", (observer, monsters, characters) => {
   const key = `${observer.server.key}${observer.server.name}`;
   const ping = minPings.get(key);
-  if (!ping) return;
+  if (ping === undefined) return;
 
   for (const entity of [...monsters, ...characters]) {
     if (!entity.moving) continue;

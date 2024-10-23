@@ -1,5 +1,12 @@
 import type { Character } from "alclient";
-import { getItemDescription, wantToDestroy, wantToList, wantToMail, wantToSell } from "../../utilities/items.js";
+import {
+  getItemDescription,
+  wantToDestroy,
+  wantToList,
+  wantToMail,
+  wantToReplenish,
+  wantToSell,
+} from "../../utilities/items.js";
 import { Level, log, logDebug } from "../../utilities/logging.js";
 
 const CHECK_EVERY_MS = 1000;
@@ -15,14 +22,25 @@ export const setup = (character: Character) => {
         const item = character.items[index];
         if (!item) continue;
 
+        const numToReplenish = wantToReplenish(character, item);
+        if (numToReplenish) {
+          // TODO: Buy
+        }
+
         if (wantToDestroy(item)) {
           await character.destroy(index);
           log(`${character.id} destroyed ${getItemDescription(item)}`, DESTROY_LOG_LEVEL);
-        } else if (wantToList(item)) {
+        }
+
+        if (wantToList(item)) {
           // TODO: List
-        } else if (wantToMail(item)) {
+        }
+
+        if (wantToMail(item)) {
           // TODO: Mail
-        } else if (wantToSell(item)) {
+        }
+
+        if (wantToSell(item)) {
           await character.sell(index, item.q ?? 1);
           log(`${character.id} sold ${getItemDescription(item)} to NPC`, SELL_LOG_LEVEL);
         }

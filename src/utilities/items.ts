@@ -1,6 +1,6 @@
 import { Character } from "alclient";
 import type { GData, ItemInfo } from "typed-adventureland";
-import Config from "../../config/items.js";
+import Config, { type ItemConfig } from "../../config/items.js";
 
 /**
  * Returns how much gold you would get if you sold the item to an NPC
@@ -14,9 +14,9 @@ export function calculateNpcBuyPrice(item: ItemInfo, g: GData): number {
   const gItem = g.items[item.name];
   let value = gItem.g * g.multipliers.buy_to_sell;
 
-  if (gItem.markup) value /= gItem.markup;
-  if (item.expires) value /= 8;
-  if (item.level) {
+  if (gItem.markup !== undefined) value /= gItem.markup;
+  if (item.expires !== undefined) value /= 8;
+  if (item.level !== undefined && item.level > 0) {
     // TODO: Finish this
     throw new Error("TODO: Finish this");
   }
@@ -37,12 +37,16 @@ export function getItemDescription(item: ItemInfo): string {
   return description;
 }
 
-export function wantToDestroy(item: ItemInfo): boolean {
-  if (item.l) return false; // We can't destroy locked items
+export function wantToDestroy(item: ItemInfo, config = Config): boolean {
+  if (item.l !== undefined) return false; // We can't destroy locked items
 
-  const config = Config[item.name];
-  if (!config || config.action !== "destroy") return false; // We have no destroy config for this item
-  if (config.destroySpecial && item.p) return false; // We don't want to destroy special items
+  const itemConfig = config[item.name]?.destroy;
+  if (!itemConfig) return false; // We have no destroy config for this item
+  if (item.p && !itemConfig.destroySpecial) return false; // We don't want to destroy special items
+  if (item.level !== undefined && item.level > 0) {
+    if (itemConfig.destroyUpToLevel === undefined) return false; // We only want to destroy level 0 items
+    if (item.level > itemConfig.destroyUpToLevel) return false; // This item is leveled higher than what we want to destroy
+  }
 
   return true;
 }
@@ -52,13 +56,13 @@ export function wantToDestroy(item: ItemInfo): boolean {
  * @param item
  * @returns true if we want to hold the item on the character
  */
-export function wantToHold(character: Character, item: ItemInfo): boolean {
-  if (item.l) return true;
+export function wantToHold(character: Character, item: ItemInfo, config = Config): boolean {
+  if (item.l !== undefined) return true;
 
-  const config = Config[item.name];
-  if (!config || config.action !== "hold") return false; // We have no hold config for this item
-  if (config.characterTypes === "all") return true; // We want all classes to hold this item
-  if (!config.characterTypes.includes(character.ctype)) return false; // We don't want this class to hold this item
+  const itemConfig = config[item.name]?.hold;
+  if (!itemConfig) return false; // We have no hold config for this item
+  if (itemConfig.characterTypes === "all") return true; // We want all classes to hold this item
+  if (!itemConfig.characterTypes.includes(character.ctype)) return false; // We don't want this class to hold this item
 
   return true;
 }
@@ -67,12 +71,12 @@ export function wantToHold(character: Character, item: ItemInfo): boolean {
  * @param item
  * @returns true if we want to list the item for sale
  */
-export function wantToList(item: ItemInfo): boolean {
-  if (item.l) return false; // We can't list locked items
+export function wantToList(item: ItemInfo, config = Config): boolean {
+  if (item.l !== undefined) return false; // We can't list locked items
 
-  const config = Config[item.name];
-  if (!config || config.action !== "list") return false; // We have no list config for this item
-  if (item.p && !config.specialMultiplier) return false; // We don't want to list special items
+  const itemConfig = config[item.name]?.list;
+  if (!itemConfig) return false; // We have no list config for this item
+  if (item.p && itemConfig.specialMultiplier === undefined) return false; // We don't want to list special items
 
   return true;
 }
@@ -81,14 +85,23 @@ export function wantToList(item: ItemInfo): boolean {
  * @param item
  * @returns true if we want to mail the item
  */
-export function wantToMail(item: ItemInfo): boolean {
-  if (item.l) return false; // We can't mail locked items
+export function wantToMail(item: ItemInfo, config = Config): boolean {
+  if (item.l !== undefined) return false; // We can't mail locked items
 
-  const config = Config[item.name];
-  if (!config || config.action !== "mail") return false; // We have no mail config for this item
-  if (item.p && !config.mailSpecial) return false; // We don't want to mail special items
+  const itemConfig = config[item.name]?.mail;
+  if (!itemConfig) return false; // We have no mail config for this item
+  if (item.p && !itemConfig.mailSpecial) return false; // We don't want to mail special items
 
   return true;
+}
+
+export function wantToReplenish(character: Character, item: ItemInfo, config = Config): number {
+  if (!wantToHold(character, item)) return 0;
+
+  const itemConfig = (config[item.name] as ItemConfig).hold;
+  if (!itemConfig || itemConfig.replenish === undefined) return 0; // We don't want to replenish this item
+
+  return Math.max(0, itemConfig.replenish - character.countItems({ name: item.name }));
 }
 
 /**
@@ -96,17 +109,17 @@ export function wantToMail(item: ItemInfo): boolean {
  * @param atPrice the price we are checking if we want to sell at
  * @returns true if we want to sell the item
  */
-export function wantToSell(item: ItemInfo, atPrice: number | "npc" = "npc"): boolean {
-  if (item.l) return false; // We can't sell locked items
+export function wantToSell(item: ItemInfo, atPrice: number | "npc" = "npc", config = Config): boolean {
+  if (item.l !== undefined) return false; // We can't sell locked items
 
-  const config = Config[item.name];
-  if (!config || config.action !== "sell") return false; // We have no sell config for this item
-  if (item.p && !config.specialMultiplier) return false; // We don't want to sell special items
-  if (!Array.isArray(config.sellPrice) && (item.level ?? 0) > 0) return false; // Only sell leveled items if we have sellPrice as an array
+  const itemConfig = config[item.name]?.sell;
+  if (!itemConfig) return false; // We have no sell config for this item
+  if (item.p && itemConfig.specialMultiplier === 0) return false; // We don't want to sell special items
+  if (!Array.isArray(itemConfig.sellPrice) && (item.level ?? 0) > 0) return false; // Only sell leveled items if we have sellPrice as an array
 
   if (
     (item.level ?? 0) === 0 &&
-    (config.sellPrice === "npc" || (Array.isArray(config.sellPrice) && config.sellPrice["0"] === "npc")) &&
+    (itemConfig.sellPrice === "npc" || (Array.isArray(itemConfig.sellPrice) && itemConfig.sellPrice["0"] === "npc")) &&
     atPrice === "npc"
   )
     return true; // We want to sell it at the NPC price

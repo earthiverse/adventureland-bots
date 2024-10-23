@@ -58,8 +58,8 @@ export function getBestTargets(
 
   for (const [, monster] of character.monsters) {
     // Filter out unwanted monsters
-    if (options.monster && monster.type !== options.monster) continue; // Not the wanted monster
-    if (options.withinRange && character.getDistanceTo(monster) > options.withinRange) continue; // Too far away
+    if (options.monster !== undefined && monster.type !== options.monster) continue; // Not the wanted monster
+    if (options.withinRange !== undefined && character.getDistanceTo(monster) > options.withinRange) continue; // Too far away
 
     // The monster is OK
     bestEntities.push(monster);
