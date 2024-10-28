@@ -22,27 +22,31 @@ export const setup = (character: Character) => {
         const item = character.items[index];
         if (!item) continue;
 
-        const numToReplenish = wantToReplenish(character, item);
-        if (numToReplenish) {
-          // TODO: Buy
-        }
+        try {
+          const numToReplenish = wantToReplenish(character, item);
+          if (numToReplenish) {
+            await character.buy(item.name, numToReplenish);
+          }
 
-        if (wantToDestroy(item)) {
-          await character.destroy(index);
-          log(`${character.id} destroyed ${getItemDescription(item)}`, DESTROY_LOG_LEVEL);
-        }
+          if (wantToDestroy(item)) {
+            await character.destroy(index);
+            log(`${character.id} destroyed ${getItemDescription(item)}`, DESTROY_LOG_LEVEL);
+          }
 
-        if (wantToList(item)) {
-          // TODO: List
-        }
+          if (wantToList(item)) {
+            // TODO: List
+          }
 
-        if (wantToMail(item)) {
-          // TODO: Mail
-        }
+          if (wantToMail(item)) {
+            // TODO: Mail
+          }
 
-        if (wantToSell(item)) {
-          await character.sell(index, item.q ?? 1);
-          log(`${character.id} sold ${getItemDescription(item)} to NPC`, SELL_LOG_LEVEL);
+          if (wantToSell(item)) {
+            await character.sell(index, item.q ?? 1);
+            log(`${character.id} sold ${getItemDescription(item)} to NPC`, SELL_LOG_LEVEL);
+          }
+        } catch (e) {
+          logDebug(e as Error);
         }
       }
     } catch (e) {

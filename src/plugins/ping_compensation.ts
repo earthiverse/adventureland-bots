@@ -1,15 +1,14 @@
 import { EventBus, Observer } from "alclient";
-import config from "config";
 import type { ConditionKey, StatusInfoBase } from "typed-adventureland";
 import type { CharacterEntityQInfos } from "typed-adventureland/dist/src/entities/character-entity.js";
+import config from "../../config/config.js";
 import { logDebug } from "../utilities/logging.js";
 
 /**
  * This plugin adds ping compensation.
  */
 
-const MAX_PINGS = config.get<number>("pingCompensation.maxPings");
-const PING_EVERY_MS = config.get<number>("pingCompensation.pingEveryMs");
+const { maxPings, pingEveryMs } = config.pingCompensation;
 
 const observers = new Set<Observer>();
 const pings = new Map<string, number[]>();
@@ -27,7 +26,7 @@ const pingLoop = async () => {
   } catch (e) {
     logDebug(e as Error);
   } finally {
-    setTimeout(() => void pingLoop(), PING_EVERY_MS);
+    setTimeout(() => void pingLoop(), pingEveryMs);
   }
 };
 void pingLoop();
@@ -41,8 +40,8 @@ EventBus.on("observer_stopped", (observer) => observers.delete(observer));
 EventBus.on("ping", (_observer, server, ping) => {
   const key = `${server.key}${server.name}`;
   const serverPings = pings.get(key) ?? [];
-  if (serverPings.unshift(ping) > MAX_PINGS) {
-    serverPings.splice(MAX_PINGS - 1);
+  if (serverPings.unshift(ping) > maxPings) {
+    serverPings.splice(maxPings - 1);
   }
   minPings.set(key, Math.min(...serverPings));
 });

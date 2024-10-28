@@ -1,5 +1,5 @@
 import { Game, type Character } from "alclient";
-import config from "config";
+import config from "../config/config.js";
 import { setup } from "./setups/simple/base.js";
 import { getGFromCache } from "./utilities/cache.js";
 
@@ -10,9 +10,7 @@ import "./plugins/party.js";
 import "./plugins/ping_compensation.js";
 
 // Config
-const server = config.get<string>("credentials.server");
-const email = config.get<string>("credentials.email");
-const password = config.get<string>("credentials.password");
+const { server, email, password } = config.credentials;
 
 const g = getGFromCache();
 const game = new Game({ url: server, G: g });

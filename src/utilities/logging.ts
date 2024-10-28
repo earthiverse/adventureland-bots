@@ -1,7 +1,7 @@
-import config from "config";
 import fs from "fs";
 import path from "path";
 import url from "url";
+import config from "../../config/config.js";
 
 /**
  * Levels correspond to https://datatracker.ietf.org/doc/html/rfc5424
@@ -30,7 +30,7 @@ const LEVEL_MAP: Record<Level, string> = {
 
 export type Method = "console" | "data" | "ignore";
 
-const LOG_MAP = config.get<{ [T in Level]: Method }>("logging.map");
+const map = config.logging.map;
 
 export function writeLogToData(message: string | Error, level: Level) {
   // Make sure the folder exists
@@ -45,7 +45,7 @@ export function writeLogToData(message: string | Error, level: Level) {
 }
 
 export function log(message: string | Error, level: Level): void {
-  const method: Method = LOG_MAP[level] ?? "ignore";
+  const method: Method = map[level] ?? "ignore";
   if (method === "ignore") return; // Ignoring
 
   // Change to string
