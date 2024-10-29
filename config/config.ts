@@ -1,6 +1,7 @@
 // server/config.ts
 import nodeConfig from "config";
-import type { Method } from "../src/utilities/logging.js";
+import type SMTPTransport from "nodemailer/lib/smtp-transport/index.js";
+import type { Level, Method } from "../src/utilities/logging.js";
 
 interface Config {
   credentials: {
@@ -9,16 +10,12 @@ interface Config {
     server: string;
   };
   logging: {
-    map: {
-      "0": Method;
-      "1": Method;
-      "2": Method;
-      "3": Method;
-      "4": Method;
-      "5": Method;
-      "6": Method;
-      "7": Method;
+    nodemailSendMail: {
+      from: string;
+      to: string;
     };
+    nodemailerTransport: SMTPTransport.Options;
+    map: Record<Level, Method>;
   };
   party: {
     allowed: true | string[];

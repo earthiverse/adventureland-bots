@@ -1,4 +1,5 @@
 import fs from "fs";
+import nodemailer from "nodemailer";
 import path from "path";
 import url from "url";
 import config from "../../config/config.js";
@@ -28,9 +29,40 @@ const LEVEL_MAP: Record<Level, string> = {
   "7": "Debug",
 };
 
-export type Method = "console" | "data" | "ignore";
+export type Method = "console" | "data" | "email" | "ignore";
 
-const map = config.logging.map;
+const { map, nodemailSendMail, nodemailerTransport } = config.logging;
+
+if (
+  nodemailerTransport === undefined ||
+  nodemailerTransport === null ||
+  nodemailSendMail === undefined ||
+  nodemailSendMail === null
+) {
+  // Check if we're emailing. If we are, throw an error
+  for (const level in map) {
+    if (map[level as unknown as Level] === "email")
+      throw new Error("`nodemailerTransport` and/or `nodemailSendMail` is not set up in the config!");
+  }
+}
+
+const transporter = nodemailerTransport !== undefined ? nodemailer.createTransport(nodemailerTransport) : null;
+if (transporter) {
+  await transporter.verify();
+}
+
+export async function writeLogToEmail(message: string | Error, level: Level) {
+  if (transporter === undefined || transporter === null) throw new Error("`nodemailerTransport` is not set!");
+
+  message = message instanceof Error ? message.toString() : message;
+  await transporter
+    .sendMail({
+      ...nodemailSendMail,
+      subject: `[${LEVEL_MAP[level]}] ${message}`,
+      text: message,
+    })
+    .catch(() => writeLogToData(message, level)); // Fall back to writing to log if something goes wrong
+}
 
 export function writeLogToData(message: string | Error, level: Level) {
   // Make sure the folder exists
@@ -41,7 +73,7 @@ export function writeLogToData(message: string | Error, level: Level) {
   const now = new Date().toISOString();
   const day = now.slice(0, 10);
   const time = now.slice(11, 19);
-  fs.appendFileSync(path.join(folder, day), `${time} ${LEVEL_MAP[level]} ${message}`);
+  fs.appendFileSync(path.join(folder, day), `${time} ${LEVEL_MAP[level]} ${message}\n`);
 }
 
 export function log(message: string | Error, level: Level): void {
@@ -70,6 +102,8 @@ export function log(message: string | Error, level: Level): void {
       }
     case "data":
       return writeLogToData(message, level);
+    case "email":
+      return void writeLogToEmail(message, level);
   }
 }
 
