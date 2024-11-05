@@ -1,5 +1,6 @@
+import { Client, EmbedBuilder, IntentsBitField, TextChannel, type HexColorString } from "discord.js";
 import fs from "fs";
-import nodemailer from "nodemailer";
+import nm from "nodemailer";
 import path from "path";
 import url from "url";
 import config from "../../config/config.js";
@@ -29,40 +30,31 @@ const LEVEL_MAP: Record<Level, string> = {
   "7": "Debug",
 };
 
-export type Method = "console" | "data" | "email" | "ignore";
+const EMOJI_LEVEL_MAP: Record<Level, string> = {
+  "0": "🔥",
+  "1": "🚨",
+  "2": "🛑",
+  "3": "❌",
+  "4": "⚠️",
+  "5": "📢",
+  "6": "ℹ️",
+  "7": "🐞",
+};
 
-const { map, nodemailSendMail, nodemailerTransport } = config.logging;
+const COLOR_LEVEL_MAP: Record<Level, HexColorString> = {
+  "0": "#FF0000",
+  "1": "#FF4500",
+  "2": "#8B0000",
+  "3": "#DC143C",
+  "4": "#FFD700",
+  "5": "#1E90FF",
+  "6": "#0073E6",
+  "7": "#A9A9A9",
+};
 
-if (
-  nodemailerTransport === undefined ||
-  nodemailerTransport === null ||
-  nodemailSendMail === undefined ||
-  nodemailSendMail === null
-) {
-  // Check if we're emailing. If we are, throw an error
-  for (const level in map) {
-    if (map[level as unknown as Level] === "email")
-      throw new Error("`nodemailerTransport` and/or `nodemailSendMail` is not set up in the config!");
-  }
-}
+export type Method = "console" | "data" | "discord" | "email" | "ignore";
 
-const transporter = nodemailerTransport !== undefined ? nodemailer.createTransport(nodemailerTransport) : null;
-if (transporter) {
-  await transporter.verify();
-}
-
-export async function writeLogToEmail(message: string | Error, level: Level) {
-  if (transporter === undefined || transporter === null) throw new Error("`nodemailerTransport` is not set!");
-
-  message = message instanceof Error ? message.toString() : message;
-  await transporter
-    .sendMail({
-      ...nodemailSendMail,
-      subject: `[${LEVEL_MAP[level]}] ${message}`,
-      text: message,
-    })
-    .catch(() => writeLogToData(message, level)); // Fall back to writing to log if something goes wrong
-}
+const { discord, map, nodemailer } = config.logging;
 
 export function writeLogToData(message: string | Error, level: Level) {
   // Make sure the folder exists
@@ -74,6 +66,70 @@ export function writeLogToData(message: string | Error, level: Level) {
   const day = now.slice(0, 10);
   const time = now.slice(11, 19);
   fs.appendFileSync(path.join(folder, day), `${time} ${LEVEL_MAP[level]} ${message}\n`);
+}
+
+if (discord === undefined) {
+  for (const level in map) {
+    if (map[level as unknown as Level] === "discord") throw new Error("`logging.discord` is not set up in the config!");
+  }
+}
+
+const client =
+  discord !== undefined
+    ? new Client({
+        intents: [
+          IntentsBitField.Flags.Guilds,
+          IntentsBitField.Flags.GuildMessages,
+          IntentsBitField.Flags.MessageContent,
+        ],
+      })
+    : null;
+if (client) await client.login(discord.auth); // Make sure discord is set up correctly
+const channel = await client?.channels.fetch(discord.channel);
+
+export function writeLogToDiscord(message: string | Error, level: Level) {
+  if (channel === undefined || channel === null) throw new Error("`logging.discord` is not set!");
+
+  message = message instanceof Error ? message.toString() : message;
+
+  (channel as TextChannel)
+    .send({
+      embeds: [
+        new EmbedBuilder()
+          .setColor(COLOR_LEVEL_MAP[level])
+          .setTitle(EMOJI_LEVEL_MAP[level] + " " + LEVEL_MAP[level])
+          .setDescription(message)
+          .setTimestamp(),
+      ],
+    })
+    .catch(() => writeLogToData(message, level));
+
+  // (channel as TextChannel).send(`[${LEVEL_MAP[level]}] ${message}`).catch(() => writeLogToData(message, level));
+}
+
+if (nodemailer === undefined || nodemailer === null) {
+  // Check if we're emailing. If we are, throw an error
+  for (const level in map) {
+    if (map[level as unknown as Level] === "email")
+      throw new Error("`logging.nodemailer` is not set up in the config!");
+  }
+}
+
+const transporter = nodemailer !== undefined ? nm.createTransport(nodemailer.transport) : null;
+if (transporter) await transporter.verify(); // Make sure SMTP is set up correctly
+
+export function writeLogToEmail(message: string | Error, level: Level) {
+  if (transporter === undefined || transporter === null) throw new Error("`logging.nodemailerTransport` is not set!");
+
+  message = message instanceof Error ? message.toString() : message;
+  transporter
+    .sendMail({
+      from: nodemailer.from,
+      to: nodemailer.to,
+      subject: `[${LEVEL_MAP[level]}] ${message}`,
+      text: message,
+    })
+    .catch(() => writeLogToData(message, level)); // Fall back to writing to log if something goes wrong
 }
 
 export function log(message: string | Error, level: Level): void {
@@ -102,8 +158,10 @@ export function log(message: string | Error, level: Level): void {
       }
     case "data":
       return writeLogToData(message, level);
+    case "discord":
+      return writeLogToDiscord(message, level);
     case "email":
-      return void writeLogToEmail(message, level);
+      return writeLogToEmail(message, level);
   }
 }
 

@@ -29,6 +29,7 @@
     "@types/nodemailer": "^6.4.16",
     "alclient": "file:../ALClient/alclient-1.0.0.tgz",
     "config": "^3.3.12",
+    "discord.js": "^14.16.3",
     "dotenv": "^16.4.5",
     "lru-cache": "^11.0.1",
     "nodemailer": "^6.9.16",

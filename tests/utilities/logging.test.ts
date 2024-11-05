@@ -1,13 +1,14 @@
-import nodemailer from "nodemailer";
+import nm from "nodemailer";
 import config from "../../config/config.js";
 
+// TODO: Don't run this test in CI if we ever run CI
 test("sendmail configuration", async () => {
-  const { nodemailerTransport } = config.logging;
+  const { nodemailer } = config.logging;
 
   // Config should exist
-  expect(nodemailerTransport).toBeDefined();
+  expect(nodemailer).toBeDefined();
 
   // Should verify
-  const transporter = nodemailer.createTransport(nodemailerTransport);
+  const transporter = nm.createTransport(nodemailer.transport);
   await expect(transporter.verify()).resolves.toBeTruthy();
 }, 10_000);

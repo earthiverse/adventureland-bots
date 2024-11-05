@@ -10,11 +10,21 @@ interface Config {
     server: string;
   };
   logging: {
-    nodemailSendMail: {
+    discord: {
+      auth: string;
+      client: string;
+      /** Server ID */
+      guild: string;
+      /** Channel ID */
+      channel: string;
+      /** User ID */
+      user: string;
+    };
+    nodemailer: {
       from: string;
       to: string;
+      transport: SMTPTransport.Options;
     };
-    nodemailerTransport: SMTPTransport.Options;
     map: Record<Level, Method>;
   };
   party: {
