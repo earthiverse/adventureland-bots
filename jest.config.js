@@ -8,11 +8,12 @@ dotenv.config({
 
 export default {
   testEnvironment: "node",
+  extensionsToTreatAsEsm: ['.ts'],
   transform: {
-    "^.+.tsx?$": ["ts-jest", { tsconfig: "./tsconfig.jest.json" }],
+    "^.+.tsx?$": ["ts-jest", { tsconfig: "./tsconfig.jest.json", useESM: true }],
   },
   moduleNameMapper: {
-    "(.+)\\.js": "$1",
+    "^(\\.{1,2}/.*)\\.js": "$1",
   },
   setupFilesAfterEnv: ["dotenv/config"],
 };

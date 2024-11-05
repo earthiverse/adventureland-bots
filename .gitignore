@@ -4,6 +4,9 @@ node_modules
 # Builds
 dist
 
+# Tests
+coverage
+
 # Secrets
 *.env
 # TODO: Move these to config

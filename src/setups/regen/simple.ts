@@ -1,12 +1,16 @@
-import { type Character } from "alclient";
-import TinyQueue, { type Comparator } from "tinyqueue";
+import type { Character, Game } from "alclient";
+import { type Comparator } from "tinyqueue";
 import type { ItemKey, SkillKey } from "typed-adventureland";
 import { logDebug } from "../../utilities/logging.js";
 
 /** Which items we want to use to heal / regen */
-const REGEN_ITEMS: ItemKey[] = ["hpot0", "hpot1", "mpot0", "mpot1"];
+// TODO: Move this to item config
+export const REGEN_ITEMS: ItemKey[] = ["hpot0", "hpot1", "mpot0", "mpot1"];
 
-function calculateItemScore(item: ItemKey, character: Character): number {
+export function calculateItemScore(
+  item: ItemKey,
+  character: { max_hp: number; hp: number; max_mp: number; mp: number; game: Game },
+): number {
   const missingHp = character.max_hp - character.hp;
   const missingMp = character.max_mp - character.mp;
 
@@ -25,7 +29,10 @@ function calculateItemScore(item: ItemKey, character: Character): number {
   return effectiveScore - overPenalty;
 }
 
-function calculateSkillScore(skill: SkillKey, character: Character): number {
+export function calculateSkillScore(
+  skill: SkillKey,
+  character: { max_hp: number; hp: number; max_mp: number; mp: number },
+): number {
   const missingHp = character.max_hp - character.hp;
   const missingMp = character.max_mp - character.mp;
 
@@ -43,7 +50,7 @@ function calculateSkillScore(skill: SkillKey, character: Character): number {
   return effectiveScore - overPenalty;
 }
 
-function getComparator(character: Character): Comparator<ItemKey | SkillKey> {
+export function getComparator(character: Character): Comparator<ItemKey | SkillKey> {
   return (a, b) => {
     let aScore = 0;
     if (character.game.G.items[a as ItemKey] !== undefined) {
@@ -68,25 +75,25 @@ export const setup = (character: Character) => {
     try {
       if (character.socket.disconnected) return;
 
-      const missingHp = character.max_hp - character.hp;
-      const missingMp = character.max_mp - character.mp;
-      if (!missingHp && !missingMp) return; // We are full
+      // const missingHp = character.max_hp - character.hp;
+      // const missingMp = character.max_mp - character.mp;
+      // if (!missingHp && !missingMp) return; // We are full
 
-      const bestActions = new TinyQueue<ItemKey | SkillKey>(["regen_hp", "regen_mp"], getComparator(character));
-      for (const item of character.items) {
-        if (!item) continue; // Empty slot
-        if (!REGEN_ITEMS.includes(item.name)) continue; // Not an item we want to use
-        bestActions.push(item.name);
-      }
+      // const bestActions = new TinyQueue<ItemKey | SkillKey>(["regen_hp", "regen_mp"], getComparator(character));
+      // for (const item of character.items) {
+      //   if (!item) continue; // Empty slot
+      //   if (!REGEN_ITEMS.includes(item.name)) continue; // Not an item we want to use
+      //   bestActions.push(item.name);
+      // }
 
-      const bestAction = bestActions.pop();
-      if (bestAction === "regen_hp") {
-        await character.regenHp();
-      } else if (bestAction === "regen_mp") {
-        await character.regenMp();
-      } else {
-        // TODO: Add use
-      }
+      // const bestAction = bestActions.pop();
+      // if (bestAction === "regen_hp") {
+      //   await character.regenHp();
+      // } else if (bestAction === "regen_mp") {
+      //   await character.regenMp();
+      // } else {
+      //   // TODO: Add use
+      // }
 
       const mpRatio = character.mp / character.max_mp;
       const hpRatio = character.hp / character.max_hp;
