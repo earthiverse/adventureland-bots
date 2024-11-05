@@ -3,7 +3,7 @@ import { EntityMonster, type Character } from "alclient";
 import TinyQueue, { type Comparator } from "tinyqueue";
 
 const IGNORED_MONSTERS = new TTLCache<string, EntityMonster>({
-  max: 100,
+  max: 500,
   ttl: 2000,
 });
 
