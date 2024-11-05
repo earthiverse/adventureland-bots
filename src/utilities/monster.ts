@@ -7,7 +7,7 @@ const IGNORED_MONSTERS = new TTLCache<string, EntityMonster>({
   ttl: 2000,
 });
 
-const DEFAULT_COMPARATOR: Comparator<EntityMonster> = (a, b) => {
+export const DEFAULT_COMPARATOR: Comparator<EntityMonster> = (a, b) => {
   // Prioritize monsters that aren't ignored
   const aIgnored = IGNORED_MONSTERS.has(a.id);
   const bIgnored = IGNORED_MONSTERS.has(b.id);

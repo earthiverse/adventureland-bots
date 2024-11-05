@@ -1,8 +1,9 @@
 import type { Character } from "alclient";
+import type { MonsterKey } from "typed-adventureland";
 import { logDebug } from "../../utilities/logging.js";
 import { getBestTarget, ignoreMonster, unignoreMonster } from "../../utilities/monster.js";
 
-export const setup = (character: Character, monster: string = "goo") => {
+export const setup = (character: Character, monster: MonsterKey = "goo") => {
   const attackLoop = async () => {
     let entity;
     try {

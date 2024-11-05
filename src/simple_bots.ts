@@ -1,6 +1,6 @@
 import { Game, type Character } from "alclient";
 import config from "../config/config.js";
-import { setup } from "./setups/simple/base.js";
+import { setup } from "./setups/simple.js";
 import { getGFromCache } from "./utilities/cache.js";
 
 // Plugins
