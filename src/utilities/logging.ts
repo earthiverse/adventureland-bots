@@ -58,7 +58,7 @@ const { discord, map, nodemailer } = config.logging;
 
 export function writeLogToData(message: string | Error, level: Level) {
   // Make sure the folder exists
-  const folder = path.join(path.dirname(url.fileURLToPath(import.meta.url)), "../data/log/");
+  const folder = path.join(path.dirname(url.fileURLToPath(import.meta.url)), "../../data/log/");
   fs.mkdirSync(folder, { recursive: true });
 
   // Append to logs with the filename as the date
