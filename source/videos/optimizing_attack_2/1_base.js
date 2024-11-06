@@ -436,7 +436,7 @@ function ignoreEntityOnOtherCharacters(entity) {
         if (!friendsParent.IGNORE) return // Doesn't have an ignore list
         if (friendsParent.IGNORE.includes(entity.id)) return // Already in ignore list
         friendsParent.IGNORE.unshift(entity.id) // Add entity to ignore list
-        friendsParent.IGNORE.slice(0, 20) // Keep ignore list to a maximum of 20 entities
+        friendsParent.IGNORE.splice(20) // Keep ignore list to a maximum of 20 entities
     }
 }
 
