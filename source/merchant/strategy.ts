@@ -19,14 +19,15 @@ import AL, {
     Tools,
     TradeSlotType,
 } from "alclient"
-import { getItemsToCompoundOrUpgrade, IndexesToCompoundOrUpgrade, withdrawItemFromBank } from "../base/items.js"
-import { checkOnlyEveryMS, setLastCheck, sleep } from "../base/general.js"
-import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
-import { filterContexts, Loop, LoopName, Strategist, Strategy } from "../strategy_pattern/context.js"
-import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
-import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
-import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
-import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
+import { TradeItem } from "alclient/build/TradeItem.js"
+import {
+    BankItemPosition,
+    goAndDepositItem,
+    goAndWithdrawItem,
+    locateEmptyBankSlots,
+    locateItemsInBank,
+    tidyBank,
+} from "../base/banking.js"
 import {
     addCryptMonstersToDB,
     cleanInstances,
@@ -48,16 +49,8 @@ import {
     DEFAULT_REPLENISH_RATIO,
     EXCESS_ITEMS_SELL,
 } from "../base/defaults.js"
-import {
-    BankItemPosition,
-    goAndDepositItem,
-    goAndWithdrawItem,
-    locateEmptyBankSlots,
-    locateItemsInBank,
-    tidyBank,
-} from "../base/banking.js"
-import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
-import { suppress_errors } from "../strategy_pattern/logging.js"
+import { checkOnlyEveryMS, setLastCheck, sleep } from "../base/general.js"
+import { IndexesToCompoundOrUpgrade, getItemsToCompoundOrUpgrade, withdrawItemFromBank } from "../base/items.js"
 import {
     DEFAULT_ITEM_CONFIG,
     ItemConfig,
@@ -71,7 +64,14 @@ import {
     wantToSellToPlayer,
     wantToUpgrade,
 } from "../base/itemsNew.js"
-import { TradeItem } from "alclient/build/TradeItem.js"
+import { bankingPosition, mainFishingSpot, miningSpot } from "../base/locations.js"
+import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../strategy_pattern/context.js"
+import { suppress_errors } from "../strategy_pattern/logging.js"
+import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
+import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
+import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
+import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
+import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
@@ -457,7 +457,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         if (!item) continue // Nothing in the slot
                         if (!item.giveaway) continue // Not a giveaway
                         if (item.list && item.list.includes(bot.id)) continue // We're already in the giveaway
-                        await (bot as Merchant).joinGiveaway(slot, player.id, item.rid)
+                        await bot.joinGiveaway(slot, player.id, item.rid)
                     }
                 }
             }
@@ -1194,7 +1194,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         let priceToPay = DEFAULT_ITEMS_TO_BUY.get(slotData.name)
                         if (priceToPay < 0)
                             priceToPay =
-                                (AL.Game.G.items[slotData.name].g / AL.Game.G.items[slotData.name].markup ?? 1) *
+                                (AL.Game.G.items[slotData.name].g / (AL.Game.G.items[slotData.name].markup ?? 1)) *
                                 -priceToPay
                         if (!priceToPay || slotData.price > priceToPay) continue // Not on our wishlist, or more than we want to pay
 
