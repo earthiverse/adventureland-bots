@@ -79,10 +79,10 @@ const SPECIAL_MONSTERS: MonsterName[] = [
 ]
 
 const MERCHANT = "earthMer"
-const WARRIORS = ["earthWar"]
+const WARRIORS = ["earthWar", "earthWar2", "earthWar3"]
 const MAGES = ["earthMag", "earthMag2", "earthMag3"]
 const PRIESTS = ["earthPri"]
-const RANGERS = ["earthiverse"]
+const RANGERS = ["earthiverse", "earthRan2", "earthRan3"]
 const PALADINS = ["earthPal"]
 const ROGUES = ["earthRog"]
 
