@@ -498,6 +498,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     oozingterror: {
         destroyBelowLevel: 1,
     },
+    ornament: {
+        exchange: true,
+    },
     ornamentstaff: {
         destroyBelowLevel: 1,
     },
