@@ -667,7 +667,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     t2quiver: {
         buy: true,
-        buyPrice: 25_000_000,
+        buyPrice: 30_000_000,
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 2,
     },
