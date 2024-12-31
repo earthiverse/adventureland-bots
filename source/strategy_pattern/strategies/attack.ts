@@ -138,7 +138,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (!this.options.disableKillSteal && !this.options.disableZapper) {
             this.stealOnAction = (data: ActionData) => {
                 if (!bot.canUse("zapperzap")) return
-                if (bot.s.town) return // Currently warping to town
+                if (bot.c.town) return // Currently warping to town
 
                 const attacker = bot.players.get(data.attacker)
                 if (!attacker) return // Not a player
