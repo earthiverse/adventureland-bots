@@ -109,6 +109,7 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
             // Check if we want to hold it in a specific slot
             if (itemConfig && itemConfig.hold && itemConfig.holdSlot !== undefined) {
                 if (itemConfig.holdSlot === slot) continue // It's already in its correct slot
+                if (bot.items[slot]?.name === item.name) continue // We already have the same item in that slot
                 await bot.swapItems(slot, itemConfig.holdSlot)
                 continue
             }
