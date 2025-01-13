@@ -181,7 +181,7 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
             if (item.l) continue // Can't send locked items
             const itemConfig = this.options.itemConfig[item.name]
             if (itemConfig) {
-                if (itemConfig.hold === true || itemConfig.hold.includes(bot.ctype)) continue
+                if (itemConfig.hold === true || itemConfig.hold?.includes(bot.ctype)) continue
                 if (itemConfig.sell && bot.canSell()) continue // We'll sell it soon
                 if (itemConfig.destroyBelowLevel && item.level < itemConfig.destroyBelowLevel) continue // We'll destroy it soon
             }
