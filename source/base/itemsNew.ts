@@ -772,8 +772,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 1,
     },
     wbookhs: {
-        usePrimlingFromLevel: 0,
-        useOfferingFromLevel: 1,
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 2,
     },
     wbreeches: {
         craft: true,
