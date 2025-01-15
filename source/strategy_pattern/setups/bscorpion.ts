@@ -7,6 +7,7 @@ import { ImprovedMoveStrategy, KiteInCircleMoveStrategy } from "../strategies/mo
 import { Setup } from "./base"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
+import { RETURN_HIGHEST } from "./equipment.js"
 
 export function constructBScorpionSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const spawn = AL.Pathfinder.locateMonster("bscorpion")[0]
@@ -25,12 +26,15 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             disableEnergize: true,
                             disableZapper: true,
                             generateEnsureEquipped: {
-                                attributes: ["int", "attack"]
+                                attributes: ["int", "attack"],
+                                prefer: {
+                                    mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
+                                },
                             },
                             targetingPartyMember: true,
-                            type: "bscorpion"
+                            type: "bscorpion",
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "priest",
@@ -40,11 +44,14 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             enableAbsorbToTank: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                attributes: ["attack", "int"]
+                                attributes: ["attack", "int"],
+                                prefer: {
+                                    mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
+                                },
                             },
                             type: "bscorpion",
                         }),
-                        move: kiteStrategy
+                        move: kiteStrategy,
                     },
                     {
                         ctype: "warrior",
@@ -53,16 +60,20 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                             disableZapper: true,
                             enableEquipForCleave: true,
                             generateEnsureEquipped: {
-                                attributes: ["attack", "str"]
+                                attributes: ["attack", "str"],
+                                prefer: {
+                                    mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
+                                    offhand: { name: "fireblade", filters: RETURN_HIGHEST },
+                                },
                             },
                             targetingPartyMember: true,
-                            type: "bscorpion"
+                            type: "bscorpion",
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
-        ]
+        ],
     }
 }
 
@@ -76,7 +87,10 @@ export function constructBScorpionHelperSetup(contexts: Strategist<PingCompensat
         enableAbsorbToTank: true,
         enableGreedyAggro: true,
         generateEnsureEquipped: {
-            attributes: ["range", "int"]
+            attributes: ["range", "int"],
+            prefer: {
+                mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
+            },
         },
         type: "bscorpion",
     })
@@ -84,19 +98,19 @@ export function constructBScorpionHelperSetup(contexts: Strategist<PingCompensat
         contexts: contexts,
         disableZapper: true,
         generateEnsureEquipped: {
-            attributes: ["range", "dex"]
+            attributes: ["range", "dex"],
         },
         targetingPartyMember: true,
-        type: "bscorpion"
+        type: "bscorpion",
     })
     const rogueStrategy = new RogueAttackStrategy({
         contexts: contexts,
         disableZapper: true,
         generateEnsureEquipped: {
-            attributes: ["range", "dex"]
+            attributes: ["range", "dex"],
         },
         targetingPartyMember: true,
-        type: "bscorpion"
+        type: "bscorpion",
     })
 
     return {
@@ -107,19 +121,19 @@ export function constructBScorpionHelperSetup(contexts: Strategist<PingCompensat
                     {
                         ctype: "priest",
                         attack: priestStrategy,
-                        move: kiteStrategy
+                        move: kiteStrategy,
                     },
                     {
                         ctype: "rogue",
                         attack: rogueStrategy,
-                        move: kiteStrategy
+                        move: kiteStrategy,
                     },
                     {
                         ctype: "rogue",
                         attack: rogueStrategy,
-                        move: kiteStrategy
-                    }
-                ]
+                        move: kiteStrategy,
+                    },
+                ],
             },
             {
                 id: "bscorpion_helper_priest,rogue",
@@ -127,14 +141,14 @@ export function constructBScorpionHelperSetup(contexts: Strategist<PingCompensat
                     {
                         ctype: "priest",
                         attack: priestStrategy,
-                        move: kiteStrategy
+                        move: kiteStrategy,
                     },
                     {
                         ctype: "rogue",
                         attack: rogueStrategy,
-                        move: kiteStrategy
-                    }
-                ]
+                        move: kiteStrategy,
+                    },
+                ],
             },
             {
                 id: "bscorpion_helper_priest,ranger",
@@ -142,15 +156,15 @@ export function constructBScorpionHelperSetup(contexts: Strategist<PingCompensat
                     {
                         ctype: "priest",
                         attack: priestStrategy,
-                        move: kiteStrategy
+                        move: kiteStrategy,
                     },
                     {
                         ctype: "ranger",
                         attack: rangerStrategy,
-                        move: kiteStrategy
-                    }
-                ]
+                        move: kiteStrategy,
+                    },
+                ],
             },
-        ]
+        ],
     }
 }
