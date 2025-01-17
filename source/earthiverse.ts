@@ -108,7 +108,7 @@ const RANGERS = ["earthiverse", "earthRan2", "earthRan3"] // earthiverse, earthR
 const PALADINS = [] // earthPal
 const ROGUES = [] // earthRog, earthRog2, earthRog3
 
-const PARTY_LEADER: string = WARRIORS[0]
+const PARTY_LEADER: string = RANGERS[0]
 
 const PARTY_ALLOWLIST: string[] = [...RANGERS, ...MAGES, ...PRIESTS, ...WARRIORS, ...PALADINS, ...ROGUES]
 
