@@ -366,6 +366,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                     }
 
                     currentSetups.set(context, { attack: characterConfig.attack, move: characterConfig.move })
+                    doableWith.splice(doableWith.indexOf(context))
                     setupContexts.splice(setupContexts.indexOf(context), 1)
                     continue nextConfig
                 }
