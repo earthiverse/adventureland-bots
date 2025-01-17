@@ -31,10 +31,12 @@ export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter
         }),
         move: moveStrategy,
     }
-    const rangerConfig: CharacterConfig = {
+    const tripleRangerConfig: CharacterConfig = {
         ctype: "ranger",
         attack: new RangerAttackStrategy({
             contexts: contexts,
+            disableHuntersMark: true,
+            disableSuperShot: true,
             generateEnsureEquipped: {
                 attributes: ["courage", "range"],
             },
@@ -60,7 +62,7 @@ export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter
         configs: [
             {
                 id: "boar_triple_ranger",
-                characters: [rangerConfig, rangerConfig, rangerConfig],
+                characters: [tripleRangerConfig, tripleRangerConfig, tripleRangerConfig],
             },
             {
                 id: "boar_mage,priest,warrior",
