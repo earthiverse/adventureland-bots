@@ -1,4 +1,4 @@
-import { MonsterName, PingCompensatedCharacter, Rogue, Warrior } from "alclient"
+import { Mage, MonsterName, PingCompensatedCharacter, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -13,22 +13,48 @@ import { RETURN_HIGHEST } from "./equipment.js"
 // TODO: Better PVP setup
 class WarriorDragoldAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
-        super.onApply(bot)
         if (bot.isPVP()) {
             // No Splash Damage
             this.options.disableCleave = true
             delete this.options.enableEquipForCleave
             delete this.options.enableGreedyAggro
+            if (this.options.generateEnsureEquipped?.prefer) {
+                this.options.generateEnsureEquipped.prefer.mainhand = { name: "vhammer", filters: RETURN_HIGHEST }
+                this.options.generateEnsureEquipped.prefer.offhand = { name: "ololipop", filters: RETURN_HIGHEST }
+            }
         } else {
             // Additional Cleave Damage
             delete this.options.disableCleave
             this.options.enableEquipForCleave = true
             this.options.enableGreedyAggro = true
+            if (this.options.generateEnsureEquipped?.prefer) {
+                delete this.options.generateEnsureEquipped.prefer.mainhand
+                delete this.options.generateEnsureEquipped.prefer.offhand
+            }
         }
+        super.onApply(bot)
     }
 }
 
-// TODO: Add a strategy for mages to blink if dragold's fire projectile is incoming
+class MageDragoldAttackStrategy extends MageAttackStrategy {
+    public onApply(bot: Mage): void {
+        if (bot.isPVP()) {
+            // No Splash Damage
+            this.options.disableZapper = true
+            if (this.options.generateEnsureEquipped?.prefer) {
+                this.options.generateEnsureEquipped.prefer.mainhand = { name: "gstaff", filters: RETURN_HIGHEST }
+            }
+        } else {
+            // Additional Splash Damage
+            delete this.options.disableZapper
+            if (this.options.generateEnsureEquipped?.prefer) {
+                delete this.options.generateEnsureEquipped.prefer.mainhand
+            }
+        }
+        super.onApply(bot)
+    }
+}
+
 // TODO: Add a move strategy to attack from the furthest position away to give mages time to blink, or other characters to run and potentially avoid the projectile
 
 export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
@@ -37,7 +63,7 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
 
     const mageConfig: CharacterConfig = {
         ctype: "mage",
-        attack: new MageAttackStrategy({
+        attack: new MageDragoldAttackStrategy({
             contexts: contexts,
             disableEnergize: true,
             disableZapper: true,
@@ -45,7 +71,7 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                 attributes: ["resistance", "int", "blast", "explosion"],
                 prefer: {
                     mainhand: { name: "gstaff", filters: RETURN_HIGHEST },
-                }
+                },
             },
             typeList: types,
         }),
@@ -59,6 +85,9 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
             enableHealStrangers: true,
             generateEnsureEquipped: {
                 attributes: ["resistance", "int", "attack"],
+                prefer: {
+                    mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
+                },
             },
             typeList: types,
         }),
@@ -74,8 +103,8 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                 attributes: ["resistance", "str", "blast", "explosion"],
                 prefer: {
                     mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
-                    offhand: { name: "ololipop", filters: RETURN_HIGHEST }
-                }
+                    offhand: { name: "ololipop", filters: RETURN_HIGHEST },
+                },
             },
             typeList: types,
         }),
@@ -86,11 +115,11 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
         configs: [
             {
                 id: "dragold_mage,priest,warrior",
-                characters: [mageConfig, priestConfig, warriorConfig,],
+                characters: [mageConfig, priestConfig, warriorConfig],
             },
             {
                 id: "dragold_priest,warrior",
-                characters: [priestConfig, warriorConfig,],
+                characters: [priestConfig, warriorConfig],
             },
         ],
     }
