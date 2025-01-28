@@ -19,8 +19,8 @@ class WarriorDragoldAttackStrategy extends WarriorAttackStrategy {
             delete this.options.enableEquipForCleave
             delete this.options.enableGreedyAggro
             if (this.options.generateEnsureEquipped?.prefer) {
-                this.options.generateEnsureEquipped.prefer.mainhand = { name: "vhammer", filters: RETURN_HIGHEST }
-                this.options.generateEnsureEquipped.prefer.offhand = { name: "ololipop", filters: RETURN_HIGHEST }
+                delete this.options.generateEnsureEquipped.prefer.mainhand
+                delete this.options.generateEnsureEquipped.prefer.offhand
             }
         } else {
             // Additional Cleave Damage
@@ -28,8 +28,8 @@ class WarriorDragoldAttackStrategy extends WarriorAttackStrategy {
             this.options.enableEquipForCleave = true
             this.options.enableGreedyAggro = true
             if (this.options.generateEnsureEquipped?.prefer) {
-                delete this.options.generateEnsureEquipped.prefer.mainhand
-                delete this.options.generateEnsureEquipped.prefer.offhand
+                this.options.generateEnsureEquipped.prefer.mainhand = { name: "vhammer", filters: RETURN_HIGHEST }
+                this.options.generateEnsureEquipped.prefer.offhand = { name: "ololipop", filters: RETURN_HIGHEST }
             }
         }
         super.onApply(bot)
@@ -42,13 +42,13 @@ class MageDragoldAttackStrategy extends MageAttackStrategy {
             // No Splash Damage
             this.options.disableZapper = true
             if (this.options.generateEnsureEquipped?.prefer) {
-                this.options.generateEnsureEquipped.prefer.mainhand = { name: "gstaff", filters: RETURN_HIGHEST }
+                delete this.options.generateEnsureEquipped.prefer.mainhand
             }
         } else {
             // Additional Splash Damage
             delete this.options.disableZapper
             if (this.options.generateEnsureEquipped?.prefer) {
-                delete this.options.generateEnsureEquipped.prefer.mainhand
+                this.options.generateEnsureEquipped.prefer.mainhand = { name: "gstaff", filters: RETURN_HIGHEST }
             }
         }
         super.onApply(bot)
