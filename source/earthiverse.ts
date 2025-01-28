@@ -606,7 +606,7 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
 
             if (bot1.S.lunarnewyear) {
                 // Lunar New Year
-                const monster = (await getLunarNewYearMonsterPriority(true))[0]
+                const monster = (await getLunarNewYearMonsterPriority())[0]
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier
