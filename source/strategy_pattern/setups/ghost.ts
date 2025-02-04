@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
-import { ZAPPER_CRING } from "./equipment.js"
+import { BLASTER, RETURN_HIGHEST, ZAPPER_CRING } from "./equipment.js"
 
 class PriestGhostAttackStrategy extends PriestAttackStrategy {
     protected async attack(bot: Priest): Promise<void> {
@@ -59,6 +59,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
             disableEnergize: true,
             generateEnsureEquipped: {
                 attributes: ["resistance", "blast", "explosion"],
+                prefer: BLASTER,
             },
             typeList: ["ghost", "tinyp"],
         }),
@@ -74,6 +75,10 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
             enableEquipForCleave: true,
             generateEnsureEquipped: {
                 attributes: ["attack", "blast", "explosion"],
+                prefer: {
+                    mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
+                    offhand: { name: "ololipop", filters: RETURN_HIGHEST },
+                },
             },
             typeList: ["ghost", "tinyp"],
         }),

@@ -35,6 +35,8 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
             generateEnsureEquipped: {
                 attributes: ["armor", "str", "blast", "explosion"],
                 prefer: {
+                    mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
+                    offhand: { name: "ololipop", filters: RETURN_HIGHEST },
                     ring1: { name: "zapper", filters: RETURN_HIGHEST },
                 },
             },
