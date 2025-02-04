@@ -9,6 +9,7 @@ import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_FAST, PRIEST_FAST, RETURN_HIGHEST, UNEQUIP } from "./equipment.js"
+import { IDLE_ATTACK_MONSTERS } from "../strategies/attack.js"
 
 const typeList: MonsterName[] = ["pinkgoo"]
 
@@ -17,6 +18,77 @@ export function constructPinkGooSetup(contexts: Strategist<PingCompensatedCharac
 
     return {
         configs: [
+            {
+                id: "pinkgoo_mage",
+                characters: [
+                    {
+                        ctype: "mage",
+                        attack: new MageAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                prefer: { ...MAGE_FAST },
+                            },
+                            typeList: [...typeList, ...IDLE_ATTACK_MONSTERS],
+                        }),
+                        move: pinkgooMoveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "pinkgoo_paladin",
+                characters: [
+                    {
+                        ctype: "paladin",
+                        attack: new PaladinAttackStrategy({
+                            contexts: contexts,
+                            typeList: [...typeList, ...IDLE_ATTACK_MONSTERS],
+                        }),
+                        move: pinkgooMoveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "pinkgoo_priest",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                prefer: { ...PRIEST_FAST },
+                            },
+                            typeList: [...typeList, ...IDLE_ATTACK_MONSTERS],
+                        }),
+                        move: pinkgooMoveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "pinkgoo_ranger",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            typeList: [...typeList, ...IDLE_ATTACK_MONSTERS],
+                        }),
+                        move: pinkgooMoveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "pinkgoo_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            typeList: [...typeList, ...IDLE_ATTACK_MONSTERS],
+                        }),
+                        move: pinkgooMoveStrategy,
+                    },
+                ],
+            },
             {
                 id: "pinkgoo_warrior",
                 characters: [
@@ -29,74 +101,16 @@ export function constructPinkGooSetup(contexts: Strategist<PingCompensatedCharac
                                 attributes: ["frequency"],
                                 prefer: {
                                     mainhand: { name: "rapier", filters: RETURN_HIGHEST },
-                                    offhand: UNEQUIP
-                                }
+                                    offhand: UNEQUIP,
+                                },
                             },
-                            typeList: typeList
+                            typeList: [...typeList, ...IDLE_ATTACK_MONSTERS],
                         }),
-                        move: pinkgooMoveStrategy
-                    }
-                ]
-            },
-            {
-                id: "pinkgoo_mage",
-                characters: [
-                    {
-                        ctype: "mage",
-                        attack: new MageAttackStrategy({
-                            contexts: contexts,
-                            generateEnsureEquipped: {
-                                prefer: { ...MAGE_FAST }
-                            },
-                            typeList: typeList,
-                        }),
-                        move: pinkgooMoveStrategy
+                        move: pinkgooMoveStrategy,
                     },
-                ]
+                ],
             },
-            {
-                id: "pinkgoo_paladin",
-                characters: [
-                    {
-                        ctype: "paladin",
-                        attack: new PaladinAttackStrategy({
-                            contexts: contexts,
-                            typeList: typeList,
-                        }),
-                        move: pinkgooMoveStrategy
-                    },
-                ]
-            },
-            {
-                id: "pinkgoo_rogue",
-                characters: [
-                    {
-                        ctype: "rogue",
-                        attack: new RogueAttackStrategy({
-                            contexts: contexts,
-                            typeList: typeList,
-                        }),
-                        move: pinkgooMoveStrategy
-                    },
-                ]
-            },
-            {
-                id: "pinkgoo_priest",
-                characters: [
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
-                            contexts: contexts,
-                            generateEnsureEquipped: {
-                                prefer: { ...PRIEST_FAST }
-                            },
-                            typeList: typeList,
-                        }),
-                        move: pinkgooMoveStrategy
-                    },
-                ]
-            },
-        ]
+        ],
     }
 }
 
@@ -111,9 +125,9 @@ export function constructPinkGooHelperSetup(contexts: Strategist<PingCompensated
                     {
                         ctype: "mage",
                         attack: new MageAttackStrategy({ contexts: contexts, typeList: typeList }),
-                        move: pinkgooMoveStrategy
-                    }
-                ]
+                        move: pinkgooMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "pinkgoo_helper_paladin",
@@ -121,9 +135,9 @@ export function constructPinkGooHelperSetup(contexts: Strategist<PingCompensated
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({ contexts: contexts, typeList: typeList }),
-                        move: pinkgooMoveStrategy
-                    }
-                ]
+                        move: pinkgooMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "pinkgoo_helper_priest",
@@ -134,9 +148,9 @@ export function constructPinkGooHelperSetup(contexts: Strategist<PingCompensated
                             contexts: contexts,
                             typeList: typeList,
                         }),
-                        move: pinkgooMoveStrategy
+                        move: pinkgooMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "pinkgoo_helper_ranger",
@@ -144,9 +158,9 @@ export function constructPinkGooHelperSetup(contexts: Strategist<PingCompensated
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, typeList: typeList }),
-                        move: pinkgooMoveStrategy
-                    }
-                ]
+                        move: pinkgooMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "pinkgoo_helper_rogue",
@@ -154,20 +168,25 @@ export function constructPinkGooHelperSetup(contexts: Strategist<PingCompensated
                     {
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({ contexts: contexts, typeList: typeList }),
-                        move: pinkgooMoveStrategy
-                    }
-                ]
+                        move: pinkgooMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "pinkgoo_helper_warrior",
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, enableEquipForCleave: true, typeList: typeList }),
-                        move: pinkgooMoveStrategy
-                    }
-                ]
-            }
-        ]
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            disableAgitate: true,
+                            enableEquipForCleave: true,
+                            typeList: typeList,
+                        }),
+                        move: pinkgooMoveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
