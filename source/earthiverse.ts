@@ -79,8 +79,8 @@ await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: tr
 const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
-let ENABLE_MONSTERHUNTS = false
-const DEFAULT_MONSTERS: MonsterName[] = ["bat"]
+let ENABLE_MONSTERHUNTS = true
+const DEFAULT_MONSTERS: MonsterName[] = ["squigtoad", "squig"]
 const SPECIAL_MONSTERS: MonsterName[] = [
     "crabxx",
     "cutebee",
