@@ -769,7 +769,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             getWithin: bot.range - 10,
             stopIfTrue: async (): Promise<boolean> => {
                 const target = await this.checkGoodData(bot, true)
-                if (!target) return false // No target, keep looking
+                if (!target || target === bot) return false // No target, keep looking
                 return AL.Tools.distance(target, bot.smartMoving) > bot.range // It's moved far from where we're smart moving to
             },
             useBlink: true,
