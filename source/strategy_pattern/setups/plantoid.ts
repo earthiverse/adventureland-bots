@@ -5,15 +5,19 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy, KiteMonsterMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Requirements, Setup } from "./base"
-import { BLASTER, MAGE_SPLASH, ZAPPER_CRING, ZAPPER_STRRING } from "./equipment.js"
+import { MAGE_SPLASH_WEAPONS, MAGE_SPLASH, ZAPPER_CRING, ZAPPER_STRRING, WARRIOR_SPLASH_WEAPONS } from "./equipment.js"
 
 export function constructPlantoidSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const requirements: Requirements = {
         items: ["jacko"],
         range: AL.Game.G.monsters.plantoid.range + 50,
-        speed: AL.Game.G.monsters.plantoid.charge
+        speed: AL.Game.G.monsters.plantoid.charge,
     }
-    const kiteMoveStrategy = new KiteMonsterMoveStrategy({ contexts: contexts, disableCheckDB: true, typeList: ["plantoid"] })
+    const kiteMoveStrategy = new KiteMonsterMoveStrategy({
+        contexts: contexts,
+        disableCheckDB: true,
+        typeList: ["plantoid"],
+    })
     const spawn = AL.Pathfinder.locateMonster("plantoid")[0]
 
     return {
@@ -29,12 +33,12 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             disableZapper: true,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "explosion", "blast"],
-                                prefer: BLASTER
+                                prefer: MAGE_SPLASH_WEAPONS,
                             },
                             targetingPartyMember: true,
-                            type: "plantoid"
+                            type: "plantoid",
                         }),
-                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } })
+                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } }),
                     },
                     {
                         ctype: "priest",
@@ -46,7 +50,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             },
                             type: "plantoid",
                         }),
-                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } })
+                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } }),
                     },
                     {
                         ctype: "warrior",
@@ -58,14 +62,17 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "str", "explosion", "blast"],
-                                prefer: ZAPPER_STRRING
+                                prefer: {
+                                    ...ZAPPER_STRRING,
+                                    ...WARRIOR_SPLASH_WEAPONS,
+                                },
                             },
                             targetingPartyMember: true,
-                            type: "plantoid"
+                            type: "plantoid",
                         }),
-                        move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
-                    }
-                ]
+                        move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 }),
+                    },
+                ],
             },
             {
                 id: "plantoid_mage",
@@ -80,12 +87,12 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                                 attributes: ["armor", "int", "attack"],
                             },
                             maximumTargets: 1,
-                            type: "plantoid"
+                            type: "plantoid",
                         }),
                         move: kiteMoveStrategy,
-                        require: requirements
+                        require: requirements,
                     },
-                ]
+                ],
             },
             {
                 id: "plantoid_priest",
@@ -101,10 +108,10 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             type: "plantoid",
                         }),
                         move: kiteMoveStrategy,
-                        require: requirements
+                        require: requirements,
                     },
-                ]
-            }
-        ]
+                ],
+            },
+        ],
     }
 }

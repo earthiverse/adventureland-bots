@@ -1,4 +1,15 @@
-import { Attribute, Character, Game, Item, ItemData, ItemType, LocateItemFilters, SkillName, SlotType, WeaponType } from "alclient"
+import {
+    Attribute,
+    Character,
+    Game,
+    Item,
+    ItemData,
+    ItemType,
+    LocateItemFilters,
+    SkillName,
+    SlotType,
+    WeaponType,
+} from "alclient"
 import { EnsureEquipped, EnsureEquippedSlot } from "../strategies/attack"
 
 export const RETURN_HIGHEST: LocateItemFilters = { returnHighestLevel: true }
@@ -14,9 +25,14 @@ export const ZAPPER_STRRING: EnsureEquipped = {
     ring2: { name: "strring", filters: RETURN_HIGHEST },
 }
 
-export const BLASTER: EnsureEquipped = {
+export const MAGE_SPLASH_WEAPONS: EnsureEquipped = {
     mainhand: { name: "gstaff", filters: RETURN_HIGHEST },
     offhand: UNEQUIP,
+}
+
+export const WARRIOR_SPLASH_WEAPONS: EnsureEquipped = {
+    mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
+    offhand: { name: "ololipop", filters: RETURN_HIGHEST },
 }
 
 export const MAGE_SPLASH: EnsureEquipped = {
@@ -112,7 +128,7 @@ export const PRIEST_LUCK: EnsureEquipped = {
 export const PRIEST_FAST: EnsureEquipped = {
     ...PRIEST_NORMAL,
     mainhand: { name: "wand", filters: RETURN_HIGHEST },
-    offhand: UNEQUIP
+    offhand: UNEQUIP,
 }
 
 export const WARRIOR_NORMAL: EnsureEquipped = {
@@ -194,22 +210,32 @@ export type GenerateEnsureEquipped = {
     avoidAttributes?: Attribute[]
     /** If we have the given item, equip it */
     prefer?: EnsureEquipped
-    /** 
+    /**
      * If set, we will try to generate a layout that gives access to the given skill
-     * 
+     *
      * TODO: If we have `skills: ["quickstab", "freeze"], we might equip two items that both give quickstab instead of 1 of each
      *       ["burn", "quickstab"] might equip two fireblades, etc.
      */
-    skills?: (SkillName | "burn" | "freeze" | "poke" | "posion" | "restore_mp" | "secondchance" | "sugarrush" | "weave")[]
+    skills?: (
+        | SkillName
+        | "burn"
+        | "freeze"
+        | "poke"
+        | "posion"
+        | "restore_mp"
+        | "secondchance"
+        | "sugarrush"
+        | "weave"
+    )[]
 }
 
 /**
  * Generates an ensured equipped loadout for a given bot
- * 
+ *
  * @param bot The bot that we are generating a loadout for
  * @param attributes The attributes to prioritize when generating a loadout
  * @param ensure Anything set here will be added or will override what was generated
- * @returns 
+ * @returns
  */
 export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureEquipped): EnsureEquipped {
     if (!generate.skills) generate.skills = []
@@ -219,15 +245,30 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
     const equippableMainhand = Object.keys(Game.G.classes[bot.ctype].mainhand) as WeaponType[]
     const equippableDoublehand = Object.keys(Game.G.classes[bot.ctype].doublehand) as WeaponType[]
     const equippableOffhand = Object.keys(Game.G.classes[bot.ctype].offhand) as WeaponType[]
-    const equippableArmor: ItemType[] = ["amulet", "belt", "chest", "earring", "gloves", "helmet", "orb", "ring", "shoes"]
-    const equippableItemTypes: (ItemType | WeaponType)[] = [...equippableMainhand, ...equippableOffhand, ...equippableDoublehand, ...equippableArmor]
+    const equippableArmor: ItemType[] = [
+        "amulet",
+        "belt",
+        "chest",
+        "earring",
+        "gloves",
+        "helmet",
+        "orb",
+        "ring",
+        "shoes",
+    ]
+    const equippableItemTypes: (ItemType | WeaponType)[] = [
+        ...equippableMainhand,
+        ...equippableOffhand,
+        ...equippableDoublehand,
+        ...equippableArmor,
+    ]
 
     // Fix blast and explosion if we're on PVP
-    if (bot.isPVP()) generate.attributes.filter(a => (a !== "blast" && a !== "explosion"))
+    if (bot.isPVP()) generate.attributes.filter((a) => a !== "blast" && a !== "explosion")
     if (bot.isPVP()) generate.avoidAttributes = ["blast", "explosion"]
 
     const options: {
-        [T in (ItemType | WeaponType)]?: ItemData[]
+        [T in ItemType | WeaponType]?: ItemData[]
     } = {}
 
     const addOption = (item: ItemData) => {
@@ -311,7 +352,7 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
 
         return 0
     }
-    for (const optionName in options) options[optionName as (ItemType | WeaponType)].sort(sortBest)
+    for (const optionName in options) options[optionName as ItemType | WeaponType].sort(sortBest)
 
     const best: { [T in SlotType]?: ItemData } = {}
     const addBest = (slot: SlotType, item: ItemData): boolean => {
@@ -323,11 +364,11 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
 
     for (const optionName in options) {
         // This is the best option for the given item or weapon type
-        let bestOption = options[optionName as (ItemType | WeaponType)][0]
+        let bestOption = options[optionName as ItemType | WeaponType][0]
 
         if (equippableMainhand.includes(optionName as WeaponType) && addBest("mainhand", bestOption)) {
             // Get second best for potential offhand
-            bestOption = options[optionName as (ItemType | WeaponType)][1]
+            bestOption = options[optionName as ItemType | WeaponType][1]
             if (!bestOption) continue
         }
         if (equippableOffhand.includes(optionName as WeaponType) && addBest("offhand", bestOption)) continue
@@ -336,14 +377,14 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
             if (optionName === "earring") {
                 if (addBest("earring1", bestOption)) {
                     // Get second best for potential earring2
-                    bestOption = options[optionName as (ItemType | WeaponType)][1]
+                    bestOption = options[optionName as ItemType | WeaponType][1]
                     if (!bestOption) continue
                     addBest("earring2", bestOption)
                 }
             } else if (optionName === "ring") {
                 if (addBest("ring1", bestOption)) {
                     // Get second best for potential ring2
-                    bestOption = options[optionName as (ItemType | WeaponType)][1]
+                    bestOption = options[optionName as ItemType | WeaponType][1]
                     if (!bestOption) continue
                     addBest("ring2", bestOption)
                 }
@@ -377,8 +418,8 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
             }
 
             if (
-                !bot.isEquipped(ensureEquippedSlot.name)
-                && !bot.hasItem(ensureEquippedSlot.name, bot.items, ensureEquippedSlot.filters)
+                !bot.isEquipped(ensureEquippedSlot.name) &&
+                !bot.hasItem(ensureEquippedSlot.name, bot.items, ensureEquippedSlot.filters)
             ) {
                 // We don't have the item
                 continue
@@ -391,7 +432,11 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
     delete toEquip["elixir"]
 
     // Swap slots if we already have them equipped in different slots
-    for (const [slot1, slot2] of [["earring1", "earring2"], ["ring1", "ring2"], ["mainhand", "offhand"]]) {
+    for (const [slot1, slot2] of [
+        ["earring1", "earring2"],
+        ["ring1", "ring2"],
+        ["mainhand", "offhand"],
+    ]) {
         const slot1Equipped = bot.slots[slot1]
         const slot2Equipped = bot.slots[slot2]
         const slot1ToEquip = toEquip[slot1]
@@ -401,11 +446,13 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
             toEquip[slot2] = toEquip[slot1]
             delete toEquip[slot1]
         } else if (
-            slot1Equipped && slot2Equipped
-            && slot1ToEquip && slot2ToEquip
-            && slot1ToEquip.name !== slot2ToEquip.name
-            && slot1Equipped.name === slot2ToEquip.name
-            && slot2Equipped.name === slot1ToEquip.name
+            slot1Equipped &&
+            slot2Equipped &&
+            slot1ToEquip &&
+            slot2ToEquip &&
+            slot1ToEquip.name !== slot2ToEquip.name &&
+            slot1Equipped.name === slot2ToEquip.name &&
+            slot2Equipped.name === slot1ToEquip.name
         ) {
             // We have them in their opposite slot
             const temp = toEquip[slot1]
@@ -415,17 +462,14 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
     }
 
     // Swap slots if throwing stars are in mainhand, but not in offhand
-    if (
-        toEquip["mainhand"] && toEquip["offhand"]
-        && !toEquip["mainhand"].unequip && !toEquip["offhand"].unequip
-    ) {
+    if (toEquip["mainhand"] && toEquip["offhand"] && !toEquip["mainhand"].unequip && !toEquip["offhand"].unequip) {
         const mainhandType = Game.G.items[toEquip["mainhand"].name].wtype
         const offhandType = Game.G.items[toEquip["offhand"].name].wtype
         if (
-            mainhandType == "stars"
-            && offhandType !== "stars"
-            && equippableMainhand.includes(offhandType)
-            && equippableOffhand.includes(mainhandType)
+            mainhandType == "stars" &&
+            offhandType !== "stars" &&
+            equippableMainhand.includes(offhandType) &&
+            equippableOffhand.includes(mainhandType)
         ) {
             const temp = toEquip["mainhand"]
             toEquip["mainhand"] = toEquip["offhand"]

@@ -4,7 +4,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy, KiteMonsterMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
-import { RETURN_HIGHEST } from "./equipment.js"
+import { WARRIOR_SPLASH_WEAPONS, ZAPPER_STRRING } from "./equipment.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
@@ -35,9 +35,8 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
             generateEnsureEquipped: {
                 attributes: ["armor", "str", "blast", "explosion"],
                 prefer: {
-                    mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
-                    offhand: { name: "ololipop", filters: RETURN_HIGHEST },
-                    ring1: { name: "zapper", filters: RETURN_HIGHEST },
+                    ...WARRIOR_SPLASH_WEAPONS,
+                    ...ZAPPER_STRRING,
                 },
             },
             enableGreedyAggro: true,

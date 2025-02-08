@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
-import { ZAPPER_CRING, ZAPPER_STRRING } from "./equipment.js"
+import { MAGE_SPLASH_WEAPONS, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING, ZAPPER_STRRING } from "./equipment.js"
 
 export function constructMummySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const priestConfig: CharacterConfig = {
@@ -15,11 +15,11 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
             disableEnergize: true,
             generateEnsureEquipped: {
                 attributes: ["armor", "int", "attack"],
-                prefer: ZAPPER_CRING
+                prefer: ZAPPER_CRING,
             },
             type: "mummy",
         }),
-        move: new HoldPositionMoveStrategy({ map: "spookytown", x: 270, y: -1129 })
+        move: new HoldPositionMoveStrategy({ map: "spookytown", x: 270, y: -1129 }),
     }
 
     const mageConfig: CharacterConfig = {
@@ -29,11 +29,14 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
             disableEnergize: true,
             generateEnsureEquipped: {
                 attributes: ["armor", "blast", "explosion"],
-                prefer: ZAPPER_CRING
+                prefer: {
+                    ...ZAPPER_CRING,
+                    ...MAGE_SPLASH_WEAPONS,
+                },
             },
-            type: "mummy"
+            type: "mummy",
         }),
-        move: new HoldPositionMoveStrategy({ map: "spookytown", x: 250, y: -1129 })
+        move: new HoldPositionMoveStrategy({ map: "spookytown", x: 250, y: -1129 }),
     }
 
     const warriorConfig: CharacterConfig = {
@@ -43,31 +46,27 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
             enableEquipForCleave: true,
             generateEnsureEquipped: {
                 attributes: ["armor", "blast", "explosion"],
-                prefer: ZAPPER_STRRING
+                prefer: {
+                    ...ZAPPER_STRRING,
+                    ...WARRIOR_SPLASH_WEAPONS,
+                },
             },
             enableGreedyAggro: true,
-            type: "mummy"
+            type: "mummy",
         }),
-        move: new HoldPositionMoveStrategy({ map: "spookytown", x: 230, y: -1129 })
+        move: new HoldPositionMoveStrategy({ map: "spookytown", x: 230, y: -1129 }),
     }
 
     return {
         configs: [
             {
                 id: "mummy_mage,priest,warrior",
-                characters: [
-                    mageConfig,
-                    priestConfig,
-                    warriorConfig
-                ]
+                characters: [mageConfig, priestConfig, warriorConfig],
             },
             {
                 id: "mummy_priest,warrior",
-                characters: [
-                    priestConfig,
-                    warriorConfig
-                ]
+                characters: [priestConfig, warriorConfig],
             },
-        ]
+        ],
     }
 }
