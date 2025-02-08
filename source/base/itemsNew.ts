@@ -314,6 +314,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     firestars: {
         craft: true,
+        destroyBelowLevel: 1,
     },
     frankypants: {
         destroyBelowLevel: 1,
@@ -323,6 +324,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     // },
     froststaff: {
         craft: true,
+        destroyBelowLevel: 1,
     },
     fury: {
         usePrimlingFromLevel: 1,
@@ -595,6 +597,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     snowflakes: {
         craft: true,
+        destroyBelowLevel: 1,
     },
     snring: {
         buy: true,
@@ -657,9 +660,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         destroyBelowLevel: 1,
     },
     sword: {
-        destroyBelowLevel: 1,
+        sellExcess: 5,
     },
     swordofthedead: {
+        craft: true,
         destroyBelowLevel: 1,
     },
     t2bow: {
