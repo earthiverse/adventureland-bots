@@ -14,7 +14,7 @@ import AL, {
     Tools,
     Warrior,
 } from "alclient"
-import { sleep } from "../../base/general.js"
+import { checkOnlyEveryMS, sleep } from "../../base/general.js"
 import { offsetPositionParty } from "../../base/locations.js"
 import {
     sortClosestDistance,
@@ -897,6 +897,31 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 }
             }
             if (angel) targets.push(angel)
+
+            if (
+                targets.length == 1 &&
+                !this.options.disableCheckDB &&
+                checkOnlyEveryMS(`kiteToNpc_${bot.id}_${bot.serverData.region}${bot.serverData.name}`, 10_000)
+            ) {
+                // Check the DB for the NPC
+                const npc = await AL.NPCModel.findOne(
+                    {
+                        map: bot.map,
+                        name: "Kane",
+                        serverRegion: bot.serverData.region,
+                        serverIdentifier: bot.serverData.name,
+                    },
+                    {
+                        _id: 0,
+                        map: 1,
+                        x: 1,
+                        y: 1,
+                    },
+                )
+                    .lean()
+                    .exec()
+                if (npc) targets.push(npc)
+            }
         }
 
         if (targets.length == 1) return // No NPCS nearby
