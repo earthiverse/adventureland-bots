@@ -85,42 +85,42 @@ export type Requirements = {
 export type CharacterConfig = {
     require?: Requirements
 } & (
-        | {
-            ctype: "mage"
-            attack: Strategy<Mage>
-            move: Strategy<Mage>
-        }
-        | {
-            ctype: "merchant"
-            attack: Strategy<Merchant>
-            move: Strategy<Merchant>
-        }
-        | {
-            ctype: "paladin"
-            attack: Strategy<Paladin>
-            move: Strategy<Paladin>
-        }
-        | {
-            ctype: "priest"
-            attack: Strategy<Priest>
-            move: Strategy<Priest>
-        }
-        | {
-            ctype: "ranger"
-            attack: Strategy<Ranger>
-            move: Strategy<Ranger>
-        }
-        | {
-            ctype: "rogue"
-            attack: Strategy<Rogue>
-            move: Strategy<Rogue>
-        }
-        | {
-            ctype: "warrior"
-            attack: Strategy<Warrior>
-            move: Strategy<Warrior>
-        }
-    )
+    | {
+          ctype: "mage"
+          attack: Strategy<Mage>
+          move: Strategy<Mage>
+      }
+    | {
+          ctype: "merchant"
+          attack: Strategy<Merchant>
+          move: Strategy<Merchant>
+      }
+    | {
+          ctype: "paladin"
+          attack: Strategy<Paladin>
+          move: Strategy<Paladin>
+      }
+    | {
+          ctype: "priest"
+          attack: Strategy<Priest>
+          move: Strategy<Priest>
+      }
+    | {
+          ctype: "ranger"
+          attack: Strategy<Ranger>
+          move: Strategy<Ranger>
+      }
+    | {
+          ctype: "rogue"
+          attack: Strategy<Rogue>
+          move: Strategy<Rogue>
+      }
+    | {
+          ctype: "warrior"
+          attack: Strategy<Warrior>
+          move: Strategy<Warrior>
+      }
+)
 
 export type Config = {
     id: string
@@ -147,13 +147,13 @@ export function constructGenericSetup(
         if (AL.Constants.ONE_SPAWN_MONSTERS.includes(monster)) continue // There will only be one of this monster, that's okay
         const gInfo = AL.Game.G.monsters[monster]
         if (gInfo.damage_type == "pure") {
-            allMagical = undefined
-            allPhysical = undefined
+            allMagical = false
+            allPhysical = false
             break
         } else if (gInfo.damage_type == "physical") {
-            allMagical = undefined
+            allMagical = false
         } else if (gInfo.damage_type == "magical") {
-            allPhysical = undefined
+            allPhysical = false
         }
     }
 
@@ -167,11 +167,7 @@ export function constructGenericSetup(
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                attributes: allMagical
-                                    ? ["int", "explosion", "blast"]
-                                    : allPhysical
-                                        ? ["int", "attack"]
-                                        : ["int", "attack"],
+                                attributes: allMagical ? ["int", "explosion", "blast"] : ["int", "attack", "rpiercing"],
                             },
                             typeList: monsters,
                         }),
@@ -186,6 +182,7 @@ export function constructGenericSetup(
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({
                             contexts: contexts,
+                            generateEnsureEquipped: { attributes: ["str", "attack", "apiercing"] },
                             typeList: monsters,
                         }),
                         move: moveStrategy,
@@ -199,7 +196,7 @@ export function constructGenericSetup(
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            generateEnsureEquipped: { attributes: ["int", "attack"] },
+                            generateEnsureEquipped: { attributes: ["int", "attack", "rpiercing"] },
                             typeList: monsters,
                             enableGreedyAggro: privateInstance && allMagical ? true : undefined,
                         }),
@@ -214,7 +211,7 @@ export function constructGenericSetup(
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
-                            generateEnsureEquipped: { attributes: ["dex", "attack"] },
+                            generateEnsureEquipped: { attributes: ["dex", "attack", "apiercing"] },
                             typeList: monsters,
                         }),
                         move: moveStrategy,
@@ -228,7 +225,7 @@ export function constructGenericSetup(
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({
                             contexts: contexts,
-                            generateEnsureEquipped: { attributes: ["dex", "attack"] },
+                            generateEnsureEquipped: { attributes: ["dex", "attack", "apiercing"] },
                             typeList: monsters,
                         }),
                         move: moveStrategy,
@@ -245,11 +242,9 @@ export function constructGenericSetup(
                             enableEquipForCleave: privateInstance ? true : undefined,
                             enableGreedyAggro: privateInstance && allPhysical ? true : undefined,
                             generateEnsureEquipped: {
-                                attributes: allMagical
-                                    ? ["str", "attack"]
-                                    : allPhysical
-                                        ? ["str", "explosion", "blast"]
-                                        : ["str", "attack"],
+                                attributes: allPhysical
+                                    ? ["str", "explosion", "blast"]
+                                    : ["str", "attack", "apiercing"],
                             },
                             typeList: monsters,
                         }),
