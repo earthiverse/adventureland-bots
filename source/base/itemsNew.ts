@@ -209,6 +209,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     cdragon: {
         sellExcess: 5,
     },
+    charmer: {
+        craft: true,
+        upgradeUntilLevel: 1,
+    },
     claw: {
         // destroyBelowLevel: 1
         sellExcess: 5,
@@ -334,11 +338,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         destroyBelowLevel: 1,
     },
     gem0: {
-        /** Green Gem */ exchange: true,
+        /** Green Gem */
+        exchange: true,
     },
-    gem1: {
-        /** Red Gem */ exchange: true,
-    },
+    // gem1: {
+    //     /** Red Gem */
+    //     exchange: true,
+    // },
     gemfragment: {
         exchange: true,
     },
