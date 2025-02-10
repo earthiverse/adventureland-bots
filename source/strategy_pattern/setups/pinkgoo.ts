@@ -54,6 +54,7 @@ export function constructPinkGooSetup(contexts: Strategist<PingCompensatedCharac
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
+                            enableAbsorbToTank: true,
                             generateEnsureEquipped: {
                                 prefer: { ...PRIEST_FAST },
                             },
