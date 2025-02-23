@@ -47,7 +47,6 @@ export function getKeyForCrypt(map: MapName): ItemName {
 export function getCryptWaitTime(map: MapName): number {
     const today = new Date()
     const month = today.getMonth()
-    const year = today.getFullYear()
 
     if (
         // From the beginning of October

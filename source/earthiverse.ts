@@ -76,11 +76,11 @@ await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: tr
 
 // TODO: Make these configurable through /comm using a similar system to how lulz works
 // Toggles
-const ENABLE_EVENTS = false
-const ENABLE_SERVER_HOPS = false
-const ENABLE_SPECIAL_MONSTERS = false
-let ENABLE_MONSTERHUNTS = false
-const DEFAULT_MONSTERS: MonsterName[] = ["boar"]
+const ENABLE_EVENTS = true
+const ENABLE_SERVER_HOPS = true
+const ENABLE_SPECIAL_MONSTERS = true
+let ENABLE_MONSTERHUNTS = true
+const DEFAULT_MONSTERS: MonsterName[] = ["wolf"]
 const SPECIAL_MONSTERS: MonsterName[] = [
     "crabxx",
     "cutebee",
@@ -101,10 +101,10 @@ const SPECIAL_MONSTERS: MonsterName[] = [
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT: string = "earthMer" // earthMer, earthMer2, earthMer3
-const WARRIORS: string[] = [] // earthWar, earthWar2, earthWar3
-const MAGES: string[] = [] // earthMag, earthMag2, earthMag3
-const PRIESTS: string[] = [] // earthPri, earthPri2
-const RANGERS: string[] = ["earthiverse", "earthRan2", "earthRan3"] // earthiverse, earthRan2, earthRan3
+const WARRIORS: string[] = ["earthWar"] // earthWar, earthWar2, earthWar3
+const MAGES: string[] = ["earthMag"] // earthMag, earthMag2, earthMag3
+const PRIESTS: string[] = ["earthPri"] // earthPri, earthPri2
+const RANGERS: string[] = [] // earthiverse, earthRan2, earthRan3
 const PALADINS: string[] = [] // earthPal
 const ROGUES: string[] = [] // earthRog, earthRog2, earthRog3
 
@@ -819,14 +819,14 @@ const startMerchantContext = async () => {
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, {
         ...defaultNewMerchantStrategyOptions,
         goldToHold: 500_000_000,
-        // enableInstanceProvider: {
-        //     crypt: {
-        //         maxInstances: 1,
-        //     },
-        //     winter_instance: {
-        //         maxInstances: 1,
-        //     },
-        // },
+        enableInstanceProvider: {
+            crypt: {
+                maxInstances: 5,
+            },
+            winter_instance: {
+                maxInstances: 1,
+            },
+        },
     })
     CONTEXT.applyStrategy(adminCommandStrategy)
     CONTEXT.applyStrategy(guiStrategy)
