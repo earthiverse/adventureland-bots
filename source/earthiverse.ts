@@ -108,7 +108,7 @@ const RANGERS: string[] = [] // earthiverse, earthRan2, earthRan3
 const PALADINS: string[] = [] // earthPal
 const ROGUES: string[] = [] // earthRog, earthRog2, earthRog3
 
-const PARTY_ALLOWLIST: string[] = [...RANGERS, ...MAGES, ...PRIESTS, ...WARRIORS, ...PALADINS, ...ROGUES]
+const PARTY_ALLOWLIST: string[] = [...WARRIORS, ...RANGERS, ...MAGES, ...PRIESTS, ...PALADINS, ...ROGUES]
 const PARTY_LEADER: string = PARTY_ALLOWLIST[0]
 
 // Sanity checks
