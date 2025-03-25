@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { WARRIOR_SPLASH, ZAPPER_CRING } from "./equipment.js"
+import { MAGE_SPLASH_WEAPONS, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING } from "./equipment.js"
 import { mforestOdinos } from "../../base/locations.js"
 
 export function constructOrangeDinoSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
@@ -22,7 +22,7 @@ export function constructOrangeDinoSetup(contexts: Strategist<PingCompensatedCha
                             contexts: contexts,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "attack"],
-                                prefer: ZAPPER_CRING,
+                                prefer: { ...MAGE_SPLASH_WEAPONS, ...ZAPPER_CRING },
                             },
                             type: "odino",
                         }),
@@ -34,7 +34,7 @@ export function constructOrangeDinoSetup(contexts: Strategist<PingCompensatedCha
                             contexts: contexts,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "attack"],
-                                prefer: ZAPPER_CRING,
+                                prefer: { ...ZAPPER_CRING },
                             },
                             type: "odino",
                         }),
@@ -49,7 +49,7 @@ export function constructOrangeDinoSetup(contexts: Strategist<PingCompensatedCha
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "str", "attack"],
-                                prefer: { ...WARRIOR_SPLASH },
+                                prefer: { ...WARRIOR_SPLASH_WEAPONS },
                             },
                             type: "odino",
                         }),
