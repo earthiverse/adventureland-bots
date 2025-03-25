@@ -52,6 +52,9 @@ export const level1PratsNearLedge: NodeData = { map: "level1", x: -154, y: 695.5
 // Level2W
 export const frankyIdlePosition: NodeData = { map: "level2w", x: 0, y: 0 }
 
+// Mystical Forest (mforest)
+export const mforestOdinos: NodeData = { map: "mforest", x: 17, y: 695 }
+
 // Tunnel
 export const miningSpot: NodeData = { map: "tunnel", x: -280, y: -10 }
 
@@ -89,7 +92,7 @@ export function offsetPositionParty(position: IPosition, bot: Character, offsetA
         offsetIndex = bot.partyData.list.indexOf(bot.id)
     } else {
         // Use player names for the offset
-        offsetIndex = ([...bot.players.keys(), bot.id].sort()).indexOf(bot.id)
+        offsetIndex = [...bot.players.keys(), bot.id].sort().indexOf(bot.id)
     }
 
     if (offsetIndex === 0) return position // We're the leader, we stand in the middle
@@ -112,25 +115,24 @@ export function offsetPositionParty(position: IPosition, bot: Character, offsetA
             case 0:
                 {
                     pos.x += offsetAmount * (a - r)
-                    pos.y += offsetAmount * (-r)
+                    pos.y += offsetAmount * -r
                 }
                 break
             case 1:
                 {
-                    pos.x += offsetAmount * (r)
+                    pos.x += offsetAmount * r
                     pos.y += offsetAmount * ((a % en) - r)
-
                 }
                 break
             case 2:
                 {
                     pos.x += offsetAmount * (r - (a % en))
-                    pos.y += offsetAmount * (r)
+                    pos.y += offsetAmount * r
                 }
                 break
             case 3:
                 {
-                    pos.x += offsetAmount * (-r)
+                    pos.x += offsetAmount * -r
                     pos.y += offsetAmount * (r - (a % en))
                 }
                 break
