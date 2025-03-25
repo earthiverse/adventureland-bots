@@ -216,17 +216,7 @@ export type GenerateEnsureEquipped = {
      * TODO: If we have `skills: ["quickstab", "freeze"], we might equip two items that both give quickstab instead of 1 of each
      *       ["burn", "quickstab"] might equip two fireblades, etc.
      */
-    skills?: (
-        | SkillName
-        | "burn"
-        | "freeze"
-        | "poke"
-        | "posion"
-        | "restore_mp"
-        | "secondchance"
-        | "sugarrush"
-        | "weave"
-    )[]
+    skills?: Item["ability"][]
 }
 
 /**
@@ -320,7 +310,8 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
             let itemBGivesSkill = generate.skills.includes(itemDataB.ability)
             if (itemDataA.wtype !== itemDataB.wtype) {
                 for (const skill of generate.skills) {
-                    const gAbility = Game.G.skills[skill]
+                    const gAbility = Game.G.skills[skill as SkillName]
+                    if (!gAbility) continue
                     if (Array.isArray(gAbility.wtype)) {
                         for (const wtype of gAbility.wtype) {
                             if (wtype === itemDataA.wtype) itemAGivesSkill = true
@@ -436,7 +427,7 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
         ["earring1", "earring2"],
         ["ring1", "ring2"],
         ["mainhand", "offhand"],
-    ]) {
+    ] as [SlotType, SlotType][]) {
         const slot1Equipped = bot.slots[slot1]
         const slot2Equipped = bot.slots[slot2]
         const slot1ToEquip = toEquip[slot1]
