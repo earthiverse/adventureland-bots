@@ -74,6 +74,7 @@ import { constructBeeSetup } from "./bee.js"
 import { constructIceRoamerHelperSetup, constructIceRoamerSetup } from "./iceroamer.js"
 import { constructCryptHelperSetup, constructCryptSetup } from "./crypt.js"
 import { constructXMageSetup, constructXmageHelperSetup } from "./xmage.js"
+import { constructOrangeDinoSetup } from "./odino.js"
 
 export type Requirements = {
     [T in Attribute]?: number
@@ -434,6 +435,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         mummy: constructMummySetup(contexts),
         mvampire: constructMVampireSetup(contexts),
         nerfedbat: constructCryptSetup(contexts),
+        odino: constructOrangeDinoSetup(contexts),
         oneeye: constructOneEyeSetup(contexts),
         osnake: osnakeSetup,
         phoenix: constructPhoenixSetup(contexts),
