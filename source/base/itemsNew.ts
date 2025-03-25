@@ -468,10 +468,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     mittens: {
         destroyBelowLevel: 1,
     },
-    monstertoken: {
-        sell: true,
-        sellPrice: 250_000,
-    },
+    // monstertoken: {
+    //     sell: true,
+    //     sellPrice: 350_000,
+    // },
     mpot0: {
         // sell: true,
         // sellPrice: "npc"
