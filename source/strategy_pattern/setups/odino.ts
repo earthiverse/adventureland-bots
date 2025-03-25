@@ -44,6 +44,7 @@ export function constructOrangeDinoSetup(contexts: Strategist<PingCompensatedCha
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
+                            disableAgitate: true,
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
                             enableGreedyAggro: true,
