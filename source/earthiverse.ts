@@ -819,14 +819,14 @@ const startMerchantContext = async () => {
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, {
         ...defaultNewMerchantStrategyOptions,
         goldToHold: 500_000_000,
-        enableInstanceProvider: {
-            crypt: {
-                maxInstances: 5,
-            },
-            winter_instance: {
-                maxInstances: 1,
-            },
-        },
+        // enableInstanceProvider: {
+        //     crypt: {
+        //         maxInstances: 5,
+        //     },
+        //     winter_instance: {
+        //         maxInstances: 1,
+        //     },
+        // },
     })
     CONTEXT.applyStrategy(adminCommandStrategy)
     CONTEXT.applyStrategy(guiStrategy)
