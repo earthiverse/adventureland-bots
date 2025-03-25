@@ -3,14 +3,13 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
+import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { WARRIOR_SPLASH, ZAPPER_CRING } from "./equipment.js"
 import { mforestOdinos } from "../../base/locations.js"
 
 export function constructOrangeDinoSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("odino", { idlePosition: mforestOdinos })
-    const moveInCircleStrategy = new MoveInCircleMoveStrategy({ center: mforestOdinos, radius: 20, sides: 8 })
 
     return {
         configs: [
@@ -45,13 +44,16 @@ export function constructOrangeDinoSetup(contexts: Strategist<PingCompensatedCha
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
+                            enableEquipForCleave: true,
+                            enableEquipForStomp: true,
+                            enableGreedyAggro: true,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "str", "attack"],
                                 prefer: { ...WARRIOR_SPLASH },
                             },
                             type: "odino",
                         }),
-                        move: moveInCircleStrategy,
+                        move: moveStrategy,
                     },
                 ],
             },
