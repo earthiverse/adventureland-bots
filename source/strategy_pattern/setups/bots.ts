@@ -6,11 +6,10 @@ import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_SPLASH_WEAPONS, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING } from "./equipment.js"
-import { mforestOdinos } from "../../base/locations.js"
 
 export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const typeList: MonsterName[] = ["goldenbot", "sparkbot", "targetron"]
-    const moveStrategy = new ImprovedMoveStrategy(typeList, { idlePosition: mforestOdinos })
+    const moveStrategy = new ImprovedMoveStrategy(typeList)
 
     return {
         configs: [
