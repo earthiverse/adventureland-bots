@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH_WEAPONS, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING } from "./equipment.js"
+import { JACKO, MAGE_SPLASH_WEAPONS, SUPERMITTENS, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING } from "./equipment.js"
 
 export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const typeList: MonsterName[] = ["goldenbot", "sparkbot", "targetron"]
@@ -22,7 +22,7 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
                             contexts: contexts,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "attack"],
-                                prefer: { ...MAGE_SPLASH_WEAPONS, ...ZAPPER_CRING },
+                                prefer: { ...MAGE_SPLASH_WEAPONS, ...ZAPPER_CRING, ...JACKO, ...SUPERMITTENS },
                             },
                             typeList,
                         }),
@@ -51,7 +51,7 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
                             enableGreedyAggro: ["goldenbot", "targetron"],
                             generateEnsureEquipped: {
                                 attributes: ["armor", "str", "attack"],
-                                prefer: { ...WARRIOR_SPLASH_WEAPONS },
+                                prefer: { ...WARRIOR_SPLASH_WEAPONS, ...SUPERMITTENS },
                             },
                             typeList,
                         }),

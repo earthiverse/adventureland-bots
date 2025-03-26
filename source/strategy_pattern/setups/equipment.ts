@@ -15,6 +15,14 @@ import { EnsureEquipped, EnsureEquippedSlot } from "../strategies/attack"
 export const RETURN_HIGHEST: LocateItemFilters = { returnHighestLevel: true }
 export const UNEQUIP: EnsureEquippedSlot = { name: undefined, unequip: true }
 
+export const JACKO: EnsureEquipped = {
+    orb: { name: "jacko", filters: RETURN_HIGHEST },
+}
+
+export const SUPERMITTENS: EnsureEquipped = {
+    gloves: { name: "supermittens", filters: RETURN_HIGHEST },
+}
+
 export const ZAPPER_CRING: EnsureEquipped = {
     ring1: { name: "zapper", filters: RETURN_HIGHEST },
     ring2: { name: "cring", filters: RETURN_HIGHEST },
