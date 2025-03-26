@@ -45,6 +45,7 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
+                            disableAgitate: true,
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
                             enableGreedyAggro: ["goldenbot", "targetron"],
