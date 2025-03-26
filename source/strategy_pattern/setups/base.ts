@@ -75,6 +75,7 @@ import { constructIceRoamerHelperSetup, constructIceRoamerSetup } from "./iceroa
 import { constructCryptHelperSetup, constructCryptSetup } from "./crypt.js"
 import { constructXMageSetup, constructXmageHelperSetup } from "./xmage.js"
 import { constructOrangeDinoSetup } from "./odino.js"
+import { constructBotsSetup } from "./bots.js"
 
 export type Requirements = {
     [T in Attribute]?: number
@@ -385,6 +386,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
     const osnakeSetup = constructOSnakeSetup(contexts)
     const xmageSetup = constructXMageSetup(contexts)
     const rgooSetup = constructRGooSetup(contexts)
+    const botsSetup = constructBotsSetup(contexts)
 
     return {
         a1: cryptSetup,
@@ -419,6 +421,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         fvampire: constructFVampireSetup(contexts),
         ghost: constructGhostSetup(contexts),
         goldenbat: constructGoldenbatSetup(contexts),
+        goldenbot: botsSetup,
         goo: constructGooSetup(contexts),
         greenjr: constructGreenJrSetup(contexts),
         grinch: constructGrinchSetup(contexts),
@@ -434,7 +437,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         mrpumpkin: constructMrPumpkinSetup(contexts),
         mummy: constructMummySetup(contexts),
         mvampire: constructMVampireSetup(contexts),
-        nerfedbat: constructCryptSetup(contexts),
+        nerfedbat: cryptSetup,
         odino: constructOrangeDinoSetup(contexts),
         oneeye: constructOneEyeSetup(contexts),
         osnake: osnakeSetup,
@@ -452,11 +455,13 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         skeletor: constructSkeletorSetup(contexts),
         snake: osnakeSetup,
         snowman: constructSnowmanSetup(contexts),
+        sparkbot: botsSetup,
         spider: constructGenericSetup(contexts, ["spider", "phoenix"], true),
         squig: constructSquigToadSetup(contexts),
         squigtoad: constructSquigToadSetup(contexts),
         stompy: constructStompySetup(contexts),
         stoneworm: constructStoneWormSetup(contexts),
+        targetron: botsSetup,
         tiger: constructTigerSetup(contexts),
         // tinyp: constructTinyPSetup(contexts),
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"], true),
