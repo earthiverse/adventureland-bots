@@ -32,6 +32,7 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
+                            enableGreedyAggro: ["sparkbot"],
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "attack"],
                                 prefer: { ...ZAPPER_CRING },
@@ -46,7 +47,7 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
-                            enableGreedyAggro: true,
+                            enableGreedyAggro: ["goldenbot", "targetron"],
                             generateEnsureEquipped: {
                                 attributes: ["armor", "str", "attack"],
                                 prefer: { ...WARRIOR_SPLASH_WEAPONS },
