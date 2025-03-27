@@ -76,6 +76,7 @@ import { constructCryptHelperSetup, constructCryptSetup } from "./crypt.js"
 import { constructXMageSetup, constructXmageHelperSetup } from "./xmage.js"
 import { constructOrangeDinoSetup } from "./odino.js"
 import { constructBotsSetup } from "./bots.js"
+import { constructDryadSetup } from "./dryad.js"
 
 export type Requirements = {
     [T in Attribute]?: number
@@ -414,6 +415,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         croc: constructGenericSetup(contexts, ["croc", "phoenix"], true),
         cutebee: constructCuteBeeSetup(contexts),
         dragold: constructDragoldSetup(contexts),
+        dryad: constructDryadSetup(contexts),
         ent: constructEntSetup(contexts),
         fireroamer: constructFireRoamerSetup(contexts),
         franky: constructFrankySetup(contexts),
