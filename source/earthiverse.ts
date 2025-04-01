@@ -16,6 +16,7 @@ import AL, {
 } from "alclient"
 import { randomIntFromInterval, sleep } from "./base/general.js"
 import {
+    getEasterMonsterPriority,
     getHalloweenMonsterPriority,
     getHolidaySeasonMonsterPriority,
     getLunarNewYearMonsterPriority,
@@ -621,6 +622,14 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             ) {
                 // Valentines
                 const monster = (await getValentinesMonsterPriority(true))[0]
+                if (monster) {
+                    // We want to switch servers
+                    TARGET_IDENTIFIER = monster.serverIdentifier
+                    TARGET_REGION = monster.serverRegion
+                }
+            } else if (bot1.S.egghunt) {
+                // Easter
+                const monster = (await getEasterMonsterPriority(true))[0]
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier
