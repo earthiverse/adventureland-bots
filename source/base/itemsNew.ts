@@ -526,6 +526,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sell: true,
         sellPrice: 1_000_000,
     },
+    pinkie: {
+        buy: true,
+        buyPrice: "ponty",
+    },
     pmace: {
         destroyBelowLevel: 1,
     },
