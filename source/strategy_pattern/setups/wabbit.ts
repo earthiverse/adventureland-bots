@@ -26,13 +26,14 @@ export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharact
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                prefer: { ...MAGE_FAST }
+                                attributes: ["frequency"],
+                                prefer: { ...MAGE_FAST },
                             },
                             typeList: typeList,
                         }),
-                        move: wabbitMoveStrategy
+                        move: wabbitMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "wabbit_paladin",
@@ -41,11 +42,14 @@ export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharact
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({
                             contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["frequency"],
+                            },
                             typeList: typeList,
                         }),
-                        move: wabbitMoveStrategy
+                        move: wabbitMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "wabbit_priest",
@@ -55,13 +59,14 @@ export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharact
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                prefer: { ...PRIEST_LUCK }
+                                attributes: ["frequency"],
+                                prefer: { ...PRIEST_LUCK },
                             },
                             typeList: typeList,
                         }),
-                        move: wabbitMoveStrategy
+                        move: wabbitMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "wabbit_ranger",
@@ -70,11 +75,14 @@ export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharact
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["frequency"],
+                            },
                             typeList: typeList,
                         }),
-                        move: wabbitMoveStrategy
+                        move: wabbitMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "wabbit_rogue",
@@ -83,11 +91,14 @@ export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharact
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({
                             contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["frequency"],
+                            },
                             typeList: typeList,
                         }),
-                        move: wabbitMoveStrategy
+                        move: wabbitMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "wabbit_warrior",
@@ -97,20 +108,23 @@ export function constructWabbitSetup(contexts: Strategist<PingCompensatedCharact
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
+                                attributes: ["frequency"],
                                 prefer: {
+                                    mainhand: { name: "rapier" },
                                     earring2: { name: "dexearringx" },
                                     orb: { name: "jacko" },
-                                }
+                                },
                             },
+                            enableGreedyAggro: true,
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
-                            typeList: typeList
+                            typeList: typeList,
                         }),
-                        move: wabbitMoveStrategy
-                    }
-                ]
+                        move: wabbitMoveStrategy,
+                    },
+                ],
             },
-        ]
+        ],
     }
 }
 
@@ -125,9 +139,9 @@ export function constructWabbitHelperSetup(contexts: Strategist<PingCompensatedC
                     {
                         ctype: "mage",
                         attack: new MageAttackStrategy({ contexts: contexts, typeList: typeList }),
-                        move: wabbitMoveStrategy
-                    }
-                ]
+                        move: wabbitMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "wabbit_helper_paladin",
@@ -135,9 +149,9 @@ export function constructWabbitHelperSetup(contexts: Strategist<PingCompensatedC
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({ contexts: contexts, typeList: typeList }),
-                        move: wabbitMoveStrategy
-                    }
-                ]
+                        move: wabbitMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "wabbit_helper_priest",
@@ -148,9 +162,9 @@ export function constructWabbitHelperSetup(contexts: Strategist<PingCompensatedC
                             contexts: contexts,
                             typeList: typeList,
                         }),
-                        move: wabbitMoveStrategy
+                        move: wabbitMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "wabbit_helper_ranger",
@@ -158,9 +172,9 @@ export function constructWabbitHelperSetup(contexts: Strategist<PingCompensatedC
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, typeList: typeList }),
-                        move: wabbitMoveStrategy
-                    }
-                ]
+                        move: wabbitMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "wabbit_helper_rogue",
@@ -168,20 +182,24 @@ export function constructWabbitHelperSetup(contexts: Strategist<PingCompensatedC
                     {
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({ contexts: contexts, typeList: typeList }),
-                        move: wabbitMoveStrategy
-                    }
-                ]
+                        move: wabbitMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "wabbit_helper_warrior",
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, typeList: typeList }),
-                        move: wabbitMoveStrategy
-                    }
-                ]
-            }
-        ]
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            disableAgitate: true,
+                            typeList: typeList,
+                        }),
+                        move: wabbitMoveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
