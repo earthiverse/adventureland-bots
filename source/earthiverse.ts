@@ -827,7 +827,7 @@ const startMerchantContext = async () => {
     const CONTEXT = new Strategist<Merchant>(merchant, baseStrategy)
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, {
         ...defaultNewMerchantStrategyOptions,
-        goldToHold: 500_000_000,
+        goldToHold: 4_000_000_000,
         enableInstanceProvider: {
             crypt: {
                 maxInstances: 10,
