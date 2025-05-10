@@ -62,9 +62,9 @@ export type ItemConfig = {
 
 export type Config = Partial<Record<ItemKey, ItemConfig>>;
 
-const DESTROY: ItemConfig = { destroy: {} };
-const HOLD_FULL_STACK: ItemConfig = { hold: { characterTypes: "all", replenish: 9999 } };
-const SELL_TO_NPC: ItemConfig = { sell: { sellPrice: "npc" } };
+const DESTROY: ItemConfig = Object.freeze({ destroy: {} });
+const HOLD_FULL_STACK: ItemConfig = Object.freeze({ hold: { characterTypes: "all", replenish: 9999 } });
+const SELL_TO_NPC: ItemConfig = Object.freeze({ sell: { sellPrice: "npc" } });
 
 const config: Config = {
   cclaw: {
