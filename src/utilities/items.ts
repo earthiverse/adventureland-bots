@@ -1,4 +1,4 @@
-import { Character } from "alclient";
+import type { Character } from "alclient";
 import type { GData, ItemInfo } from "typed-adventureland";
 import Config, { type ItemConfig } from "../../config/items.js";
 

@@ -1,4 +1,4 @@
-import { Config } from "../../config/items.js";
+import type { Config } from "../../config/items.js";
 import { wantToDestroy } from "../../src/utilities/items.js";
 
 test("`wantToDestroy()` works", () => {

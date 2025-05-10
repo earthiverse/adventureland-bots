@@ -26,11 +26,16 @@ for (const characterInfo of player.characters) {
   switch (characterInfo.type) {
     case "merchant":
       continue; // TODO: Get a merchant strategy
-    default:
+    case "mage":
+    case "paladin":
+    case "priest":
+    case "ranger":
+    case "rogue":
+    case "warrior":
       console.debug(`Creating ${characterInfo.name} (${characterInfo.type})`);
       character = player.createCharacter(characterInfo.name);
       break;
   }
-  await character.start("EU", "I");
+  await character.start("ASIA", "I");
   setup(character);
 }

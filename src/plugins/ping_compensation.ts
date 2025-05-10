@@ -1,4 +1,5 @@
-import { EventBus, Observer } from "alclient";
+import type { Observer } from "alclient";
+import { EventBus } from "alclient";
 import type { ConditionKey, StatusInfoBase } from "typed-adventureland";
 import type { CharacterEntityQInfos } from "typed-adventureland/dist/src/entities/character-entity.js";
 import config from "../../config/config.js";

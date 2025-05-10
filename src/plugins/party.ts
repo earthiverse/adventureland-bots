@@ -1,4 +1,5 @@
-import { Character, EventBus } from "alclient";
+import type { Character} from "alclient";
+import { EventBus } from "alclient";
 import config from "../../config/config.js";
 import { logDebug, logInformational } from "../utilities/logging.js";
 

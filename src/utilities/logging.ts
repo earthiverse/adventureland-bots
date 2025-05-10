@@ -1,4 +1,5 @@
-import { Client, EmbedBuilder, IntentsBitField, TextChannel, type HexColorString } from "discord.js";
+import type { TextChannel} from "discord.js";
+import { Client, EmbedBuilder, IntentsBitField, type HexColorString } from "discord.js";
 import fs from "fs";
 import nm from "nodemailer";
 import path from "path";

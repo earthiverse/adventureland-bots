@@ -1,5 +1,5 @@
 import TTLCache from "@isaacs/ttlcache";
-import { EntityMonster, type Character } from "alclient";
+import type { EntityMonster, Character } from "alclient";
 import TinyQueue, { type Comparator } from "tinyqueue";
 
 const IGNORED_MONSTERS = new TTLCache<string, EntityMonster>({
