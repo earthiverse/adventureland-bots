@@ -1,11 +1,11 @@
 import { Game, type Character } from "alclient";
 import config from "../config/config.js";
 import { setup } from "./setups/simple.js";
-import { getGFromCache } from "./utilities/cache.js";
 
 // Plugins
 import "./plugins/auto_reconnect.js";
 import "./plugins/g_cache.js";
+import { getGFromCache } from "./plugins/g_cache.js";
 import "./plugins/party.js";
 import "./plugins/ping_compensation.js";
 
