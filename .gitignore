@@ -14,5 +14,6 @@ credentials*.json
 
 # Data
 data
-# TODO: Move these to data folder
-G_*json
+
+# IDE
+.vscode
