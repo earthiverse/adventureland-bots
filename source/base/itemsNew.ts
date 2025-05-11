@@ -112,6 +112,10 @@ export const REPLENISH_ITEM_CONFIG: ItemConfig = {
         holdSlot: 38,
         replenish: 1000,
     },
+    offering: {
+        hold: ["merchant"],
+        replenish: 1
+    },
     xptome: {
         hold: true,
         replenish: 1,
