@@ -12,7 +12,11 @@ import { logDebug } from "../utilities/logging.js";
 const { maxPings, pingEveryMs } = config.pingCompensation;
 
 const observers = new Set<Observer>();
+/** key -> index of next ping to overwrite in pings */
+const pingIndexes = new Map<string, number>();
+/** key -> list of last maxPings pings */
 const pings = new Map<string, number[]>();
+/** key -> minimum ping */
 const minPings = new Map<string, number>();
 
 const pingLoop = async () => {
@@ -25,7 +29,7 @@ const pingLoop = async () => {
     }
     await Promise.allSettled(pings);
   } catch (e) {
-    logDebug(e as Error);
+    if (e instanceof Error || typeof e === "string") logDebug(e);
   } finally {
     setTimeout(() => void pingLoop(), pingEveryMs);
   }
@@ -41,9 +45,16 @@ EventBus.on("observer_stopped", (observer) => observers.delete(observer));
 EventBus.on("ping", (_observer, server, ping) => {
   const key = `${server.key}${server.name}`;
   const serverPings = pings.get(key) ?? [];
-  if (serverPings.unshift(ping) > maxPings) {
-    serverPings.splice(maxPings - 1);
+  if (serverPings.length < maxPings) {
+    // We don't have the maximum number of pings yet
+    serverPings.push(ping);
+  } else {
+    // We have reached the maximum number of pings, overwrite old entries
+    const serverPingIndex = pingIndexes.get(key) ?? 0;
+    serverPings[serverPingIndex] = ping;
+    pingIndexes.set(key, (serverPingIndex + 1) % maxPings);
   }
+  pings.set(key, serverPings);
   minPings.set(key, Math.min(...serverPings));
 });
 

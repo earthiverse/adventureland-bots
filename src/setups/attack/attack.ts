@@ -3,9 +3,21 @@ import type { MonsterKey } from "typed-adventureland";
 import { logDebug } from "../../utilities/logging.js";
 import { getBestTarget, ignoreMonster, unignoreMonster } from "../../utilities/monster.js";
 
+const active = new Set<Character>();
+
+/**
+ * Starts the attack loop for the given character
+ * @param character
+ * @param monster
+ */
 export const setup = (character: Character, monster: MonsterKey = "goo") => {
+  active.add(character);
+
   const attackLoop = async () => {
+    if (!active.has(character)) return; // Stop
+
     let entity;
+
     try {
       if (character.socket.disconnected) return;
 
@@ -26,5 +38,14 @@ export const setup = (character: Character, monster: MonsterKey = "goo") => {
       setTimeout(() => void attackLoop(), Math.max(100, character.getTimeout("attack")));
     }
   };
+
   void attackLoop();
+};
+
+/**
+ * Stops the attack loop for the given character
+ * @param character
+ */
+export const teardown = (character: Character) => {
+  active.delete(character);
 };

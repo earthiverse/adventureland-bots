@@ -1,4 +1,4 @@
-import type { Character} from "alclient";
+import type { Character } from "alclient";
 import { EventBus } from "alclient";
 import config from "../../config/config.js";
 import { logDebug, logInformational } from "../utilities/logging.js";
@@ -24,7 +24,7 @@ const partyLoop = async () => {
     }
     await Promise.allSettled(requests);
   } catch (e) {
-    logDebug(e as Error);
+    if (e instanceof Error || typeof e === "string") logDebug(e);
   } finally {
     setTimeout(() => void partyLoop(), checkEveryMs);
   }
