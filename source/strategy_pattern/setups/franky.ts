@@ -9,7 +9,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
-import { UNEQUIP } from "./equipment.js"
+import { RETURN_HIGHEST, UNEQUIP } from "./equipment.js"
 
 // TODO: Improve PVP
 class MageFrankyAttackStrategy extends MageAttackStrategy {
@@ -18,11 +18,20 @@ class MageFrankyAttackStrategy extends MageAttackStrategy {
         if (!this.options.generateEnsureEquipped.prefer) this.options.generateEnsureEquipped.prefer = {}
         if (bot.isPVP()) {
             // No splash damage
-            this.options.generateEnsureEquipped.prefer.mainhand = { name: "firestaff", filters: { returnHighestLevel: true } }
-            this.options.generateEnsureEquipped.prefer.offhand = { name: "wbookhs", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = {
+                name: "firestaff",
+                filters: { returnHighestLevel: true },
+            }
+            this.options.generateEnsureEquipped.prefer.offhand = {
+                name: "wbookhs",
+                filters: { returnHighestLevel: true },
+            }
         } else {
             // Splash damage & additional monsters
-            this.options.generateEnsureEquipped.prefer.mainhand = { name: "gstaff", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = {
+                name: "gstaff",
+                filters: { returnHighestLevel: true },
+            }
             this.options.generateEnsureEquipped.prefer.offhand = UNEQUIP
         }
         super.onApply(bot)
@@ -50,15 +59,30 @@ class WarriorFrankyAttackStrategy extends WarriorAttackStrategy {
         if (bot.isPVP()) {
             // No Splash Damage
             this.options.disableCleave = true
-            this.options.generateEnsureEquipped.prefer.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } }
-            this.options.generateEnsureEquipped.prefer.offhand = { name: "fireblade", filters: { returnHighestLevel: true } }
-            this.options.generateEnsureEquipped.prefer.ring1 = { name: "strring", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = {
+                name: "fireblade",
+                filters: { returnHighestLevel: true },
+            }
+            this.options.generateEnsureEquipped.prefer.offhand = {
+                name: "fireblade",
+                filters: { returnHighestLevel: true },
+            }
+            this.options.generateEnsureEquipped.prefer.ring1 = {
+                name: "strring",
+                filters: { returnHighestLevel: true },
+            }
             delete this.options.enableEquipForCleave
         } else {
             // Splash Damage & additional monsters
             delete this.options.disableCleave
-            this.options.generateEnsureEquipped.prefer.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } }
-            this.options.generateEnsureEquipped.prefer.offhand = { name: "ololipop", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.mainhand = {
+                name: "vhammer",
+                filters: { returnHighestLevel: true },
+            }
+            this.options.generateEnsureEquipped.prefer.offhand = {
+                name: "ololipop",
+                filters: { returnHighestLevel: true },
+            }
             this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
             this.options.enableEquipForCleave = true
         }
@@ -78,12 +102,12 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
             generateEnsureEquipped: {
                 attributes: ["int", "attack"],
                 prefer: {
-                    orb: { name: "jacko", filters: { returnHighestLevel: true } }
-                }
+                    orb: { name: "jacko", filters: { returnHighestLevel: true } },
+                },
             },
             typeList: ["nerfedmummy", "franky"],
         }),
-        move: frankyMoveStrategy
+        move: frankyMoveStrategy,
     }
     const mageConfig: CharacterConfig = {
         ctype: "mage",
@@ -91,11 +115,11 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
             contexts: contexts,
             disableEnergize: true,
             generateEnsureEquipped: {
-                attributes: ["int", "blast", "explosion"]
+                attributes: ["int", "blast", "explosion"],
             },
-            typeList: ["nerfedmummy", "franky"]
+            typeList: ["nerfedmummy", "franky"],
         }),
-        move: frankyMoveStrategy
+        move: frankyMoveStrategy,
     }
     const warriorConfig: CharacterConfig = {
         ctype: "warrior",
@@ -103,27 +127,44 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
             contexts: contexts,
             enableEquipForCleave: true,
             generateEnsureEquipped: {
-                attributes: ["str", "blast", "explosion"]
+                attributes: ["str", "blast", "explosion"],
             },
-            typeList: ["nerfedmummy", "franky"]
+            typeList: ["nerfedmummy", "franky"],
         }),
-        move: frankyMoveStrategy
+        move: frankyMoveStrategy,
+    }
+    const rogueConfig: CharacterConfig = {
+        ctype: "rogue",
+        attack: new RogueAttackStrategy({
+            contexts,
+            generateEnsureEquipped: {
+                prefer: {
+                    mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
+                    offhand: { name: "cclaw", filters: RETURN_HIGHEST },
+                },
+            },
+        }),
+        move: frankyMoveStrategy,
     }
     return {
         configs: [
             {
                 id: "franky_mage,priest,warrior",
-                characters: [mageConfig, priestConfig, warriorConfig]
+                characters: [mageConfig, priestConfig, warriorConfig],
             },
             {
                 id: "franky_priest,warrior",
-                characters: [priestConfig, warriorConfig]
+                characters: [priestConfig, warriorConfig],
             },
             {
                 id: "franky_priest,mage",
-                characters: [priestConfig, mageConfig,]
+                characters: [priestConfig, mageConfig],
             },
-        ]
+            {
+                id: "franky_priest,rogue,rogue",
+                characters: [priestConfig, rogueConfig, rogueConfig],
+            },
+        ],
     }
 }
 
@@ -138,11 +179,11 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             typeList: ["nerfedmummy", "franky"],
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: frankyMoveStrategy
-                    }
-                ]
+                        move: frankyMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "franky_paladin_helper",
@@ -152,11 +193,11 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                         attack: new PaladinAttackStrategy({
                             contexts: contexts,
                             typeList: ["nerfedmummy", "franky"],
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: frankyMoveStrategy
-                    }
-                ]
+                        move: frankyMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "franky_priest_helper",
@@ -167,11 +208,11 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                             contexts: contexts,
                             disableAbsorb: true,
                             typeList: ["nerfedmummy", "franky"],
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: frankyMoveStrategy
-                    }
-                ]
+                        move: frankyMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "franky_ranger_helper",
@@ -181,11 +222,11 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
                             typeList: ["nerfedmummy", "franky"],
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: frankyMoveStrategy
-                    }
-                ]
+                        move: frankyMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "franky_rogue_helper",
@@ -198,14 +239,14 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                                 prefer: {
                                     // Stab for extra stacked damage
                                     mainhand: { name: "claw", filters: { returnHighestLevel: true } },
-                                }
+                                },
                             },
                             typeList: ["nerfedmummy", "franky"],
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: frankyMoveStrategy
-                    }
-                ]
+                        move: frankyMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "franky_warrior_helper",
@@ -217,12 +258,12 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                             disableAgitate: true,
                             disableCleave: true,
                             typeList: ["nerfedmummy", "franky"],
-                            hasTarget: true
+                            hasTarget: true,
                         }),
-                        move: frankyMoveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: frankyMoveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
