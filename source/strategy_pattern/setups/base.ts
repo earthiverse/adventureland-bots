@@ -77,6 +77,7 @@ import { constructXMageSetup, constructXmageHelperSetup } from "./xmage.js"
 import { constructOrangeDinoSetup } from "./odino.js"
 import { constructBotsSetup } from "./bots.js"
 import { constructDryadSetup } from "./dryad.js"
+import { constructPinkGoblinSetup } from "./pinkgoblin.js"
 
 export type Requirements = {
     [T in Attribute]?: number
@@ -444,6 +445,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         oneeye: constructOneEyeSetup(contexts),
         osnake: osnakeSetup,
         phoenix: constructPhoenixSetup(contexts),
+        pinkgoblin: constructPinkGoblinSetup(contexts),
         pinkgoo: constructPinkGooSetup(contexts),
         plantoid: constructPlantoidSetup(contexts),
         poisio: constructGenericSetup(contexts, ["poisio"], true),
