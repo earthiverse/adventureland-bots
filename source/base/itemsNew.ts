@@ -114,7 +114,7 @@ export const REPLENISH_ITEM_CONFIG: ItemConfig = {
     },
     offering: {
         hold: ["merchant"],
-        replenish: 1
+        replenish: 1,
     },
     xptome: {
         hold: true,
@@ -256,6 +256,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     daggerofthedead: {
         destroyBelowLevel: 1,
+    },
+    dexamulet: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    dexearring: {
+        buy: true,
+        buyPrice: "ponty",
     },
     dexring: {
         sell: true,
