@@ -5,6 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 
 const attackTypes: MonsterName[] = ["armadillo", "phoenix"]
 const moveTypes: MonsterName[] = ["armadillo"]
@@ -22,13 +23,13 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                attributes: ["int", "blast", "explosion"]
+                                attributes: ["int", "blast", "explosion"],
                             },
-                            typeList: attackTypes
+                            typeList: attackTypes,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "armadillo_priest",
@@ -38,13 +39,13 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                attributes: ["int", "attack"]
+                                attributes: ["int", "attack"],
                             },
-                            typeList: attackTypes
+                            typeList: attackTypes,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "armadillo_ranger",
@@ -54,15 +55,34 @@ export function constructArmadilloSetup(contexts: Strategist<PingCompensatedChar
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                attributes: ["dex", "attack"]
+                                attributes: ["dex", "attack"],
                             },
-                            typeList: attackTypes
+                            typeList: attackTypes,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
-        ]
+            {
+                id: "armadillo_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["range"],
+                            },
+                            typeList: attackTypes,
+                        }),
+                        require: {
+                            range: 75 // Require 75 range for dreturn to not take affect
+                        },
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
 
@@ -78,11 +98,11 @@ export function constructArmadilloHelperSetup(contexts: Strategist<PingCompensat
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            typeList: attackTypes
+                            typeList: attackTypes,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "armadillo_priest",
@@ -91,11 +111,11 @@ export function constructArmadilloHelperSetup(contexts: Strategist<PingCompensat
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
-                            typeList: attackTypes
+                            typeList: attackTypes,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "armadillo_ranger",
@@ -104,12 +124,12 @@ export function constructArmadilloHelperSetup(contexts: Strategist<PingCompensat
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
-                            typeList: attackTypes
+                            typeList: attackTypes,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
-        ]
+        ],
     }
 }
