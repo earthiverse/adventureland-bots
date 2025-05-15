@@ -23,11 +23,11 @@ export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"]
+                                attributes: ["resistance", "int", "attack"],
                             },
-                            type: "iceroamer"
+                            type: "iceroamer",
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "priest",
@@ -35,13 +35,13 @@ export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"]
+                                attributes: ["resistance", "int", "attack"],
                             },
                             type: "iceroamer",
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "iceroamer_priest",
@@ -52,13 +52,13 @@ export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             disableCurse: true,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"]
+                                attributes: ["resistance", "int", "attack"],
                             },
-                            type: "iceroamer"
+                            type: "iceroamer",
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "iceroamer_ranger",
@@ -68,13 +68,26 @@ export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedChar
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "dex", "attack"]
+                                attributes: ["resistance", "dex", "attack"],
                             },
-                            type: "iceroamer"
+                            type: "iceroamer",
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "iceroamer_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            type: "iceroamer",
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "iceroamer_warrior",
@@ -85,15 +98,15 @@ export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             enableEquipForCleave: true,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "str", "attack"]
+                                attributes: ["resistance", "str", "attack"],
                             },
-                            type: "iceroamer"
+                            type: "iceroamer",
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
 
@@ -108,9 +121,9 @@ export function constructIceRoamerHelperSetup(contexts: Strategist<PingCompensat
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({ contexts: contexts, type: "iceroamer" }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "iceroamer_helper_priest",
@@ -120,11 +133,11 @@ export function constructIceRoamerHelperSetup(contexts: Strategist<PingCompensat
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableCurse: true,
-                            type: "iceroamer"
+                            type: "iceroamer",
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "iceroamer_helper_ranger",
@@ -132,9 +145,9 @@ export function constructIceRoamerHelperSetup(contexts: Strategist<PingCompensat
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, type: "iceroamer" }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "iceroamer_helper_rogue",
@@ -142,9 +155,9 @@ export function constructIceRoamerHelperSetup(contexts: Strategist<PingCompensat
                     {
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({ contexts: contexts, type: "iceroamer" }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "iceroamer_helper_warrior",
@@ -152,10 +165,10 @@ export function constructIceRoamerHelperSetup(contexts: Strategist<PingCompensat
                     {
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({ contexts: contexts, type: "iceroamer" }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
