@@ -9,7 +9,7 @@ import { pinkGoblinIdlePosition } from "../../base/locations.js"
 
 export function constructPinkGoblinSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("pinkgoblin")
-    const holdPositon = new HoldPositionMoveStrategy(pinkGoblinIdlePosition)
+    const holdPositon = new HoldPositionMoveStrategy(pinkGoblinIdlePosition, { offset: { x: 5, y: 5 } })
 
     const rogueConfig: CharacterConfig = {
         ctype: "rogue",
