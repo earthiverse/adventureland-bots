@@ -207,8 +207,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         destroyBelowLevel: 1,
     },
     cclaw: {
+        // destroyBelowLevel: 1,
+        buy: true,
+        buyPrice: "ponty",
         craft: true,
-        destroyBelowLevel: 1,
+        upgradeUntilLevel: 9,
     },
     cdragon: {
         sellExcess: 5,
@@ -226,7 +229,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         destroyBelowLevel: 1,
     },
     coat1: {
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
+        buy: true,
+        buyPrice: "ponty",
+        upgradeUntilLevel: 9
     },
     computer: {
         hold: true,
@@ -323,12 +329,18 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellExcess: 20,
     },
     fireblade: {
+        buy: true,
+        buyPrice: "ponty",
         destroyBelowLevel: 1,
     },
     firestaff: {
+        buy: true,
+        buyPrice: "ponty",
         destroyBelowLevel: 1,
     },
     firestars: {
+        buy: true,
+        buyPrice: "ponty",
         craft: true,
         destroyBelowLevel: 1,
     },
@@ -364,7 +376,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         destroyBelowLevel: 1,
     },
     gloves1: {
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
+        buy: true,
+        buyPrice: "ponty",
+        upgradeUntilLevel: 9
     },
     goldbooster: {
         hold: true,
@@ -397,7 +412,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         destroyBelowLevel: 1,
     },
     helmet1: {
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
+        buy: true,
+        buyPrice: "ponty",
+        upgradeUntilLevel: 9
     },
     hgloves: {
         buy: true,
@@ -528,7 +546,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         destroyBelowLevel: 1,
     },
     pants1: {
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
+        buy: true,
+        buyPrice: "ponty",
+        upgradeUntilLevel: 9
     },
     phelmet: {
         destroyBelowLevel: 1,
@@ -564,6 +585,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     rabbitsfoot: {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 2,
+    },
+    rapier: {
+        buy: true,
+        buyPrice: "ponty",
     },
     resistancering: {
         craft: true,
@@ -603,7 +628,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         upgradeUntilLevel: 0,
     },
     shoes1: {
-        destroyBelowLevel: 1,
+        // destroyBelowLevel: 1,
+        buy: true,
+        buyPrice: "ponty",
+        upgradeUntilLevel: 9
     },
     slimestaff: {
         destroyBelowLevel: 1,
@@ -618,6 +646,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellExcess: 200 * 3,
     },
     snowflakes: {
+        buy: true,
+        buyPrice: "ponty",
         craft: true,
         destroyBelowLevel: 1,
     },
@@ -706,6 +736,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     throwingstars: {
         // We use level 0 to craft other stars
+        buy: true,
+        buyPrice: "ponty",
         upgradeUntilLevel: 0,
     },
     tigerhelmet: {
@@ -778,6 +810,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         destroyBelowLevel: 1,
     },
     wattire: {
+        buy: true,
+        buyPrice: "ponty",
         craft: true,
         destroyBelowLevel: 1,
     },
@@ -802,10 +836,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 2,
     },
     wbreeches: {
+        buy: true,
+        buyPrice: "ponty",
         craft: true,
         destroyBelowLevel: 1,
     },
     wcap: {
+        buy: true,
+        buyPrice: "ponty",
         craft: true,
         destroyBelowLevel: 1,
     },
@@ -813,6 +851,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         exchange: true,
     },
     wgloves: {
+        buy: true,
+        buyPrice: "ponty",
         craft: true,
         destroyBelowLevel: 1,
     },
@@ -820,6 +860,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         craft: true,
     },
     wshoes: {
+        buy: true,
+        buyPrice: "ponty",
         craft: true,
         destroyBelowLevel: 1,
     },
