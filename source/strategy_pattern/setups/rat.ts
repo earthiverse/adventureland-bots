@@ -7,6 +7,7 @@ import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_FAST, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 
 export function constructRatSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("rat")
@@ -52,6 +53,22 @@ export function constructRatSetup(contexts: Strategist<PingCompensatedCharacter>
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, type: "rat" }),
+                        move: moveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "rat_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            type: "rat",
+                            generateEnsureEquipped: {
+                                attributes: ["frequency", "speed", "range"],
+                            },
+                        }),
                         move: moveStrategy,
                     },
                 ],
