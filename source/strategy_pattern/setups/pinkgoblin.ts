@@ -1,13 +1,15 @@
 import { PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
-import { ImprovedMoveStrategy } from "../strategies/move.js"
+import { HoldPositionMoveStrategy, ImprovedMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { RETURN_HIGHEST } from "./equipment.js"
+import { pinkGoblinIdlePosition } from "../../base/locations.js"
 
 export function constructPinkGoblinSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("pinkgoblin")
+    const holdPositon = new HoldPositionMoveStrategy(pinkGoblinIdlePosition)
 
     const rogueConfig: CharacterConfig = {
         ctype: "rogue",
@@ -21,9 +23,9 @@ export function constructPinkGoblinSetup(contexts: Strategist<PingCompensatedCha
                     orb: { name: "test_orb", filters: RETURN_HIGHEST },
                 },
             },
-            type: "pinkgoblin"
+            type: "pinkgoblin",
         }),
-        move: moveStrategy,
+        move: holdPositon,
     }
 
     return {

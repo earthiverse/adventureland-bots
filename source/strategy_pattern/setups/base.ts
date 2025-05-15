@@ -389,6 +389,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
     const xmageSetup = constructXMageSetup(contexts)
     const rgooSetup = constructRGooSetup(contexts)
     const botsSetup = constructBotsSetup(contexts)
+    const squigtoadSetup = constructSquigToadSetup(contexts)
 
     return {
         a1: cryptSetup,
@@ -461,8 +462,8 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         snowman: constructSnowmanSetup(contexts),
         sparkbot: botsSetup,
         spider: constructGenericSetup(contexts, ["spider", "phoenix"], true),
-        squig: constructSquigToadSetup(contexts),
-        squigtoad: constructSquigToadSetup(contexts),
+        squig: squigtoadSetup,
+        squigtoad: squigtoadSetup,
         stompy: constructStompySetup(contexts),
         stoneworm: constructStoneWormSetup(contexts),
         targetron: botsSetup,

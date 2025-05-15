@@ -49,6 +49,9 @@ export const halloweenXScorpions: NodeData = { map: "halloween", x: -485.5, y: 6
 export const level1PratsNearDoor: NodeData = { map: "level1", x: -11, y: 114.5 }
 export const level1PratsNearLedge: NodeData = { map: "level1", x: -154, y: 695.5 }
 
+// Level2E
+export const pinkGoblinIdlePosition: NodeData = { map: "level2e", x: 476, y: 116 }
+
 // Level2W
 export const frankyIdlePosition: NodeData = { map: "level2w", x: 0, y: 0 }
 
