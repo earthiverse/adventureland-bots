@@ -143,6 +143,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                     offhand: { name: "cclaw", filters: RETURN_HIGHEST },
                 },
             },
+            typeList: ["nerfedmummy", "franky"]
         }),
         move: frankyMoveStrategy,
     }

@@ -64,6 +64,7 @@ export function constructStoneWormSetup(contexts: Strategist<PingCompensatedChar
                         attack: new RogueAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: { attributes: ["range"] },
+                            type: "stoneworm",
                         }),
                         move: new KiteMonsterMoveStrategy({
                             contexts: contexts,

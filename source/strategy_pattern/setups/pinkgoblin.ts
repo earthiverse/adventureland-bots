@@ -13,6 +13,7 @@ export function constructPinkGoblinSetup(contexts: Strategist<PingCompensatedCha
         ctype: "rogue",
         attack: new RogueAttackStrategy({
             contexts,
+            hasTarget: true,
             generateEnsureEquipped: {
                 prefer: {
                     mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
@@ -20,6 +21,7 @@ export function constructPinkGoblinSetup(contexts: Strategist<PingCompensatedCha
                     orb: { name: "test_orb", filters: RETURN_HIGHEST },
                 },
             },
+            type: "pinkgoblin"
         }),
         move: moveStrategy,
     }
@@ -40,7 +42,8 @@ export function constructPinkGoblinSetup(contexts: Strategist<PingCompensatedCha
                                 },
                                 attributes: ["resistance", "stun"],
                             },
-                            type: "iceroamer",
+                            maximumTargets: 1,
+                            type: "pinkgoblin",
                         }),
                         move: moveStrategy,
                     },
