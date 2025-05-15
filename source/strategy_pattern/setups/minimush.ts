@@ -6,6 +6,7 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base.js"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 
 export function constructMinimushSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("minimush")
@@ -21,13 +22,13 @@ export function constructMinimushSetup(contexts: Strategist<PingCompensatedChara
                         attack: new MageAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                attributes: ["frequency", "blast", "explosion"]
+                                attributes: ["frequency", "blast", "explosion"],
                             },
-                            typeList: types
+                            typeList: types,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "minimush_priest",
@@ -39,13 +40,13 @@ export function constructMinimushSetup(contexts: Strategist<PingCompensatedChara
                             disableCurse: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                attributes: ["frequency"]
+                                attributes: ["frequency"],
                             },
-                            typeList: types
+                            typeList: types,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "minimush_ranger",
@@ -55,13 +56,29 @@ export function constructMinimushSetup(contexts: Strategist<PingCompensatedChara
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                attributes: ["frequency", "blast", "explosion"]
+                                attributes: ["frequency", "blast", "explosion"],
                             },
-                            typeList: types
+                            typeList: types,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "minimush_rogue",
+                characters: [
+                    {
+                        ctype: "rogue",
+                        attack: new RogueAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["frequency", "range"],
+                            },
+                            typeList: types,
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "minimush_warrior",
@@ -73,14 +90,14 @@ export function constructMinimushSetup(contexts: Strategist<PingCompensatedChara
                             disableAgitate: true,
                             enableEquipForCleave: true,
                             generateEnsureEquipped: {
-                                attributes: ["frequency", "blast", "explosion"]
+                                attributes: ["frequency", "blast", "explosion"],
                             },
-                            typeList: types
+                            typeList: types,
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
