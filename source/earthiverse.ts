@@ -73,7 +73,7 @@ import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
-await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true, cheat: true })
+await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
 
 // TODO: Make these configurable through /comm using a similar system to how lulz works
 // Toggles
