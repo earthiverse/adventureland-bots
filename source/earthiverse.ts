@@ -81,7 +81,7 @@ const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 let ENABLE_MONSTERHUNTS = true
-const DEFAULT_MONSTERS: MonsterName[] = ["wolf"]
+const DEFAULT_MONSTERS: MonsterName[] = ["osnake"]
 const SPECIAL_MONSTERS: MonsterName[] = [
     "crabxx",
     "cutebee",
