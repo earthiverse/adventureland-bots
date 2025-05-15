@@ -4,12 +4,35 @@ import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base"
-import { JACKO, MAGE_SPLASH_WEAPONS, SUPERMITTENS, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING } from "./equipment.js"
+import { CharacterConfig, Setup } from "./base"
+import {
+    JACKO,
+    MAGE_SPLASH_WEAPONS,
+    RETURN_HIGHEST,
+    SUPERMITTENS,
+    WARRIOR_SPLASH_WEAPONS,
+    ZAPPER_CRING,
+} from "./equipment.js"
+import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 
 export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const typeList: MonsterName[] = ["goldenbot", "sparkbot", "targetron"]
     const moveStrategy = new ImprovedMoveStrategy(typeList)
+
+    const rogueConfig: CharacterConfig = {
+        ctype: "rogue",
+        attack: new RogueAttackStrategy({
+            contexts: contexts,
+            generateEnsureEquipped: {
+                prefer: {
+                    mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
+                    offhand: { name: "cclaw", filters: RETURN_HIGHEST },
+                    orb: { name: "test_orb", filters: RETURN_HIGHEST },
+                },
+            },
+        }),
+        move: moveStrategy,
+    }
 
     return {
         configs: [
@@ -58,6 +81,10 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
                         move: moveStrategy,
                     },
                 ],
+            },
+            {
+                id: "bots_temp_rogue,rogue,rogue",
+                characters: [rogueConfig, rogueConfig, rogueConfig],
             },
         ],
     }
