@@ -28,7 +28,6 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
                 prefer: {
                     mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
                     offhand: { name: "cclaw", filters: RETURN_HIGHEST },
-                    orb: { name: "test_orb", filters: RETURN_HIGHEST },
                 },
             },
         }),
