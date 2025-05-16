@@ -24,6 +24,7 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
         attack: new RogueAttackStrategy({
             contexts: contexts,
             generateEnsureEquipped: {
+                attributes: ["xp"],
                 prefer: {
                     mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
                     offhand: { name: "cclaw", filters: RETURN_HIGHEST },
