@@ -6,7 +6,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
     public loops = new Map<LoopName, Loop<Type>>()
     private contexts: Strategist<Type>[]
 
-    protected lootOnDrop: (data: ChestData) => void
+    // protected lootOnDrop: (data: ChestData) => void
 
     protected static recentlyLooted = new LRUCache<string, boolean>({ max: 10 })
     protected static chestCache = new Map<string, Map<string, Map<string, ChestData>>>()
@@ -25,14 +25,16 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
             },
             interval: ["use_hp"],
         })
-        this.loops.set("loot", {
-            fn: async (bot: Type) => {
-                for (const [, chest] of bot.chests) {
-                    await this.lootChest(bot, chest)
-                }
-            },
-            interval: 250,
-        })
+
+        // TODO: Toggle looting as an option
+        // this.loops.set("loot", {
+        //     fn: async (bot: Type) => {
+        //         for (const [, chest] of bot.chests) {
+        //             await this.lootChest(bot, chest)
+        //         }
+        //     },
+        //     interval: 250,
+        // })
     }
 
     public onApply(bot: Type) {
@@ -50,10 +52,10 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
             botChestCache.delete(server)
         }
 
-        this.lootOnDrop = (data: ChestData) => {
-            this.lootChest(bot, data).catch(console.error)
-        }
-        bot.socket.on("drop", this.lootOnDrop)
+        // this.lootOnDrop = (data: ChestData) => {
+        //     this.lootChest(bot, data).catch(console.error)
+        // }
+        // bot.socket.on("drop", this.lootOnDrop)
     }
 
     public onRemove(bot: Type) {
@@ -64,7 +66,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
             botChestCache.set(server, bot.chests)
         }
 
-        if (this.lootOnDrop) bot.socket.removeListener("drop", this.lootOnDrop)
+        // if (this.lootOnDrop) bot.socket.removeListener("drop", this.lootOnDrop)
     }
 
     private async heal(bot: Type) {
@@ -99,6 +101,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
             let couldGiveMp = 0
             for (const give of [
                 ...gItem.gives,
+                // TODO: Add this typing to ALClient
                 ...(((gItem[bot.map] as unknown as any)?.gives as [Attribute, number][]) ?? []), // Map bonuses
                 ...(((gItem[bot.ctype] as unknown as any)?.gives as [Attribute, number][]) ?? []), // Character bonuses
             ]) {
@@ -137,26 +140,26 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
         else return bot.usePotion(bot.locateItem(maxGiveMpPotion, bot.items, { returnLowestQuantity: true }))
     }
 
-    private async lootChest(bot: Type, chest: ChestData) {
-        if (Tools.squaredDistance(chest, bot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return // It's far away from us
-        if (BaseStrategy.recentlyLooted.has(chest.id)) return // One of our characters is already looting it
+    // private async lootChest(bot: Type, chest: ChestData) {
+    //     if (Tools.squaredDistance(chest, bot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return // It's far away from us
+    //     if (BaseStrategy.recentlyLooted.has(chest.id)) return // One of our characters is already looting it
 
-        let goldM = 0
-        let best: Character
-        for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
-            const friend = context.bot
-            if (!context.bot.chests.has(chest.id)) continue // They don't have the chest in their drops
-            if (Tools.squaredDistance(chest, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // It's far away from them
-            if (friend.goldm > goldM) {
-                goldM = friend.goldm
-                best = friend
-            }
-        }
+    //     let goldM = 0
+    //     let best: Character
+    //     for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
+    //         const friend = context.bot
+    //         if (!context.bot.chests.has(chest.id)) continue // They don't have the chest in their drops
+    //         if (Tools.squaredDistance(chest, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // It's far away from them
+    //         if (friend.goldm > goldM) {
+    //             goldM = friend.goldm
+    //             best = friend
+    //         }
+    //     }
 
-        if (best && best !== bot) return // We're not the best one to loot the chest
+    //     if (best && best !== bot) return // We're not the best one to loot the chest
 
-        // Open the chest
-        BaseStrategy.recentlyLooted.set(chest.id, true)
-        return bot.openChest(chest.id).catch(console.error)
-    }
+    //     // Open the chest
+    //     BaseStrategy.recentlyLooted.set(chest.id, true)
+    //     return bot.openChest(chest.id).catch(console.error)
+    // }
 }
