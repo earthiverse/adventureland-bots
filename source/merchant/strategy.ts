@@ -1278,7 +1278,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                         const map = key as MapName
 
                         if (this.options.enableInstanceProvider[map].maxInstances) {
-                            const numInstances = await AL.InstanceModel.count({
+                            const numInstances = await AL.InstanceModel.countDocuments({
                                 map: map,
                                 serverIdentifier: bot.serverData.name,
                                 serverRegion: bot.serverData.region,
@@ -1990,7 +1990,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             // Open a new instances
             const maxInstances = this.options.enableInstanceProvider[map].maxInstances
             if (maxInstances !== undefined) {
-                const numInstances = await AL.InstanceModel.count({
+                const numInstances = await AL.InstanceModel.countDocuments({
                     map: map,
                     serverIdentifier: bot.serverData.name,
                     serverRegion: bot.serverData.region,
