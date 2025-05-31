@@ -1,11 +1,13 @@
 import type { Character, Game } from "alclient";
-import { type Comparator } from "tinyqueue";
+import type { Comparator } from "tinyqueue";
 import type { ItemKey, SkillKey } from "typed-adventureland";
 import { logDebug } from "../../utilities/logging.js";
 
 /** Which items we want to use to heal / regen */
 // TODO: Move this to item config
 export const REGEN_ITEMS: ItemKey[] = ["hpot0", "hpot1", "mpot0", "mpot1"];
+
+const active = new Set<Character>();
 
 export function calculateItemScore(
   item: ItemKey,
@@ -70,8 +72,16 @@ export function getComparator(character: Character): Comparator<ItemKey | SkillK
   };
 }
 
+/**
+ * Starts the regen logic for the given character
+ * @param character
+ */
 export const setup = (character: Character) => {
+  active.add(character);
+
   const regenLoop = async () => {
+    if (!active.has(character)) return;
+
     try {
       if (character.socket.disconnected) return;
 
@@ -104,10 +114,18 @@ export const setup = (character: Character) => {
         await character.regenHp();
       }
     } catch (e) {
-      logDebug(e as Error);
+      if (e instanceof Error || typeof e === "string") logDebug(e);
     } finally {
       setTimeout(() => void regenLoop(), Math.max(100, character.getTimeout("use_mp")));
     }
   };
   void regenLoop();
+};
+
+/**
+ * Stops the regen logic for the given character
+ * @param character
+ */
+export const teardown = (character: Character) => {
+  active.delete(character);
 };

@@ -2,8 +2,18 @@ import type { Character } from "alclient";
 import { logDebug } from "../../utilities/logging.js";
 import { getBestTarget } from "../../utilities/monster.js";
 
+const active = new Set<Character>();
+
+/**
+ * Starts the move logic for the given character
+ * @param character
+ * @param monster
+ */
 export const setup = (character: Character, monster: string = "goo") => {
+  active.add(character);
+
   const moveLoop = () => {
+    if (!active.has(character)) return; // Stop
     try {
       if (character.socket.disconnected) return;
 
@@ -15,10 +25,18 @@ export const setup = (character: Character, monster: string = "goo") => {
         character.move((entity.x + character.x) / 2, (entity.y + character.y) / 2).catch(logDebug);
       }
     } catch (e) {
-      logDebug(e as Error);
+      if (e instanceof Error || typeof e === "string") logDebug(e);
     } finally {
       setTimeout(moveLoop, 100);
     }
   };
   moveLoop();
+};
+
+/**
+ * Stops the move logic for the given character
+ * @param character
+ */
+export const teardown = (character: Character) => {
+  active.delete(character);
 };

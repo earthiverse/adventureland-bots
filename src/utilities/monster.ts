@@ -2,7 +2,7 @@ import TTLCache from "@isaacs/ttlcache";
 import type { EntityMonster, Character } from "alclient";
 import TinyQueue, { type Comparator } from "tinyqueue";
 
-const IGNORED_MONSTERS = new TTLCache<string, EntityMonster>({
+export const IGNORED_MONSTERS = new TTLCache<string, EntityMonster>({
   max: 500,
   ttl: 2000,
 });

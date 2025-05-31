@@ -6,7 +6,7 @@ import { getBestTarget, ignoreMonster, unignoreMonster } from "../../utilities/m
 const active = new Set<Character>();
 
 /**
- * Starts the attack loop for the given character
+ * Starts the attack logic for the given character
  * @param character
  * @param monster
  */
@@ -33,7 +33,7 @@ export const setup = (character: Character, monster: MonsterKey = "goo") => {
       await character.basicAttack(entity);
     } catch (e) {
       if (entity !== undefined) unignoreMonster(entity);
-      logDebug(e as Error);
+      if (e instanceof Error || typeof e === "string") logDebug(e);
     } finally {
       setTimeout(() => void attackLoop(), Math.max(100, character.getTimeout("attack")));
     }

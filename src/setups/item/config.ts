@@ -13,8 +13,18 @@ const CHECK_EVERY_MS = 1000;
 const DESTROY_LOG_LEVEL = Level.Notice;
 const SELL_LOG_LEVEL = Level.Notice;
 
+const active = new Set<Character>();
+
+/**
+ * Starts the item logic for the given character
+ * @param character
+ */
 export const setup = (character: Character) => {
+  active.add(character);
+
   const itemLoop = async () => {
+    if (!active.has(character)) return;
+
     try {
       if (character.socket.disconnected) return;
 
@@ -46,14 +56,22 @@ export const setup = (character: Character) => {
             log(`${character.id} sold ${getItemDescription(item)} to NPC`, SELL_LOG_LEVEL);
           }
         } catch (e) {
-          logDebug(e as Error);
+          if (e instanceof Error || typeof e === "string") logDebug(e);
         }
       }
     } catch (e) {
-      logDebug(e as Error);
+      if (e instanceof Error || typeof e === "string") logDebug(e);
     } finally {
       setTimeout(() => void itemLoop(), CHECK_EVERY_MS);
     }
   };
   void itemLoop();
 };
+
+/**
+ * Stops the item loop for the given character
+ * @param character
+ */
+export function teardown(character: Character) {
+  active.delete(character);
+}
