@@ -14,6 +14,7 @@ import {
     ZAPPER_CRING,
 } from "./equipment.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const typeList: MonsterName[] = ["goldenbot", "sparkbot", "targetron"]
@@ -43,6 +44,21 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
             generateEnsureEquipped: {
                 attributes: ["armor", "str", "attack"],
                 prefer: { ...WARRIOR_SPLASH_WEAPONS, ...SUPERMITTENS },
+            },
+            typeList,
+        }),
+        move: moveStrategy,
+    }
+
+    const rangerConfig: CharacterConfig = {
+        ctype: "ranger",
+        attack: new RangerAttackStrategy({
+            contexts: contexts,
+            generateEnsureEquipped: {
+                attributes: ["attack"],
+                prefer: {
+                    mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
+                },
             },
             typeList,
         }),
@@ -98,8 +114,8 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
                 ],
             },
             {
-                id: "bots_temp_rogue,warrior,warrior",
-                characters: [rogueConfig, warriorConfig, warriorConfig],
+                id: "bots_temp_rogue,ranger,ranger",
+                characters: [rogueConfig, rangerConfig, rangerConfig],
             },
         ],
     }
