@@ -34,6 +34,21 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
         move: moveStrategy,
     }
 
+    const warriorConfig: CharacterConfig = {
+        ctype: "warrior",
+        attack: new WarriorAttackStrategy({
+            contexts: contexts,
+            disableAgitate: true,
+            enableEquipForCleave: true,
+            generateEnsureEquipped: {
+                attributes: ["armor", "str", "attack"],
+                prefer: { ...WARRIOR_SPLASH_WEAPONS, ...SUPERMITTENS },
+            },
+            typeList,
+        }),
+        move: moveStrategy,
+    }
+
     return {
         configs: [
             {
@@ -83,8 +98,8 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
                 ],
             },
             {
-                id: "bots_temp_rogue",
-                characters: [rogueConfig],
+                id: "bots_temp_rogue,warrior,warrior",
+                characters: [rogueConfig, warriorConfig, warriorConfig],
             },
         ],
     }
