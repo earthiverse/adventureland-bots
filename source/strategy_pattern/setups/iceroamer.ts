@@ -4,16 +4,38 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base.js"
+import { CharacterConfig, Setup } from "./base.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
+import { RETURN_HIGHEST } from "./equipment.js"
 
 export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("iceroamer")
 
+    const rangerConfig: CharacterConfig = {
+        ctype: "ranger",
+        attack: new RangerAttackStrategy({
+            contexts: contexts,
+            generateEnsureEquipped: {
+                attributes: ["courage", "frequency"],
+                prefer: {
+                    mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
+                    cape: { name: "stealthcape", filters: RETURN_HIGHEST },
+                    orb: { name: "vorb", filters: RETURN_HIGHEST },
+                },
+            },
+            type: "iceroamer",
+        }),
+        move: moveStrategy,
+    }
+
     return {
         configs: [
+            {
+                id: "iceroamer_temp_ranger",
+                characters: [rangerConfig, rangerConfig],
+            },
             {
                 id: "iceroamer_mage,priest",
                 characters: [
@@ -62,19 +84,7 @@ export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedChar
             },
             {
                 id: "iceroamer_ranger",
-                characters: [
-                    {
-                        ctype: "ranger",
-                        attack: new RangerAttackStrategy({
-                            contexts: contexts,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "dex", "attack"],
-                            },
-                            type: "iceroamer",
-                        }),
-                        move: moveStrategy,
-                    },
-                ],
+                characters: [rangerConfig],
             },
             {
                 id: "iceroamer_rogue",

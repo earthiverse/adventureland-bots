@@ -83,8 +83,8 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
                 ],
             },
             {
-                id: "bots_temp_rogue,rogue,rogue",
-                characters: [rogueConfig, rogueConfig, rogueConfig],
+                id: "bots_temp_rogue",
+                characters: [rogueConfig],
             },
         ],
     }

@@ -81,7 +81,7 @@ const ENABLE_EVENTS = false
 const ENABLE_SERVER_HOPS = false
 const ENABLE_SPECIAL_MONSTERS = false
 let ENABLE_MONSTERHUNTS = false
-const DEFAULT_MONSTERS: MonsterName[] = ["osnake", "osnake", "osnake"]
+const DEFAULT_MONSTERS: MonsterName[] = ["goldenbot", "iceroamer", "iceroamer"]
 const SPECIAL_MONSTERS: MonsterName[] = [
     "crabxx",
     "cutebee",
@@ -105,9 +105,9 @@ const MERCHANT: string = "earthMer" // earthMer, earthMer2, earthMer3
 const WARRIORS: string[] = [] // earthWar, earthWar2, earthWar3
 const MAGES: string[] = [] // earthMag, earthMag2, earthMag3
 const PRIESTS: string[] = [] // earthPri, earthPri2
-const RANGERS: string[] = [] // earthiverse, earthRan2, earthRan3
+const RANGERS: string[] = ["earthiverse", "earthRan2"] // earthiverse, earthRan2, earthRan3
 const PALADINS: string[] = [] // earthPal
-const ROGUES: string[] = ["earthRog", "earthRog2", "earthRog3"] // earthRog, earthRog2, earthRog3
+const ROGUES: string[] = ["earthRog"] // earthRog, earthRog2, earthRog3
 
 const PARTY_ALLOWLIST: string[] = [...WARRIORS, ...RANGERS, ...MAGES, ...PRIESTS, ...PALADINS, ...ROGUES]
 // const PARTY_LEADER: string = PARTY_ALLOWLIST[0]
