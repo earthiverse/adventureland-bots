@@ -55,9 +55,9 @@ export function constructBotsSetup(contexts: Strategist<PingCompensatedCharacter
         attack: new RangerAttackStrategy({
             contexts: contexts,
             generateEnsureEquipped: {
-                attributes: ["attack"],
+                attributes: ["explosion"],
                 prefer: {
-                    mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
+                    mainhand: { name: "pouchbow", filters: RETURN_HIGHEST },
                 },
             },
             typeList,
