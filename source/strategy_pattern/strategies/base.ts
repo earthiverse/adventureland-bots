@@ -27,14 +27,14 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
         })
 
         // TODO: Toggle looting as an option
-        // this.loops.set("loot", {
-        //     fn: async (bot: Type) => {
-        //         for (const [, chest] of bot.chests) {
-        //             await this.lootChest(bot, chest)
-        //         }
-        //     },
-        //     interval: 250,
-        // })
+        this.loops.set("loot", {
+            fn: async (bot: Type) => {
+                for (const [, chest] of bot.chests) {
+                    await this.lootChest(bot, chest)
+                }
+            },
+            interval: 250,
+        })
     }
 
     public onApply(bot: Type) {
@@ -140,26 +140,29 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
         else return bot.usePotion(bot.locateItem(maxGiveMpPotion, bot.items, { returnLowestQuantity: true }))
     }
 
-    // private async lootChest(bot: Type, chest: ChestData) {
-    //     if (Tools.squaredDistance(chest, bot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return // It's far away from us
-    //     if (BaseStrategy.recentlyLooted.has(chest.id)) return // One of our characters is already looting it
+    private async lootChest(bot: Type, chest: ChestData) {
+        if (Tools.squaredDistance(chest, bot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return // It's far away from us
+        if (BaseStrategy.recentlyLooted.has(chest.id)) return // One of our characters is already looting it
 
-    //     let goldM = 0
-    //     let best: Character
-    //     for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
-    //         const friend = context.bot
-    //         if (!context.bot.chests.has(chest.id)) continue // They don't have the chest in their drops
-    //         if (Tools.squaredDistance(chest, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // It's far away from them
-    //         if (friend.goldm > goldM) {
-    //             goldM = friend.goldm
-    //             best = friend
-    //         }
-    //     }
+        // Temporary because Crown has better gear
+        if (bot.players.has("CrownsAnal") || bot.players.has("CrownTown") || bot.players.has("CrownPriest")) return
 
-    //     if (best && best !== bot) return // We're not the best one to loot the chest
+        let goldM = 0
+        let best: Character
+        for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
+            const friend = context.bot
+            if (!context.bot.chests.has(chest.id)) continue // They don't have the chest in their drops
+            if (Tools.squaredDistance(chest, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // It's far away from them
+            if (friend.goldm > goldM) {
+                goldM = friend.goldm
+                best = friend
+            }
+        }
 
-    //     // Open the chest
-    //     BaseStrategy.recentlyLooted.set(chest.id, true)
-    //     return bot.openChest(chest.id).catch(console.error)
-    // }
+        if (best && best !== bot) return // We're not the best one to loot the chest
+
+        // Open the chest
+        BaseStrategy.recentlyLooted.set(chest.id, true)
+        return bot.openChest(chest.id).catch(console.error)
+    }
 }
