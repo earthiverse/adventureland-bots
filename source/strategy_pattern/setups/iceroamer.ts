@@ -18,11 +18,10 @@ export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedChar
         attack: new RangerAttackStrategy({
             contexts: contexts,
             generateEnsureEquipped: {
-                attributes: ["courage", "frequency"],
+                attributes: ["attack", "dex"],
                 prefer: {
+                    helmet: { name: "cyber", filters: RETURN_HIGHEST },
                     mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
-                    cape: { name: "stealthcape", filters: RETURN_HIGHEST },
-                    orb: { name: "vorb", filters: RETURN_HIGHEST },
                 },
             },
             type: "iceroamer",
