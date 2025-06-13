@@ -842,7 +842,7 @@ const startMerchantContext = async () => {
             //     maxInstances: 1,
             // },
             tomb: {
-                maxInstances: 1,
+                maxInstances: 3,
             },
             // winter_instance: {
             //     maxInstances: 1,
