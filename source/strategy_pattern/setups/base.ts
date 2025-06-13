@@ -78,6 +78,7 @@ import { constructOrangeDinoSetup } from "./odino.js"
 import { constructBotsSetup } from "./bots.js"
 import { constructDryadSetup } from "./dryad.js"
 import { constructPinkGoblinSetup } from "./pinkgoblin.js"
+import { constructTombSetup } from "./tomb.js"
 
 export type Requirements = {
     [T in Attribute]?: number
@@ -390,6 +391,7 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
     const rgooSetup = constructRGooSetup(contexts)
     const botsSetup = constructBotsSetup(contexts)
     const squigtoadSetup = constructSquigToadSetup(contexts)
+    const tombSetup = constructTombSetup(contexts)
 
     return {
         a1: cryptSetup,
@@ -423,10 +425,14 @@ export function constructSetups(contexts: Strategist<PingCompensatedCharacter>[]
         franky: constructFrankySetup(contexts),
         frog: constructFrogSetup(contexts),
         fvampire: constructFVampireSetup(contexts),
+        gbluepro: tombSetup,
+        ggreenpro: tombSetup,
         ghost: constructGhostSetup(contexts),
         goldenbat: constructGoldenbatSetup(contexts),
         goldenbot: botsSetup,
         goo: constructGooSetup(contexts),
+        gpurplepro: tombSetup,
+        gredpro: tombSetup,
         greenjr: constructGreenJrSetup(contexts),
         grinch: constructGrinchSetup(contexts),
         gscorpion: constructGenericSetup(contexts, ["gscorpion"], true),

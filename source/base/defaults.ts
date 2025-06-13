@@ -1,7 +1,7 @@
 import AL, { ItemName, ServerIdentifier, ServerRegion } from "alclient"
 
 export const DEFAULT_REGION: ServerRegion = "US"
-export const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
+export const DEFAULT_IDENTIFIER: ServerIdentifier = "III"
 
 export const DEFAULT_CRAFTABLES = new Set<ItemName>([
     "armorring",

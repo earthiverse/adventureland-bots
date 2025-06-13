@@ -60,7 +60,12 @@ import {
     REPLENISH_ITEM_CONFIG,
     runSanityCheckOnItemConfig,
 } from "./base/itemsNew.js"
-import { getRecentCryptMonsters, getRecentSpecialMonsters, getRecentXMages } from "./base/monsters.js"
+import {
+    getRecentCryptMonsters,
+    getRecentProtectors,
+    getRecentSpecialMonsters,
+    getRecentXMages,
+} from "./base/monsters.js"
 import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
 import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
@@ -104,10 +109,10 @@ const MAX_PUBLIC_CHARACTERS = 6
 const MERCHANT: string = "earthMer" // earthMer, earthMer2, earthMer3
 const WARRIORS: string[] = [] // earthWar, earthWar2, earthWar3
 const MAGES: string[] = [] // earthMag, earthMag2, earthMag3
-const PRIESTS: string[] = [] // earthPri, earthPri2
-const RANGERS: string[] = ["earthiverse", "earthRan2"] // earthiverse, earthRan2, earthRan3
+const PRIESTS: string[] = ["earthPri"] // earthPri, earthPri2
+const RANGERS: string[] = [] // earthiverse, earthRan2, earthRan3
 const PALADINS: string[] = [] // earthPal
-const ROGUES: string[] = [] // earthRog, earthRog2, earthRog3
+const ROGUES: string[] = ["earthRog2"] // earthRog, earthRog2, earthRog3
 
 const PARTY_ALLOWLIST: string[] = [...WARRIORS, ...RANGERS, ...MAGES, ...PRIESTS, ...PALADINS, ...ROGUES]
 const PARTY_LEADER: string = PARTY_ALLOWLIST[0]
@@ -118,10 +123,8 @@ if (PARTY_LEADER === undefined) throw new Error("We don't have a party leader se
 if (PARTY_ALLOWLIST.length > 3)
     throw new Error(`Don't use more than 3 attacking characters! (Currently set up with ${PARTY_ALLOWLIST.join("/")})`)
 
-// let TARGET_REGION: ServerRegion = DEFAULT_REGION
-// let TARGET_IDENTIFIER: ServerIdentifier = DEFAULT_IDENTIFIER
-let TARGET_REGION: ServerRegion = "US"
-let TARGET_IDENTIFIER: ServerIdentifier = "III"
+let TARGET_REGION: ServerRegion = DEFAULT_REGION
+let TARGET_IDENTIFIER: ServerIdentifier = DEFAULT_IDENTIFIER
 
 const PUBLIC_FIELDS = ["ctype", "owner", "userAuth", "characterID"]
 const PUBLIC_CSV = "public.csv"
@@ -532,6 +535,10 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             )) {
                 priority.push(type)
             }
+
+            for (const type of await getRecentProtectors(context.bot.serverData.name, context.bot.serverData.region)) {
+                priority.push(type)
+            }
         }
     }
 
@@ -832,7 +839,10 @@ const startMerchantContext = async () => {
         goldToHold: 4_000_000_000,
         enableInstanceProvider: {
             crypt: {
-                maxInstances: 10,
+                maxInstances: 1,
+            },
+            tomb: {
+                maxInstances: 1,
             },
             winter_instance: {
                 maxInstances: 1,

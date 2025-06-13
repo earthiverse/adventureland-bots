@@ -36,9 +36,12 @@ export async function addCryptMonstersToDB(bot: Character, map = bot.map, instan
 }
 
 export function getKeyForCrypt(map: MapName): ItemName {
+    // TODO: This can just use G data to figure it out, G.items[key].opens, I think
     switch (map) {
         case "crypt":
             return "cryptkey"
+        case "tomb":
+            return "tombkey"
         case "winter_instance":
             return "frozenkey"
     }

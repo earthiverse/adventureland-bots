@@ -2,6 +2,7 @@ import AL, { MonsterName, ServerIdentifier, ServerRegion } from "alclient"
 import { checkOnlyEveryMS, setLastCheck } from "./general.js"
 import { XMAGE_MONSTERS } from "../strategy_pattern/setups/xmage.js"
 import { CRYPT_MONSTERS, getCryptWaitTime } from "./crypt.js"
+import { TOMB_MONSTERS } from "../strategy_pattern/setups/tomb.js"
 
 const MONSTER_CACHE = new Map<string, MonsterName[]>()
 
@@ -45,6 +46,44 @@ export async function getRecentSpecialMonsters(partyAllow: string[], specialMons
         .lean()
         .exec()) {
         types.push(type.type)
+    }
+
+    // Update the cache
+    MONSTER_CACHE.set(key, types)
+    setLastCheck(key)
+
+    return types
+}
+
+export async function getRecentProtectors(serverIdentifier: ServerIdentifier, serverRegion: ServerRegion): Promise<MonsterName[]> {
+    if (!AL.Database.connection) return [] // No database
+
+    // Use the cache if we've recently checked
+    const key = `protector_${serverIdentifier}_${serverRegion}}`
+    if (MONSTER_CACHE.has(key) && !checkOnlyEveryMS(key, 5_000, false)) {
+        return MONSTER_CACHE.get(key)
+    }
+
+    // Get the latest data
+    const types: MonsterName[] = []
+    for (const protector of await AL.EntityModel.find(
+        {
+            $or: [
+                { firstSeen: null },
+                { firstSeen: { $lt: Date.now() - getCryptWaitTime("tomb") } },
+            ],
+            lastSeen: { $gt: Date.now() - 60000 },
+            serverIdentifier: serverIdentifier,
+            serverRegion: serverRegion,
+            type: { $in: TOMB_MONSTERS },
+        },
+        {
+            type: 1,
+        },
+    )
+        .lean()
+        .exec()) {
+        types.push(protector.type)
     }
 
     // Update the cache
