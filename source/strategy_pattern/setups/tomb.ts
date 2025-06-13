@@ -23,8 +23,8 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
                             generateEnsureEquipped: {
                                 attributes: ["armor", "resistance"],
                                 prefer: {
-                                    mainhand: { name: "crabclaw", filters: RETURN_HIGHEST },
-                                    offhand: { name: "crabclaw", filters: RETURN_HIGHEST },
+                                    mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
+                                    offhand: { name: "cclaw", filters: RETURN_HIGHEST },
                                 },
                             },
                             hasTarget: true,
