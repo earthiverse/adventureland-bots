@@ -6,7 +6,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
     public loops = new Map<LoopName, Loop<Type>>()
     private contexts: Strategist<Type>[]
 
-    // protected lootOnDrop: (data: ChestData) => void
+    protected lootOnDrop: (data: ChestData) => void
 
     protected static recentlyLooted = new LRUCache<string, boolean>({ max: 10 })
     protected static chestCache = new Map<string, Map<string, Map<string, ChestData>>>()
@@ -52,10 +52,10 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
             botChestCache.delete(server)
         }
 
-        // this.lootOnDrop = (data: ChestData) => {
-        //     this.lootChest(bot, data).catch(console.error)
-        // }
-        // bot.socket.on("drop", this.lootOnDrop)
+        this.lootOnDrop = (data: ChestData) => {
+            this.lootChest(bot, data).catch(console.error)
+        }
+        bot.socket.on("drop", this.lootOnDrop)
     }
 
     public onRemove(bot: Type) {
@@ -66,7 +66,7 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
             botChestCache.set(server, bot.chests)
         }
 
-        // if (this.lootOnDrop) bot.socket.removeListener("drop", this.lootOnDrop)
+        if (this.lootOnDrop) bot.socket.removeListener("drop", this.lootOnDrop)
     }
 
     private async heal(bot: Type) {

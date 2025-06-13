@@ -77,11 +77,11 @@ await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: tr
 
 // TODO: Make these configurable through /comm using a similar system to how lulz works
 // Toggles
-const ENABLE_EVENTS = false
-const ENABLE_SERVER_HOPS = false
-const ENABLE_SPECIAL_MONSTERS = false
-let ENABLE_MONSTERHUNTS = false
-const DEFAULT_MONSTERS: MonsterName[] = ["goldenbot", "iceroamer", "iceroamer"]
+const ENABLE_EVENTS = true
+const ENABLE_SERVER_HOPS = true
+const ENABLE_SPECIAL_MONSTERS = true
+let ENABLE_MONSTERHUNTS = true
+const DEFAULT_MONSTERS: MonsterName[] = ["iceroamer"]
 const SPECIAL_MONSTERS: MonsterName[] = [
     "crabxx",
     "cutebee",
@@ -107,15 +107,14 @@ const MAGES: string[] = [] // earthMag, earthMag2, earthMag3
 const PRIESTS: string[] = [] // earthPri, earthPri2
 const RANGERS: string[] = ["earthiverse", "earthRan2"] // earthiverse, earthRan2, earthRan3
 const PALADINS: string[] = [] // earthPal
-const ROGUES: string[] = ["earthRog"] // earthRog, earthRog2, earthRog3
+const ROGUES: string[] = [] // earthRog, earthRog2, earthRog3
 
 const PARTY_ALLOWLIST: string[] = [...WARRIORS, ...RANGERS, ...MAGES, ...PRIESTS, ...PALADINS, ...ROGUES]
-// const PARTY_LEADER: string = PARTY_ALLOWLIST[0]
-const PARTY_LEADER = "CrownsAnal"
+const PARTY_LEADER: string = PARTY_ALLOWLIST[0]
 
 // Sanity checks
 if (PARTY_LEADER === undefined) throw new Error("We don't have a party leader set!")
-if (PARTY_ALLOWLIST.length < 3) throw new Error(`We're only using ${PARTY_ALLOWLIST.length} attacking characters!`)
+// if (PARTY_ALLOWLIST.length < 3) throw new Error(`We're only using ${PARTY_ALLOWLIST.length} attacking characters!`)
 if (PARTY_ALLOWLIST.length > 3)
     throw new Error(`Don't use more than 3 attacking characters! (Currently set up with ${PARTY_ALLOWLIST.join("/")})`)
 
