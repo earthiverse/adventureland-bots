@@ -60,6 +60,8 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
                                 prefer: {
                                     mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
                                     offhand: { name: "cclaw", filters: RETURN_HIGHEST },
+                                    gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
+                                    amulet: { name: "mpxamulet", filters: RETURN_HIGHEST },
                                 },
                             },
                             hasTarget: true,
