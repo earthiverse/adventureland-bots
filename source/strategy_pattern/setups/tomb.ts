@@ -9,7 +9,7 @@ import { RETURN_HIGHEST } from "./equipment.js"
 export const TOMB_MONSTERS: MonsterName[] = ["ggreenpro", "gredpro", "gbluepro", "gpurplepro"]
 
 export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpecialMonsterMoveStrategy({ typeList: TOMB_MONSTERS })
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts, typeList: TOMB_MONSTERS })
 
     return {
         configs: [
