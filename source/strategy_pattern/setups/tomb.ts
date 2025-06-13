@@ -1,5 +1,5 @@
-import { MonsterName, PingCompensatedCharacter } from "alclient"
-import { Strategist } from "../context.js"
+import { Character, Entity, GetEntityFilters, IPosition, MonsterName, PingCompensatedCharacter } from "alclient"
+import { filterContexts, Strategist } from "../context.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base.js"
@@ -8,8 +8,43 @@ import { RETURN_HIGHEST } from "./equipment.js"
 
 export const TOMB_MONSTERS: MonsterName[] = ["ggreenpro", "gredpro", "gbluepro", "gpurplepro"]
 
+class TombMoveStrategy extends SpecialMonsterMoveStrategy {
+    public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {
+        super({
+            contexts: contexts,
+            typeList: TOMB_MONSTERS,
+        })
+
+        // Only include crypt map positions
+        this.spawns = this.spawns.filter((p) => p.map === "tomb")
+    }
+
+    protected move(bot: Character): Promise<IPosition> {
+        const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
+
+        for (const type of TOMB_MONSTERS) {
+            filter.type = type as MonsterName
+
+            // Check for the entity in all of the contexts
+            let entity: Entity
+            for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
+                const friend = context.bot
+                if (friend.map !== bot.map) continue
+
+                entity = friend.getEntity(filter)
+                if (entity) break
+            }
+            if (!entity) continue
+
+            return bot.smartMove(entity, { getWithin: 10 })
+        }
+
+        return super.move(bot) // Go find an entity
+    }
+}
+
 export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts, typeList: TOMB_MONSTERS })
+    const moveStrategy = new TombMoveStrategy(contexts)
 
     return {
         configs: [
