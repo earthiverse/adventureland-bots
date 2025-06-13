@@ -536,6 +536,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     oozingterror: {
         destroyBelowLevel: 1,
     },
+    orba: {
+        craft: true
+    },
     ornament: {
         exchange: true,
     },
@@ -926,7 +929,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: 500_000_000,
         useOfferingFromLevel: 0,
     },
-}
+} as ItemConfig // TODO: Add new items to ALClient
 
 export function wantToDestroy(itemConfig: ItemConfig, item: ItemData): boolean {
     if (item.l) return false // Locked
