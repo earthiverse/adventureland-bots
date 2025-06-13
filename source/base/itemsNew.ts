@@ -539,6 +539,18 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     orba: {
         craft: true
     },
+    orboffire: {
+        upgradeUntilLevel: 0,
+    },
+    orboffrost: {
+        upgradeUntilLevel: 0,
+    },
+    orbofplague: {
+        upgradeUntilLevel: 0,
+    },
+    orbofresolve: {
+        upgradeUntilLevel: 0,
+    },
     ornament: {
         exchange: true,
     },
