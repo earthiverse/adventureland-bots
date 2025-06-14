@@ -1959,7 +1959,6 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                         .smartMove(
                             { map: map, x: x, y: y },
                             {
-                                getWithin: 400,
                                 numAttempts: 3,
                                 stopIfTrue: async () => bot.getEntity() !== undefined,
                             },
@@ -2324,7 +2323,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                             // Let's go get spidersilk from them
                             await bot.smartMove(friendBot, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                             if (Tools.squaredDistance(bot, friendBot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED)
-                                return this.goCheckInstances(bot) // Try again
+                                return this.goFishing(bot) // Try again
 
                             // Get it
                             const itemPos = friendBot.locateItem("spidersilk")
@@ -2463,7 +2462,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                             // Let's go get spidersilk from them
                             await bot.smartMove(friendBot, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
                             if (Tools.squaredDistance(bot, friendBot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED)
-                                return this.goCheckInstances(bot) // Try again
+                                return this.goMining(bot) // Try again
 
                             // Get it
                             const itemPos = friendBot.locateItem("spidersilk")
