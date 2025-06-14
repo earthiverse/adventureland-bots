@@ -22,23 +22,22 @@ class TombMoveStrategy extends SpecialMonsterMoveStrategy {
     protected move(bot: Character): Promise<IPosition> {
         const filter: GetEntityFilters = { ...this.options, typeList: undefined, returnNearest: true }
 
+        let entity: Entity
         for (const type of TOMB_MONSTERS) {
             filter.type = type as MonsterName
 
             // Check for the entity in all of the contexts
-            let entity: Entity
             for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
                 const friend = context.bot
                 if (friend.map !== bot.map) continue
 
-                entity = friend.getEntity(filter)
-                if (entity) break
+                const newEntity = friend.getEntity(filter)
+                if (!entity) entity = newEntity
+                else if (!entity.target && newEntity.target) entity = newEntity // Prefer entities already with a target
             }
-            if (!entity) continue
-
-            return bot.smartMove(entity, { getWithin: 10 })
         }
 
+        if (entity) return bot.smartMove(entity, { getWithin: 10 })
         return super.move(bot) // Go find an entity
     }
 }
