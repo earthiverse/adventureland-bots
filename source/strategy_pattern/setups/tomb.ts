@@ -38,7 +38,7 @@ class TombMoveStrategy extends SpecialMonsterMoveStrategy {
             }
         }
 
-        if (entity) return bot.smartMove(entity, { getWithin: 10 })
+        if (entity) return bot.smartMove(entity, { getWithin: bot.range / 2 })
         return super.move(bot) // Go find an entity
     }
 }
