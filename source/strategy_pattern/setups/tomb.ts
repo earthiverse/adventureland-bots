@@ -34,7 +34,7 @@ class TombMoveStrategy extends SpecialMonsterMoveStrategy {
                 const newEntity = friend.getEntity(filter)
                 if (!newEntity) continue
                 if (!entity) entity = newEntity
-                else if (entity.target && newEntity.target) entity = newEntity // Prefer entities already with a target
+                else if (!entity.target && newEntity.target) entity = newEntity // Prefer entities already with a target
             }
         }
 
