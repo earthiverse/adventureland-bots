@@ -140,7 +140,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
             generateEnsureEquipped: {
                 prefer: {
                     mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
-                    offhand: { name: "cclaw", filters: RETURN_HIGHEST },
+                    offhand: { name: "firestars", filters: RETURN_HIGHEST },
                 },
             },
             typeList: ["nerfedmummy", "franky"]
