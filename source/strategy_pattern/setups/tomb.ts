@@ -2,7 +2,7 @@ import { Character, Entity, GetEntityFilters, IPosition, MonsterName, PingCompen
 import { filterContexts, Strategist } from "../context.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base.js"
+import { CharacterConfig, Setup } from "./base.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { RETURN_HIGHEST } from "./equipment.js"
 
@@ -46,42 +46,47 @@ class TombMoveStrategy extends SpecialMonsterMoveStrategy {
 export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new TombMoveStrategy(contexts)
 
+    const rogueConfig: CharacterConfig = {
+        ctype: "rogue",
+        attack: new RogueAttackStrategy({
+            contexts: contexts,
+            generateEnsureEquipped: {
+                attributes: ["armor", "resistance"],
+                prefer: {
+                    mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
+                    offhand: { name: "cclaw", filters: RETURN_HIGHEST },
+                    gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
+                    amulet: { name: "mpxamulet", filters: RETURN_HIGHEST },
+                },
+            },
+            hasTarget: true,
+            typeList: TOMB_MONSTERS,
+        }),
+        move: moveStrategy,
+    }
+
+    const priestConfig: CharacterConfig = {
+        ctype: "priest",
+        attack: new PriestAttackStrategy({
+            contexts: contexts,
+            enableAbsorbToTank: true,
+            generateEnsureEquipped: {
+                attributes: ["armor", "resistance"],
+            },
+            typeList: TOMB_MONSTERS,
+        }),
+        move: moveStrategy,
+    }
+
     return {
         configs: [
             {
+                id: "bots_rogue,rogue,priest",
+                characters: [rogueConfig, rogueConfig, priestConfig],
+            },
+            {
                 id: "bots_rogue,priest",
-                characters: [
-                    {
-                        ctype: "rogue",
-                        attack: new RogueAttackStrategy({
-                            contexts: contexts,
-                            generateEnsureEquipped: {
-                                attributes: ["armor", "resistance"],
-                                prefer: {
-                                    mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
-                                    offhand: { name: "cclaw", filters: RETURN_HIGHEST },
-                                    gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
-                                    amulet: { name: "mpxamulet", filters: RETURN_HIGHEST },
-                                },
-                            },
-                            hasTarget: true,
-                            typeList: TOMB_MONSTERS,
-                        }),
-                        move: moveStrategy,
-                    },
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
-                            contexts: contexts,
-                            enableAbsorbToTank: true,
-                            generateEnsureEquipped: {
-                                attributes: ["armor", "resistance"],
-                            },
-                            typeList: TOMB_MONSTERS,
-                        }),
-                        move: moveStrategy,
-                    },
-                ],
+                characters: [rogueConfig, priestConfig],
             },
         ],
     }

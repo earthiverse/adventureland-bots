@@ -1957,7 +1957,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                     const y = (monsterSpawn.boundary[1] + monsterSpawn.boundary[3]) / 2
                     await bot
                         .smartMove(
-                            { map: map, x: x, y: y },
+                            { map: map, in: instance.in, x: x, y: y },
                             {
                                 numAttempts: 3,
                                 stopIfTrue: async () => bot.getEntity() !== undefined,
@@ -1975,7 +1975,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
                 if (!moveFailed && !monsterFound) {
                     // We looked at all spawns, but didn't find anything
-                    await AL.InstanceModel.deleteOne({ _id: instance._id }).lean().exec()
+                    await AL.InstanceModel.deleteOne({ in: instance.in }).lean().exec()
                     await AL.EntityModel.deleteMany({
                         in: instance.in,
                         serverIdentifier: instance.serverIdentifier,
