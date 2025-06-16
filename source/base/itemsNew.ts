@@ -537,7 +537,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         destroyBelowLevel: 1,
     },
     orba: {
-        craft: true
+        craft: true,
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 2,
     },
     orboffire: {
         upgradeUntilLevel: 0,
