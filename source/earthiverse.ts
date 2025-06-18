@@ -1,6 +1,8 @@
 import AL, {
     Attribute,
     CharacterType,
+    EntityModel,
+    InstanceModel,
     Mage,
     Merchant,
     MonsterName,
@@ -254,6 +256,22 @@ class AdminCommandStrategy implements Strategy<PingCompensatedCharacter> {
         this.onCodeEval = async (data: string) => {
             const args = data.split(" ")
             switch (args[0].toLowerCase()) {
+                case "delete": {
+                    if (bot.in !== bot.map) {
+                        console.log(`Deleting instance ${bot.in}...`)
+                        await InstanceModel.deleteMany({
+                            in: bot.in,
+                            serverIdentifier: bot.serverData.name,
+                            serverRegion: bot.serverData.region,
+                        })
+                        await EntityModel.deleteMany({
+                            in: bot.in,
+                            serverIdentifier: bot.serverData.name,
+                            serverRegion: bot.serverData.region,
+                        })
+                    }
+                    break
+                }
                 case "restart": {
                     // Save all the public contexts that are running
                     this.saveAndExit()
