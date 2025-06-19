@@ -1,6 +1,13 @@
 import type { ClassKey, ItemKey } from "typed-adventureland";
 
-// TODO: Buy config
+export type BuyConfigBase = {
+  /** 
+   * When set to a number, we will buy the item if it's that price or lower.
+   * When set to "ponty", we will buy the item at the price Ponty sells it for.
+   * When set to an object, we will buy the item at that level for the specified price.
+   */
+  buyPrice: (number | "ponty") | Record<number, number | "ponty">;
+}
 
 export type DestroyConfigBase = {
   /** If set, we will destroy special items (items with a `.p`), too */
@@ -15,9 +22,9 @@ export type HoldConfigBase = {
    * If set to an array, we will hold the item on the specified character types.
    */
   characterTypes: "all" | ClassKey[];
-  /** If set, we should try to keep this many of the given item on our bots */
+  /** If set, we will try to keep this many of the given item on our bots */
   replenish?: number;
-  /** If set, we should attempt to place the specified item in the specified position in the inventory */
+  /** If set, we will attempt to place the specified item in the specified position in the inventory */
   position?: number;
 };
 
@@ -38,26 +45,30 @@ export type MailConfigBase = {
 export type SellConfigBase = {
   /**
    * If set to "npc" or a number, we will sell level 0 items to an NPC or at the specified price to other players.
-   * If set to an array, we will sell that level of item to an NPC or at the specified price to other players.
+   * If set to an object, we will sell that level of item to an NPC or at the specified price to other players.
    */
   sellPrice: (number | "npc") | Record<number, number | "npc">;
-  /** If set, we will sell special items (items with a `.p`), too */
+  /** If set, we will sell special items (items with a `.p`), too at `sellPrice * specialMultiplier` */
   specialMultiplier?: number;
 };
 
-// TODO: Upgrade config
+export type UpgradeConfigBase = {
+  /** We will only upgrade items until this level */
+  upgradeUntilLevel: number;
+  /** If set, we will make level 0 items shiny before upgrading them */
+  makeShinyBeforeUpgrading?: true;
+  /** If set, we will upgrade special items (items with a `.p`), too */
+  upgradeSpecial?: true;
+}
 
 export type ItemConfig = {
-  /** We want to destroy the item */
+  buy?: BuyConfigBase
   destroy?: DestroyConfigBase;
-  /** We want to hold the item */
   hold?: HoldConfigBase;
-  /** We want to list the item for sale on our stand */
   list?: ListConfigBase;
-  /** We want to mail the item to ourselves, or another player */
   mail?: MailConfigBase;
-  /** We want to sell the item to either a player or NPC */
   sell?: SellConfigBase;
+  upgrade?: UpgradeConfigBase;
 };
 
 export type Config = Partial<Record<ItemKey, ItemConfig>>;

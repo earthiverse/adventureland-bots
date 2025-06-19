@@ -1,6 +1,7 @@
 import type { Character } from "alclient";
 import type { GData, ItemInfo } from "typed-adventureland";
 import Config, { type ItemConfig } from "../../config/items.js";
+import { logCritical, logError } from "./logging.js";
 
 /**
  * Returns how much gold you would get if you sold the item to an NPC
@@ -149,4 +150,17 @@ export function wantToSell(item: ItemInfo, atPrice: number | "npc" = "npc", conf
   //   }
 
   //   return true;
+}
+
+export function adjustItemConfig(config = Config, g: GData, options: { buyKeys?: true; optimizeUpgrades?: true }) {
+  if (options.buyKeys === true) {
+    // TODO: Buy keys
+  }
+
+  if (options.optimizeUpgrades === true) {
+    // TODO: Optimize upgrades
+    // TODO: Look for primling price, make sure we have it defined
+    if (config.offeringp?.buy?.buyPrice === undefined) logError("`offeringp` buy price is not defined in our item config");
+    // Look in the config for items that we're upgrading, and use Aria's helper to calculate when to primstack, and what scrolls to use
+  }
 }
