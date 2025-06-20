@@ -495,14 +495,14 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
     const rgooSetup = constructRGooHelperSetup(contexts)
 
     return {
-        a1: cryptSetup,
-        a2: cryptSetup,
-        a3: cryptSetup,
-        a4: cryptSetup,
-        a5: cryptSetup,
-        a6: cryptSetup,
-        a7: cryptSetup,
-        a8: cryptSetup,
+        // a1: cryptSetup,
+        // a2: cryptSetup,
+        // a3: cryptSetup,
+        // a4: cryptSetup,
+        // a5: cryptSetup,
+        // a6: cryptSetup,
+        // a7: cryptSetup,
+        // a8: cryptSetup,
         arcticbee: constructGenericSetup(contexts, ["arcticbee", "snowman"]),
         armadillo: constructArmadilloHelperSetup(contexts),
         bat: constructGenericSetup(contexts, ["bat"]),
@@ -550,10 +550,10 @@ export function constructHelperSetups(contexts: Strategist<PingCompensatedCharac
         tortoise: constructGenericSetup(contexts, ["tortoise", "frog", "phoenix"]),
         wabbit: constructWabbitHelperSetup(contexts),
         wolfie: constructGenericWithPriestSetup(contexts, ["wolfie"]),
-        vbat: cryptSetup,
+        // vbat: cryptSetup,
         // xmagefi: xmageSetup, NOT SAFE
-        xmagefz: xmageSetup,
-        xmagen: xmageSetup,
-        xmagex: xmageSetup,
+        // xmagefz: xmageSetup,
+        // xmagen: xmageSetup,
+        // xmagex: xmageSetup,
     }
 }
