@@ -4,8 +4,25 @@ import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
-const attackTypes: MonsterName[] = ["cutebee", "bee", "crab", "crabx", "croc", "frog", "goo", "phoenix", "poisio", "scorpion", "snake", "spider", "squig", "squigtoad", "tortoise"]
+const attackTypes: MonsterName[] = [
+    "cutebee",
+    "bee",
+    "crab",
+    "crabx",
+    "croc",
+    "frog",
+    "goo",
+    "phoenix",
+    "poisio",
+    "scorpion",
+    "snake",
+    "spider",
+    "squig",
+    "squigtoad",
+    "tortoise",
+]
 
 export function constructCuteBeeSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["cutebee"] })
@@ -22,13 +39,13 @@ export function constructCuteBeeSetup(contexts: Strategist<PingCompensatedCharac
                             disableZapper: true,
                             enableEquipForCleave: true,
                             generateEnsureEquipped: {
-                                attributes: ["str", "frequency"]
+                                attributes: ["str", "frequency"],
                             },
-                            typeList: attackTypes
+                            typeList: attackTypes,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "cutebee_mage",
@@ -40,15 +57,33 @@ export function constructCuteBeeSetup(contexts: Strategist<PingCompensatedCharac
                             disableEnergize: true,
                             disableZapper: true,
                             generateEnsureEquipped: {
-                                attributes: ["int", "frequency"]
+                                attributes: ["int", "frequency"],
                             },
-                            typeList: attackTypes
+                            typeList: attackTypes,
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "cutebee_ranger",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            disableZapper: true,
+                            generateEnsureEquipped: {
+                                attributes: ["frequency"],
+                            },
+                            typeList: attackTypes,
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
 
@@ -65,11 +100,11 @@ export function constructCuteBeeHelperSetup(contexts: Strategist<PingCompensated
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             disableZapper: true,
-                            typeList: attackTypes
+                            typeList: attackTypes,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "cutebee_mage",
@@ -80,12 +115,12 @@ export function constructCuteBeeHelperSetup(contexts: Strategist<PingCompensated
                             contexts: contexts,
                             disableEnergize: true,
                             disableZapper: true,
-                            typeList: attackTypes
+                            typeList: attackTypes,
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
