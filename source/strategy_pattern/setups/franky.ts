@@ -8,7 +8,7 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
-import { CharacterConfig, Setup } from "./base"
+import { CharacterConfig, Setup } from "./base.js"
 import { RETURN_HIGHEST, UNEQUIP } from "./equipment.js"
 
 // TODO: Improve PVP
@@ -98,6 +98,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
         attack: new PriestFrankyAttackStrategy({
             contexts: contexts,
             disableEnergize: true,
+            enableAbsorbToTank: true,
             enableGreedyAggro: true,
             generateEnsureEquipped: {
                 attributes: ["int", "attack"],
@@ -143,7 +144,21 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
                     offhand: { name: "firestars", filters: RETURN_HIGHEST },
                 },
             },
-            typeList: ["nerfedmummy", "franky"]
+            typeList: ["nerfedmummy", "franky"],
+        }),
+        move: frankyMoveStrategy,
+    }
+    const rangerConfig: CharacterConfig = {
+        ctype: "ranger",
+        attack: new RangerAttackStrategy({
+            contexts: contexts,
+            generateEnsureEquipped: {
+                prefer: {
+                    mainhand: { name: "pouchbow", filters: RETURN_HIGHEST },
+                    offhand: { name: "alloyquiver", filters: RETURN_HIGHEST },
+                },
+            },
+            typeList: ["nerfedmummy", "franky"],
         }),
         move: frankyMoveStrategy,
     }
@@ -160,6 +175,10 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
             {
                 id: "franky_priest,mage",
                 characters: [priestConfig, mageConfig],
+            },
+            {
+                id: "franky_priest,ranger",
+                characters: [priestConfig, rangerConfig],
             },
             {
                 id: "franky_priest,rogue,rogue",

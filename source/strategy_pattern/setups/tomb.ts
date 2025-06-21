@@ -5,6 +5,7 @@ import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { RETURN_HIGHEST } from "./equipment.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export const TOMB_MONSTERS: MonsterName[] = ["ggreenpro", "gredpro", "gbluepro", "gpurplepro"]
 
@@ -46,6 +47,24 @@ class TombMoveStrategy extends SpecialMonsterMoveStrategy {
 export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new TombMoveStrategy(contexts)
 
+    const rangerConfig: CharacterConfig = {
+        ctype: "ranger",
+        attack: new RangerAttackStrategy({
+            contexts: contexts,
+            generateEnsureEquipped: {
+                attributes: ["armor", "resistance"],
+                prefer: {
+                    mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
+                    offhand: { name: "t2quiver", filters: RETURN_HIGHEST },
+                    orb: { name: "orba", filters: RETURN_HIGHEST },
+                },
+            },
+            hasTarget: true,
+            typeList: TOMB_MONSTERS,
+        }),
+        move: moveStrategy,
+    }
+
     const rogueConfig: CharacterConfig = {
         ctype: "rogue",
         attack: new RogueAttackStrategy({
@@ -57,6 +76,7 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
                     offhand: { name: "cclaw", filters: RETURN_HIGHEST },
                     gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
                     amulet: { name: "mpxamulet", filters: RETURN_HIGHEST },
+                    orb: { name: "orba", filters: RETURN_HIGHEST },
                 },
             },
             hasTarget: true,
@@ -72,6 +92,9 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
             enableAbsorbToTank: true,
             generateEnsureEquipped: {
                 attributes: ["armor", "resistance"],
+                prefer: {
+                    orb: { name: "orba", filters: RETURN_HIGHEST },
+                },
             },
             typeList: TOMB_MONSTERS,
         }),
@@ -81,12 +104,16 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
     return {
         configs: [
             {
-                id: "bots_rogue,rogue,priest",
+                id: "tomb_rogue,rogue,priest",
                 characters: [rogueConfig, rogueConfig, priestConfig],
             },
             {
-                id: "bots_rogue,priest",
+                id: "tomb_rogue,priest",
                 characters: [rogueConfig, priestConfig],
+            },
+            {
+                id: "tomb_priest,ranger",
+                characters: [priestConfig, rangerConfig],
             },
         ],
     }

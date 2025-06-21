@@ -7,7 +7,11 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { HoldPositionMoveStrategy, SpreadOutImprovedMoveStrategy } from "../strategies/move.js"
+import {
+    HoldPositionMoveStrategy,
+    KiteInCircleMoveStrategy,
+    SpreadOutImprovedMoveStrategy,
+} from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
 
 const types: MonsterName[] = ["crabx", "crabxx"]
@@ -66,6 +70,7 @@ class WarriorGigaCrabAttackStrategy extends WarriorAttackStrategy {
 }
 
 export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const kiteStrategy = new KiteInCircleMoveStrategy({ center: mainCrabXs, type: "crabxx", radius: 150 })
     const spreadOutMoveStrategy = new SpreadOutImprovedMoveStrategy(types)
     const holdMoveStrategy = new HoldPositionMoveStrategy(mainCrabXs)
 
@@ -107,6 +112,25 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
         }),
         move: spreadOutMoveStrategy,
     }
+    const priestTankConfig: CharacterConfig = {
+        ctype: "priest",
+        attack: new PriestAttackStrategy({
+            contexts: contexts,
+            disableCreditCheck: true,
+            enableAbsorbToTank: true,
+            enableGreedyAggro: true,
+            generateEnsureEquipped: {
+                attributes: ["armor", "attack", "int"],
+                prefer: {
+                    amulet: { name: "mpxamulet", filters: { returnHighestLevel: true } },
+                    gloves: { name: "mpxgloves", filters: { returnHighestLevel: true } },
+                    orb: { name: "jacko", filters: { returnHighestLevel: true } },
+                },
+            },
+            typeList: ["crabxx"],
+        }),
+        move: kiteStrategy,
+    }
 
     // The warrior will prioritize crabx so that the giga crab can take damage
     const warriorConfig: CharacterConfig = {
@@ -137,19 +161,18 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
             disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
             disableEnergize: true,
             generateEnsureEquipped: {
-                attributes: ["armor", "int", "blast", "explosion"],
                 prefer: {
                     amulet: { name: "mpxamulet", filters: { returnHighestLevel: true } },
                     gloves: { name: "mpxgloves", filters: { returnHighestLevel: true } },
                     mainhand: { name: "crossbow", filters: { returnHighestLevel: true } },
-                    orb: { name: "jacko", filters: { returnHighestLevel: true } },
+                    orb: { name: "vorb", filters: { returnHighestLevel: true } },
                 },
             },
             typeList: types,
         }),
         move: spreadOutMoveStrategy,
         require: {
-            items: ["crossbow", "jacko"],
+            items: ["jacko"],
         },
     }
 
@@ -166,6 +189,10 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
             {
                 id: "crabxx_priest,warrior",
                 characters: [priestConfig, warriorConfig],
+            },
+            {
+                id: "crabxx_priest(tank),ranger",
+                characters: [priestTankConfig, rangerConfig],
             },
         ],
     }

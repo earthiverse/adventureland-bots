@@ -7,7 +7,7 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base"
+import { CharacterConfig, Setup } from "./base.js"
 
 class MageRGooAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
@@ -32,15 +32,15 @@ class WarriorRGooAttackStrategy extends WarriorAttackStrategy {
         if (bot.serverData.name === "PVP") {
             // No Splash Damage
             this.options.disableCleave = true
-            this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } },
-                this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } },
-                delete this.options.enableEquipForCleave
+            this.options.ensureEquipped.mainhand = { name: "fireblade", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.offhand = { name: "fireblade", filters: { returnHighestLevel: true } }
+            delete this.options.enableEquipForCleave
         } else {
             // Splash Damage & additional monsters
             delete this.options.disableCleave
-            this.options.ensureEquipped.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } },
-                this.options.ensureEquipped.offhand = { name: "ololipop", filters: { returnHighestLevel: true } },
-                this.options.enableEquipForCleave = true
+            this.options.ensureEquipped.mainhand = { name: "vhammer", filters: { returnHighestLevel: true } }
+            this.options.ensureEquipped.offhand = { name: "ololipop", filters: { returnHighestLevel: true } }
+            this.options.enableEquipForCleave = true
         }
     }
 }
@@ -48,6 +48,22 @@ class WarriorRGooAttackStrategy extends WarriorAttackStrategy {
 export function constructRGooSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const goos: MonsterName[] = ["rgoo", "bgoo"]
     const moveStrategy = new ImprovedMoveStrategy(goos, { idlePosition: { map: "goobrawl", x: 0, y: 0 } })
+
+    const priestConfig: CharacterConfig = {
+        ctype: "priest",
+        attack: new PriestAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            enableGreedyAggro: true,
+            enableAbsorbToTank: true,
+            enableHealStrangers: true,
+            generateEnsureEquipped: {
+                attributes: ["attack", "luck"],
+            },
+            typeList: goos,
+        }),
+        move: moveStrategy,
+    }
 
     return {
         configs: [
@@ -61,26 +77,13 @@ export function constructRGooSetup(contexts: Strategist<PingCompensatedCharacter
                             disableEnergize: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                attributes: ["luck", "blast", "explosion"]
+                                attributes: ["luck", "blast", "explosion"],
                             },
-                            typeList: goos
+                            typeList: goos,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            enableGreedyAggro: true,
-                            enableHealStrangers: true,
-                            generateEnsureEquipped: {
-                                attributes: ["attack", "luck"]
-                            },
-                            typeList: goos
-                        }),
-                        move: moveStrategy
-                    },
+                    priestConfig,
                     {
                         ctype: "warrior",
                         attack: new WarriorRGooAttackStrategy({
@@ -88,15 +91,31 @@ export function constructRGooSetup(contexts: Strategist<PingCompensatedCharacter
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                attributes: ["luck", "blast", "explosion"]
+                                attributes: ["luck", "blast", "explosion"],
                             },
-                            typeList: goos
+                            typeList: goos,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
-        ]
+            {
+                id: "rgoo_priest,ranger",
+                characters: [
+                    priestConfig,
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["luck", "blast", "explosion"],
+                            },
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
 
@@ -113,11 +132,11 @@ export function constructRGooHelperSetup(contexts: Strategist<PingCompensatedCha
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
-                            typeList: goos
+                            typeList: goos,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "rgoo_paladin",
@@ -126,11 +145,11 @@ export function constructRGooHelperSetup(contexts: Strategist<PingCompensatedCha
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({
                             contexts: contexts,
-                            typeList: goos
+                            typeList: goos,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "rgoo_priest",
@@ -140,11 +159,11 @@ export function constructRGooHelperSetup(contexts: Strategist<PingCompensatedCha
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableAbsorb: true,
-                            typeList: goos
+                            typeList: goos,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "rgoo_ranger",
@@ -153,11 +172,11 @@ export function constructRGooHelperSetup(contexts: Strategist<PingCompensatedCha
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
-                            typeList: goos
+                            typeList: goos,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "rgoo_rogue",
@@ -166,11 +185,11 @@ export function constructRGooHelperSetup(contexts: Strategist<PingCompensatedCha
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({
                             contexts: contexts,
-                            typeList: goos
+                            typeList: goos,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "rgoo_warrior",
@@ -180,12 +199,12 @@ export function constructRGooHelperSetup(contexts: Strategist<PingCompensatedCha
                         attack: new WarriorAttackStrategy({
                             contexts: contexts,
                             disableAgitate: true,
-                            typeList: goos
+                            typeList: goos,
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }

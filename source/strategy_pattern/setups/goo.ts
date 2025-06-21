@@ -71,7 +71,7 @@ export function constructGooSetup(contexts: Strategist<PingCompensatedCharacter>
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                attributes: ["frequency"],
+                                attributes: ["frequency", "explosion", "blast"],
                             },
                             type: "goo",
                         }),
@@ -80,7 +80,7 @@ export function constructGooSetup(contexts: Strategist<PingCompensatedCharacter>
                 ],
             },
             {
-                id: "bee_rogue",
+                id: "goo_rogue",
                 characters: [
                     {
                         ctype: "rogue",
