@@ -54,7 +54,7 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
             generateEnsureEquipped: {
                 attributes: ["armor", "resistance"],
                 prefer: {
-                    mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
+                    mainhand: { name: "firebow", filters: RETURN_HIGHEST },
                     offhand: { name: "t2quiver", filters: RETURN_HIGHEST },
                     orb: { name: "orba", filters: RETURN_HIGHEST },
                 },
@@ -73,7 +73,7 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
                 attributes: ["armor", "resistance"],
                 prefer: {
                     mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
-                    offhand: { name: "cclaw", filters: RETURN_HIGHEST },
+                    offhand: { name: "firestars", filters: RETURN_HIGHEST },
                     gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
                     amulet: { name: "mpxamulet", filters: RETURN_HIGHEST },
                     orb: { name: "orba", filters: RETURN_HIGHEST },
@@ -93,6 +93,7 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
             generateEnsureEquipped: {
                 attributes: ["armor", "resistance"],
                 prefer: {
+                    mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
                     orb: { name: "orba", filters: RETURN_HIGHEST },
                 },
             },
