@@ -103,10 +103,7 @@ export function constructPRatSetup(contexts: Strategist<PingCompensatedCharacter
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
-                                prefer: {
-                                    mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
-                                    offhand: { name: "t2quiver", filters: RETURN_HIGHEST },
-                                },
+                                attributes: ["explosion", "blast"],
                             },
                             type: "prat",
                         }),
