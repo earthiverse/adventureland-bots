@@ -5,6 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const spawn = AL.Pathfinder.locateMonster("bigbird")[0]
@@ -23,11 +24,11 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                attributes: ["blast", "explosion", "int", "armor"]
+                                attributes: ["blast", "explosion", "int", "armor"],
                             },
-                            type: "bigbird"
+                            type: "bigbird",
                         }),
-                        move: mageMoveStrategy
+                        move: mageMoveStrategy,
                     },
                     {
                         ctype: "priest",
@@ -35,11 +36,11 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                attributes: ["int", "attack", "armor"]
+                                attributes: ["int", "attack", "armor"],
                             },
                             type: "bigbird",
                         }),
-                        move: priestMoveStrategy
+                        move: priestMoveStrategy,
                     },
                     {
                         ctype: "warrior",
@@ -47,14 +48,14 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             enableEquipForCleave: true,
                             generateEnsureEquipped: {
-                                attributes: ["blast", "explosion", "str", "armor"]
+                                attributes: ["blast", "explosion", "str", "armor"],
                             },
                             enableGreedyAggro: true,
-                            type: "bigbird"
+                            type: "bigbird",
                         }),
-                        move: warriorMoveStrategy
-                    }
-                ]
+                        move: warriorMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "greedy_bigbird_mage,priest",
@@ -65,11 +66,11 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                attributes: ["blast", "explosion", "int", "armor"]
+                                attributes: ["blast", "explosion", "int", "armor"],
                             },
-                            type: "bigbird"
+                            type: "bigbird",
                         }),
-                        move: mageMoveStrategy
+                        move: mageMoveStrategy,
                     },
                     {
                         ctype: "priest",
@@ -77,13 +78,13 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                attributes: ["attack", "int", "armor"]
+                                attributes: ["attack", "int", "armor"],
                             },
                             type: "bigbird",
                         }),
-                        move: priestMoveStrategy
+                        move: priestMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "greedy_bigbird_priest,warrior",
@@ -94,11 +95,11 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                attributes: ["attack", "int", "armor"]
+                                attributes: ["attack", "int", "armor"],
                             },
                             type: "bigbird",
                         }),
-                        move: priestMoveStrategy
+                        move: priestMoveStrategy,
                     },
                     {
                         ctype: "warrior",
@@ -106,15 +107,44 @@ export function constructBigBirdSetup(contexts: Strategist<PingCompensatedCharac
                             contexts: contexts,
                             enableEquipForCleave: true,
                             generateEnsureEquipped: {
-                                attributes: ["blast", "explosion", "str", "armor"]
+                                attributes: ["blast", "explosion", "str", "armor"],
                             },
                             enableGreedyAggro: true,
-                            type: "bigbird"
+                            type: "bigbird",
                         }),
-                        move: warriorMoveStrategy
-                    }
-                ]
+                        move: warriorMoveStrategy,
+                    },
+                ],
             },
-        ]
+            {
+                id: "bigbird_priest,ranger",
+                characters: [
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            generateEnsureEquipped: {
+                                attributes: ["attack", "int", "armor"],
+                            },
+                            type: "bigbird",
+                        }),
+                        move: priestMoveStrategy,
+                    },
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["attack"],
+                                avoidAttributes: ["blast", "explosion"],
+                            },
+                            type: "bigbird",
+                        }),
+                        move: warriorMoveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }

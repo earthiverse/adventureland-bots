@@ -4,7 +4,8 @@ import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base"
+import { CharacterConfig, Setup } from "./base"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 class PriestFireRoamerAttackStrategy extends PriestAttackStrategy {
     protected attack(bot: Priest): Promise<void> {
@@ -23,8 +24,22 @@ class PriestFireRoamerAttackStrategy extends PriestAttackStrategy {
 
 // TODO: Fire roamer move strategy based on level of monsters
 
-
 export function constructFireRoamerSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const priestConfig: CharacterConfig = {
+        ctype: "priest",
+        attack: new PriestFireRoamerAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            enableAbsorbToTank: true,
+            enableGreedyAggro: true,
+            generateEnsureEquipped: {
+                attributes: ["resistance", "firesistance", "int", "attack"],
+            },
+            type: "fireroamer",
+        }),
+        move: new HoldPositionMoveStrategy({ map: "desertland", x: 180, y: -675 }),
+    }
+
     return {
         configs: [
             {
@@ -36,28 +51,15 @@ export function constructFireRoamerSetup(contexts: Strategist<PingCompensatedCha
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "blast", "explosion"]
+                                attributes: ["resistance", "int", "blast", "explosion"],
                             },
                             maximumTargets: 1,
                             targetingPartyMember: true,
-                            type: "fireroamer"
-                        }),
-                        move: new HoldPositionMoveStrategy({ map: "desertland", x: 160, y: -675 })
-                    },
-                    {
-                        ctype: "priest",
-                        attack: new PriestFireRoamerAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            enableAbsorbToTank: true,
-                            enableGreedyAggro: true,
-                            generateEnsureEquipped: {
-                                attributes: ["resistance", "int", "attack"]
-                            },
                             type: "fireroamer",
                         }),
-                        move: new HoldPositionMoveStrategy({ map: "desertland", x: 180, y: -675 })
+                        move: new HoldPositionMoveStrategy({ map: "desertland", x: 160, y: -675 }),
                     },
+                    priestConfig,
                     {
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
@@ -65,16 +67,35 @@ export function constructFireRoamerSetup(contexts: Strategist<PingCompensatedCha
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
                             generateEnsureEquipped: {
-                                attributes: ["resistance", "str", "blast", "explosion"]
+                                attributes: ["resistance", "str", "blast", "explosion"],
                             },
                             maximumTargets: 1,
                             targetingPartyMember: true,
-                            type: "fireroamer"
+                            type: "fireroamer",
                         }),
-                        move: new HoldPositionMoveStrategy({ map: "desertland", x: 200, y: -675 })
-                    }
-                ]
+                        move: new HoldPositionMoveStrategy({ map: "desertland", x: 200, y: -675 }),
+                    },
+                ],
             },
-        ]
+            {
+                id: "fireroamer_priest,ranger",
+                characters: [
+                    priestConfig,
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["resistance", "firesistance", "blast", "explosion"],
+                            },
+                            maximumTargets: 1,
+                            targetingPartyMember: true,
+                            type: "fireroamer",
+                        }),
+                        move: new HoldPositionMoveStrategy({ map: "desertland", x: 200, y: -675 }),
+                    },
+                ],
+            },
+        ],
     }
 }
