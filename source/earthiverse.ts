@@ -85,7 +85,7 @@ await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: tr
 // TODO: Make these configurable through /comm using a similar system to how lulz works
 // Toggles
 const ENABLE_EVENTS = true
-const ENABLE_SERVER_HOPS = false
+const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 let ENABLE_MONSTERHUNTS = true
 const DEFAULT_MONSTERS: MonsterName[] = ["iceroamer"]
