@@ -112,9 +112,9 @@ const MERCHANT: string = "earthMer" // earthMer, earthMer2, earthMer3
 const WARRIORS: string[] = [] // earthWar, earthWar2, earthWar3
 const MAGES: string[] = [] // earthMag, earthMag2, earthMag3
 const PRIESTS: string[] = ["earthPri"] // earthPri, earthPri2
-const RANGERS: string[] = [] // earthiverse, earthRan2, earthRan3
+const RANGERS: string[] = ["earthiverse"] // earthiverse, earthRan2, earthRan3
 const PALADINS: string[] = [] // earthPal
-const ROGUES: string[] = ["earthRog2"] // earthRog, earthRog2, earthRog3
+const ROGUES: string[] = [] // earthRog, earthRog2, earthRog3
 
 const PARTY_ALLOWLIST: string[] = [...WARRIORS, ...RANGERS, ...MAGES, ...PRIESTS, ...PALADINS, ...ROGUES]
 const PARTY_LEADER: string = PARTY_ALLOWLIST[0]
