@@ -6,6 +6,7 @@ import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
 import { MAGE_SPLASH_WEAPONS, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING } from "./equipment.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 class PriestGhostAttackStrategy extends PriestAttackStrategy {
     protected async attack(bot: Priest): Promise<void> {
@@ -84,6 +85,18 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
         move: moveStrategy,
     }
 
+    const rangerConfig: CharacterConfig = {
+        ctype: "ranger",
+        attack: new RangerAttackStrategy({
+            contexts: contexts,
+            generateEnsureEquipped: {
+                attributes: ["attack", "blast", "explosion"],
+            },
+            typeList: ["ghost", "tinyp"],
+        }),
+        move: moveStrategy,
+    }
+
     return {
         configs: [
             {
@@ -97,6 +110,10 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
             {
                 id: "ghost_priest,warrior",
                 characters: [priestConfig, warriorConfig],
+            },
+            {
+                id: "ghost_priest,warrior",
+                characters: [priestConfig, rangerConfig],
             },
         ],
     }
