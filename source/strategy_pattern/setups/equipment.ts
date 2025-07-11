@@ -43,6 +43,11 @@ export const WARRIOR_SPLASH_WEAPONS: EnsureEquipped = {
     offhand: { name: "ololipop", filters: RETURN_HIGHEST },
 }
 
+export const RANGER_SPLASH_WEAPONS: EnsureEquipped = {
+    mainhand: { name: "pouchbow", filters: RETURN_HIGHEST },
+    offhand: { name: "alloyquiver", filters: RETURN_HIGHEST },
+}
+
 export const MAGE_SPLASH: EnsureEquipped = {
     amulet: { name: "intamulet", filters: RETURN_HIGHEST },
     belt: { name: "intbelt", filters: RETURN_HIGHEST },
