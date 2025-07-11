@@ -5,7 +5,13 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
-import { MAGE_SPLASH_WEAPONS, RANGER_SPLASH_WEAPONS, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING } from "./equipment.js"
+import {
+    MAGE_SPLASH_WEAPONS,
+    MP_RECOVERY,
+    RANGER_SPLASH_WEAPONS,
+    WARRIOR_SPLASH_WEAPONS,
+    ZAPPER_CRING,
+} from "./equipment.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 class PriestGhostAttackStrategy extends PriestAttackStrategy {
@@ -78,6 +84,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                 attributes: ["attack", "blast", "explosion"],
                 prefer: {
                     ...WARRIOR_SPLASH_WEAPONS,
+                    ...MP_RECOVERY,
                 },
             },
             typeList: ["ghost", "tinyp"],
@@ -93,6 +100,7 @@ export function constructGhostSetup(contexts: Strategist<PingCompensatedCharacte
                 attributes: ["attack", "blast", "explosion"],
                 prefer: {
                     ...RANGER_SPLASH_WEAPONS,
+                    ...MP_RECOVERY,
                 },
             },
             typeList: ["ghost", "tinyp"],

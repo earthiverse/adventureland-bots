@@ -23,6 +23,13 @@ export const SUPERMITTENS: EnsureEquipped = {
     gloves: { name: "supermittens", filters: RETURN_HIGHEST },
 }
 
+export const MP_RECOVERY: EnsureEquipped = {
+    amulet: { name: "mpxamulet", filters: RETURN_HIGHEST },
+    belt: { name: "mpxbelt", filters: RETURN_HIGHEST },
+    chest: { name: "tshirt9", filters: RETURN_HIGHEST },
+    gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
+}
+
 export const ZAPPER_CRING: EnsureEquipped = {
     ring1: { name: "zapper", filters: RETURN_HIGHEST },
     ring2: { name: "cring", filters: RETURN_HIGHEST },
