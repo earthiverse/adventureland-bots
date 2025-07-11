@@ -1,37 +1,43 @@
-import type { Character, Mage, Merchant, Paladin, Priest, Ranger, Rogue, Warrior } from "alclient";
-import { Game } from "alclient";
+import {
+  Character,
+  Game,
+  type Mage,
+  type Merchant,
+  type Paladin,
+  type Priest,
+  type Ranger,
+  type Rogue,
+  type Warrior,
+} from "alclient";
 import config from "../../config/config.js";
-import { setup as attackSetup } from "../setups/attack/attack.js";
-import { setup as itemSetup } from "../setups/item/config.js";
-import { setup as lootSetup } from "../setups/loot/simple.js";
-import { setup as moveSetup } from "../setups/move/spread_out.js";
-import { setup as regenSetup } from "../setups/regen/simple.js";
 
 // Plugins
 import type { MonsterKey, ServerKey } from "typed-adventureland";
-import { checkMonsters, defaultMonster } from "./strategies.js";
 import "../plugins/auto_reconnect.js";
 import ServerData from "../plugins/data_tracker.js";
 import "../plugins/g_cache.js";
 import { getGFromCache } from "../plugins/g_cache.js";
 import "../plugins/party.js";
 import "../plugins/ping_compensation.js";
-import { logDebug, logError } from "../utilities/logging.js";
+import { logError, logInformational } from "../utilities/logging.js";
+import { checkMonsters, defaultMonster, strategies } from "./strategies.js";
 
 // Config
 const { server, email, password } = config.credentials;
 
-const g = getGFromCache();
+let g = getGFromCache();
 const game = new Game({ url: server, G: g });
 
 const promises: Promise<unknown>[] = [game.updateServers()];
 if (!g) promises.push(game.updateG());
 await Promise.all(promises);
+g = game.G;
 
 const player = await game.login(email, password);
 
 /** Servers we want to check for monsters on */
 const checkServers = ["USI", "USII", "USIII", "EUI", "EUII", "ASIAI"] as const satisfies ServerKey[];
+const defaultServer = "USIII" as const satisfies ServerKey;
 
 /** Character objects for all of our  */
 export const characters = Object.freeze({
@@ -63,16 +69,19 @@ export const characters = Object.freeze({
 });
 
 /** A list of our active characters */
-const activeCharacters: Character[] = [];
+const activeCharacters = new Set<Character>();
 
-let targetMonster: MonsterKey = defaultMonster;
-let targetServer: ServerKey = checkServers[0];
+let currentTarget: [MonsterKey, ServerKey] = ["goblin", "USPVP"];
 
 /**
  * Main logic loop that says what characters should be farming what
  */
 const logicLoop = async () => {
   try {
+    /** Potential monsters to farm (NOTE: Should be sorted highest priority first) */
+    const potentialTargets: [MonsterKey, ServerKey][] = [];
+
+    // Add monsters we're checking for
     for (const serverKey of checkServers) {
       const serverData = ServerData.get(serverKey);
       if (serverData === undefined) continue; // No data for this server
@@ -80,15 +89,33 @@ const logicLoop = async () => {
       for (const monsterKey of checkMonsters) {
         const monsterData = serverData.monsters[monsterKey];
         if (monsterData === undefined || monsterData.length === 0) continue;
+        const gMonster = G.monsters[monsterKey];
 
         for (const monsterDatum of monsterData) {
-          if (monsterDatum.target !== undefined) continue;
+          if (
+            gMonster.cooperative !== true && // Monster is not cooperative (no credit)
+            monsterDatum.target !== undefined // Monster has a target
+          ) {
+            continue; // Won't get credit
+          }
 
-          // TODO: Add to potential targets
+          potentialTargets.push([monsterKey, serverKey]);
         }
       }
     }
-    // TODO: Get target
+
+    // Get target
+    const lastTarget = [...currentTarget];
+    currentTarget = potentialTargets.find((m) => Object.hasOwn(strategies, m[0])) ?? [defaultMonster, defaultServer];
+
+    if (lastTarget[0] === currentTarget[0] && lastTarget[1] === currentTarget[1]) return; // Same target, already set up
+    logInformational(
+      `Switching from ${lastTarget[0]} on ${currentTarget[1]} to ${currentTarget[0]} on ${currentTarget[1]}...`,
+    );
+
+    const strategy = strategies[currentTarget[0] as keyof typeof strategies];
+    for (const characterNames of strategy.characters) {
+    }
 
     // TODO: From target, decide players & strategy
   } catch (e) {
@@ -97,29 +124,28 @@ const logicLoop = async () => {
     setTimeout(() => void logicLoop(), 1000);
   }
 };
-
 void logicLoop();
 
-for (const characterInfo of player.characters) {
-  let character: Character;
-  switch (characterInfo.type) {
-    case "merchant":
-      continue; // TODO: Get a merchant strategy
-    case "mage":
-    case "paladin":
-    case "priest":
-    case "ranger":
-    case "rogue":
-    case "warrior":
-      logDebug(`Creating ${characterInfo.name} (${characterInfo.type})`);
-      character = player.createCharacter(characterInfo.name);
-      break;
-  }
-  await character.start("ASIA", "I");
+// for (const characterInfo of player.characters) {
+//   let character: Character;
+//   switch (characterInfo.type) {
+//     case "merchant":
+//       continue; // TODO: Get a merchant strategy
+//     case "mage":
+//     case "paladin":
+//     case "priest":
+//     case "ranger":
+//     case "rogue":
+//     case "warrior":
+//       logDebug(`Creating ${characterInfo.name} (${characterInfo.type})`);
+//       character = player.createCharacter(characterInfo.name);
+//       break;
+//   }
+//   await character.start("ASIA", "I");
 
-  attackSetup(character, defaultMonster);
-  itemSetup(character);
-  lootSetup(character);
-  moveSetup(character, defaultMonster);
-  regenSetup(character);
-}
+//   attackSetup(character, defaultMonster);
+//   itemSetup(character);
+//   lootSetup(character);
+//   moveSetup(character, defaultMonster);
+//   regenSetup(character);
+// }

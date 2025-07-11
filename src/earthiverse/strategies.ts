@@ -10,8 +10,8 @@ type OneToThreeCharacters = (
 
 export const defaultMonster = "goo" as const satisfies MonsterKey;
 
-/** Monsters we want to be on the lookout for */
-export const checkMonsters = ["goldenbat", "crabxx"] as const satisfies MonsterKey[];
+/** Monsters we want to be on the lookout for (NOTE: Should be sorted highest priority first) */
+export const checkMonsters = ["goldenbat", "crabxx", "snowman"] as const satisfies MonsterKey[];
 
 export const strategies: {
   [T in typeof defaultMonster | (typeof checkMonsters)[number]]: {
@@ -31,6 +31,11 @@ export const strategies: {
   goo: {
     characters: [
       ["earthiverse", "earthRan2", "earthRan3"], // Rangers can multishot
+    ],
+  },
+  snowman: {
+    characters: [
+      ["earthiverse", "earthRan2", "earthRan3"], // Rangers can multishot snowman while farming arctic bees
     ],
   },
 };

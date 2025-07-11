@@ -27,7 +27,7 @@
   "dependencies": {
     "@isaacs/ttlcache": "^1.4.1",
     "@types/nodemailer": "^6.4.16",
-    "alclient": "file:../ALClient/alclient-1.0.0.tgz",
+    "alclient": "file:../../ALClient.worktrees/new-alclient/alclient-1.0.0.tgz",
     "config": "^3.3.12",
     "copyfiles": "^2.4.1",
     "discord.js": "^14.19.3",
@@ -51,7 +51,7 @@
     "prettier-plugin-organize-imports": "^4.1.0",
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
-    "typed-adventureland": "^0.0.46",
+    "typed-adventureland": "file:../../typed-adventureland/typed-adventureland-0.0.47.tgz",
     "typescript": "^5.8.3"
   }
 }
