@@ -69,7 +69,7 @@ test("`wantToSell()` sells only non-special level 0 items when sellPrice is not 
   expect(wantToSell({ name: "bow", level: 1 }, g as GData, "npc", config)).toBe(false);
 });
 
-test("`adjustItemConfig()` computes the buyPrice for `g`", () => {
+test("`adjustItemConfig()` computes the buyPrice and sellPrice for `g`", () => {
   // Buy price should be set from "g"
   const config: Config = {
     hbow: {
@@ -77,13 +77,20 @@ test("`adjustItemConfig()` computes the buyPrice for `g`", () => {
         buyPrice: "g",
       },
     },
+    t2bow: {
+      sell: {
+        sellPrice: "g",
+      },
+    },
   };
   adjustItemConfig(config, g as GData);
   expect(g!.items.hbow.g).toBeGreaterThan(0);
+  expect(g!.items.t2bow.g).toBeGreaterThan(0);
   expect(config.hbow!.buy!.buyPrice).toBe(g!.items.hbow.g);
+  expect(config.t2bow!.sell!.sellPrice).toBe(g!.items.t2bow.g);
 });
 
-test("`adjustItemConfig()` computes the buyPrice for `goblin`", () => {
+test("`adjustItemConfig()` computes the buyPrice and sellPrice for `goblin`", () => {
   // Buy price should be set from "g"
   const config: Config = {
     hbow: {
@@ -91,13 +98,20 @@ test("`adjustItemConfig()` computes the buyPrice for `goblin`", () => {
         buyPrice: "goblin",
       },
     },
+    t2bow: {
+      sell: {
+        sellPrice: "goblin",
+      },
+    },
   };
   adjustItemConfig(config, g as GData);
   expect(g!.items.hbow.g).toBeGreaterThan(0);
+  expect(g!.items.t2bow.g).toBeGreaterThan(0);
   expect(config.hbow!.buy!.buyPrice).toBe(g!.items.hbow.g * g!.multipliers.lostandfound_mult);
+  expect(config.t2bow!.sell!.sellPrice).toBe(g!.items.t2bow.g * g!.multipliers.lostandfound_mult);
 });
 
-test("`adjustItemConfig()` computes the buyPrice for `ponty`", () => {
+test("`adjustItemConfig()` computes the buyPrice and sellPrice for `ponty`", () => {
   // Buy price should be set from "g"
   const config: Config = {
     hbow: {
@@ -105,13 +119,20 @@ test("`adjustItemConfig()` computes the buyPrice for `ponty`", () => {
         buyPrice: "ponty",
       },
     },
+    t2bow: {
+      sell: {
+        sellPrice: "ponty",
+      },
+    },
   };
   adjustItemConfig(config, g as GData);
   expect(g!.items.hbow.g).toBeGreaterThan(0);
+  expect(g!.items.t2bow.g).toBeGreaterThan(0);
   expect(config.hbow!.buy!.buyPrice).toBe(g!.items.hbow.g * g!.multipliers.secondhands_mult);
+  expect(config.t2bow!.sell!.sellPrice).toBe(g!.items.t2bow.g * g!.multipliers.secondhands_mult);
 });
 
-test("`adjustItemConfig()` computes the buyPrice for `npc`", () => {
+test("`adjustItemConfig()` computes the buyPrice and sellPrice for `npc`", () => {
   // Buy price should be set from "g"
   const config: Config = {
     hbow: {
@@ -119,13 +140,20 @@ test("`adjustItemConfig()` computes the buyPrice for `npc`", () => {
         buyPrice: "npc",
       },
     },
+    t2bow: {
+      sell: {
+        sellPrice: "npc",
+      },
+    },
   };
   adjustItemConfig(config, g as GData);
   expect(g!.items.hbow.g).toBeGreaterThan(0);
+  expect(g!.items.t2bow.g).toBeGreaterThan(0);
   expect(config.hbow!.buy!.buyPrice).toBe(g!.items.hbow.g * g!.multipliers.buy_to_sell);
+  expect(config.t2bow!.sell!.sellPrice).toBe(g!.items.t2bow.g * g!.multipliers.buy_to_sell);
 });
 
-test("`adjustItemConfig()` computes the buyPrice for multiplier (`x${number}`)", () => {
+test("`adjustItemConfig()` computes the buyPrice and sellPrice for multipliers (`x${number}`)", () => {
   // Buy price should be set from "g"
   const config: Config = {
     hbow: {
@@ -133,8 +161,33 @@ test("`adjustItemConfig()` computes the buyPrice for multiplier (`x${number}`)",
         buyPrice: "x2.5",
       },
     },
+    t2bow: {
+      sell: {
+        sellPrice: "x4.8",
+      },
+    },
   };
   adjustItemConfig(config, g as GData);
   expect(g!.items.hbow.g).toBeGreaterThan(0);
+  expect(g!.items.t2bow.g).toBeGreaterThan(0);
   expect(config.hbow!.buy!.buyPrice).toBe(g!.items.hbow.g * 2.5);
+  expect(config.t2bow!.sell!.sellPrice).toBe(g!.items.t2bow.g * 4.8);
+});
+
+test("`adjustItemConfig()` ensures we're selling at a higher price than we're buying", () => {
+  // Buy price should be set from "g"
+  const config: Config = {
+    hbow: {
+      buy: {
+        buyPrice: "x2.5",
+      },
+      sell: {
+        sellPrice: "x1.5",
+      },
+    },
+  };
+  adjustItemConfig(config, g as GData);
+  expect(typeof config.hbow!.buy!.buyPrice).toBe("number");
+  expect(typeof config.hbow!.sell!.sellPrice).toBe("number");
+  expect(config.hbow!.buy!.buyPrice as number).toBeLessThan(config.hbow!.sell!.sellPrice as number);
 });

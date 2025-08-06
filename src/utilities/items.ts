@@ -1,7 +1,16 @@
 import type { Character } from "alclient";
-import type { GData, ItemInfo, ItemKey } from "typed-adventureland";
+import type { GData, ItemInfo } from "typed-adventureland";
 import Config, { type ItemConfig, type Price } from "../../config/items.js";
-import { logDebug, logError } from "./logging.js";
+import {
+  buyKeys,
+  calculateBuyPrices,
+  calculateSellPrices,
+  ensureBuyPriceLessThanSellPrice,
+  ensureSellMultiplierAtLeastOne,
+  ensureSellPriceAtLeastNpcPrice,
+  optimizeUpgrades,
+} from "./items/adjust.js";
+import { logError } from "./logging.js";
 
 export function calculateItemValue(item: ItemInfo, g: GData, multiplier = 1): number {
   if (item.gift) return 1;
@@ -231,64 +240,11 @@ export function adjustItemConfig(
   g: GData,
   options: { buyKeys?: Exclude<Price, number>; optimizeUpgrades?: true } = {},
 ) {
-  if (options.buyKeys !== undefined) {
-    for (const itemName of Object.keys(g.items) as ItemKey[]) {
-      const gItem = g.items[itemName];
-      if (gItem.type !== "bank_key" && gItem.type !== "dungeon_key") continue; // Not a key
-      if (config[itemName]?.buy !== undefined) {
-        logDebug(`Item ${itemName} already has a buy config, skipping buyKeys...`);
-        continue; // Already has a buy config
-      }
-      if (!config[itemName]) {
-        config[itemName] = {};
-      }
-      const buyPrice = calculatePrice({ name: itemName }, g, options.buyKeys);
-      logDebug(`Adding buy config for ${itemName} to buy for ${buyPrice}`);
-      config[itemName].buy = { buyPrice: buyPrice };
-    }
-  }
-
-  if (options.optimizeUpgrades === true) {
-    // TODO: Optimize upgrades
-    // TODO: Look for primling price, make sure we have it defined
-    if (config.offeringp?.buy?.buyPrice === undefined) {
-      logError("`offeringp` buy price is not defined in our item config");
-    } else {
-      // Look in the config for items that we're upgrading, and use Aria's helper to calculate when to primstack, and what scrolls to use
-    }
-  }
-
-  // Calculate buy prices from string values
-  for (const name of Object.keys(config) as ItemKey[]) {
-    const itemConfig = config[name];
-    if (itemConfig === undefined) continue; // No config
-    if (itemConfig.buy === undefined) continue; // No buy config
-    if (typeof itemConfig.buy.buyPrice === "number") continue; // Already has a buy price
-
-    if (typeof itemConfig.buy.buyPrice === "string") {
-      const buyPrice = calculatePrice({ name }, g, itemConfig.buy.buyPrice);
-      logDebug(`Setting buy price for item ${name} to ${buyPrice}`);
-      itemConfig.buy.buyPrice = buyPrice;
-    } else if (typeof itemConfig.buy.buyPrice === "object") {
-      for (const levelKey of Object.keys(itemConfig.buy.buyPrice)) {
-        const level = parseInt(levelKey, 10);
-        if (isNaN(level)) {
-          logError(`Invalid level number (${levelKey}) in buy price for item ${name}`);
-          continue;
-        }
-        if (itemConfig.buy.buyPrice[level] === undefined) {
-          logError(`No buy price defined for item ${name} at level ${level}`);
-          continue;
-        }
-        if (typeof itemConfig.buy.buyPrice[level] === "number") continue; // Already has a buy price
-
-        const buyPrice = calculatePrice({ name, level }, g, itemConfig.buy.buyPrice[level]);
-        logDebug(`Setting buy price for item ${name} at level ${level} to ${buyPrice}`);
-        itemConfig.buy.buyPrice[level] = buyPrice;
-      }
-    }
-  }
-
-  // TODO: Ensure any item that has a `sell` config is selling for at least the NPC price
-  // TODO: Ensure any item that has a `sell` config with a special multiplier has a multiplier of >= 1
+  if (options.buyKeys !== undefined) buyKeys(config, g, options.buyKeys);
+  calculateBuyPrices(config, g);
+  calculateSellPrices(config, g);
+  ensureSellPriceAtLeastNpcPrice(config, g);
+  ensureSellMultiplierAtLeastOne(config);
+  ensureBuyPriceLessThanSellPrice(config);
+  if (options.optimizeUpgrades === true) optimizeUpgrades(config);
 }
