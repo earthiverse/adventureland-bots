@@ -12,8 +12,7 @@ import { logWarning } from "../utilities/logging.js";
 const LOOP_INTERVAL_MS = 30_000; // 30 Seconds
 const STALE_MS = 300_000; // 5 Minutes
 
-// TODO: more special monsters
-// TODO: goldenbot
+// TODO: Review list
 const WANT_TO_TRACK = new Set<MonsterKey>([
   "a1",
   "a2",
@@ -27,15 +26,24 @@ const WANT_TO_TRACK = new Set<MonsterKey>([
   "cutebee",
   "franky",
   "fvampire",
+  "gbluepro",
+  "ggreenpro",
+  "gpurplepro",
+  "gredpro",
   "goldenbat",
+  "goldenbot",
   "greenjr",
   "icegolem",
   "jr",
   "mvampire",
   "rgoo",
+  "rharpy",
   "skeletor",
   "snowman",
   "stompy",
+  "spiderbl",
+  "spiderbr",
+  "spiderr",
   "vbat",
   "xmagefi",
   "xmagefz",
@@ -107,7 +115,7 @@ EventBus.on("entities_updated", (observer, monsters, characters) => {
         in: monster.in,
         x: monster.x,
         y: monster.y,
-        target: monster.target
+        target: monster.target,
       });
     }
   }
