@@ -46,19 +46,19 @@ test("`calculateItemScore()` sanity checks", () => {
 });
 
 test("`calculateSkillScore()` sanity checks", () => {
-  // A character with full MP should have a better score for mp
+  // A character with full MP should have a better score for HP
   let character = { hp: 10, max_hp: 100, mp: 100, max_mp: 100 };
   let regenHpScore = calculateSkillScore("regen_hp", character);
   let regenMpScore = calculateSkillScore("regen_mp", character);
   expect(regenHpScore).toBeGreaterThan(regenMpScore);
 
-  // A character with full HP should have a better score for hp
+  // A character with full HP should have a better score for MP
   character = { hp: 100, max_hp: 100, mp: 10, max_mp: 100 };
   regenHpScore = calculateSkillScore("regen_hp", character);
   regenMpScore = calculateSkillScore("regen_mp", character);
   expect(regenMpScore).toBeGreaterThan(regenHpScore);
 
-  // A character with no MP should have a better score for mp
+  // A character with no MP should have a better score for MP
   character = { hp: 50, max_hp: 1000, mp: 0, max_mp: 1000 };
   regenHpScore = calculateSkillScore("regen_hp", character);
   regenMpScore = calculateSkillScore("regen_mp", character);

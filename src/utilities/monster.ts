@@ -1,6 +1,7 @@
 import TTLCache from "@isaacs/ttlcache";
-import type { EntityMonster, Character } from "alclient";
+import type { Character, EntityMonster } from "alclient";
 import TinyQueue, { type Comparator } from "tinyqueue";
+import type { MonsterKey } from "typed-adventureland";
 
 export const IGNORED_MONSTERS = new TTLCache<string, EntityMonster>({
   max: 500,
@@ -24,7 +25,7 @@ export const DEFAULT_COMPARATOR: Comparator<EntityMonster> = (a, b) => {
 export type BestTargetOptions = {
   comparator?: Comparator<EntityMonster>;
   /** Which monster to attack */
-  monster?: string;
+  monster?: MonsterKey;
   /** Only target monsters within this range */
   withinRange?: number;
 };
