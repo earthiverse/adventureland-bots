@@ -43,6 +43,7 @@ const WANT_TO_TRACK = new Set<MonsterKey>([
   "icegolem",
   "jr",
   "mvampire",
+  "phoenix",
   "rgoo",
   "rharpy",
   "skeletor",
