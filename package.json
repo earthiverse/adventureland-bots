@@ -51,7 +51,7 @@
     "prettier-plugin-organize-imports": "^4.1.0",
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
-    "typed-adventureland": "^0.0.46",
+    "typed-adventureland": "^0.0.47",
     "typescript": "^5.8.3"
   }
 }
