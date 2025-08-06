@@ -70,7 +70,6 @@ test("`wantToSell()` sells only non-special level 0 items when sellPrice is not 
 });
 
 test("`adjustItemConfig()` computes the buyPrice and sellPrice for `g`", () => {
-  // Buy price should be set from "g"
   const config: Config = {
     hbow: {
       buy: {
@@ -112,7 +111,6 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for `goblin`", ()
 });
 
 test("`adjustItemConfig()` computes the buyPrice and sellPrice for `ponty`", () => {
-  // Buy price should be set from "g"
   const config: Config = {
     hbow: {
       buy: {
@@ -175,7 +173,6 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for multipliers (
 });
 
 test("`adjustItemConfig()` ensures we're selling at a higher price than we're buying", () => {
-  // Buy price should be set from "g"
   const config: Config = {
     hbow: {
       buy: {
