@@ -272,3 +272,24 @@ test("`adjustItemConfig()` ensures we're selling at a higher price than we're bu
   expect(typeof config.hbow!.sell!.sellPrice).toBe("number");
   expect(config.hbow!.buy!.buyPrice as number).toBeLessThan(config.hbow!.sell!.sellPrice as number);
 });
+
+test("`adjustItemConfig()` ensures uncraftable items don't have craft config", () => {
+  const config: Config = {
+    bow: {
+      ...CRAFT,
+    },
+    hbow: {
+      ...CRAFT,
+    },
+  };
+  if (g === undefined) throw new Error("G data is not available");
+  adjustItemConfig(config, g);
+
+  // `bow`s should not be craftable, and therefore the craft config should be removed
+  expect(g.craft.bow).toBeUndefined();
+  expect(config.bow?.craft).toBeUndefined();
+
+  // `hbow`s should be craftable, and therefore the craft config should be kept
+  expect(g.craft.hbow).toBeDefined();
+  expect(config.hbow?.craft).toBeDefined();
+});
