@@ -1,5 +1,6 @@
 import type { Character, Game } from "alclient";
 import type { Comparator } from "tinyqueue";
+import TinyQueue from "tinyqueue";
 import type { ItemKey, SkillKey } from "typed-adventureland";
 import { logDebug } from "../../utilities/logging.js";
 
@@ -31,15 +32,28 @@ export function calculateItemScore(
   return effectiveScore - overPenalty;
 }
 
-export function calculateSkillScore(
-  skill: SkillKey,
-  character: { max_hp: number; hp: number; max_mp: number; mp: number },
-): number {
+export function calculateSkillScore(skill: SkillKey, character: Character): number {
   const missingHp = character.max_hp - character.hp;
   const missingMp = character.max_mp - character.mp;
 
-  const givesHp = skill === "regen_hp" ? 50 : 0;
-  const givesMp = skill === "regen_mp" ? 100 : 0;
+  let givesHp = 0;
+  let givesMp = 0;
+  // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
+  switch (skill) {
+    case "regen_hp":
+      givesHp = 50;
+      break;
+    case "regen_mp":
+      givesMp = 100;
+      break;
+    // TODO: Paladin heal?
+    default:
+      break;
+  }
+
+  // If using the skill won't do anything, return a very low score
+  if (missingHp <= 0 && missingMp > 0 && givesHp > 0 && givesMp <= 0) return Number.NEGATIVE_INFINITY;
+  if (missingMp <= 0 && missingHp > 0 && givesMp > 0 && givesHp <= 0) return Number.NEGATIVE_INFINITY;
 
   const effectiveHp = Math.min(givesHp, missingHp);
   const effectiveMp = Math.min(givesMp, missingMp);
@@ -68,7 +82,7 @@ export function getComparator(character: Character): Comparator<ItemKey | SkillK
       bScore = calculateSkillScore(b as SkillKey, character);
     }
 
-    return aScore - bScore;
+    return bScore - aScore;
   };
 }
 
@@ -85,33 +99,26 @@ export const setup = (character: Character) => {
     try {
       if (character.socket.disconnected) return;
 
-      // const missingHp = character.max_hp - character.hp;
-      // const missingMp = character.max_mp - character.mp;
-      // if (!missingHp && !missingMp) return; // We are full
+      const missingHp = character.max_hp - character.hp;
+      const missingMp = character.max_mp - character.mp;
+      if (missingHp <= 0 && missingMp <= 0) return; // We are full
 
-      // const bestActions = new TinyQueue<ItemKey | SkillKey>(["regen_hp", "regen_mp"], getComparator(character));
+      const bestActions = new TinyQueue<ItemKey | SkillKey>(["regen_hp", "regen_mp"], getComparator(character));
+
+      // TODO: Add use of items
       // for (const item of character.items) {
       //   if (!item) continue; // Empty slot
       //   if (!REGEN_ITEMS.includes(item.name)) continue; // Not an item we want to use
       //   bestActions.push(item.name);
       // }
 
-      // const bestAction = bestActions.pop();
-      // if (bestAction === "regen_hp") {
-      //   await character.regenHp();
-      // } else if (bestAction === "regen_mp") {
-      //   await character.regenMp();
-      // } else {
-      //   // TODO: Add use
-      // }
-
-      const mpRatio = character.mp / character.max_mp;
-      const hpRatio = character.hp / character.max_hp;
-
-      if (mpRatio < hpRatio) {
+      const bestAction = bestActions.pop();
+      if (bestAction === "regen_hp") {
+        await character.regenHp();
+      } else if (bestAction === "regen_mp") {
         await character.regenMp();
       } else {
-        await character.regenHp();
+        // TODO: Add use
       }
     } catch (e) {
       if (e instanceof Error || typeof e === "string") logDebug(e);
