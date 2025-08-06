@@ -1,9 +1,16 @@
 import { Game } from "alclient";
+import { getGFromCache } from "../../../src/plugins/g_cache.js";
 import { calculateItemScore, calculateSkillScore } from "../../../src/setups/regen/simple.js";
 
-const game = new Game();
+let game: Game;
 beforeAll(async () => {
-  await game.updateG();
+  const cachedG = getGFromCache();
+  if (cachedG !== undefined) {
+    game = new Game({ G: cachedG });
+  } else {
+    game = new Game();
+    await game.updateG();
+  }
 }, 15_000);
 
 test("`calculateItemScore()` sanity checks", () => {

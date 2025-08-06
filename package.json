@@ -51,7 +51,7 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
-    "typed-adventureland": "file:../typed-adventureland/typed-adventureland-0.0.46.tgz",
+    "typed-adventureland": "^0.0.46",
     "typescript": "^5.8.3"
   }
 }
