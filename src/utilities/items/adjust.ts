@@ -93,6 +93,53 @@ export function calculateSellPrices(config: Config, g: GData) {
 }
 
 /**
+ * Ensures that the buy price is less than the sell price for each item.
+ *
+ * NOTE: Run {@see calculateBuyPrices} and {@see calculateSellPrices} before this function
+ */
+export function ensureBuyPriceLessThanSellPrice(config: Config) {
+  for (const name of Object.keys(config) as ItemKey[]) {
+    const itemConfig = config[name];
+    if (itemConfig === undefined) continue; // No config
+    if (itemConfig.buy === undefined || itemConfig.sell === undefined) continue; // Missing buy or sell config
+
+    if (typeof itemConfig.buy?.buyPrice === "number") {
+      if (typeof itemConfig.sell?.sellPrice === "number") {
+        if (itemConfig.buy.buyPrice >= itemConfig.sell.sellPrice) {
+          const newSellPrice = itemConfig.buy.buyPrice + 1;
+          logError(`Buy price for ${name} is >= sell price. Setting sell price to ${newSellPrice}`);
+          itemConfig.sell.sellPrice = newSellPrice;
+        }
+      } else if (typeof itemConfig.sell?.sellPrice === "object") {
+        // TODO: Number - Object
+      }
+    } else if (typeof itemConfig.buy?.buyPrice === "object") {
+      if (typeof itemConfig.sell?.sellPrice === "number") {
+        // TODO: Object - Number
+      } else if (typeof itemConfig.sell?.sellPrice === "object") {
+        // TODO: Object - Object
+      }
+    }
+  }
+}
+
+/**
+ * Ensures that the special multiplier for selling items is at least 1.
+ */
+export function ensureSellMultiplierAtLeastOne(config: Config) {
+  for (const name of Object.keys(config) as ItemKey[]) {
+    const itemConfig = config[name];
+    if (itemConfig === undefined) continue; // No config
+    if (itemConfig.sell === undefined) continue; // No sell config
+    if (itemConfig.sell.specialMultiplier === undefined) continue; // No special multiplier
+    if (itemConfig.sell.specialMultiplier < 1) {
+      logError(`Special multiplier for ${name} is less than 1, setting to 1`);
+      itemConfig.sell.specialMultiplier = 1;
+    }
+  }
+}
+
+/**
  * Ensures that we are selling items for at least the price an NPC would buy them for.
  */
 export function ensureSellPriceAtLeastNpcPrice(config: Config, g: GData) {
@@ -126,53 +173,6 @@ export function ensureSellPriceAtLeastNpcPrice(config: Config, g: GData) {
           );
           itemConfig.sell.sellPrice[level] = npcBuyPrice;
         }
-      }
-    }
-  }
-}
-
-/**
- * Ensures that the special multiplier for selling items is at least 1.
- */
-export function ensureSellMultiplierAtLeastOne(config: Config) {
-  for (const name of Object.keys(config) as ItemKey[]) {
-    const itemConfig = config[name];
-    if (itemConfig === undefined) continue; // No config
-    if (itemConfig.sell === undefined) continue; // No sell config
-    if (itemConfig.sell.specialMultiplier === undefined) continue; // No special multiplier
-    if (itemConfig.sell.specialMultiplier < 1) {
-      logError(`Special multiplier for ${name} is less than 1, setting to 1`);
-      itemConfig.sell.specialMultiplier = 1;
-    }
-  }
-}
-
-/**
- * Ensures that the buy price is less than the sell price for each item.
- *
- * NOTE: Run {@see calculateBuyPrices} and {@see calculateSellPrices} before this function
- */
-export function ensureBuyPriceLessThanSellPrice(config: Config) {
-  for (const name of Object.keys(config) as ItemKey[]) {
-    const itemConfig = config[name];
-    if (itemConfig === undefined) continue; // No config
-    if (itemConfig.buy === undefined || itemConfig.sell === undefined) continue; // Missing buy or sell config
-
-    if (typeof itemConfig.buy?.buyPrice === "number") {
-      if (typeof itemConfig.sell?.sellPrice === "number") {
-        if (itemConfig.buy.buyPrice >= itemConfig.sell.sellPrice) {
-          const newSellPrice = itemConfig.buy.buyPrice + 1;
-          logError(`Buy price for ${name} is >= sell price. Setting sell price to ${newSellPrice}`);
-          itemConfig.sell.sellPrice = newSellPrice;
-        }
-      } else if (typeof itemConfig.sell?.sellPrice === "object") {
-        // TODO: Number - Object
-      }
-    } else if (typeof itemConfig.buy?.buyPrice === "object") {
-      if (typeof itemConfig.sell?.sellPrice === "number") {
-        // TODO: Object - Number
-      } else if (typeof itemConfig.sell?.sellPrice === "object") {
-        // TODO: Object - Object
       }
     }
   }
