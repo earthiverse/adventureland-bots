@@ -1,13 +1,88 @@
 import { Game } from "alclient";
-import type { GData } from "typed-adventureland";
-import type { Config } from "../../config/items.js";
+import type { GData, ItemInfo } from "typed-adventureland";
+import { CRAFT, type Config } from "../../config/items.js";
 import { getGFromCache } from "../../src/plugins/g_cache.js";
-import { adjustItemConfig, wantToDestroy, wantToSell } from "../../src/utilities/items.js";
+import { adjustItemConfig, getCraftableItems, wantToDestroy, wantToSell } from "../../src/utilities/items.js";
 
 let g: GData | undefined = undefined;
+const itemsToCraftOrbOfAdventures: ItemInfo[] = [
+  {
+    name: "orboffire",
+    level: 0,
+  },
+  {
+    name: "orboffrost",
+    level: 0,
+  },
+  {
+    name: "orbofplague",
+    level: 0,
+  },
+  {
+    name: "orbofresolve",
+    level: 0,
+  },
+];
 beforeAll(async () => {
   g = getGFromCache() ?? (await new Game().updateG());
 }, 15_000);
+
+test("`getCraftableItems()` returns an empty array when we don't have any craft config", () => {
+  const config: Config = {};
+  if (g === undefined) throw new Error("G data is not available");
+  const result = getCraftableItems(itemsToCraftOrbOfAdventures, g, config);
+  expect(result).toEqual([]);
+});
+
+test("`getCraftableItems()` checks quantities in recipes", () => {
+  const config: Config = {
+    cake: {
+      ...CRAFT,
+    },
+  };
+  if (g === undefined) throw new Error("G data is not available");
+  const result = getCraftableItems(
+    [
+      {
+        name: "whiteegg",
+        q: 9, // Not enough for crafting
+      },
+    ],
+    g,
+    config,
+  );
+  expect(result).toEqual([]);
+});
+
+test("`getCraftableItems()` returns craftable items", () => {
+  const config: Config = {
+    cake: {
+      ...CRAFT,
+    },
+    orba: {
+      ...CRAFT,
+    },
+  };
+  if (g === undefined) throw new Error("G data is not available");
+  expect(getCraftableItems(itemsToCraftOrbOfAdventures, g, config)).toEqual([["orba", [0, 1, 2, 3]]]);
+
+  expect(
+    getCraftableItems(
+      [
+        ...itemsToCraftOrbOfAdventures,
+        {
+          name: "whiteegg",
+          q: 10,
+        },
+      ],
+      g,
+      config,
+    ),
+  ).toEqual([
+    ["cake", [4]],
+    ["orba", [0, 1, 2, 3]],
+  ]);
+});
 
 test("`wantToDestroy()` does not destroy items that are not in the config", () => {
   const config: Config = {};
@@ -54,19 +129,22 @@ test("`wantToDestroy()` destroys special and non-special items up to the set lev
 
 test("`wantToSell()` does not sell items that are not in the config", () => {
   const config: Config = {};
-  expect(wantToSell({ name: "hbow", level: 0 }, g as GData, "npc", config)).toBe(false);
+  if (g === undefined) throw new Error("G data is not available");
+  expect(wantToSell({ name: "hbow", level: 0 }, g, "npc", config)).toBe(false);
 });
 
 test("`wantToSell()` does not sell items that have a config, but do not have a sell config", () => {
   const config: Config = { bow: {} };
-  expect(wantToSell({ name: "bow", level: 0 }, g as GData, "npc", config)).toBe(false);
+  if (g === undefined) throw new Error("G data is not available");
+  expect(wantToSell({ name: "bow", level: 0 }, g, "npc", config)).toBe(false);
 });
 
 test("`wantToSell()` sells only non-special level 0 items when sellPrice is not an object", () => {
   const config: Config = { bow: { sell: { sellPrice: "npc" } } };
-  expect(wantToSell({ name: "bow", level: 0 }, g as GData, "npc", config)).toBe(true);
-  expect(wantToSell({ name: "bow", level: 0, p: "shiny" }, g as GData, "npc", config)).toBe(false);
-  expect(wantToSell({ name: "bow", level: 1 }, g as GData, "npc", config)).toBe(false);
+  if (g === undefined) throw new Error("G data is not available");
+  expect(wantToSell({ name: "bow", level: 0 }, g, "npc", config)).toBe(true);
+  expect(wantToSell({ name: "bow", level: 0, p: "shiny" }, g, "npc", config)).toBe(false);
+  expect(wantToSell({ name: "bow", level: 1 }, g, "npc", config)).toBe(false);
 });
 
 test("`adjustItemConfig()` computes the buyPrice and sellPrice for `g`", () => {
@@ -82,11 +160,12 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for `g`", () => {
       },
     },
   };
-  adjustItemConfig(config, g as GData);
-  expect(g!.items.hbow.g).toBeGreaterThan(0);
-  expect(g!.items.t2bow.g).toBeGreaterThan(0);
-  expect(config.hbow!.buy!.buyPrice).toBe(g!.items.hbow.g);
-  expect(config.t2bow!.sell!.sellPrice).toBe(g!.items.t2bow.g);
+  if (g === undefined) throw new Error("G data is not available");
+  adjustItemConfig(config, g);
+  expect(g.items.hbow.g).toBeGreaterThan(0);
+  expect(g.items.t2bow.g).toBeGreaterThan(0);
+  expect(config.hbow!.buy!.buyPrice).toBe(g.items.hbow.g);
+  expect(config.t2bow!.sell!.sellPrice).toBe(g.items.t2bow.g);
 });
 
 test("`adjustItemConfig()` computes the buyPrice and sellPrice for `goblin`", () => {
@@ -103,11 +182,12 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for `goblin`", ()
       },
     },
   };
-  adjustItemConfig(config, g as GData);
-  expect(g!.items.hbow.g).toBeGreaterThan(0);
-  expect(g!.items.t2bow.g).toBeGreaterThan(0);
-  expect(config.hbow!.buy!.buyPrice).toBe(g!.items.hbow.g * g!.multipliers.lostandfound_mult);
-  expect(config.t2bow!.sell!.sellPrice).toBe(g!.items.t2bow.g * g!.multipliers.lostandfound_mult);
+  if (g === undefined) throw new Error("G data is not available");
+  adjustItemConfig(config, g);
+  expect(g.items.hbow.g).toBeGreaterThan(0);
+  expect(g.items.t2bow.g).toBeGreaterThan(0);
+  expect(config.hbow!.buy!.buyPrice).toBe(g.items.hbow.g * g.multipliers.lostandfound_mult);
+  expect(config.t2bow!.sell!.sellPrice).toBe(g.items.t2bow.g * g.multipliers.lostandfound_mult);
 });
 
 test("`adjustItemConfig()` computes the buyPrice and sellPrice for `ponty`", () => {
@@ -123,11 +203,12 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for `ponty`", () 
       },
     },
   };
-  adjustItemConfig(config, g as GData);
-  expect(g!.items.hbow.g).toBeGreaterThan(0);
-  expect(g!.items.t2bow.g).toBeGreaterThan(0);
-  expect(config.hbow!.buy!.buyPrice).toBe(g!.items.hbow.g * g!.multipliers.secondhands_mult);
-  expect(config.t2bow!.sell!.sellPrice).toBe(g!.items.t2bow.g * g!.multipliers.secondhands_mult);
+  if (g === undefined) throw new Error("G data is not available");
+  adjustItemConfig(config, g);
+  expect(g.items.hbow.g).toBeGreaterThan(0);
+  expect(g.items.t2bow.g).toBeGreaterThan(0);
+  expect(config.hbow!.buy!.buyPrice).toBe(g.items.hbow.g * g.multipliers.secondhands_mult);
+  expect(config.t2bow!.sell!.sellPrice).toBe(g.items.t2bow.g * g.multipliers.secondhands_mult);
 });
 
 test("`adjustItemConfig()` computes the buyPrice and sellPrice for `npc`", () => {
@@ -144,11 +225,12 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for `npc`", () =>
       },
     },
   };
-  adjustItemConfig(config, g as GData);
-  expect(g!.items.hbow.g).toBeGreaterThan(0);
-  expect(g!.items.t2bow.g).toBeGreaterThan(0);
-  expect(config.hbow!.buy!.buyPrice).toBe(g!.items.hbow.g * g!.multipliers.buy_to_sell);
-  expect(config.t2bow!.sell!.sellPrice).toBe(g!.items.t2bow.g * g!.multipliers.buy_to_sell);
+  if (g === undefined) throw new Error("G data is not available");
+  adjustItemConfig(config, g);
+  expect(g.items.hbow.g).toBeGreaterThan(0);
+  expect(g.items.t2bow.g).toBeGreaterThan(0);
+  expect(config.hbow!.buy!.buyPrice).toBe(g.items.hbow.g * g.multipliers.buy_to_sell);
+  expect(config.t2bow!.sell!.sellPrice).toBe(g.items.t2bow.g * g.multipliers.buy_to_sell);
 });
 
 test("`adjustItemConfig()` computes the buyPrice and sellPrice for multipliers (`x${number}`)", () => {
@@ -165,11 +247,12 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for multipliers (
       },
     },
   };
-  adjustItemConfig(config, g as GData);
-  expect(g!.items.hbow.g).toBeGreaterThan(0);
-  expect(g!.items.t2bow.g).toBeGreaterThan(0);
-  expect(config.hbow!.buy!.buyPrice).toBe(g!.items.hbow.g * 2.5);
-  expect(config.t2bow!.sell!.sellPrice).toBe(g!.items.t2bow.g * 4.8);
+  if (g === undefined) throw new Error("G data is not available");
+  adjustItemConfig(config, g);
+  expect(g.items.hbow.g).toBeGreaterThan(0);
+  expect(g.items.t2bow.g).toBeGreaterThan(0);
+  expect(config.hbow!.buy!.buyPrice).toBe(g.items.hbow.g * 2.5);
+  expect(config.t2bow!.sell!.sellPrice).toBe(g.items.t2bow.g * 4.8);
 });
 
 test("`adjustItemConfig()` ensures we're selling at a higher price than we're buying", () => {
@@ -183,7 +266,8 @@ test("`adjustItemConfig()` ensures we're selling at a higher price than we're bu
       },
     },
   };
-  adjustItemConfig(config, g as GData);
+  if (g === undefined) throw new Error("G data is not available");
+  adjustItemConfig(config, g);
   expect(typeof config.hbow!.buy!.buyPrice).toBe("number");
   expect(typeof config.hbow!.sell!.sellPrice).toBe("number");
   expect(config.hbow!.buy!.buyPrice as number).toBeLessThan(config.hbow!.sell!.sellPrice as number);

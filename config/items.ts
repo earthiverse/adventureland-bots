@@ -17,6 +17,13 @@ export type BuyConfigBase = {
   buyPrice: Price | Record<number, Price>;
 };
 
+export type CraftConfigBase = {
+  /** If set, we will craft with special items (items with a `.p`), too */
+  craftWithSpecial?: true;
+  /** If set, we will make level 0 items shiny before crafting with them */
+  makeShinyBeforeCrafting?: true;
+};
+
 export type DestroyConfigBase = {
   /** If set, we will destroy special items (items with a `.p`), too */
   destroySpecial?: true;
@@ -73,6 +80,7 @@ export type UpgradeConfigBase = {
 
 export type ItemConfig = {
   buy?: BuyConfigBase;
+  craft?: CraftConfigBase;
   destroy?: DestroyConfigBase;
   hold?: HoldConfigBase;
   list?: ListConfigBase;
@@ -83,9 +91,10 @@ export type ItemConfig = {
 
 export type Config = Partial<Record<ItemKey, ItemConfig>>;
 
-const DESTROY: ItemConfig = Object.freeze({ destroy: {} });
-const HOLD_FULL_STACK: ItemConfig = Object.freeze({ hold: { characterTypes: "all", replenish: 9999 } });
-const SELL_TO_NPC: ItemConfig = Object.freeze({ sell: { sellPrice: "npc" } });
+export const CRAFT: ItemConfig = Object.freeze({ craft: { craftWithSpecial: true } });
+export const DESTROY: ItemConfig = Object.freeze({ destroy: { destroySpecial: true } });
+export const HOLD_FULL_STACK: ItemConfig = Object.freeze({ hold: { characterTypes: "all", replenish: 9999 } });
+export const SELL_TO_NPC: ItemConfig = Object.freeze({ sell: { sellPrice: "npc" } });
 
 const config: Config = {
   cclaw: {
@@ -105,6 +114,9 @@ const config: Config = {
   },
   mpot1: {
     ...HOLD_FULL_STACK,
+  },
+  orba: {
+    ...CRAFT,
   },
   slimestaff: {
     ...DESTROY,

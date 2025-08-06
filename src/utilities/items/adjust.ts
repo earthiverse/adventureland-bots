@@ -183,7 +183,23 @@ export function optimizeUpgrades(config: Config) {
   // TODO: Look for primling price, make sure we have it defined
   if (config.offeringp?.buy?.buyPrice === undefined) {
     logError("`offeringp` buy price is not defined in our item config");
-  } else {
-    // Look in the config for items that we're upgrading, and use Aria's helper to calculate when to primstack, and what scrolls to use
+    return;
+  }
+
+  // TODO: Look in the config for items that we're upgrading, and use Aria's helper to calculate when to primstack, and what scrolls to use
+}
+
+/**
+ * If items are marked as craftable in the config, but not in the game data, we remove them from the config.
+ */
+export function removeUncraftable(config: Config, g: GData) {
+  for (const name of Object.keys(config) as ItemKey[]) {
+    const itemConfig = config[name];
+    if (itemConfig === undefined) continue; // No config
+    if (itemConfig.craft === undefined) continue; // No craft config
+    if (g.craft[name] !== undefined) continue; // Item is craftable
+
+    logError(`Item ${name} is not craftable, but has a craft config`);
+    delete itemConfig.craft;
   }
 }

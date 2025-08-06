@@ -1,5 +1,5 @@
 import type { Character } from "alclient";
-import type { GData, ItemInfo } from "typed-adventureland";
+import type { GData, ItemInfo, ItemKey } from "typed-adventureland";
 import Config, { type ItemConfig, type Price } from "../../config/items.js";
 import {
   buyKeys,
@@ -9,6 +9,7 @@ import {
   ensureSellMultiplierAtLeastOne,
   ensureSellPriceAtLeastNpcPrice,
   optimizeUpgrades,
+  removeUncraftable,
 } from "./items/adjust.js";
 import { logError } from "./logging.js";
 
@@ -125,6 +126,66 @@ export function getItemDescription(item: ItemInfo): string {
   }
 
   return description;
+}
+
+/**
+ *
+ * @param items
+ * @param g
+ * @param config
+ * @returns array of craftable items with the indexes of items that can be used to craft them
+ */
+export function getCraftableItems(items: ItemInfo[], g: GData, config = Config): [ItemKey, number[]][] {
+  const craftableItems: [ItemKey, number[]][] = [];
+
+  for (const configKey of Object.keys(config) as ItemKey[]) {
+    const itemConfig = config[configKey];
+    if (!itemConfig) continue; // No item config
+    if (!itemConfig.craft) continue; // No craft config
+
+    const gCraft = g.craft[configKey];
+    if (!gCraft) {
+      // Should have been fixed by `removeUncraftable`, but it might happen if a game update changes the craft config
+      logError(`${configKey} is not craftable`);
+      continue;
+    }
+
+    /** The items we need to craft */
+    const itemsNeeded = structuredClone(gCraft.items);
+
+    /** Indexes of the items that can be used to craft */
+    const itemIndexes: number[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item === undefined) continue;
+      if (item.l !== undefined) continue; // We can't craft with locked items
+      if (item.p && !itemConfig.craft.craftWithSpecial) continue; // We don't want to craft with special items
+
+      for (let j = 0; j < itemsNeeded.length; j++) {
+        const itemNeeded = itemsNeeded[j];
+        if (itemNeeded === undefined) continue;
+        const [quantity, name, level] = itemNeeded;
+
+        if (name !== item.name) continue;
+        if ((item.q ?? 1) < quantity) continue;
+        if (level !== undefined && item.level !== level) continue; // if level is specified, it must match
+        if (level === undefined && (item.level ?? 0) !== 0) continue; // if level is unspecified, but the item is levelable, it must be level 0
+
+        // We can use this item to craft
+        itemsNeeded.splice(j--, 1);
+        itemIndexes.push(i);
+      }
+
+      if (itemsNeeded.length === 0) {
+        // Found all items needed
+        craftableItems.push([configKey, itemIndexes]);
+        break;
+      }
+    }
+  }
+
+  return craftableItems;
 }
 
 export function wantToDestroy(item: ItemInfo, config = Config): boolean {
@@ -246,5 +307,6 @@ export function adjustItemConfig(
   ensureSellPriceAtLeastNpcPrice(config, g);
   ensureSellMultiplierAtLeastOne(config);
   ensureBuyPriceLessThanSellPrice(config);
+  removeUncraftable(config, g);
   if (options.optimizeUpgrades === true) optimizeUpgrades(config);
 }
