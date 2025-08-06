@@ -70,7 +70,7 @@ setInterval(() => {
     console.log();
     console.log(assumption);
   };
-  printStuff().catch(log);
+  printStuff().catch(console.log);
 }, 1000);
 
 for (const [server, region] of [
@@ -81,5 +81,5 @@ for (const [server, region] of [
   ["ASIA", "I"],
 ] as [ServerRegion, ServerIdentifier][]) {
   const o = new Observer(game);
-  o.start(server, region).catch(console.error);;
+  o.start(server, region).catch(console.error);
 }
