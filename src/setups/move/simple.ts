@@ -1,4 +1,5 @@
 import type { Character } from "alclient";
+import type { MonsterKey } from "typed-adventureland";
 import { logDebug } from "../../utilities/logging.js";
 import { getBestTarget } from "../../utilities/monster.js";
 
@@ -9,7 +10,7 @@ const active = new Set<Character>();
  * @param character
  * @param monster
  */
-export const setup = (character: Character, monster: string = "goo") => {
+export const setup = (character: Character, monster: MonsterKey = "goo") => {
   active.add(character);
 
   const moveLoop = () => {
