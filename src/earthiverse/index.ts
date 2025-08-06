@@ -1,4 +1,4 @@
-import type { Character, Mage, Merchant, Paladin, Priest, Ranger, Rogue, Warrior } from "alclient";
+import { Character, type Mage, type Merchant, type Paladin, type Priest, type Ranger, type Rogue, type Warrior } from "alclient";
 import { Game } from "alclient";
 import config from "../../config/config.js";
 import { setup as attackSetup } from "../setups/attack/attack.js";
@@ -8,15 +8,21 @@ import { setup as moveSetup } from "../setups/move/spread_out.js";
 import { setup as regenSetup } from "../setups/regen/simple.js";
 
 // Plugins
-import type { MonsterKey, ServerKey } from "typed-adventureland";
-import { checkMonsters, defaultMonster } from "./strategies.js";
+import type { ServerKey } from "typed-adventureland";
 import "../plugins/auto_reconnect.js";
 import ServerData from "../plugins/data_tracker.js";
 import "../plugins/g_cache.js";
 import { getGFromCache } from "../plugins/g_cache.js";
 import "../plugins/party.js";
 import "../plugins/ping_compensation.js";
-import { logDebug, logError } from "../utilities/logging.js";
+import { logError, logInformational } from "../utilities/logging.js";
+import {
+  checkMonsters,
+  defaultMonster,
+  getIdealCharacters,
+  strategies,
+  type StrategyMonsterKey,
+} from "./strategies.js";
 
 // Config
 const { server, email, password } = config.credentials;
@@ -63,16 +69,19 @@ export const characters = Object.freeze({
 });
 
 /** A list of our active characters */
-const activeCharacters: Character[] = [];
+const activeCharacters = new Set<Character>();
 
-let targetMonster: MonsterKey = defaultMonster;
-let targetServer: ServerKey = checkServers[0];
+const currentTarget: [StrategyMonsterKey, ServerKey] = ["goo", "USIII"];
 
 /**
  * Main logic loop that says what characters should be farming what
  */
 const logicLoop = async () => {
   try {
+    /** Potential monsters to farm (NOTE: Should be sorted highest priority first) */
+    const potentialTargets: [StrategyMonsterKey, ServerKey][] = [];
+
+    // Add monsters we're checking for
     for (const serverKey of checkServers) {
       const serverData = ServerData.get(serverKey);
       if (serverData === undefined) continue; // No data for this server
@@ -89,6 +98,28 @@ const logicLoop = async () => {
       }
     }
     // TODO: Get target
+
+    // Get target
+    const nextTarget = potentialTargets.find((m) => Object.hasOwn(strategies, m[0])) ?? [defaultMonster, defaultServer];
+    if (currentTarget[0] === nextTarget[0] && currentTarget[1] === nextTarget[1]) return; // Same target, already set up
+
+    // Get characters
+    const strategy = strategies[nextTarget[0]];
+    const idealCharacters = getIdealCharacters(strategy);
+    if (idealCharacters === undefined) return; // Unable to get ideal characters
+    
+    logInformational(
+      `Switching from ${currentTarget[0]} on ${currentTarget[1]} to ${nextTarget[0]} on ${nextTarget[1]}...`,
+    );
+    currentTarget[0] = nextTarget[0];
+    currentTarget[1] = nextTarget[1];
+
+    // Adjust characters
+    const newActiveCharacters = new Set<Character>(idealCharacters.map((name) => characters[name]))
+    const charactersToStop = activeCharacters.difference(newActiveCharacters)
+    for (const characterToStop of charactersToStop) characterToStop.stop();
+    const charactersToStart = newActiveCharacters.difference(activeCharacters)
+    for (const characterToStart of charactersToStart) await characterToStart.start(, nextTarget[0]);
 
     // TODO: From target, decide players & strategy
   } catch (e) {
