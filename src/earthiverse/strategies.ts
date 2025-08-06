@@ -2,7 +2,11 @@ import type { MonsterKey } from "typed-adventureland";
 import type { characters } from "./index.js";
 
 type CharacterKey = keyof typeof characters;
-type OneToThreeCharacters = [CharacterKey] | [CharacterKey, CharacterKey] | [CharacterKey, CharacterKey, CharacterKey];
+type OneToThreeCharacters = (
+  | [CharacterKey]
+  | [CharacterKey, CharacterKey]
+  | [CharacterKey, CharacterKey, CharacterKey]
+)[];
 
 export const defaultMonster = "goo" as const satisfies MonsterKey;
 
@@ -15,16 +19,19 @@ export const strategies: {
   };
 } = {
   crabxx: {
-    // TODO: If we have
-    characters: ["earthiverse", "earthRan2", "earthRan3"],
+    characters: [
+      ["earthiverse", "earthRan2", "earthRan3"], // Rangers can kite the crabxx in a circle
+    ],
   },
   goldenbat: {
-    // Mages can magiport so we can go to where the golden bat is fast
-    characters: ["earthMag", "earthMag2", "earthMag3"],
+    characters: [
+      ["earthMag", "earthMag2", "earthMag3"], // Mages can magiport so we can go to where the golden bat is fast
+    ],
   },
   goo: {
-    // Rangers can multishot
-    characters: ["earthiverse", "earthRan2", "earthRan3"],
+    characters: [
+      ["earthiverse", "earthRan2", "earthRan3"], // Rangers can multishot
+    ],
   },
 };
 
