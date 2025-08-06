@@ -8,13 +8,13 @@ import type { ClassKey, ItemKey } from "typed-adventureland";
  * When set to "npc", we will buy the item at the price an NPC would buy it for.
  * When set to "x${number}", we will buy the item for its base price multiplied by the number.
  */
-export type BuyPrice = number | "g" | "goblin" | "npc" | "ponty" | `x${number}`;
+export type Price = number | "g" | "goblin" | "npc" | "ponty" | `x${number}`;
 export type BuyConfigBase = {
   /**
    * When set to an object, we will buy the item at that level for the specified price.
    * Otherwise, the buy price is for the level 0 item.
    */
-  buyPrice: BuyPrice | Record<number, BuyPrice>;
+  buyPrice: Price | Record<number, Price>;
 };
 
 export type DestroyConfigBase = {
@@ -38,12 +38,14 @@ export type HoldConfigBase = {
 
 export type ListConfigBase = {
   /** How much we want to list the item for */
-  listPrice: number;
+  listPrice: Price | Record<number, Price>;
   /** If set, we will list special items (items with a `.p`), too */
   specialMultiplier?: number;
 };
 
 export type MailConfigBase = {
+  /** We will only mail items until this level */
+  mailUntilLevel: number;
   /** Who we want to mail the item to */
   recipient: string;
   /** If set, we will mail special items (items with a `.p`, too) */
@@ -55,7 +57,7 @@ export type SellConfigBase = {
    * If set to "npc" or a number, we will sell level 0 items to an NPC or at the specified price to other players.
    * If set to an object, we will sell that level of item to an NPC or at the specified price to other players.
    */
-  sellPrice: (number | "npc") | Record<number, number | "npc">;
+  sellPrice: Price | Record<number, Price>;
   /** If set, we will sell special items (items with a `.p`), too at `sellPrice * specialMultiplier` */
   specialMultiplier?: number;
 };

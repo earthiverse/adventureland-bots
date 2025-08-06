@@ -43,7 +43,8 @@ export const setup = (character: Character) => {
             log(`${character.id} destroyed ${getItemDescription(item)}`, DESTROY_LOG_LEVEL);
           }
 
-          if (wantToList(item)) {
+          const listPrice = wantToList(item, character.game.G);
+          if (listPrice !== false) {
             // TODO: List
           }
 
@@ -51,7 +52,7 @@ export const setup = (character: Character) => {
             // TODO: Mail
           }
 
-          if (wantToSell(item)) {
+          if (wantToSell(item, character.game.G)) {
             await character.sell(index, item.q ?? 1);
             log(`${character.id} sold ${getItemDescription(item)} to NPC`, SELL_LOG_LEVEL);
           }

@@ -2,7 +2,7 @@ import { Game } from "alclient";
 import type { GData } from "typed-adventureland";
 import type { Config } from "../../config/items.js";
 import { getGFromCache } from "../../src/plugins/g_cache.js";
-import { adjustItemConfig, wantToDestroy } from "../../src/utilities/items.js";
+import { adjustItemConfig, wantToDestroy, wantToSell } from "../../src/utilities/items.js";
 
 let g: GData | undefined = undefined;
 beforeAll(async () => {
@@ -50,6 +50,23 @@ test("`wantToDestroy()` destroys special and non-special items up to the set lev
   expect(wantToDestroy({ name: "bow", level: 1 }, config)).toBe(true);
   expect(wantToDestroy({ name: "bow", level: 1, p: "shiny" }, config)).toBe(true);
   expect(wantToDestroy({ name: "bow", level: 2 }, config)).toBe(false);
+});
+
+test("`wantToSell()` does not sell items that are not in the config", () => {
+  const config: Config = {};
+  expect(wantToSell({ name: "hbow", level: 0 }, g as GData, "npc", config)).toBe(false);
+});
+
+test("`wantToSell()` does not sell items that have a config, but do not have a sell config", () => {
+  const config: Config = { bow: {} };
+  expect(wantToSell({ name: "bow", level: 0 }, g as GData, "npc", config)).toBe(false);
+});
+
+test("`wantToSell()` sells only non-special level 0 items when sellPrice is not an object", () => {
+  const config: Config = { bow: { sell: { sellPrice: "npc" } } };
+  expect(wantToSell({ name: "bow", level: 0 }, g as GData, "npc", config)).toBe(true);
+  expect(wantToSell({ name: "bow", level: 0, p: "shiny" }, g as GData, "npc", config)).toBe(false);
+  expect(wantToSell({ name: "bow", level: 1 }, g as GData, "npc", config)).toBe(false);
 });
 
 test("`adjustItemConfig()` computes the buyPrice for `g`", () => {

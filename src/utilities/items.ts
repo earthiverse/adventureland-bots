@@ -1,6 +1,6 @@
 import type { Character } from "alclient";
 import type { GData, ItemInfo, ItemKey } from "typed-adventureland";
-import Config, { type BuyPrice, type ItemConfig } from "../../config/items.js";
+import Config, { type ItemConfig, type Price } from "../../config/items.js";
 import { logDebug, logError } from "./logging.js";
 
 export function calculateItemValue(item: ItemInfo, g: GData, multiplier = 1): number {
@@ -75,21 +75,21 @@ export function calculatePontySellPrice(item: ItemInfo, g: GData): number {
   return calculateItemValue(item, g, g.multipliers.secondhands_mult);
 }
 
-export function calculateBuyPrice(item: ItemInfo, g: GData, buyPrice: BuyPrice): number {
-  if (typeof buyPrice === "number") return buyPrice; // Price is already defined
+export function calculatePrice(item: ItemInfo, g: GData, price: Price): number {
+  if (typeof price === "number") return price; // Price is already defined
 
   // Multiplier-based buy price
-  if (buyPrice.startsWith("x")) {
-    const multiplier = parseFloat(buyPrice.slice(1));
+  if (price.startsWith("x")) {
+    const multiplier = parseFloat(price.slice(1));
     if (isNaN(multiplier) || multiplier <= 0) {
-      logError(`Invalid multiplier in buy price: ${buyPrice} for item ${item.name}`);
+      logError(`Invalid multiplier in buy price: ${price} for item ${item.name}`);
       return Number.POSITIVE_INFINITY;
     }
     return calculateItemValue(item, g, multiplier);
   }
 
   // String-based buy price
-  switch (buyPrice) {
+  switch (price) {
     case "g":
       return calculateItemValue(item, g);
     case "goblin":
@@ -99,7 +99,7 @@ export function calculateBuyPrice(item: ItemInfo, g: GData, buyPrice: BuyPrice):
     case "ponty":
       return calculatePontySellPrice(item, g);
     default:
-      logError(`Unknown buy price: ${buyPrice} for item ${item.name}`);
+      logError(`Unknown buy price: ${price} for item ${item.name}`);
       return Number.POSITIVE_INFINITY;
   }
 }
@@ -150,16 +150,25 @@ export function wantToHold(character: Character, item: ItemInfo, config = Config
 
 /**
  * @param item
- * @returns true if we want to list the item for sale
+ * @returns the amount we want to list the item for on our stand, or `false` if we don't want to list it
  */
-export function wantToList(item: ItemInfo, config = Config): boolean {
+export function wantToList(item: ItemInfo, g: GData, config = Config): false | number {
   if (item.l !== undefined) return false; // We can't list locked items
 
   const itemConfig = config[item.name]?.list;
   if (!itemConfig) return false; // We have no list config for this item
   if (item.p && itemConfig.specialMultiplier === undefined) return false; // We don't want to list special items
 
-  return true;
+  let wantToListForPrice: Price | undefined;
+  if (typeof itemConfig.listPrice === "object") {
+    wantToListForPrice = itemConfig.listPrice[item.level ?? 0];
+  } else if ((item.level ?? 0) === 0) {
+    wantToListForPrice = itemConfig.listPrice;
+  }
+  if (wantToListForPrice === undefined) return false; // We don't want to list this item at this level
+
+  // TODO: Calculate the price
+  return calculatePrice(item, g, wantToListForPrice); // We want to list this item for this price
 }
 
 /**
@@ -172,6 +181,7 @@ export function wantToMail(item: ItemInfo, config = Config): boolean {
   const itemConfig = config[item.name]?.mail;
   if (!itemConfig) return false; // We have no mail config for this item
   if (item.p && !itemConfig.mailSpecial) return false; // We don't want to mail special items
+  if (item.level !== undefined && item.level > itemConfig.mailUntilLevel) return false; // We only want to mail items up to a certain level
 
   return true;
 }
@@ -187,55 +197,39 @@ export function wantToReplenish(character: Character, item: ItemInfo, config = C
 
 /**
  * @param item
- * @param atPrice the price we are checking if we want to sell at
+ * @param g
+ * @param canSellForPrice the price someone is willing to buy the item for
+ * @param config
  * @returns true if we want to sell the item
  */
-export function wantToSell(item: ItemInfo, atPrice: number | "npc" = "npc", config = Config): boolean {
+export function wantToSell(item: ItemInfo, g: GData, canSellForPrice: Price = "npc", config = Config): boolean {
   if (item.l !== undefined) return false; // We can't sell locked items
 
   const itemConfig = config[item.name]?.sell;
   if (!itemConfig) return false; // We have no sell config for this item
-  if (item.p && itemConfig.specialMultiplier === 0) return false; // We don't want to sell special items
-  if (!Array.isArray(itemConfig.sellPrice) && (item.level ?? 0) > 0) return false; // Only sell leveled items if we have sellPrice as an array
+  if (item.p && itemConfig.specialMultiplier === undefined) return false; // We don't want to sell special items
 
+  let wantToSellForPrice: Price | undefined;
+  if (typeof itemConfig.sellPrice === "object") {
+    wantToSellForPrice = itemConfig.sellPrice[item.level ?? 0];
+  } else if ((item.level ?? 0) === 0) {
+    wantToSellForPrice = itemConfig.sellPrice;
+  }
+  if (wantToSellForPrice === undefined) return false; // We don't want to sell this item at this level
   if (
-    (item.level ?? 0) === 0 &&
-    (itemConfig.sellPrice === "npc" || (Array.isArray(itemConfig.sellPrice) && itemConfig.sellPrice["0"] === "npc")) &&
-    atPrice === "npc"
+    calculatePrice(item, g, canSellForPrice) <
+    calculatePrice(item, g, wantToSellForPrice) *
+      (item.p ? (itemConfig.specialMultiplier ?? Number.POSITIVE_INFINITY) : 1)
   )
-    return true; // We want to sell it at the NPC price
+    return false; // We want more for it
 
-  return false; // TODO: Finish this
-  // throw new Error("TODO: Finish this");
-
-  // if (Array.isArray(config.sellPrice) && config.sellPrice[item.level ?? 0] !== undefined) {
-
-  // }
-
-  // if (
-  //   (item.level ?? 0) === 0 &&
-  //   (config.sellPrice === "npc" || (Array.isArray(config.sellPrice) && config.sellPrice[0]))
-  // ) {
-  //   // TODO
-  // }
-
-  // if (config.sellPrice === "npc" && atPrice === "npc")
-  // TODO: Finish this
-
-  //   if (atPrice !== undefined) {
-  //     // const price = config.sellPrice === "npc" ?
-  //     if (atPrice === "npc" && config.sellPrice !== "npc") return false; // We want more than what the NPC buys it for
-
-  //     if (config.sellPrice < atPrice) return false; // We want more for it
-  //   }
-
-  //   return true;
+  return true; // We're OK selling this item for this price
 }
 
 export function adjustItemConfig(
   config = Config,
   g: GData,
-  options: { buyKeys?: Exclude<BuyPrice, number>; optimizeUpgrades?: true } = {},
+  options: { buyKeys?: Exclude<Price, number>; optimizeUpgrades?: true } = {},
 ) {
   if (options.buyKeys !== undefined) {
     for (const itemName of Object.keys(g.items) as ItemKey[]) {
@@ -248,7 +242,7 @@ export function adjustItemConfig(
       if (!config[itemName]) {
         config[itemName] = {};
       }
-      const buyPrice = calculateBuyPrice({ name: itemName }, g, options.buyKeys);
+      const buyPrice = calculatePrice({ name: itemName }, g, options.buyKeys);
       logDebug(`Adding buy config for ${itemName} to buy for ${buyPrice}`);
       config[itemName].buy = { buyPrice: buyPrice };
     }
@@ -272,7 +266,7 @@ export function adjustItemConfig(
     if (typeof itemConfig.buy.buyPrice === "number") continue; // Already has a buy price
 
     if (typeof itemConfig.buy.buyPrice === "string") {
-      const buyPrice = calculateBuyPrice({ name }, g, itemConfig.buy.buyPrice);
+      const buyPrice = calculatePrice({ name }, g, itemConfig.buy.buyPrice);
       logDebug(`Setting buy price for item ${name} to ${buyPrice}`);
       itemConfig.buy.buyPrice = buyPrice;
     } else if (typeof itemConfig.buy.buyPrice === "object") {
@@ -288,10 +282,13 @@ export function adjustItemConfig(
         }
         if (typeof itemConfig.buy.buyPrice[level] === "number") continue; // Already has a buy price
 
-        const buyPrice = calculateBuyPrice({ name, level }, g, itemConfig.buy.buyPrice[level]);
+        const buyPrice = calculatePrice({ name, level }, g, itemConfig.buy.buyPrice[level]);
         logDebug(`Setting buy price for item ${name} at level ${level} to ${buyPrice}`);
         itemConfig.buy.buyPrice[level] = buyPrice;
       }
     }
   }
+
+  // TODO: Ensure any item that has a `sell` config is selling for at least the NPC price
+  // TODO: Ensure any item that has a `sell` config with a special multiplier has a multiplier of >= 1
 }
