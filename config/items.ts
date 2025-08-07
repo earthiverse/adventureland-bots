@@ -43,6 +43,11 @@ export type HoldConfigBase = {
   position?: number;
 };
 
+export type ExchangeConfigBase = {
+  /** If set, we will exchange the item only at this level (currently only applicable to `lostearring`s) */
+  exchangeAtLevel?: number;
+};
+
 export type ListConfigBase = {
   /** How much we want to list the item for */
   listPrice: Price | Record<number, Price>;
@@ -82,6 +87,7 @@ export type ItemConfig = {
   buy?: BuyConfigBase;
   craft?: CraftConfigBase;
   destroy?: DestroyConfigBase;
+  exchange?: ExchangeConfigBase;
   hold?: HoldConfigBase;
   list?: ListConfigBase;
   mail?: MailConfigBase;
@@ -95,6 +101,7 @@ export const BUY_AT_GOBLIN_PRICE: ItemConfig = Object.freeze({ buy: { buyPrice: 
 export const BUY_AT_PONTY_PRICE: ItemConfig = Object.freeze({ buy: { buyPrice: "ponty" } });
 export const CRAFT: ItemConfig = Object.freeze({ craft: { craftWithSpecial: true } });
 export const DESTROY: ItemConfig = Object.freeze({ destroy: { destroySpecial: true } });
+export const EXCHANGE: ItemConfig = Object.freeze({ exchange: {} });
 export const HOLD_FULL_STACK: ItemConfig = Object.freeze({ hold: { characterTypes: "all", replenish: 9999 } });
 export const SELL_TO_NPC: ItemConfig = Object.freeze({ sell: { sellPrice: "npc" } });
 
@@ -114,6 +121,7 @@ const config: Config = {
   },
   armorbox: {
     ...BUY_AT_GOBLIN_PRICE,
+    ...EXCHANGE,
   },
   cclaw: {
     ...BUY_AT_PONTY_PRICE,
@@ -132,6 +140,11 @@ const config: Config = {
   },
   hpot1: {
     ...HOLD_FULL_STACK,
+  },
+  lostearring: {
+    exchange: {
+      exchangeAtLevel: 2,
+    },
   },
   mpot1: {
     ...HOLD_FULL_STACK,

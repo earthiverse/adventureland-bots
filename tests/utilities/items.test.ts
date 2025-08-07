@@ -1,6 +1,6 @@
 import { Game } from "alclient";
 import type { GData, ItemInfo } from "typed-adventureland";
-import { CRAFT, type Config } from "../../config/items.js";
+import { CRAFT, EXCHANGE, type Config } from "../../config/items.js";
 import { getGFromCache } from "../../src/plugins/g_cache.js";
 import { adjustItemConfig, getCraftableItems, wantToDestroy, wantToSell } from "../../src/utilities/items.js";
 
@@ -292,4 +292,27 @@ test("`adjustItemConfig()` ensures uncraftable items don't have craft config", (
   // `hbow`s should be craftable, and therefore the craft config should be kept
   expect(g.craft.hbow).toBeDefined();
   expect(config.hbow?.craft).toBeDefined();
+});
+
+test("`adjustItemConfig()` ensures unexchangable items don't have exchange config", () => {
+  const config: Config = {
+    bow: {
+      ...EXCHANGE,
+    },
+    lostearring: {
+      exchange: {
+        exchangeAtLevel: 2,
+      },
+    },
+  };
+  if (g === undefined) throw new Error("G data is not available");
+  adjustItemConfig(config, g);
+
+  // `bow`s should not be exchangable, and therefore the craft config should be removed
+  expect(g.items.bow.e).toBeUndefined();
+  expect(config.bow?.exchange).toBeUndefined();
+
+  // `lostearring`s should be exchangable, and therefore the exchange config should be kept
+  expect(g.items.lostearring.e).toBeDefined();
+  expect(config.lostearring?.exchange).toBeDefined();
 });

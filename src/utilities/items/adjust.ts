@@ -197,9 +197,40 @@ export function removeUncraftable(config: Config, g: GData) {
     const itemConfig = config[name];
     if (itemConfig === undefined) continue; // No config
     if (itemConfig.craft === undefined) continue; // No craft config
-    if (g.craft[name] !== undefined) continue; // Item is craftable
+    const gCraft = g.craft[name];
+    if (gCraft !== undefined) continue; // Item is craftable
+
+    // TODO: Check if we're selling / destroying / mailing / listing the items we need to craft with
 
     logError(`Item ${name} is not craftable, but has a craft config`);
     delete itemConfig.craft;
+  }
+}
+
+/**
+ * If items are marked as exchangable in the config, but not in the game data, we remove them from the config.
+ */
+export function removeUnexchangable(config: Config, g: GData) {
+  for (const name of Object.keys(config) as ItemKey[]) {
+    const itemConfig = config[name];
+    if (itemConfig === undefined) continue; // No config
+    if (itemConfig.exchange === undefined) continue; // No exchange config
+    const gItem = g.items[name];
+    if (gItem.e !== undefined) continue; // Item is exchangable
+
+    if (
+      itemConfig.exchange.exchangeAtLevel !== undefined &&
+      gItem.upgrade === undefined &&
+      gItem.compound === undefined
+    ) {
+      logError(
+        `Item ${name} is not upgradable, but has an exchange config with exchangeAtLevel set to ${itemConfig.exchange.exchangeAtLevel}`,
+      );
+      delete itemConfig.exchange.exchangeAtLevel;
+      continue;
+    }
+
+    logError(`Item ${name} is not exchangable, but has an exchange config`);
+    delete itemConfig.exchange;
   }
 }

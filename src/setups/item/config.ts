@@ -1,5 +1,6 @@
 import type { Character } from "alclient";
 import {
+  getCraftableItems,
   getItemDescription,
   wantToDestroy,
   wantToList,
@@ -22,6 +23,9 @@ const active = new Set<Character>();
 export const setup = (character: Character) => {
   active.add(character);
 
+  /**
+   * For buying, selling, destroying, listing, mailing items
+   */
   const itemLoop = async () => {
     if (!active.has(character)) return;
 
@@ -67,6 +71,33 @@ export const setup = (character: Character) => {
     }
   };
   void itemLoop();
+
+  const craftLoop = async () => {
+    if (!active.has(character)) return;
+
+    try {
+      if (character.socket.disconnected) return;
+
+      for (const [itemName, itemIndexes] of getCraftableItems(character.items, character.game.G)) {
+        const gCraft = character.game.G.craft[itemName];
+        if (!gCraft) continue; // Uncraftable
+        if (gCraft.cost > character.gold) continue; // Not enough gold
+
+        // TODO: Craft item
+      }
+    } catch (e) {
+      if (e instanceof Error || typeof e === "string") logDebug(e);
+    } finally {
+      setTimeout(() => void craftLoop(), CHECK_EVERY_MS);
+    }
+  };
+  void craftLoop();
+
+  // TODO: exchangeLoop
+
+  // TODO: upgradeLoop
+
+  // TODO: compoundLoop
 };
 
 /**

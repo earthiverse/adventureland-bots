@@ -1,6 +1,6 @@
 import type { Character } from "alclient";
 import type { GData, ItemInfo, ItemKey } from "typed-adventureland";
-import Config, { type ItemConfig, type Price } from "../../config/items.js";
+import Config, { type Price } from "../../config/items.js";
 import {
   buyKeys,
   calculateBuyPrices,
@@ -10,6 +10,7 @@ import {
   ensureSellPriceAtLeastNpcPrice,
   optimizeUpgrades,
   removeUncraftable,
+  removeUnexchangable,
 } from "./items/adjust.js";
 import { logError } from "./logging.js";
 
@@ -135,7 +136,7 @@ export function getItemDescription(item: ItemInfo): string {
  * @param config
  * @returns array of craftable items with the indexes of items that can be used to craft them
  */
-export function getCraftableItems(items: ItemInfo[], g: GData, config = Config): [ItemKey, number[]][] {
+export function getCraftableItems(items: (ItemInfo | null)[], g: GData, config = Config): [ItemKey, number[]][] {
   const craftableItems: [ItemKey, number[]][] = [];
 
   for (const configKey of Object.keys(config) as ItemKey[]) {
@@ -145,7 +146,7 @@ export function getCraftableItems(items: ItemInfo[], g: GData, config = Config):
 
     const gCraft = g.craft[configKey];
     if (!gCraft) {
-      // Should have been fixed by `removeUncraftable`, but it might happen if a game update changes the craft config
+      // Should have been fixed by `removeUncraftable`, but it might happen because of a game update
       logError(`${configKey} is not craftable`);
       continue;
     }
@@ -158,7 +159,7 @@ export function getCraftableItems(items: ItemInfo[], g: GData, config = Config):
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      if (item === undefined) continue;
+      if (!item) continue;
       if (item.l !== undefined) continue; // We can't craft with locked items
       if (item.p && !itemConfig.craft.craftWithSpecial) continue; // We don't want to craft with special items
 
@@ -202,6 +203,25 @@ export function wantToDestroy(item: ItemInfo, config = Config): boolean {
   return true;
 }
 
+export function wantToExchange(item: ItemInfo, emptyInventorySlots: number, g: GData, config = Config): boolean {
+  if (item.l !== undefined) return false; // We can't exchange locked items
+
+  const itemConfig = config[item.name]?.exchange;
+  if (!itemConfig) return false; // We have no exchange config for this item
+  if (itemConfig.exchangeAtLevel !== undefined && item.level !== itemConfig.exchangeAtLevel) return false; // We only want to exchange this item at a specific level
+
+  const numRequired = g.items[item.name].e;
+  if (numRequired === undefined) {
+    // Should have been fixed by `removeUnexchangable`, but it might happen because of a game update
+    logError(`${item.name} is not exchangable`);
+    return false;
+  }
+  if (numRequired > (item.q ?? 1)) return false; // We don't have enough of this item to exchange
+  if (emptyInventorySlots === 0 && (item.q ?? 1) > numRequired) return false; // We don't have an empty inventory slot
+
+  return true;
+}
+
 /**
  * @param character
  * @param item
@@ -237,7 +257,6 @@ export function wantToList(item: ItemInfo, g: GData, config = Config): false | n
   }
   if (wantToListForPrice === undefined) return false; // We don't want to list this item at this level
 
-  // TODO: Calculate the price
   return calculatePrice(item, g, wantToListForPrice); // We want to list this item for this price
 }
 
@@ -259,8 +278,8 @@ export function wantToMail(item: ItemInfo, config = Config): boolean {
 export function wantToReplenish(character: Character, item: ItemInfo, config = Config): number {
   if (!wantToHold(character, item)) return 0;
 
-  const itemConfig = (config[item.name] as ItemConfig).hold;
-  if (!itemConfig || itemConfig.replenish === undefined) return 0; // We don't want to replenish this item
+  const itemConfig = config[item.name]!.hold;
+  if (itemConfig?.replenish === undefined) return 0; // We don't want to replenish this item
 
   return Math.max(0, itemConfig.replenish - character.countItems({ name: item.name }));
 }
@@ -308,5 +327,6 @@ export function adjustItemConfig(
   ensureSellMultiplierAtLeastOne(config);
   ensureBuyPriceLessThanSellPrice(config);
   removeUncraftable(config, g);
+  removeUnexchangable(config, g);
   if (options.optimizeUpgrades === true) optimizeUpgrades(config);
 }
