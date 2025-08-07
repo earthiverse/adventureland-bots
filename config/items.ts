@@ -91,17 +91,38 @@ export type ItemConfig = {
 
 export type Config = Partial<Record<ItemKey, ItemConfig>>;
 
+export const BUY_AT_GOBLIN_PRICE: ItemConfig = Object.freeze({ buy: { buyPrice: "goblin" } });
+export const BUY_AT_PONTY_PRICE: ItemConfig = Object.freeze({ buy: { buyPrice: "ponty" } });
 export const CRAFT: ItemConfig = Object.freeze({ craft: { craftWithSpecial: true } });
 export const DESTROY: ItemConfig = Object.freeze({ destroy: { destroySpecial: true } });
 export const HOLD_FULL_STACK: ItemConfig = Object.freeze({ hold: { characterTypes: "all", replenish: 9999 } });
 export const SELL_TO_NPC: ItemConfig = Object.freeze({ sell: { sellPrice: "npc" } });
 
 const config: Config = {
+  "5bucks": {
+    buy: {
+      buyPrice: 100_000_000,
+    },
+  },
+  amuletofm: {
+    buy: {
+      buyPrice: 500_000_000,
+    },
+  },
+  angelwings: {
+    ...BUY_AT_GOBLIN_PRICE,
+  },
+  armorbox: {
+    ...BUY_AT_GOBLIN_PRICE,
+  },
   cclaw: {
+    ...BUY_AT_PONTY_PRICE,
+    ...CRAFT,
     ...DESTROY,
   },
   crabclaw: {
-    ...SELL_TO_NPC,
+    // Used to craft cclaw
+    ...BUY_AT_PONTY_PRICE,
   },
   hpamulet: {
     ...SELL_TO_NPC,
@@ -116,13 +137,40 @@ const config: Config = {
     ...HOLD_FULL_STACK,
   },
   orba: {
+    ...BUY_AT_GOBLIN_PRICE,
     ...CRAFT,
+  },
+  orboffire: {
+    // Used to craft orba
+    ...BUY_AT_GOBLIN_PRICE,
+  },
+  orboffrost: {
+    // Used to craft orba
+    ...BUY_AT_GOBLIN_PRICE,
+  },
+  orbofplague: {
+    // Used to craft orba
+    ...BUY_AT_GOBLIN_PRICE,
+  },
+  orbofresolve: {
+    // Used to craft orba
+    ...BUY_AT_GOBLIN_PRICE,
   },
   slimestaff: {
     ...DESTROY,
   },
   vitring: {
-    ...SELL_TO_NPC,
+    // We craft from level 2, higher level vitrings are not needed
+    buy: {
+      buyPrice: {
+        0: "ponty",
+        1: "ponty",
+        2: "ponty",
+      },
+    },
+    upgrade: {
+      upgradeUntilLevel: 2,
+    },
   },
 };
 
