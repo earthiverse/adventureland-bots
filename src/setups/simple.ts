@@ -7,7 +7,7 @@ import { setup as moveSetup } from "./move/simple.js";
 import { setup as regenSetup } from "./regen/simple.js";
 
 export const setup = (character: Character, monster: MonsterKey = "goo") => {
-  attackSetup(character, monster);
+  attackSetup(character, { monster });
   itemSetup(character);
   lootSetup(character);
   moveSetup(character, monster);

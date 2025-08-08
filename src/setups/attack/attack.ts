@@ -1,7 +1,12 @@
-import type { Character } from "alclient";
+import { type Character } from "alclient";
 import type { MonsterKey } from "typed-adventureland";
+import { defaultMonster } from "../../earthiverse/strategies.js";
 import { logDebug } from "../../utilities/logging.js";
 import { getBestTarget, ignoreMonster, unignoreMonster } from "../../utilities/monster.js";
+
+export type AttackOptions = {
+  monster?: MonsterKey;
+};
 
 type ActiveData = {
   cancelled: boolean;
@@ -13,7 +18,7 @@ const active = new Map<Character, ActiveData>();
  * @param character
  * @param monster
  */
-export const setup = (character: Character, monster: MonsterKey = "goo") => {
+export const setup = (character: Character, options: AttackOptions = { monster: defaultMonster }) => {
   // Cancel any existing attack logic for this character
   if (active.has(character)) active.get(character)!.cancelled = true;
 
@@ -29,7 +34,7 @@ export const setup = (character: Character, monster: MonsterKey = "goo") => {
       if (character.socket.disconnected) return;
 
       const entity = getBestTarget(character, {
-        monster: monster,
+        monster: options.monster,
         withinRange: character.range,
       });
       if (!entity) return;
@@ -37,6 +42,7 @@ export const setup = (character: Character, monster: MonsterKey = "goo") => {
       // TODO: Better ignore logic
       if (entity.hp < character.attack / 2) ignoreMonster(entity);
 
+      // TODO: Better attack logic
       await character.basicAttack(entity);
     } catch (e) {
       if (entity !== undefined) unignoreMonster(entity);

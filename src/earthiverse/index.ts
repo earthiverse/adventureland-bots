@@ -1,5 +1,5 @@
 import type { Character, Mage, Merchant, Paladin, Priest, Ranger, Rogue, Warrior } from "alclient";
-import { Game } from "alclient";
+import { Game, Utilities } from "alclient";
 import config from "../../config/config.js";
 import { setup as attackSetup } from "../setups/attack/attack.js";
 import { setup as itemSetup } from "../setups/item/config.js";
@@ -8,15 +8,23 @@ import { setup as moveSetup } from "../setups/move/spread_out.js";
 import { setup as regenSetup } from "../setups/regen/simple.js";
 
 // Plugins
-import type { MonsterKey, ServerKey } from "typed-adventureland";
-import { checkMonsters, defaultMonster } from "./strategies.js";
+import type { ServerKey } from "typed-adventureland";
 import "../plugins/auto_reconnect.js";
 import ServerData from "../plugins/data_tracker.js";
 import "../plugins/g_cache.js";
 import { getGFromCache } from "../plugins/g_cache.js";
 import "../plugins/party.js";
 import "../plugins/ping_compensation.js";
-import { logDebug, logError } from "../utilities/logging.js";
+import { logError, logInformational } from "../utilities/logging.js";
+import {
+  checkMonsters,
+  defaultMonster,
+  defaultServer,
+  getIdealCharacters,
+  strategies,
+  type CharacterStrategy,
+  type StrategyMonsterKey,
+} from "./strategies.js";
 
 // Config
 const { server, email, password } = config.credentials;
@@ -63,16 +71,19 @@ export const characters = Object.freeze({
 });
 
 /** A list of our active characters */
-const activeCharacters: Character[] = [];
+const activeAttackingCharacters = new Set<Character>();
 
-let targetMonster: MonsterKey = defaultMonster;
-let targetServer: ServerKey = checkServers[0];
+const currentTarget: [StrategyMonsterKey, ServerKey] = ["goo", "USIII"];
 
 /**
  * Main logic loop that says what characters should be farming what
  */
 const logicLoop = async () => {
   try {
+    /** Potential monsters to farm (NOTE: Should be sorted highest priority first) */
+    const potentialTargets: [StrategyMonsterKey, ServerKey][] = [];
+
+    // Add monsters we're checking for
     for (const serverKey of checkServers) {
       const serverData = ServerData.get(serverKey);
       if (serverData === undefined) continue; // No data for this server
@@ -83,43 +94,49 @@ const logicLoop = async () => {
 
         for (const monsterDatum of monsterData) {
           if (monsterDatum.target !== undefined) continue;
-
-          // TODO: Add to potential targets
+          potentialTargets.push([monsterKey, serverKey]);
         }
       }
     }
-    // TODO: Get target
 
-    // TODO: From target, decide players & strategy
+    // Get target
+    const nextTarget = potentialTargets.find((m) => Object.hasOwn(strategies, m[0])) ?? [defaultMonster, defaultServer];
+    if (currentTarget[0] === nextTarget[0] && currentTarget[1] === nextTarget[1]) return; // Same target, already set up
+
+    // Get characters
+    const strategy = strategies[nextTarget[0]];
+    const idealCharacters = getIdealCharacters(strategy);
+
+    logInformational(
+      `Switching from ${currentTarget[0]} on ${currentTarget[1]} to ${nextTarget[0]} on ${nextTarget[1]}...`,
+    );
+    currentTarget[0] = nextTarget[0];
+    const targetMonster = nextTarget[0];
+    currentTarget[1] = nextTarget[1];
+    const { serverRegion: targetRegion, serverIdentifier: targetIdentifier } = Utilities.parseServerKey(nextTarget[1]);
+
+    // Stop / Start characters
+    const newActiveCharacters = new Set<Character>(idealCharacters.map((name) => characters[name]));
+    const charactersToStop = activeAttackingCharacters.difference(newActiveCharacters);
+    for (const characterToStop of charactersToStop) characterToStop.stop();
+    const charactersToStart = newActiveCharacters.difference(activeAttackingCharacters);
+    for (const characterToStart of charactersToStart) await characterToStart.start(targetRegion, targetIdentifier);
+
+    // Set up strategies
+    for (const character of newActiveCharacters) {
+      const characterStrategy = strategy.characters[character.id as keyof typeof characters] as CharacterStrategy;
+      activeAttackingCharacters.add(character);
+
+      (characterStrategy.attack ?? attackSetup)(character, { monster: targetMonster });
+      itemSetup(character);
+      lootSetup(character);
+      moveSetup(character, defaultMonster);
+      regenSetup(character);
+    }
   } catch (e) {
     if (e instanceof Error || typeof e === "string") logError(e);
   } finally {
     setTimeout(() => void logicLoop(), 1000);
   }
 };
-
 void logicLoop();
-
-for (const characterInfo of player.characters) {
-  let character: Character;
-  switch (characterInfo.type) {
-    case "merchant":
-      continue; // TODO: Get a merchant strategy
-    case "mage":
-    case "paladin":
-    case "priest":
-    case "ranger":
-    case "rogue":
-    case "warrior":
-      logDebug(`Creating ${characterInfo.name} (${characterInfo.type})`);
-      character = player.createCharacter(characterInfo.name);
-      break;
-  }
-  await character.start("ASIA", "I");
-
-  attackSetup(character, defaultMonster);
-  itemSetup(character);
-  lootSetup(character);
-  moveSetup(character, defaultMonster);
-  regenSetup(character);
-}
