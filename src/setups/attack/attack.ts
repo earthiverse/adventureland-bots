@@ -3,7 +3,10 @@ import type { MonsterKey } from "typed-adventureland";
 import { logDebug } from "../../utilities/logging.js";
 import { getBestTarget, ignoreMonster, unignoreMonster } from "../../utilities/monster.js";
 
-const active = new Set<Character>();
+type ActiveData = {
+  cancelled: boolean;
+};
+const active = new Map<Character, ActiveData>();
 
 /**
  * Starts the attack logic for the given character
@@ -11,10 +14,14 @@ const active = new Set<Character>();
  * @param monster
  */
 export const setup = (character: Character, monster: MonsterKey = "goo") => {
-  active.add(character);
+  // Cancel any existing attack logic for this character
+  if (active.has(character)) active.get(character)!.cancelled = true;
+
+  const activeData: ActiveData = { cancelled: false };
+  active.set(character, activeData);
 
   const attackLoop = async () => {
-    if (!active.has(character)) return; // Stop
+    if (activeData.cancelled) return;
 
     let entity;
 
@@ -38,14 +45,14 @@ export const setup = (character: Character, monster: MonsterKey = "goo") => {
       setTimeout(() => void attackLoop(), Math.max(100, character.getTimeout("attack")));
     }
   };
-
   void attackLoop();
 };
 
 /**
- * Stops the attack loop for the given character
+ * Stops the attack logic for the given character
  * @param character
  */
 export const teardown = (character: Character) => {
+  if (active.has(character)) active.get(character)!.cancelled = true;
   active.delete(character);
 };

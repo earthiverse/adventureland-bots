@@ -3,7 +3,10 @@ import type { MonsterKey } from "typed-adventureland";
 import { logDebug } from "../../utilities/logging.js";
 import { getBestTarget } from "../../utilities/monster.js";
 
-const active = new Set<Character>();
+type ActiveData = {
+  cancelled: boolean;
+};
+const active = new Map<Character, ActiveData>();
 
 /**
  * Starts the move logic for the given character
@@ -11,10 +14,15 @@ const active = new Set<Character>();
  * @param monster
  */
 export const setup = (character: Character, monster: MonsterKey = "goo") => {
-  active.add(character);
+  // Cancel any existing move logic for this character
+  if (active.has(character)) active.get(character)!.cancelled = true;
+
+  const activeData: ActiveData = { cancelled: false };
+  active.set(character, activeData);
 
   const moveLoop = () => {
-    if (!active.has(character)) return; // Stop
+    if (activeData.cancelled) return;
+
     try {
       if (character.socket.disconnected) return;
 
@@ -39,5 +47,6 @@ export const setup = (character: Character, monster: MonsterKey = "goo") => {
  * @param character
  */
 export const teardown = (character: Character) => {
+  if (active.has(character)) active.get(character)!.cancelled = true;
   active.delete(character);
 };

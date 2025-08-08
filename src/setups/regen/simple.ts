@@ -8,7 +8,10 @@ import { logDebug } from "../../utilities/logging.js";
 // TODO: Move this to item config
 export const REGEN_ITEMS: ItemKey[] = ["hpot0", "hpot1", "mpot0", "mpot1"];
 
-const active = new Set<Character>();
+type ActiveData = {
+  cancelled: boolean;
+};
+const active = new Map<Character, ActiveData>();
 
 export function calculateItemScore(
   item: ItemKey,
@@ -91,10 +94,14 @@ export function getComparator(character: Character): Comparator<ItemKey | SkillK
  * @param character
  */
 export const setup = (character: Character) => {
-  active.add(character);
+  // Cancel any existing regen logic for this character
+  if (active.has(character)) active.get(character)!.cancelled = true;
+
+  const activeData: ActiveData = { cancelled: false };
+  active.set(character, activeData);
 
   const regenLoop = async () => {
-    if (!active.has(character)) return;
+    if (activeData.cancelled) return;
 
     try {
       if (character.socket.disconnected) return;
@@ -134,5 +141,6 @@ export const setup = (character: Character) => {
  * @param character
  */
 export const teardown = (character: Character) => {
+  if (active.has(character)) active.get(character)!.cancelled = true;
   active.delete(character);
 };

@@ -11,23 +11,31 @@ import {
 import { Level, log, logDebug } from "../../utilities/logging.js";
 
 const CHECK_EVERY_MS = 1000;
+const CRAFT_LOG_LEVEL = Level.Notice;
 const DESTROY_LOG_LEVEL = Level.Notice;
 const SELL_LOG_LEVEL = Level.Notice;
 
-const active = new Set<Character>();
+type ActiveData = {
+  cancelled: boolean;
+};
+const active = new Map<Character, ActiveData>();
 
 /**
  * Starts the item logic for the given character
  * @param character
  */
 export const setup = (character: Character) => {
-  active.add(character);
+  // Cancel any existing item logic for this character
+  if (active.has(character)) active.get(character)!.cancelled = true;
+
+  const activeData: ActiveData = { cancelled: false };
+  active.set(character, activeData);
 
   /**
    * For buying, selling, destroying, listing, mailing items
    */
   const itemLoop = async () => {
-    if (!active.has(character)) return;
+    if (activeData.cancelled) return;
 
     try {
       if (character.socket.disconnected) return;
@@ -73,7 +81,7 @@ export const setup = (character: Character) => {
   void itemLoop();
 
   const craftLoop = async () => {
-    if (!active.has(character)) return;
+    if (activeData.cancelled) return;
 
     try {
       if (character.socket.disconnected) return;
@@ -82,8 +90,8 @@ export const setup = (character: Character) => {
         const gCraft = character.game.G.craft[itemName];
         if (!gCraft) continue; // Uncraftable
         if (gCraft.cost > character.gold) continue; // Not enough gold
-
-        // TODO: Craft item
+        log(`${character.id} crafting ${itemName}...`, CRAFT_LOG_LEVEL);
+        await character.craft(itemName, itemIndexes);
       }
     } catch (e) {
       if (e instanceof Error || typeof e === "string") logDebug(e);
@@ -101,9 +109,10 @@ export const setup = (character: Character) => {
 };
 
 /**
- * Stops the item loop for the given character
+ * Stops the item logic for the given character
  * @param character
  */
 export function teardown(character: Character) {
+  if (active.has(character)) active.get(character)!.cancelled = true;
   active.delete(character);
 }
