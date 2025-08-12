@@ -17,6 +17,7 @@ import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
 import { RogueAttackStrategy } from "./strategy_pattern/strategies/attack_rogue.js"
 import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { RETURN_HIGHEST } from "./strategy_pattern/setups/equipment.js"
+import { halloweenGreenJr } from "./base/locations.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
@@ -65,8 +66,10 @@ class CrownMoveStrategy extends ImprovedMoveStrategy {
         if (bot.party !== PARTY_LEADER) {
             // Not in party -- wait
             this.types = ["greenjr", "osnake", "snake"]
+            this.options.idlePosition = halloweenGreenJr
         } else {
             this.types = MONSTER_PRIORITY
+            delete this.options.idlePosition
         }
 
         return super.move(bot)
