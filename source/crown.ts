@@ -1,4 +1,4 @@
-import AL, { MonsterName, PingCompensatedCharacter, Rogue, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { Character, MonsterName, PingCompensatedCharacter, Rogue, ServerIdentifier, ServerRegion } from "alclient"
 import { Strategist } from "./strategy_pattern/context.js"
 import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
 import { DEFAULT_ITEM_CONFIG } from "./base/itemsNew.js"
@@ -45,7 +45,7 @@ const PARTY_ACCEPT_STRATEGY = new AcceptPartyRequestStrategy()
 const PARTY_MEMBER_STRATEGY = new RequestPartyStrategy(PARTY_LEADER)
 const AVOID_DEATH_STRATEGY = new AvoidDeathStrategy()
 const ROGUE_SPEED_STRATEGY = new GiveRogueSpeedStrategy()
-const MONSTER_PRIORITY: MonsterName[] = ["goldenbot", "sparkbot", "targetron"]
+const MONSTER_PRIORITY: MonsterName[] = ["goldenbot", "sparkbot", "targetron", "greenjr", "osnake", "snake"]
 const ATTACK_STRATEGIES: { [T in string]: RogueAttackStrategy } = {
     earthRog: new RogueAttackStrategy({
         contexts: CONTEXTS,
@@ -60,7 +60,20 @@ const ATTACK_STRATEGIES: { [T in string]: RogueAttackStrategy } = {
     }),
 }
 
-const MOVE_STRATEGY_SCORPION = new ImprovedMoveStrategy(MONSTER_PRIORITY)
+class CrownMoveStrategy extends ImprovedMoveStrategy {
+    protected move(bot: Character): Promise<void> {
+        if (bot.party !== PARTY_LEADER) {
+            // Not in party -- wait
+            this.types = ["greenjr", "osnake", "snake"]
+        } else {
+            this.types = MONSTER_PRIORITY
+        }
+
+        return super.move(bot)
+    }
+}
+
+const MOVE_STRATEGY_SCORPION = new CrownMoveStrategy(MONSTER_PRIORITY)
 
 async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentifier) {
     for (const rogueName of ["earthRog"]) {
@@ -90,4 +103,4 @@ async function start(serverRegion: ServerRegion, serverIdentifier: ServerIdentif
         }
     }
 }
-start(SERVER_REGION, SERVER_ID)
+void start(SERVER_REGION, SERVER_ID)
