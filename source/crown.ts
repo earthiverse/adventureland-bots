@@ -1,4 +1,4 @@
-import AL, { Character, MonsterName, PingCompensatedCharacter, Rogue, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { Character, MonsterName, Pathfinder, PingCompensatedCharacter, Rogue, ServerIdentifier, ServerRegion } from "alclient"
 import { Strategist } from "./strategy_pattern/context.js"
 import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
 import { DEFAULT_ITEM_CONFIG } from "./base/itemsNew.js"
@@ -66,10 +66,10 @@ class CrownMoveStrategy extends ImprovedMoveStrategy {
         if (bot.party !== PARTY_LEADER) {
             // Not in party -- wait
             this.types = ["greenjr", "osnake", "snake"]
-            this.options.idlePosition = halloweenGreenJr
+            this.spawns = [halloweenGreenJr]
         } else {
             this.types = ["goldenbot", "sparkbot", "targetron"]
-            delete this.options.idlePosition
+            this.spawns = Pathfinder.locateMonster(this.types)
         }
 
         return super.move(bot)
