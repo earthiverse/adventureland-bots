@@ -68,7 +68,7 @@ class CrownMoveStrategy extends ImprovedMoveStrategy {
             this.types = ["greenjr", "osnake", "snake"]
             this.options.idlePosition = halloweenGreenJr
         } else {
-            this.types = MONSTER_PRIORITY
+            this.types = ["goldenbot", "sparkbot", "targetron"]
             delete this.options.idlePosition
         }
 
