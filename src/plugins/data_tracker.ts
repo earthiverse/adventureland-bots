@@ -158,9 +158,11 @@ EventBus.on("entities_updated", (observer, monsters, characters) => {
   }
 });
 
-function getNextSpawn(G: GData, type: MonsterKey): number {
+function getNextSpawn(G: GData, type: MonsterKey): number | undefined {
   const gMonster = G.monsters[type];
-  if (gMonster.respawn <= 200) {
+  if (gMonster.respawn < 0) {
+    return undefined; // It doesn't respawn
+  } else if (gMonster.respawn <= 200) {
     // If respawn is <= 200s, it respawns at that time
     return Date.now() + gMonster.respawn * 1000;
   } else {
@@ -336,7 +338,7 @@ const loop = () => {
 
       for (const [type, spawnTime] of Object.entries(serverDatum.spawns)) {
         // Remove stale spawns
-        if (spawnTime < staleCutoff) {
+        if (spawnTime < staleCutoff || spawnTime === undefined) {
           delete serverDatum.spawns[type as MonsterKey];
           continue;
         }
