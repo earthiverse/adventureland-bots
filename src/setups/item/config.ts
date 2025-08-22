@@ -3,6 +3,7 @@ import {
   getCraftableItems,
   getItemDescription,
   wantToDestroy,
+  wantToExchange,
   wantToList,
   wantToMail,
   wantToReplenish,
@@ -103,7 +104,32 @@ export const setup = (character: Character) => {
   };
   void craftLoop();
 
-  // TODO: exchangeLoop
+  const exchangeLoop = async () => {
+    if (activeData.cancelled) return;
+    let checkMs = CHECK_EVERY_MS;
+
+    try {
+      if (character.socket.disconnected) return;
+      if (character.q.exchange) {
+        checkMs = character.q.exchange.ms;
+        return; // Already exchanging
+      }
+
+      for (let index = 0; index < character.items.length; index++) {
+        const item = character.items[index];
+        if (!item) continue;
+        if (!wantToExchange(item, character.esize, character.game.G)) continue;
+
+        await character.exchange(index);
+        return;
+      }
+    } catch (e) {
+      if (e instanceof Error || typeof e === "string") logDebug(e);
+    } finally {
+      setTimeout(() => void exchangeLoop(), checkMs);
+    }
+  };
+  void exchangeLoop();
 
   // TODO: upgradeLoop
 
