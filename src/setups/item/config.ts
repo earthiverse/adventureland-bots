@@ -90,8 +90,10 @@ export const setup = (character: Character) => {
         const gCraft = character.game.G.craft[itemName];
         if (!gCraft) continue; // Uncraftable
         if (gCraft.cost > character.gold) continue; // Not enough gold
+        // TODO: Add buying logic for missing items
+        if (itemIndexes.some((i) => i === "npc")) continue; // Can't craft unless we buy the item from an NPC
         log(`${character.id} crafting ${itemName}...`, CRAFT_LOG_LEVEL);
-        await character.craft(itemName, itemIndexes);
+        await character.craft(itemName, itemIndexes as number[]);
       }
     } catch (e) {
       if (e instanceof Error || typeof e === "string") logDebug(e);

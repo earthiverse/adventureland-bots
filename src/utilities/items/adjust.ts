@@ -1,6 +1,6 @@
 import type { GData, ItemKey } from "typed-adventureland";
 import type { Config, Price } from "../../../config/items.js";
-import { calculateNpcBuyPrice, calculatePrice } from "../items.js";
+import { calculateNpcBuyPrice, calculatePrice, wantToList, wantToSell } from "../items.js";
 import { logDebug, logError } from "../logging.js";
 
 /**
@@ -198,12 +198,35 @@ export function removeUncraftable(config: Config, g: GData) {
     if (itemConfig === undefined) continue; // No config
     if (itemConfig.craft === undefined) continue; // No craft config
     const gCraft = g.craft[name];
-    if (gCraft !== undefined) continue; // Item is craftable
 
-    // TODO: Check if we're selling / destroying / mailing / listing the items we need to craft with
+    if (gCraft === undefined) {
+      logError(`Item ${name} is not craftable, but has a craft config`);
+      delete itemConfig.craft;
+      continue;
+    }
 
-    logError(`Item ${name} is not craftable, but has a craft config`);
-    delete itemConfig.craft;
+    for (const [, needName, needLevel] of gCraft.items) {
+      const needConfig = config[needName];
+      if (needConfig === undefined) continue; // No config
+      if (needConfig.destroy) {
+        logError(`Item ${needName} is needed to craft ${name}, but has a destroy config`);
+      }
+      if (needConfig.mail) {
+        logError(`Item ${needName} is needed to craft ${name}, but has a mail config`);
+      }
+      for (let level = 0; level <= (needLevel ?? 0); level++) {
+        if (wantToSell({ name: needName, level: level === 0 ? undefined : level }, g, "npc", config)) {
+          logError(
+            `Item ${needName} is needed to craft ${name}, but has a sell config that sells it at NPC price at level ${level}`,
+          );
+        }
+        if (typeof wantToList({ name: needName, level: level === 0 ? undefined : level }, g, config) === "number") {
+          logError(`Item ${needName} is needed to craft ${name}, but has a list config at level ${level}.`);
+        }
+      }
+    }
+
+    continue; // Item is craftable
   }
 }
 

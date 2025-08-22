@@ -12,6 +12,7 @@ import {
   removeUncraftable,
   removeUnexchangable,
 } from "./items/adjust.js";
+import { isPurchasableFromNpc } from "./items/npc.js";
 import { logError } from "./logging.js";
 
 export function calculateItemValue(item: ItemInfo, g: GData, multiplier = 1): number {
@@ -136,8 +137,12 @@ export function getItemDescription(item: ItemInfo): string {
  * @param config
  * @returns array of craftable items with the indexes of items that can be used to craft them
  */
-export function getCraftableItems(items: (ItemInfo | null)[], g: GData, config = Config): [ItemKey, number[]][] {
-  const craftableItems: [ItemKey, number[]][] = [];
+export function getCraftableItems(
+  items: (ItemInfo | null)[],
+  g: GData,
+  config = Config,
+): [ItemKey, (number | "npc")[]][] {
+  const craftableItems: ReturnType<typeof getCraftableItems> = [];
 
   for (const configKey of Object.keys(config) as ItemKey[]) {
     const itemConfig = config[configKey];
@@ -154,19 +159,15 @@ export function getCraftableItems(items: (ItemInfo | null)[], g: GData, config =
     /** The items we need to craft */
     const itemsNeeded = structuredClone(gCraft.items);
 
-    /** Indexes of the items that can be used to craft */
-    const itemIndexes: number[] = [];
+    /** Indexes (or "npc" if item is buyable) of the items that can be used to craft */
+    const itemIndexes: (number | "npc")[] = [];
 
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (!item) continue;
-      if (item.l !== undefined) continue; // We can't craft with locked items
-      if (item.p && !itemConfig.craft.craftWithSpecial) continue; // We don't want to craft with special items
-
-      for (let j = 0; j < itemsNeeded.length; j++) {
-        const itemNeeded = itemsNeeded[j];
-        if (itemNeeded === undefined) continue;
-        const [quantity, name, level] = itemNeeded;
+    needed: for (const [quantity, name, level] of itemsNeeded) {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (!item) continue;
+        if (item.l !== undefined) continue; // We can't craft with locked items
+        if (item.p && !itemConfig.craft.craftWithSpecial) continue; // We don't want to craft with special items
 
         if (name !== item.name) continue;
         if ((item.q ?? 1) < quantity) continue;
@@ -174,16 +175,25 @@ export function getCraftableItems(items: (ItemInfo | null)[], g: GData, config =
         if (level === undefined && (item.level ?? 0) !== 0) continue; // if level is unspecified, but the item is levelable, it must be level 0
 
         // We can use this item to craft
-        itemsNeeded.splice(j--, 1);
         itemIndexes.push(i);
+        continue needed;
       }
 
-      if (itemsNeeded.length === 0) {
-        // Found all items needed
-        craftableItems.push([configKey, itemIndexes]);
-        break;
+      // We didn't find the item, check if we can buy it from an NPC
+      if (isPurchasableFromNpc(name, g)) {
+        // We can buy it from an NPC
+        itemIndexes.push("npc");
+        continue needed;
       }
+
+      // Can't craft
+      break;
     }
+
+    if (itemsNeeded.length !== itemIndexes.length) continue;
+
+    // Item is craftable, add it to the list
+    craftableItems.push([configKey, itemIndexes]);
   }
 
   return craftableItems;

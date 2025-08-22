@@ -56,6 +56,7 @@ export type ListConfigBase = {
 };
 
 export type MailConfigBase = {
+  // TODO: Make it like SellConfigBase, or BuyConfigBase, so we can specify which level to mail
   /** We will only mail items until this level */
   mailUntilLevel: number;
   /** Who we want to mail the item to */

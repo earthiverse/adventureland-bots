@@ -2,7 +2,7 @@ import { EventBus } from "alclient";
 import type { GData } from "typed-adventureland";
 import Config from "../../config/items.js";
 import { adjustItemConfig } from "../utilities/items.js";
-import { logError } from "../utilities/logging.js";
+import { logDebug, logError } from "../utilities/logging.js";
 
 /**
  * This plugin will adjust our item config based on the G data we receive.
@@ -27,6 +27,7 @@ EventBus.on("game_created", (game) => {
     adjust(game.G);
   } catch {
     // Probably failed because we didn't create Game with G data. Should be updated in `g_updated`.
+    logDebug("Failed to adjust item config on `game_created`.");
   }
 });
 EventBus.on("g_updated", (_game, g) => adjust(g));
