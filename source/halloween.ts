@@ -44,7 +44,7 @@ void adjustItemConfig(DEFAULT_ITEM_CONFIG)
 
 /**
  * Characters to use for mrgreen and mrpumpkin
- * earthPri will be the third attacking character
+ * PRIEST_CHARACTER will be the third attacking character
  * earthMer will be the merchant
  */
 const CHARACTERS_FOR_SERVERS: { [T in ServerRegion]?: { [T in ServerIdentifier]?: string[] } } = {
@@ -63,6 +63,9 @@ const CHARACTERS_FOR_SERVERS: { [T in ServerRegion]?: { [T in ServerIdentifier]?
         I: ["earthWar3", "earthMag3"],
     },
 }
+
+/** Also start priest for healing */
+const PRIEST_CHARACTER = "earthPri"
 
 // Sanity check that we aren't using characters for more than one server
 // (other than PVP)
@@ -314,7 +317,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         }
     }
 
-    if (monster !== "slenderman" && identifier !== "PVP")
+    if (monster !== "slenderman" && identifier !== "PVP" && name !== PRIEST_CHARACTER)
         strategist.applyStrategy(new HomeServerStrategy(region, identifier))
 
     // First character to start becomes party leader
@@ -336,7 +339,7 @@ const startBotsOnServer = async (region: ServerRegion, identifier: ServerIdentif
         case "osnake":
         case "mrpumpkin":
         case "mrgreen": {
-            attackingCharacters = [...CHARACTERS_FOR_SERVERS[region][identifier], "earthPri"]
+            attackingCharacters = [...CHARACTERS_FOR_SERVERS[region][identifier], PRIEST_CHARACTER]
             break
         }
         case "slenderman": {
