@@ -7,6 +7,7 @@ import { ImprovedMoveStrategy, KiteMonsterMoveStrategy } from "../strategies/mov
 import { CharacterConfig, Setup } from "./base"
 import { ZAPPER_CRING } from "./equipment.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("bbpompom")
@@ -45,6 +46,17 @@ export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedChara
         move: moveStrategy,
     }
 
+    const rangerConfig: CharacterConfig = {
+        ctype: "ranger",
+        attack: new RangerAttackStrategy({
+            contexts: contexts,
+            generateEnsureEquipped: {
+                attributes: ["range"],
+            },
+        }),
+        move: moveStrategy,
+    }
+
     const warriorConfig: CharacterConfig = {
         ctype: "warrior",
         attack: new WarriorAttackStrategy({
@@ -75,6 +87,10 @@ export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedChara
             {
                 id: "bbpompom_mage,priest",
                 characters: [mageConfig, priestConfig],
+            },
+            {
+                id: "bbpompom_ranger,priest",
+                characters: [rangerConfig, priestConfig],
             },
             {
                 id: "bbpompom_warrior,priest",
