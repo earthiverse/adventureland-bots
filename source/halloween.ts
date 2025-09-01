@@ -99,6 +99,9 @@ let currentRegion: ServerRegion = "US"
 let currentIdentifier: ServerIdentifier = "I"
 let currentMonster: MonsterName = HALLOWEEN_IDLE_MONSTER
 
+type Server = `${ServerRegion}${ServerIdentifier}`
+const SERVER_PRIORITY: Server[] = ["USI", "EUI", "USII", "USIII", "EUII", "ASIAI", "USPVP", "EUPVP"]
+
 const activeStrategists: Strategist<PingCompensatedCharacter>[] = []
 
 const ACCEPT_PARTY_REQUEST_STRATEGY = new AcceptPartyRequestStrategy()
@@ -372,8 +375,16 @@ const logicLoop = async () => {
             // Prioritize lower HP
             if (a.hp !== b.hp) return a.hp - b.hp
 
-            // TODO: Prioritize by server
-            // Prioritize current server
+            // Prioritize same server
+            const aSameServer = a.serverIdentifier === currentIdentifier && a.serverRegion === currentRegion
+            const bSameServer = b.serverIdentifier === currentIdentifier && b.serverRegion === currentRegion
+            if (aSameServer && !bSameServer) return -1
+            if (!aSameServer && bSameServer) return 1
+
+            // Proritize by server
+            const aServer: Server = `${a.serverRegion}${a.serverIdentifier}`
+            const bServer: Server = `${b.serverRegion}${b.serverIdentifier}`
+            if (aServer !== bServer) return SERVER_PRIORITY.indexOf(aServer) - SERVER_PRIORITY.indexOf(bServer)
         })
 
         const target =
