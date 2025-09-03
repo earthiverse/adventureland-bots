@@ -144,6 +144,11 @@ const MAGE_ATTACK_STRATEGY = new MageAttackStrategy({
         prefer: {
             mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
             offhand: { name: "wbook1", filters: RETURN_HIGHEST },
+            orb: { name: "jacko", filters: RETURN_HIGHEST },
+            ring1: { name: "cring", filters: RETURN_HIGHEST },
+            ring2: { name: "cring", filters: RETURN_HIGHEST },
+            earring1: { name: "cearring", filters: RETURN_HIGHEST },
+            earring2: { name: "cearring", filters: RETURN_HIGHEST },
         },
     },
     typeList: HALLOWEEN_MONSTERS,
@@ -166,6 +171,11 @@ const PRIEST_ATTACK_STRATEGY = new PriestAttackStrategy({
         prefer: {
             mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
             offhand: { name: "wbook1", filters: RETURN_HIGHEST },
+            orb: { name: "jacko", filters: RETURN_HIGHEST },
+            ring1: { name: "cring", filters: RETURN_HIGHEST },
+            ring2: { name: "cring", filters: RETURN_HIGHEST },
+            earring1: { name: "cearring", filters: RETURN_HIGHEST },
+            earring2: { name: "cearring", filters: RETURN_HIGHEST },
         },
     },
     typeList: HALLOWEEN_MONSTERS,
@@ -177,6 +187,8 @@ const RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({
         prefer: {
             mainhand: { name: "firebow", filters: RETURN_HIGHEST },
             offhand: { name: "t2quiver", filters: RETURN_HIGHEST },
+            ring1: { name: "cring", filters: RETURN_HIGHEST },
+            ring2: { name: "cring", filters: RETURN_HIGHEST },
         },
     },
     typeList: HALLOWEEN_MONSTERS,
@@ -186,9 +198,20 @@ const ROGUE_ATTACK_STRATEGY = new RogueAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: {
-            // TODO: Weapons?
             mainhand: { name: "crabclaw", filters: RETURN_HIGHEST },
             offhand: { name: "firestars", filters: RETURN_HIGHEST },
+            helmet: { name: "helmet1", filters: RETURN_HIGHEST },
+            chest: { name: "coat1", filters: RETURN_HIGHEST },
+            pants: { name: "pants1", filters: RETURN_HIGHEST },
+            shoes: { name: "shoes1", filters: RETURN_HIGHEST },
+            gloves: { name: "gloves1", filters: RETURN_HIGHEST },
+            belt: { name: "dexbelt", filters: RETURN_HIGHEST },
+            amulet: { name: "dexamulet", filters: RETURN_HIGHEST },
+            // TODO: Orb?
+            ring1: { name: "cring", filters: RETURN_HIGHEST },
+            ring2: { name: "cring", filters: RETURN_HIGHEST },
+            earring1: { name: "dexearring", filters: RETURN_HIGHEST },
+            earring2: { name: "dexearring", filters: RETURN_HIGHEST },
         },
     },
     typeList: HALLOWEEN_MONSTERS,
@@ -203,6 +226,10 @@ const WARRIOR_ATTACK_STRATEGY = new WarriorAttackStrategy({
         prefer: {
             mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
             offhand: { name: "fireblade", filters: RETURN_HIGHEST },
+            ring1: { name: "strring", filters: RETURN_HIGHEST },
+            ring2: { name: "strring", filters: RETURN_HIGHEST },
+            earring1: { name: "cearring", filters: RETURN_HIGHEST },
+            earring2: { name: "cearring", filters: RETURN_HIGHEST },
         },
     },
     typeList: HALLOWEEN_MONSTERS,
