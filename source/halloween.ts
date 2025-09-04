@@ -7,36 +7,36 @@ import AL, {
     ServerIdentifier,
     ServerRegion,
 } from "alclient"
-import { Strategist } from "./strategy_pattern/context"
-import { defaultNewMerchantStrategyOptions, NewMerchantStrategy } from "./merchant/strategy"
-import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death"
-import { BaseStrategy } from "./strategy_pattern/strategies/base"
-import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking"
-import { BuyStrategy } from "./strategy_pattern/strategies/buy"
-import { adjustItemConfig, DEFAULT_ITEM_CONFIG } from "./base/itemsNew"
-import { SellStrategy } from "./strategy_pattern/strategies/sell"
-import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategy_pattern/strategies/party"
-import { DestroyStrategy, MerchantDestroyStrategy } from "./strategy_pattern/strategies/destroy"
-import { ToggleStandStrategy } from "./strategy_pattern/strategies/stand"
-import { TrackerStrategy } from "./strategy_pattern/strategies/tracker"
-import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server"
-import { ChargeStrategy } from "./strategy_pattern/strategies/charge"
-import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed"
-import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal"
-import { ItemStrategy } from "./strategy_pattern/strategies/item"
-import { RespawnStrategy } from "./strategy_pattern/strategies/respawn"
-import { ElixirStrategy } from "./strategy_pattern/strategies/elixir"
-import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport"
-import { MageAttackStrategy } from "./strategy_pattern/strategies/attack_mage"
-import { RETURN_HIGHEST } from "./strategy_pattern/setups/equipment"
-import { PriestAttackStrategy } from "./strategy_pattern/strategies/attack_priest"
-import { WarriorAttackStrategy } from "./strategy_pattern/strategies/attack_warrior"
-import { RangerAttackStrategy } from "./strategy_pattern/strategies/attack_ranger"
-import { RogueAttackStrategy } from "./strategy_pattern/strategies/attack_rogue"
-import { PaladinAttackStrategy } from "./strategy_pattern/strategies/attack_paladin"
-import { SlendermanAttackStrategy, SlendermanMoveStrategy } from "./strategy_pattern/setups/slenderman"
-import { SpecialMonsterMoveStrategy, SpreadOutImprovedMoveStrategy } from "./strategy_pattern/strategies/move"
-import { halloweenGreenJr } from "./base/locations"
+import { Strategist } from "./strategy_pattern/context.js"
+import { defaultNewMerchantStrategyOptions, NewMerchantStrategy } from "./merchant/strategy.js"
+import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
+import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
+import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
+import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
+import { adjustItemConfig, DEFAULT_ITEM_CONFIG } from "./base/itemsNew.js"
+import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
+import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategy_pattern/strategies/party.js"
+import { DestroyStrategy, MerchantDestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
+import { ToggleStandStrategy } from "./strategy_pattern/strategies/stand.js"
+import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
+import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
+import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
+import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
+import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
+import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
+import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
+import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
+import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
+import { MageAttackStrategy } from "./strategy_pattern/strategies/attack_mage.js"
+import { RETURN_HIGHEST } from "./strategy_pattern/setups/equipment.js"
+import { PriestAttackStrategy } from "./strategy_pattern/strategies/attack_priest.js"
+import { WarriorAttackStrategy } from "./strategy_pattern/strategies/attack_warrior.js"
+import { RangerAttackStrategy } from "./strategy_pattern/strategies/attack_ranger.js"
+import { RogueAttackStrategy } from "./strategy_pattern/strategies/attack_rogue.js"
+import { PaladinAttackStrategy } from "./strategy_pattern/strategies/attack_paladin.js"
+import { SlendermanAttackStrategy, SlendermanMoveStrategy } from "./strategy_pattern/setups/slenderman.js"
+import { SpecialMonsterMoveStrategy, SpreadOutImprovedMoveStrategy } from "./strategy_pattern/strategies/move.js"
+import { halloweenGreenJr } from "./base/locations.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
@@ -424,9 +424,7 @@ const logicLoop = async () => {
             target.serverIdentifier === currentIdentifier &&
             target.type === currentMonster
         )
-            return // No change of target
-
-        if (["mrpumpkin", "mrgreen"].includes(currentMonster) && ["mrpumpkin", "mrgreen"].includes(target.type)) return // Same characters, same strategy
+            return // No change
 
         if (target.serverRegion !== currentRegion || target.serverIdentifier !== currentIdentifier) {
             // Stop current bots
@@ -436,6 +434,24 @@ const logicLoop = async () => {
             // Start new bots
             await startBotsOnServer(target.serverRegion, target.serverIdentifier, target.type)
             timeoutMs = 60_000
+            return
+        }
+
+        // Same characters, just ensure we're using the correct move strategy
+        for (const strategist of activeStrategists) {
+            if (target.type === "mrpumpkin") {
+                if (strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.removeStrategy(OSNAKE_MOVE_STRATEGY)
+                if (strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.removeStrategy(MRGREEN_MOVE_STRATEGY)
+                if (!strategist.hasStrategy(MRPUMPKIN_MOVE_STRATEGY)) strategist.applyStrategy(MRPUMPKIN_MOVE_STRATEGY)
+            } else if (target.type === "mrgreen") {
+                if (strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.removeStrategy(OSNAKE_MOVE_STRATEGY)
+                if (strategist.hasStrategy(MRPUMPKIN_MOVE_STRATEGY)) strategist.removeStrategy(MRPUMPKIN_MOVE_STRATEGY)
+                if (!strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.applyStrategy(MRGREEN_MOVE_STRATEGY)
+            } else if (target.type === HALLOWEEN_IDLE_MONSTER) {
+                if (strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.removeStrategy(MRGREEN_MOVE_STRATEGY)
+                if (strategist.hasStrategy(MRPUMPKIN_MOVE_STRATEGY)) strategist.removeStrategy(MRPUMPKIN_MOVE_STRATEGY)
+                if (!strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.applyStrategy(OSNAKE_MOVE_STRATEGY)
+            }
         }
     } catch (e) {
         console.error(e)
