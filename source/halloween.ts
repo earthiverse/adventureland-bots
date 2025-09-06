@@ -131,7 +131,9 @@ const MERCHANT_STRATEGY = new NewMerchantStrategy({
 })
 const PARTY_HEAL_STRATEGY = new PartyHealStrategy(activeStrategists)
 const RESPAWN_STRATEGY = new RespawnStrategy()
-const SELL_STRATEGY = new SellStrategy()
+const SELL_STRATEGY = new SellStrategy({
+    itemConfig: DEFAULT_ITEM_CONFIG,
+})
 const TOGGLE_STAND_STRATEGY = new ToggleStandStrategy({
     offWhenMoving: true,
     onWhenNear: [{ distance: 10, position: MERCHANT_HOLD_POSITION }],

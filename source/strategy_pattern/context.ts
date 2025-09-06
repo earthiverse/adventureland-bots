@@ -253,18 +253,18 @@ export class Strategist<Type extends PingCompensatedCharacter> {
                     if (retry) {
                         const wait = /wait_(\d+)_second/.exec(e)
                         if (wait && wait[1]) {
-                            setTimeout(() => switchBots(), 2000 + Number.parseInt(wait[1]) * 1000)
+                            setTimeout(() => void switchBots(), 2000 + Number.parseInt(wait[1]) * 1000)
                         } else if (/limits/.test(e)) {
-                            setTimeout(() => switchBots(), AL.Constants.RECONNECT_TIMEOUT_MS)
+                            setTimeout(() => void switchBots(), AL.Constants.RECONNECT_TIMEOUT_MS)
                         } else if (/ingame/.test(e)) {
-                            setTimeout(() => switchBots(), 500)
+                            setTimeout(() => void switchBots(), 500)
                         } else if (/nouser/.test(e)) {
                             this.stop()
                             throw new Error(
                                 `Authorization failed for ${this.bot.name}! No longer trying to reconnect...`,
                             )
                         } else {
-                            setTimeout(() => switchBots(), 10000)
+                            setTimeout(() => void switchBots(), 10000)
                             return
                         }
                     }
