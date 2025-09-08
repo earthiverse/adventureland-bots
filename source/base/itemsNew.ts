@@ -98,7 +98,7 @@ export type UpgradeConfig = {
     useOfferingFromLevel?: number
 }
 
-type CombinedConfig = BuyConfig & CraftConfig & ExchangeConfig & HoldConfig & MailConfig & SellConfig & UpgradeConfig
+export type CombinedConfig = BuyConfig & CraftConfig & ExchangeConfig & HoldConfig & MailConfig & SellConfig & UpgradeConfig
 export type ItemConfig = Partial<Record<ItemName, CombinedConfig>>
 
 export const REPLENISH_ITEM_CONFIG: ItemConfig = {

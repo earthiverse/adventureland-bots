@@ -97,7 +97,6 @@ const MERCHANT_HOLD_POSITION: IPosition = { map: "halloween", x: 0, y: 0 }
 
 let currentRegion: ServerRegion = "US"
 let currentIdentifier: ServerIdentifier = "I"
-let currentMonster: MonsterName = HALLOWEEN_IDLE_MONSTER
 
 type Server = `${ServerRegion}${ServerIdentifier}`
 const SERVER_PRIORITY: Server[] = ["USI", "EUI", "USII", "USIII", "EUII", "ASIAI", "USPVP", "EUPVP"]
@@ -421,13 +420,6 @@ const logicLoop = async () => {
                 ? { serverRegion: currentRegion, serverIdentifier: currentIdentifier, type: HALLOWEEN_IDLE_MONSTER }
                 : liveHalloweenMonsters[0]
 
-        if (
-            target.serverRegion === currentRegion &&
-            target.serverIdentifier === currentIdentifier &&
-            target.type === currentMonster
-        )
-            return // No change
-
         if (target.serverRegion !== currentRegion || target.serverIdentifier !== currentIdentifier) {
             // Stop current bots
             for (const strategist of activeStrategists) strategist.stop()
@@ -436,6 +428,9 @@ const logicLoop = async () => {
             // Start new bots
             await startBotsOnServer(target.serverRegion, target.serverIdentifier, target.type)
             timeoutMs = 60_000
+
+            currentRegion = target.serverRegion
+            currentIdentifier = target.serverIdentifier
             return
         }
 
