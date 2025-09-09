@@ -362,7 +362,6 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
 const startBotsOnServer = async (region: ServerRegion, identifier: ServerIdentifier, monster: MonsterName) => {
     currentRegion = region
     currentIdentifier = identifier
-    currentMonster = monster
 
     // Determine which bots to use
     let attackingCharacters: string[]
