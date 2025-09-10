@@ -34,7 +34,7 @@
     "typescript": "^5.3.3"
   },
   "scripts": {
-    "build": "tsc && copyfiles --up 1 source/**/*.html source/**/*.ttf build",
+    "build": "tsc --skipLibCheck && copyfiles --up 1 source/**/*.html source/**/*.ttf build",
     "lint": "eslint */**.ts",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
