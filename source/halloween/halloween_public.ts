@@ -1,6 +1,7 @@
 import AL, {
     EntityModel,
     IPosition,
+    ItemName,
     Mage,
     Merchant,
     MonsterName,
@@ -59,10 +60,13 @@ const HALLOWEEN_MONSTERS: MonsterName[] = ["mrgreen", "mrpumpkin", "minimush", "
 
 const PARTY_LEADER = "earthPri"
 
-const SELL: CombinedConfig = {
+const SELL: CombinedConfig = Object.freeze({
     sell: true,
     sellPrice: "npc",
-}
+})
+const DONT_UPGRADE: CombinedConfig = Object.freeze({
+    upgradeUntilLevel: 0,
+})
 const HALLOWEEN_TIEM_CONFIG: ItemConfig = {
     // Potions
     hpot1: {
@@ -98,6 +102,14 @@ const HALLOWEEN_TIEM_CONFIG: ItemConfig = {
     phelmet: SELL,
     glolipop: SELL,
     ololipop: SELL,
+}
+
+// Update config to not upgrade / compound anything
+for (const itemKey of Object.keys(AL.Game.G.items)) {
+    if (HALLOWEEN_TIEM_CONFIG[itemKey as ItemName]) continue // Already defined
+
+    const gItem = AL.Game.G.items[itemKey as ItemName]
+    if (gItem.upgrade || gItem.compound) HALLOWEEN_TIEM_CONFIG[itemKey as ItemName] = DONT_UPGRADE
 }
 
 const MERCHANT_HOLD_POSITION: IPosition = { map: "halloween", x: -50, y: 0 }
