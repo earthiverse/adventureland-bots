@@ -304,25 +304,20 @@ const logicLoop = async () => {
 
             currentRegion = target.serverRegion
             currentIdentifier = target.serverIdentifier
-
-            console.debug("changing server")
             return
         }
 
         // Same characters, just ensure we're using the correct move strategy
         for (const strategist of activeStrategists) {
             if (target.type === "mrpumpkin") {
-                console.debug("move strategy mrpumpkin")
                 if (strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.removeStrategy(OSNAKE_MOVE_STRATEGY)
                 if (strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.removeStrategy(MRGREEN_MOVE_STRATEGY)
                 if (!strategist.hasStrategy(MRPUMPKIN_MOVE_STRATEGY)) strategist.applyStrategy(MRPUMPKIN_MOVE_STRATEGY)
             } else if (target.type === "mrgreen") {
-                console.debug("move strategy mrgreen")
                 if (strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.removeStrategy(OSNAKE_MOVE_STRATEGY)
                 if (strategist.hasStrategy(MRPUMPKIN_MOVE_STRATEGY)) strategist.removeStrategy(MRPUMPKIN_MOVE_STRATEGY)
                 if (!strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.applyStrategy(MRGREEN_MOVE_STRATEGY)
             } else if (target.type === HALLOWEEN_IDLE_MONSTER) {
-                console.debug("move strategy idle")
                 if (strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.removeStrategy(MRGREEN_MOVE_STRATEGY)
                 if (strategist.hasStrategy(MRPUMPKIN_MOVE_STRATEGY)) strategist.removeStrategy(MRPUMPKIN_MOVE_STRATEGY)
                 if (!strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.applyStrategy(OSNAKE_MOVE_STRATEGY)
