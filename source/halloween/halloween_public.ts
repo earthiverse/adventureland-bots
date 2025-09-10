@@ -253,11 +253,14 @@ const startBot = (strategist: Strategist<PingCompensatedCharacter>) => {
         DISCONNECT_ON_COMMAND_STRATEGY,
         ELIXIR_STRATEGY,
         ITEM_STRATEGY,
-        REQUEST_PARTY_STRATEGY,
         RESPAWN_STRATEGY,
         SELL_STRATEGY,
-        TRACKER_STRATEGY,
     ])
+
+    // Strategies for attacking bots
+    if (strategist.bot.ctype !== "merchant") {
+        strategist.applyStrategies([REQUEST_PARTY_STRATEGY, TRACKER_STRATEGY])
+    }
 }
 
 const logicLoop = async () => {
@@ -337,8 +340,12 @@ app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }))
 const port = 80
 
-app.get("/", (_req, res) => { res.sendFile(path.join(path.resolve(), "/index.html")) })
-app.get("/m5x7.ttf", (_req, res) => { res.sendFile(path.join(path.resolve(), "/m5x7.ttf")) })
+app.get("/", (_req, res) => {
+    res.sendFile(path.join(path.resolve(), "/index.html"))
+})
+app.get("/m5x7.ttf", (_req, res) => {
+    res.sendFile(path.join(path.resolve(), "/m5x7.ttf"))
+})
 
 app.post(
     "/",

@@ -352,7 +352,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         strategist.applyStrategy(new HomeServerStrategy(region, identifier))
 
     // First character to start becomes party leader
-    if (activeStrategists.length > 0) {
+    if (activeStrategists.length > 0 && strategist.bot.ctype !== "merchant") {
         strategist.applyStrategy(new RequestPartyStrategy(activeStrategists[0].bot.name))
     }
 
