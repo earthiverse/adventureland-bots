@@ -16,35 +16,36 @@ import AL, {
 import bodyParser from "body-parser"
 import cors from "cors"
 import express from "express"
+import path from "path"
 import { body, matchedData, validationResult } from "express-validator"
-import { Strategist, Strategy } from "./strategy_pattern/context.js"
-import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strategies/magiport.js"
-import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
-import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
-import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
-import { MageAttackStrategy } from "./strategy_pattern/strategies/attack_mage.js"
-import { RangerAttackStrategy } from "./strategy_pattern/strategies/attack_ranger.js"
-import { PaladinAttackStrategy } from "./strategy_pattern/strategies/attack_paladin.js"
-import { PriestAttackStrategy } from "./strategy_pattern/strategies/attack_priest.js"
-import { RogueAttackStrategy } from "./strategy_pattern/strategies/attack_rogue.js"
-import { WarriorAttackStrategy } from "./strategy_pattern/strategies/attack_warrior.js"
-import { SpecialMonsterMoveStrategy, SpreadOutImprovedMoveStrategy } from "./strategy_pattern/strategies/move.js"
-import { halloweenGreenJr } from "./base/locations.js"
-import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategy_pattern/strategies/party.js"
-import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
-import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
-import { BaseStrategy } from "./strategy_pattern/strategies/base.js"
-import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
-import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
-import { CombinedConfig, ItemConfig } from "./base/itemsNew.js"
-import { BuyStrategy } from "./strategy_pattern/strategies/buy.js"
-import { ElixirStrategy } from "./strategy_pattern/strategies/elixir.js"
-import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
-import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
-import { NewMerchantStrategy } from "./merchant/strategy.js"
-import { ToggleStandStrategy } from "./strategy_pattern/strategies/stand.js"
+import { Strategist, Strategy } from "../strategy_pattern/context.js"
+import { MagiportOthersSmartMovingToUsStrategy } from "../strategy_pattern/strategies/magiport.js"
+import { ChargeStrategy } from "../strategy_pattern/strategies/charge.js"
+import { PartyHealStrategy } from "../strategy_pattern/strategies/partyheal.js"
+import { GiveRogueSpeedStrategy } from "../strategy_pattern/strategies/rspeed.js"
+import { MageAttackStrategy } from "../strategy_pattern/strategies/attack_mage.js"
+import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
+import { PaladinAttackStrategy } from "../strategy_pattern/strategies/attack_paladin.js"
+import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
+import { RogueAttackStrategy } from "../strategy_pattern/strategies/attack_rogue.js"
+import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
+import { SpecialMonsterMoveStrategy, SpreadOutImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
+import { halloweenGreenJr } from "../base/locations.js"
+import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "../strategy_pattern/strategies/party.js"
+import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
+import { AvoidStackingStrategy } from "../strategy_pattern/strategies/avoid_stacking.js"
+import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
+import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
+import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
+import { CombinedConfig, ItemConfig } from "../base/itemsNew.js"
+import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
+import { ElixirStrategy } from "../strategy_pattern/strategies/elixir.js"
+import { ItemStrategy } from "../strategy_pattern/strategies/item.js"
+import { SellStrategy } from "../strategy_pattern/strategies/sell.js"
+import { NewMerchantStrategy } from "../merchant/strategy.js"
+import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 
-await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
 
 /** What monster to farm while waiting */
@@ -339,7 +340,10 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }))
-const port = 8080
+const port = 80
+
+app.get("/", (_req, res) => { res.sendFile(path.join(path.resolve(), "/index.html")) })
+app.get("/m5x7.ttf", (_req, res) => { res.sendFile(path.join(path.resolve(), "/m5x7.ttf")) })
 
 app.post(
     "/",
