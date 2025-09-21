@@ -6,6 +6,7 @@ import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
 import { MAGE_SPLASH_WEAPONS, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING, ZAPPER_STRRING } from "./equipment.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export function constructMummySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const priestConfig: CharacterConfig = {
@@ -57,6 +58,17 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
         move: new HoldPositionMoveStrategy({ map: "spookytown", x: 230, y: -1129 }),
     }
 
+    const rangerConfig: CharacterConfig = {
+        ctype: "ranger",
+        attack: new RangerAttackStrategy({
+            contexts: contexts,
+            generateEnsureEquipped: {
+                attributes: ["range"],
+            },
+            type: "mummy",
+        }),
+    }
+
     return {
         configs: [
             {
@@ -66,6 +78,10 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
             {
                 id: "mummy_priest,warrior",
                 characters: [priestConfig, warriorConfig],
+            },
+            {
+                id: "mummy_priest,ranger",
+                characters: [priestConfig, rangerConfig],
             },
         ],
     }
