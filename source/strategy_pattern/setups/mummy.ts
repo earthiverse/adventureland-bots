@@ -67,6 +67,7 @@ export function constructMummySetup(contexts: Strategist<PingCompensatedCharacte
             },
             type: "mummy",
         }),
+        move: new HoldPositionMoveStrategy({ map: "spookytown", x: 230, y: -1129 }),
     }
 
     return {
