@@ -4,10 +4,26 @@ import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
+import { CharacterConfig, Setup } from "./base"
+import { MAGE_SPLASH, PRIEST_ARMOR, RETURN_HIGHEST, WARRIOR_SPLASH } from "./equipment.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export function constructWolfSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const moveStrategy = new ImprovedMoveStrategy("wolf")
+
+    const priestConfig: CharacterConfig = {
+        ctype: "priest",
+        attack: new PriestAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            generateEnsureEquipped: {
+                prefer: { ...PRIEST_ARMOR },
+            },
+            type: "wolf",
+        }),
+        move: moveStrategy,
+    }
+
     return {
         configs: [
             {
@@ -19,25 +35,14 @@ export function constructWolfSetup(contexts: Strategist<PingCompensatedCharacter
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                prefer: { ...MAGE_SPLASH }
+                                prefer: { ...MAGE_SPLASH },
                             },
                             targetingPartyMember: true,
-                            type: "wolf"
-                        }),
-                        move: new ImprovedMoveStrategy("wolf")
-                    },
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            generateEnsureEquipped: {
-                                prefer: { ...PRIEST_ARMOR }
-                            },
                             type: "wolf",
                         }),
-                        move: new ImprovedMoveStrategy("wolf")
+                        move: moveStrategy,
                     },
+                    priestConfig,
                     {
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
@@ -45,15 +50,35 @@ export function constructWolfSetup(contexts: Strategist<PingCompensatedCharacter
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                prefer: { ...WARRIOR_SPLASH }
+                                prefer: { ...WARRIOR_SPLASH },
                             },
                             targetingPartyMember: true,
-                            typeList: ["wolf", "stompy"]
+                            typeList: ["wolf", "stompy"],
                         }),
-                        move: new ImprovedMoveStrategy("wolf")
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
-        ]
+            {
+                id: "wolf_priest,ranger",
+                characters: [
+                    priestConfig,
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                avoidAttributes: ["blast", "explosion"],
+                                prefer: {
+                                    mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
+                                },
+                            },
+                            type: "wolf",
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
