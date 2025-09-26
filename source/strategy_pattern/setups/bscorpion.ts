@@ -4,7 +4,7 @@ import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy, KiteInCircleMoveStrategy } from "../strategies/move.js"
-import { Setup } from "./base"
+import { CharacterConfig, Setup } from "./base"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RETURN_HIGHEST } from "./equipment.js"
@@ -13,6 +13,24 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
     const spawn = AL.Pathfinder.locateMonster("bscorpion")[0]
     const kiteStrategy = new KiteInCircleMoveStrategy({ center: spawn, type: "bscorpion", radius: 110 })
     const moveStrategy = new ImprovedMoveStrategy("bscorpion")
+
+    const priestConfig: CharacterConfig = {
+        ctype: "priest",
+        attack: new PriestAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            enableAbsorbToTank: true,
+            enableGreedyAggro: true,
+            generateEnsureEquipped: {
+                attributes: ["attack", "int"],
+                prefer: {
+                    mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
+                },
+            },
+            type: "bscorpion",
+        }),
+        move: kiteStrategy,
+    }
 
     return {
         configs: [
@@ -36,23 +54,7 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                         }),
                         move: moveStrategy,
                     },
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            enableAbsorbToTank: true,
-                            enableGreedyAggro: true,
-                            generateEnsureEquipped: {
-                                attributes: ["attack", "int"],
-                                prefer: {
-                                    mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
-                                },
-                            },
-                            type: "bscorpion",
-                        }),
-                        move: kiteStrategy,
-                    },
+                    priestConfig,
                     {
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({
@@ -64,6 +66,28 @@ export function constructBScorpionSetup(contexts: Strategist<PingCompensatedChar
                                 prefer: {
                                     mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
                                     offhand: { name: "fireblade", filters: RETURN_HIGHEST },
+                                },
+                            },
+                            targetingPartyMember: true,
+                            type: "bscorpion",
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
+            },
+            {
+                id: "bscorpion_priest,ranger",
+                characters: [
+                    priestConfig,
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            disableZapper: true,
+                            generateEnsureEquipped: {
+                                prefer: {
+                                    mainhand: { name: "firebow", filters: RETURN_HIGHEST },
                                 },
                             },
                             targetingPartyMember: true,
