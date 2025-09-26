@@ -42,6 +42,9 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
             type: "mole",
         }),
         move: kiteMoveStrategy,
+        require: {
+            items: ["froststaff"],
+        },
     }
 
     const warriorConfig: CharacterConfig = {
@@ -87,6 +90,9 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
             },
         }),
         move: kiteMoveStrategy,
+        require: {
+            items: ["frostbow"],
+        },
     }
 
     return {

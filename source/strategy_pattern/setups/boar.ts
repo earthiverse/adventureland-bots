@@ -4,11 +4,14 @@ import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { SpreadOutImprovedMoveStrategy } from "../strategies/move.js"
+import { KiteMonsterMoveStrategy, SpreadOutImprovedMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
+import { RETURN_HIGHEST } from "./equipment.js"
 
 export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new SpreadOutImprovedMoveStrategy("boar")
+    const kiteMoveStrategy = new KiteMonsterMoveStrategy({ contexts: contexts, typeList: ["boar"] })
+
     const mageConfig: CharacterConfig = {
         ctype: "mage",
         attack: new MageAttackStrategy({
@@ -20,6 +23,7 @@ export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter
         }),
         move: moveStrategy,
     }
+
     const priestConfig: CharacterConfig = {
         ctype: "priest",
         attack: new PriestAttackStrategy({
@@ -31,6 +35,7 @@ export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter
         }),
         move: moveStrategy,
     }
+
     const tripleRangerConfig: CharacterConfig = {
         ctype: "ranger",
         attack: new RangerAttackStrategy({
@@ -44,6 +49,25 @@ export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter
         }),
         move: moveStrategy,
     }
+    const kiteRangerConfig: CharacterConfig = {
+        ctype: "ranger",
+        attack: new RangerAttackStrategy({
+            contexts: contexts,
+            disableHuntersMark: true,
+            disableSuperShot: true,
+            generateEnsureEquipped: {
+                prefer: {
+                    mainhand: { name: "frostbow", filters: RETURN_HIGHEST },
+                },
+            },
+            type: "boar",
+        }),
+        move: kiteMoveStrategy,
+        require: {
+            items: ["frostbow"],
+        },
+    }
+
     const warriorConfig: CharacterConfig = {
         ctype: "warrior",
         attack: new WarriorAttackStrategy({
@@ -71,6 +95,10 @@ export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter
             {
                 id: "boar_priest,warrior",
                 characters: [priestConfig, warriorConfig],
+            },
+            {
+                id: "boar_ranger",
+                characters: [kiteRangerConfig],
             },
         ],
     }

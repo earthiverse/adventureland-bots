@@ -22,6 +22,7 @@ export function constructIceRoamerSetup(contexts: Strategist<PingCompensatedChar
                 prefer: {
                     helmet: { name: "cyber", filters: RETURN_HIGHEST },
                     mainhand: { name: "crossbow", filters: RETURN_HIGHEST },
+                    orb: { name: "vorb", filters: RETURN_HIGHEST },
                 },
             },
             type: "iceroamer",
