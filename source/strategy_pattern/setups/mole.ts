@@ -4,7 +4,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy, KiteMonsterMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
-import { WARRIOR_SPLASH_WEAPONS, ZAPPER_STRRING } from "./equipment.js"
+import { RETURN_HIGHEST, WARRIOR_SPLASH_WEAPONS, ZAPPER_STRRING } from "./equipment.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
@@ -15,6 +15,8 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
             y: -735,
         },
     })
+    const kiteMoveStrategy = new KiteMonsterMoveStrategy({ contexts: contexts, typeList: ["mole"] })
+
     const priestConfig: CharacterConfig = {
         ctype: "priest",
         attack: new PriestAttackStrategy({
@@ -27,6 +29,21 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
         }),
         move: moveStrategy,
     }
+    const kitePriestConfig: CharacterConfig = {
+        ctype: "priest",
+        attack: new PriestAttackStrategy({
+            contexts: contexts,
+            disableEnergize: true,
+            generateEnsureEquipped: {
+                prefer: {
+                    mainhand: { name: "froststaff", filters: RETURN_HIGHEST },
+                },
+            },
+            type: "mole",
+        }),
+        move: kiteMoveStrategy,
+    }
+
     const warriorConfig: CharacterConfig = {
         ctype: "warrior",
         attack: new WarriorAttackStrategy({
@@ -44,6 +61,7 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
         }),
         move: moveStrategy,
     }
+
     // Support ranger shouldn't tank moles
     const supportRangerConfig: CharacterConfig = {
         ctype: "ranger",
@@ -56,7 +74,19 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
             maximumTargets: 0,
             type: "mole",
         }),
-        move: new KiteMonsterMoveStrategy({ contexts: contexts, typeList: ["mole"] }),
+        move: kiteMoveStrategy,
+    }
+    const kiteRangerConfig: CharacterConfig = {
+        ctype: "ranger",
+        attack: new RangerAttackStrategy({
+            contexts: contexts,
+            generateEnsureEquipped: {
+                prefer: {
+                    mainhand: { name: "frostbow", filters: RETURN_HIGHEST },
+                },
+            },
+        }),
+        move: kiteMoveStrategy,
     }
 
     return {
@@ -68,6 +98,14 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
             {
                 id: "mole_priest,warrior",
                 characters: [priestConfig, warriorConfig],
+            },
+            {
+                id: "mole_priest",
+                characters: [kitePriestConfig],
+            },
+            {
+                id: "mole_ranger",
+                characters: [kiteRangerConfig],
             },
         ],
     }
