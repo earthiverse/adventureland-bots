@@ -532,7 +532,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         const entity = bot.getEntity({
             ...this.options,
             canDamage: "attack",
-            targetingMe: true,
+            targetingPartyMember: true,
             withinRange: "attack",
             returnLowestHP: true,
         })
