@@ -40,11 +40,11 @@ class MageGigaCrabAttackStrategy extends MageAttackStrategy {
 
         await super.zapperAttack(bot, priority)
 
-        const crabx = bot.getEntity({ type: "crabx" })
-        if (!crabx || crabx["1hp"]) return // Crabx is not vulnerable
+        const crabxx = bot.getEntity({ type: "crabxx" })
+        if (!crabxx || crabxx["1hp"]) return // crabxx is not vulnerable
 
         if (bot.canUse("zapperzap") && bot.mp > bot.G.skills.zapperzap.mp + bot.mp_cost * 2)
-            return bot.zapperZap(crabx.id)
+            return bot.zapperZap(crabxx.id)
     }
 }
 
@@ -65,11 +65,11 @@ class PriestGigaCrabAttackStrategy extends PriestAttackStrategy {
 
         await super.zapperAttack(bot, priority)
 
-        const crabx = bot.getEntity({ type: "crabx" })
-        if (!crabx || crabx["1hp"]) return // Crabx is not vulnerable
+        const crabxx = bot.getEntity({ type: "crabxx" })
+        if (!crabxx || crabxx["1hp"]) return // crabxx is not vulnerable
 
         if (bot.canUse("zapperzap") && bot.mp > bot.G.skills.zapperzap.mp + bot.mp_cost * 2)
-            return bot.zapperZap(crabx.id)
+            return bot.zapperZap(crabxx.id)
     }
 }
 
@@ -101,11 +101,11 @@ class WarriorGigaCrabAttackStrategy extends WarriorAttackStrategy {
 
         await super.zapperAttack(bot, priority)
 
-        const crabx = bot.getEntity({ type: "crabx" })
-        if (!crabx || crabx["1hp"]) return // Crabx is not vulnerable
+        const crabxx = bot.getEntity({ type: "crabxx" })
+        if (!crabxx || crabxx["1hp"]) return // crabxx is not vulnerable
 
         if (bot.canUse("zapperzap") && bot.mp > bot.G.skills.zapperzap.mp + bot.mp_cost * 2)
-            return bot.zapperZap(crabx.id)
+            return bot.zapperZap(crabxx.id)
     }
 }
 
@@ -116,11 +116,11 @@ class RangerGigaCrabAttackStrategy extends RangerAttackStrategy {
 
         await super.zapperAttack(bot, priority)
 
-        const crabx = bot.getEntity({ type: "crabx" })
-        if (!crabx || crabx["1hp"]) return // Crabx is not vulnerable
+        const crabxx = bot.getEntity({ type: "crabxx" })
+        if (!crabxx || crabxx["1hp"]) return // crabxx is not vulnerable
 
         if (bot.canUse("zapperzap") && bot.mp > bot.G.skills.zapperzap.mp + bot.mp_cost * 2)
-            return bot.zapperZap(crabx.id)
+            return bot.zapperZap(crabxx.id)
     }
 }
 
