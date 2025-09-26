@@ -1,4 +1,4 @@
-import { Mage, MonsterName, PingCompensatedCharacter, Priest, Warrior } from "alclient"
+import { Entity, Mage, MonsterName, PingCompensatedCharacter, Priest, Ranger, Warrior } from "alclient"
 import { mainCrabXs } from "../../base/locations.js"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
@@ -13,6 +13,7 @@ import {
     SpreadOutImprovedMoveStrategy,
 } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
+import { ZAPPER_CRING, ZAPPER_STRRING } from "./equipment.js"
 
 const types: MonsterName[] = ["crabx", "crabxx"]
 
@@ -32,6 +33,19 @@ class MageGigaCrabAttackStrategy extends MageAttackStrategy {
             this.options.enableGreedyAggro = true
         }
     }
+
+    protected async zapperAttack(bot: Mage, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
+        if (!bot.canUse("zapperzap")) return
+        if (this.options.disableZapper) return
+
+        await super.zapperAttack(bot, priority)
+
+        const crabx = bot.getEntity({ type: "crabx" })
+        if (!crabx || crabx["1hp"]) return // Crabx is not vulnerable
+
+        if (bot.canUse("zapperzap") && bot.mp > bot.G.skills.zapperzap.mp + bot.mp_cost * 2)
+            return bot.zapperZap(crabx.id)
+    }
 }
 
 class PriestGigaCrabAttackStrategy extends PriestAttackStrategy {
@@ -43,6 +57,19 @@ class PriestGigaCrabAttackStrategy extends PriestAttackStrategy {
             // Additional monsters
             this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
         }
+    }
+
+    protected async zapperAttack(bot: Priest, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
+        if (!bot.canUse("zapperzap")) return
+        if (this.options.disableZapper) return
+
+        await super.zapperAttack(bot, priority)
+
+        const crabx = bot.getEntity({ type: "crabx" })
+        if (!crabx || crabx["1hp"]) return // Crabx is not vulnerable
+
+        if (bot.canUse("zapperzap") && bot.mp > bot.G.skills.zapperzap.mp + bot.mp_cost * 2)
+            return bot.zapperZap(crabx.id)
     }
 }
 
@@ -66,6 +93,34 @@ class WarriorGigaCrabAttackStrategy extends WarriorAttackStrategy {
             this.options.enableEquipForCleave = true
             this.options.enableEquipForStomp = true
         }
+    }
+
+    protected async zapperAttack(bot: Warrior, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
+        if (!bot.canUse("zapperzap")) return
+        if (this.options.disableZapper) return
+
+        await super.zapperAttack(bot, priority)
+
+        const crabx = bot.getEntity({ type: "crabx" })
+        if (!crabx || crabx["1hp"]) return // Crabx is not vulnerable
+
+        if (bot.canUse("zapperzap") && bot.mp > bot.G.skills.zapperzap.mp + bot.mp_cost * 2)
+            return bot.zapperZap(crabx.id)
+    }
+}
+
+class RangerGigaCrabAttackStrategy extends RangerAttackStrategy {
+    protected async zapperAttack(bot: Ranger, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
+        if (!bot.canUse("zapperzap")) return
+        if (this.options.disableZapper) return
+
+        await super.zapperAttack(bot, priority)
+
+        const crabx = bot.getEntity({ type: "crabx" })
+        if (!crabx || crabx["1hp"]) return // Crabx is not vulnerable
+
+        if (bot.canUse("zapperzap") && bot.mp > bot.G.skills.zapperzap.mp + bot.mp_cost * 2)
+            return bot.zapperZap(crabx.id)
     }
 }
 
@@ -122,6 +177,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
             generateEnsureEquipped: {
                 attributes: ["armor", "attack", "int"],
                 prefer: {
+                    ...ZAPPER_CRING,
                     amulet: { name: "mpxamulet", filters: { returnHighestLevel: true } },
                     gloves: { name: "mpxgloves", filters: { returnHighestLevel: true } },
                     orb: { name: "jacko", filters: { returnHighestLevel: true } },
@@ -144,6 +200,7 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
             generateEnsureEquipped: {
                 attributes: ["armor", "str", "blast", "explosion"],
                 prefer: {
+                    ...ZAPPER_STRRING,
                     amulet: { name: "mpxamulet", filters: { returnHighestLevel: true } },
                     gloves: { name: "mpxgloves", filters: { returnHighestLevel: true } },
                     orb: { name: "jacko", filters: { returnHighestLevel: true } },
@@ -156,12 +213,13 @@ export function constructGigaCrabSetup(contexts: Strategist<PingCompensatedChara
 
     const rangerConfig: CharacterConfig = {
         ctype: "ranger",
-        attack: new RangerAttackStrategy({
+        attack: new RangerGigaCrabAttackStrategy({
             contexts: contexts,
             disableCreditCheck: true, // Giga crab will only take 1 damage while any crabx are alive, so help kill others', too
             disableEnergize: true,
             generateEnsureEquipped: {
                 prefer: {
+                    ...ZAPPER_CRING,
                     amulet: { name: "mpxamulet", filters: { returnHighestLevel: true } },
                     gloves: { name: "mpxgloves", filters: { returnHighestLevel: true } },
                     mainhand: { name: "crossbow", filters: { returnHighestLevel: true } },
