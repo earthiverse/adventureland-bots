@@ -11,6 +11,7 @@ import AL, {
     PingCompensatedCharacter,
     SkillName,
     SlotType,
+    Tools,
     Warrior,
 } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
@@ -684,9 +685,9 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 targetingMe: true,
                 willDieToProjectiles: false,
             })
-            if (targetingMe.length) {
-                return true
-            }
+
+            // Scare if they're within attacking range, or almost within attacking range
+            if (targetingMe.some((e) => e.range >= Tools.distance(bot, e) * 1.2)) return true
         }
 
         if (this.options.type) {
@@ -696,9 +697,9 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 targetingMe: true,
                 willDieToProjectiles: false,
             })
-            if (targetingMe.length) {
-                return true
-            }
+
+            // Scare if they're within attacking range, or almost within attacking range
+            if (targetingMe.some((e) => e.range >= Tools.distance(bot, e) * 1.2)) return true
         }
 
         // If we have more targets than what our maximum is set to, we probably want to scare
@@ -726,6 +727,6 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         // If we have enableGreedyAggro on, we are probably okay with a lot of targets
         if (this.options.enableGreedyAggro) return false
 
-        return bot.isScared()
+        return bot.isScared() && bot.hp < bot.max_hp / 2
     }
 }
