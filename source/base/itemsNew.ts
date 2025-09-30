@@ -98,7 +98,13 @@ export type UpgradeConfig = {
     useOfferingFromLevel?: number
 }
 
-export type CombinedConfig = BuyConfig & CraftConfig & ExchangeConfig & HoldConfig & MailConfig & SellConfig & UpgradeConfig
+export type CombinedConfig = BuyConfig &
+    CraftConfig &
+    ExchangeConfig &
+    HoldConfig &
+    MailConfig &
+    SellConfig &
+    UpgradeConfig
 export type ItemConfig = Partial<Record<ItemName, CombinedConfig>>
 
 export const REPLENISH_ITEM_CONFIG: ItemConfig = {
@@ -232,7 +238,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         // destroyBelowLevel: 1,
         buy: true,
         buyPrice: "ponty",
-        upgradeUntilLevel: 9
+        upgradeUntilLevel: 9,
     },
     computer: {
         hold: true,
@@ -379,7 +385,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         // destroyBelowLevel: 1,
         buy: true,
         buyPrice: "ponty",
-        upgradeUntilLevel: 9
+        upgradeUntilLevel: 9,
     },
     goldbooster: {
         hold: true,
@@ -415,7 +421,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         // destroyBelowLevel: 1,
         buy: true,
         buyPrice: "ponty",
-        upgradeUntilLevel: 9
+        upgradeUntilLevel: 9,
     },
     hgloves: {
         buy: true,
@@ -543,15 +549,23 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     orboffire: {
         upgradeUntilLevel: 0,
+        buy: true,
+        buyPrice: "ponty",
     },
     orboffrost: {
         upgradeUntilLevel: 0,
+        buy: true,
+        buyPrice: "ponty",
     },
     orbofplague: {
         upgradeUntilLevel: 0,
+        buy: true,
+        buyPrice: "ponty",
     },
     orbofresolve: {
         upgradeUntilLevel: 0,
+        buy: true,
+        buyPrice: "ponty",
     },
     ornament: {
         exchange: true,
@@ -566,7 +580,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         // destroyBelowLevel: 1,
         buy: true,
         buyPrice: "ponty",
-        upgradeUntilLevel: 9
+        upgradeUntilLevel: 9,
     },
     phelmet: {
         destroyBelowLevel: 1,
@@ -648,7 +662,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         // destroyBelowLevel: 1,
         buy: true,
         buyPrice: "ponty",
-        upgradeUntilLevel: 9
+        upgradeUntilLevel: 9,
     },
     slimestaff: {
         destroyBelowLevel: 1,
