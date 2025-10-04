@@ -286,6 +286,10 @@ const logicLoop = async () => {
 
         // Sort monsters by priority
         liveHalloweenMonsters.sort((a, b) => {
+            // Prioritize by type
+            if (a.type !== b.type)
+                return HALLOWEEN_EVENT_MONSTERS.indexOf(a.type) - HALLOWEEN_EVENT_MONSTERS.indexOf(b.type)
+
             // Prioritize lower HP
             if (a.hp !== b.hp) return a.hp - b.hp
 
@@ -294,10 +298,6 @@ const logicLoop = async () => {
             const bSameServer = b.serverIdentifier === currentIdentifier && b.serverRegion === currentRegion
             if (aSameServer && !bSameServer) return -1
             if (!aSameServer && bSameServer) return 1
-
-            // Prioritize by type
-            if (a.type !== b.type)
-                return HALLOWEEN_EVENT_MONSTERS.indexOf(a.type) - HALLOWEEN_EVENT_MONSTERS.indexOf(b.type)
 
             // Proritize by server
             const aServer: Server = `${a.serverRegion}${a.serverIdentifier}`
@@ -324,7 +324,6 @@ const logicLoop = async () => {
 
         // Same characters, just ensure we're using the correct move strategy
         for (const strategist of activeStrategists) {
-            if (strategist.bot.ctype === "merchant") continue // Merchant does their own thing
             if (target.type === "mrpumpkin") {
                 if (strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.removeStrategy(OSNAKE_MOVE_STRATEGY)
                 if (strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.removeStrategy(MRGREEN_MOVE_STRATEGY)
