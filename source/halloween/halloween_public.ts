@@ -285,10 +285,15 @@ const logicLoop = async () => {
             .exec()
 
         // Sort monsters by priority
+        const monsterRank = (t: MonsterName) => {
+            if (t === "mrpumpkin" || t === "mrgreen") return 0
+            return 1 // slenderman
+        }
         liveHalloweenMonsters.sort((a, b) => {
             // Prioritize by type
-            if (a.type !== b.type)
-                return HALLOWEEN_EVENT_MONSTERS.indexOf(a.type) - HALLOWEEN_EVENT_MONSTERS.indexOf(b.type)
+            const aRank = monsterRank(a.type)
+            const bRank = monsterRank(b.type)
+            if (aRank !== bRank) return aRank - bRank
 
             // Prioritize lower HP
             if (a.hp !== b.hp) return a.hp - b.hp
