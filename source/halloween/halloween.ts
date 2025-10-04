@@ -435,6 +435,7 @@ const logicLoop = async () => {
 
         // Same characters, just ensure we're using the correct move strategy
         for (const strategist of activeStrategists) {
+            if (strategist.bot.ctype === "merchant") continue // Merchant does their own thing
             if (target.type === "mrpumpkin") {
                 if (strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.removeStrategy(OSNAKE_MOVE_STRATEGY)
                 if (strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.removeStrategy(MRGREEN_MOVE_STRATEGY)
