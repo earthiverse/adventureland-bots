@@ -96,7 +96,7 @@ const HALLOWEEN_MONSTERS: MonsterName[] = [...HALLOWEEN_EVENT_MONSTERS, "greenjr
 const MERCHANT_HOLD_POSITION: IPosition = { map: "halloween", x: 0, y: 0 }
 
 let currentRegion: ServerRegion = "US"
-let currentIdentifier: ServerIdentifier = "I"
+let currentIdentifier: ServerIdentifier = "HARDCORE" // Start on a non-existent server, the first loop will set this to something else
 
 type Server = `${ServerRegion}${ServerIdentifier}`
 const SERVER_PRIORITY: Server[] = ["USI", "EUI", "USII", "USIII", "EUII", "ASIAI", "USPVP", "EUPVP"]
@@ -387,6 +387,7 @@ const logicLoop = async () => {
     /** How many ms to wait until the next check */
     let timeoutMs = 10_000
     try {
+        console.debug("Looking for Halloween monsters...")
         const liveHalloweenMonsters = await EntityModel.find({
             type: { $in: HALLOWEEN_EVENT_MONSTERS },
         })
@@ -425,6 +426,9 @@ const logicLoop = async () => {
                 : liveHalloweenMonsters[0]
 
         if (target.serverRegion !== currentRegion || target.serverIdentifier !== currentIdentifier) {
+            console.debug(
+                `Switching from ${currentRegion}${currentIdentifier} to ${target.serverRegion}${target.serverIdentifier}...`,
+            )
             // Stop current bots
             for (const strategist of activeStrategists) strategist.stop()
             activeStrategists.splice(0, activeStrategists.length)
