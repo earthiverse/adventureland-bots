@@ -91,7 +91,7 @@ const HALLOWEEN_IDLE_MONSTER: MonsterName = "osnake"
 const HALLOWEEN_EVENT_MONSTERS: MonsterName[] = ["mrpumpkin", "mrgreen", "slenderman"]
 
 /** All monsters we're farming */
-const HALLOWEEN_MONSTERS: MonsterName[] = [...HALLOWEEN_EVENT_MONSTERS, "greenjr", "jr", "osnake"]
+const HALLOWEEN_MONSTERS: MonsterName[] = ["greenjr", "jr", ...HALLOWEEN_EVENT_MONSTERS, "osnake"]
 
 const MERCHANT_HOLD_POSITION: IPosition = { map: "halloween", x: 0, y: 0 }
 
