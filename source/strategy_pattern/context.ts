@@ -15,6 +15,7 @@ export type LoopName =
     | "attack"
     | "avoid_death"
     | "avoid_stacking"
+    | "booster"
     | "buy"
     | "charge"
     | "compound"

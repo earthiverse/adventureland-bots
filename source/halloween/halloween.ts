@@ -37,6 +37,7 @@ import { PaladinAttackStrategy } from "../strategy_pattern/strategies/attack_pal
 import { SlendermanAttackStrategy, SlendermanMoveStrategy } from "../strategy_pattern/setups/slenderman.js"
 import { SpecialMonsterMoveStrategy, SpreadOutImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { halloweenGreenJr } from "../base/locations.js"
+import { BoosterStrategy } from "../strategy_pattern/strategies/booster.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
@@ -107,6 +108,7 @@ const ACCEPT_PARTY_REQUEST_STRATEGY = new AcceptPartyRequestStrategy()
 const AVOID_DEATH_STRATEGY = new AvoidDeathStrategy()
 const AVOID_STACKING_STRATEGY = new AvoidStackingStrategy()
 const BASE_STRATEGY = new BaseStrategy(activeStrategists)
+const BOOSTER_STRATEGY = new BoosterStrategy("luckbooster")
 const BUY_STRATEGY = new BuyStrategy({
     contexts: activeStrategists,
     itemConfig: DEFAULT_ITEM_CONFIG,
@@ -252,7 +254,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         case "earthMag3": {
             const mage = new Strategist(await AL.Game.startMage(name, region, identifier))
             strategist = mage
-            mage.applyStrategies([DESTROY_STRATEGY, MAGIPORT_STRATEGY, MAGE_ATTACK_STRATEGY])
+            mage.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, MAGIPORT_STRATEGY, MAGE_ATTACK_STRATEGY])
             break
         }
 
@@ -269,7 +271,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         // Paladins
         case "earthPal": {
             const paladin = new Strategist(await AL.Game.startPaladin(name, region, identifier))
-            paladin.applyStrategies([DESTROY_STRATEGY, PALADIN_ATTACK_STRATEGY])
+            paladin.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, PALADIN_ATTACK_STRATEGY])
             strategist = paladin
             break
         }
@@ -278,7 +280,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         case "earthPri":
         case "earthPri2": {
             const priest = new Strategist(await AL.Game.startPriest(name, region, identifier))
-            priest.applyStrategies([DESTROY_STRATEGY, PARTY_HEAL_STRATEGY, PRIEST_ATTACK_STRATEGY])
+            priest.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, PARTY_HEAL_STRATEGY, PRIEST_ATTACK_STRATEGY])
             strategist = priest
             break
         }
@@ -288,7 +290,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         case "earthRan2":
         case "earthRan3": {
             const ranger = new Strategist(await AL.Game.startRanger(name, region, identifier))
-            ranger.applyStrategies([DESTROY_STRATEGY, RANGER_ATTACK_STRATEGY])
+            ranger.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, RANGER_ATTACK_STRATEGY])
             strategist = ranger
             break
         }
@@ -298,7 +300,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         case "earthRog2":
         case "earthRog3": {
             const rogue = new Strategist(await AL.Game.startRogue(name, region, identifier))
-            rogue.applyStrategies([DESTROY_STRATEGY, GIVE_ROGUE_SPEED_STRATEGY])
+            rogue.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, GIVE_ROGUE_SPEED_STRATEGY])
 
             if (monster === "slenderman") {
                 rogue.applyStrategy(ROGUE_SLENDERMAN_ATTACK_STRATEGY)
@@ -315,7 +317,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         case "earthWar2":
         case "earthWar3": {
             const warrior = new Strategist(await AL.Game.startWarrior(name, region, identifier))
-            warrior.applyStrategies([CHARGE_STRATEGY, DESTROY_STRATEGY, WARRIOR_ATTACK_STRATEGY])
+            warrior.applyStrategies([BOOSTER_STRATEGY, CHARGE_STRATEGY, DESTROY_STRATEGY, WARRIOR_ATTACK_STRATEGY])
             strategist = warrior
             break
         }
