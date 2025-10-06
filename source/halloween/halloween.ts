@@ -52,12 +52,12 @@ const CHARACTERS_FOR_SERVERS: { [T in ServerRegion]?: { [T in ServerIdentifier]?
         I: ["earthiverse", "earthRog"],
         II: ["earthRan2", "earthRog2"],
         III: ["earthRan3", "earthRog3"],
-        PVP: ["earthiverse", "earthRog"],
+        PVP: ["earthRog", "earthRog2"],
     },
     EU: {
         I: ["earthWar", "earthMag"],
         II: ["earthWar2", "earthMag2"],
-        PVP: ["earthiverse", "earthRog"],
+        PVP: ["earthRog", "earthRog2"],
     },
     ASIA: {
         I: ["earthWar3", "earthMag3"],
