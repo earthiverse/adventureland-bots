@@ -205,9 +205,9 @@ const ROGUE_ATTACK_STRATEGY = new RogueAttackStrategy({
             chest: { name: "coat1", filters: RETURN_HIGHEST },
             pants: { name: "pants1", filters: RETURN_HIGHEST },
             shoes: { name: "shoes1", filters: RETURN_HIGHEST },
-            gloves: { name: "gloves1", filters: RETURN_HIGHEST },
+            gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
             belt: { name: "dexbelt", filters: RETURN_HIGHEST },
-            amulet: { name: "dexamulet", filters: RETURN_HIGHEST },
+            amulet: { name: "mpxamulet", filters: RETURN_HIGHEST },
             // TODO: Orb?
             ring1: { name: "cring", filters: RETURN_HIGHEST },
             ring2: { name: "cring", filters: RETURN_HIGHEST },
