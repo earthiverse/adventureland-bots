@@ -381,8 +381,28 @@ const startBotsOnServer = async (region: ServerRegion, identifier: ServerIdentif
     }
 
     // Start bots
-    for (const name of attackingCharacters) await startBot(region, identifier, name, monster)
-    await startBot(region, identifier, "earthMer", monster)
+    for (const name of attackingCharacters) await startBot(region, identifier, name, monster).catch(console.error)
+    await startBot(region, identifier, "earthMer", monster).catch(console.error)
+
+    // Backup merchant if `earthMer` gets stuck
+    let hasMerch = activeStrategists.some((s) => s.bot.ctype === "merchant")
+    if (!hasMerch) {
+        try {
+            await startBot(region, identifier, "earthMer2", monster)
+            hasMerch = true
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    // Backup priest if `earthPri` gets stuck
+    const hasPriest = activeStrategists.some((s) => s.bot.ctype === "priest")
+    if (!hasPriest) await startBot(region, identifier, "earthPri2", monster).catch(console.error)
+
+    // Backup additional character
+    if ((hasMerch && activeStrategists.length < 4) || (!hasMerch && activeStrategists.length < 3)) {
+        await startBot(region, identifier, "earthPal", monster).catch(console.error)
+    }
 }
 
 const logicLoop = async () => {
