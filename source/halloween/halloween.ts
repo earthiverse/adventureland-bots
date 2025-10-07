@@ -223,8 +223,8 @@ const ROGUE_SLENDERMAN_ATTACK_STRATEGY = new SlendermanAttackStrategy()
 
 const WARRIOR_ATTACK_STRATEGY = new WarriorAttackStrategy({
     contexts: activeStrategists,
-    disableCleave: true,
     disableStomp: true,
+    enableEquipForCleave: true,
     generateEnsureEquipped: {
         prefer: {
             mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
