@@ -28,7 +28,7 @@ import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { ElixirStrategy } from "../strategy_pattern/strategies/elixir.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "../strategy_pattern/strategies/magiport.js"
 import { MageAttackStrategy } from "../strategy_pattern/strategies/attack_mage.js"
-import { RETURN_HIGHEST } from "../strategy_pattern/setups/equipment.js"
+import { RETURN_HIGHEST, ZAPPER_CRING, ZAPPER_STRRING } from "../strategy_pattern/setups/equipment.js"
 import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
 import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
@@ -92,7 +92,16 @@ const HALLOWEEN_IDLE_MONSTER: MonsterName = "osnake"
 const HALLOWEEN_EVENT_MONSTERS: MonsterName[] = ["mrpumpkin", "mrgreen", "slenderman"]
 
 /** All monsters we're farming */
-const HALLOWEEN_MONSTERS: MonsterName[] = ["greenjr", "jr", ...HALLOWEEN_EVENT_MONSTERS, "osnake"]
+const HALLOWEEN_MONSTERS: MonsterName[] = [
+    "greenjr",
+    "jr",
+    ...HALLOWEEN_EVENT_MONSTERS,
+    "osnake",
+    "xscorpion",
+    "minimush",
+    "osnake",
+    "snake",
+]
 
 const MERCHANT_HOLD_POSITION: IPosition = { map: "halloween", x: 0, y: 0 }
 
@@ -148,8 +157,7 @@ const MAGE_ATTACK_STRATEGY = new MageAttackStrategy({
             mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
             offhand: { name: "wbook1", filters: RETURN_HIGHEST },
             orb: { name: "jacko", filters: RETURN_HIGHEST },
-            ring1: { name: "cring", filters: RETURN_HIGHEST },
-            ring2: { name: "cring", filters: RETURN_HIGHEST },
+            ...ZAPPER_CRING,
             earring1: { name: "cearring", filters: RETURN_HIGHEST },
             earring2: { name: "cearring", filters: RETURN_HIGHEST },
         },
@@ -161,13 +169,13 @@ const PALADIN_ATTACK_STRATEGY = new PaladinAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: { mainhand: { name: "fireblade", filters: RETURN_HIGHEST } },
+        ...ZAPPER_CRING,
     },
     typeList: HALLOWEEN_MONSTERS,
 })
 
 const PRIEST_ATTACK_STRATEGY = new PriestAttackStrategy({
     contexts: activeStrategists,
-    disableScare: true, // TODO: Is this smart?
     enableAbsorbToTank: true,
     enableHealStrangers: true,
     generateEnsureEquipped: {
@@ -175,8 +183,7 @@ const PRIEST_ATTACK_STRATEGY = new PriestAttackStrategy({
             mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
             offhand: { name: "wbook1", filters: RETURN_HIGHEST },
             orb: { name: "jacko", filters: RETURN_HIGHEST },
-            ring1: { name: "cring", filters: RETURN_HIGHEST },
-            ring2: { name: "cring", filters: RETURN_HIGHEST },
+            ...ZAPPER_CRING,
             earring1: { name: "cearring", filters: RETURN_HIGHEST },
             earring2: { name: "cearring", filters: RETURN_HIGHEST },
         },
@@ -190,8 +197,7 @@ const RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({
         prefer: {
             mainhand: { name: "firebow", filters: RETURN_HIGHEST },
             offhand: { name: "t2quiver", filters: RETURN_HIGHEST },
-            ring1: { name: "cring", filters: RETURN_HIGHEST },
-            ring2: { name: "cring", filters: RETURN_HIGHEST },
+            ...ZAPPER_CRING,
         },
     },
     typeList: HALLOWEEN_MONSTERS,
@@ -211,8 +217,7 @@ const ROGUE_ATTACK_STRATEGY = new RogueAttackStrategy({
             belt: { name: "dexbelt", filters: RETURN_HIGHEST },
             amulet: { name: "mpxamulet", filters: RETURN_HIGHEST },
             // TODO: Orb?
-            ring1: { name: "cring", filters: RETURN_HIGHEST },
-            ring2: { name: "cring", filters: RETURN_HIGHEST },
+            ...ZAPPER_CRING,
             earring1: { name: "dexearring", filters: RETURN_HIGHEST },
             earring2: { name: "dexearring", filters: RETURN_HIGHEST },
         },
@@ -229,8 +234,7 @@ const WARRIOR_ATTACK_STRATEGY = new WarriorAttackStrategy({
         prefer: {
             mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
             offhand: { name: "fireblade", filters: RETURN_HIGHEST },
-            ring1: { name: "strring", filters: RETURN_HIGHEST },
-            ring2: { name: "strring", filters: RETURN_HIGHEST },
+            ...ZAPPER_STRRING,
             earring1: { name: "cearring", filters: RETURN_HIGHEST },
             earring2: { name: "cearring", filters: RETURN_HIGHEST },
         },
