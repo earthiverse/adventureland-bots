@@ -28,7 +28,14 @@ import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { ElixirStrategy } from "../strategy_pattern/strategies/elixir.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "../strategy_pattern/strategies/magiport.js"
 import { MageAttackStrategy } from "../strategy_pattern/strategies/attack_mage.js"
-import { RETURN_HIGHEST, ZAPPER_CRING, ZAPPER_STRRING } from "../strategy_pattern/setups/equipment.js"
+import {
+    MAGE_SPLASH_WEAPONS,
+    RANGER_SPLASH_WEAPONS,
+    RETURN_HIGHEST,
+    WARRIOR_SPLASH_WEAPONS,
+    ZAPPER_CRING,
+    ZAPPER_STRRING,
+} from "../strategy_pattern/setups/equipment.js"
 import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
 import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
@@ -164,6 +171,19 @@ const MAGE_ATTACK_STRATEGY = new MageAttackStrategy({
     },
     typeList: HALLOWEEN_MONSTERS,
 })
+const MAGE_ATTACK_STRATEGY_SPLASH = new MageAttackStrategy({
+    contexts: activeStrategists,
+    generateEnsureEquipped: {
+        prefer: {
+            ...MAGE_SPLASH_WEAPONS,
+            orb: { name: "jacko", filters: RETURN_HIGHEST },
+            ...ZAPPER_CRING,
+            earring1: { name: "cearring", filters: RETURN_HIGHEST },
+            earring2: { name: "cearring", filters: RETURN_HIGHEST },
+        },
+    },
+    typeList: HALLOWEEN_MONSTERS,
+})
 
 const PALADIN_ATTACK_STRATEGY = new PaladinAttackStrategy({
     contexts: activeStrategists,
@@ -197,6 +217,16 @@ const RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({
         prefer: {
             mainhand: { name: "firebow", filters: RETURN_HIGHEST },
             offhand: { name: "t2quiver", filters: RETURN_HIGHEST },
+            ...ZAPPER_CRING,
+        },
+    },
+    typeList: HALLOWEEN_MONSTERS,
+})
+const RANGER_ATTACK_STRATEGY_SPLASH = new RangerAttackStrategy({
+    contexts: activeStrategists,
+    generateEnsureEquipped: {
+        prefer: {
+            ...RANGER_SPLASH_WEAPONS,
             ...ZAPPER_CRING,
         },
     },
@@ -241,6 +271,20 @@ const WARRIOR_ATTACK_STRATEGY = new WarriorAttackStrategy({
     },
     typeList: HALLOWEEN_MONSTERS,
 })
+const WARRIOR_ATTACK_STRATEGY_SPLASH = new WarriorAttackStrategy({
+    contexts: activeStrategists,
+    disableStomp: true,
+    enableEquipForCleave: true,
+    generateEnsureEquipped: {
+        prefer: {
+            ...WARRIOR_SPLASH_WEAPONS,
+            ...ZAPPER_STRRING,
+            earring1: { name: "cearring", filters: RETURN_HIGHEST },
+            earring2: { name: "cearring", filters: RETURN_HIGHEST },
+        },
+    },
+    typeList: HALLOWEEN_MONSTERS,
+})
 
 const MRGREEN_MOVE_STRATEGY = new SpecialMonsterMoveStrategy({ contexts: activeStrategists, typeList: ["mrgreen"] })
 const MRPUMPKIN_MOVE_STRATEGY = new SpecialMonsterMoveStrategy({ contexts: activeStrategists, typeList: ["mrpumpkin"] })
@@ -258,7 +302,10 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         case "earthMag3": {
             const mage = new Strategist(await AL.Game.startMage(name, region, identifier))
             strategist = mage
-            mage.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, MAGIPORT_STRATEGY, MAGE_ATTACK_STRATEGY])
+            mage.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, MAGIPORT_STRATEGY])
+            mage.applyStrategy(
+                identifier === "PVP" && monster === "mrpumpkin" ? MAGE_ATTACK_STRATEGY : MAGE_ATTACK_STRATEGY_SPLASH,
+            )
             break
         }
 
@@ -295,6 +342,11 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         case "earthRan3": {
             const ranger = new Strategist(await AL.Game.startRanger(name, region, identifier))
             ranger.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, RANGER_ATTACK_STRATEGY])
+            ranger.applyStrategy(
+                identifier === "PVP" && monster === "mrpumpkin"
+                    ? RANGER_ATTACK_STRATEGY
+                    : RANGER_ATTACK_STRATEGY_SPLASH,
+            )
             strategist = ranger
             break
         }
@@ -322,6 +374,11 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         case "earthWar3": {
             const warrior = new Strategist(await AL.Game.startWarrior(name, region, identifier))
             warrior.applyStrategies([BOOSTER_STRATEGY, CHARGE_STRATEGY, DESTROY_STRATEGY, WARRIOR_ATTACK_STRATEGY])
+            warrior.applyStrategy(
+                identifier === "PVP" && monster === "mrpumpkin"
+                    ? WARRIOR_ATTACK_STRATEGY
+                    : WARRIOR_ATTACK_STRATEGY_SPLASH,
+            )
             strategist = warrior
             break
         }
