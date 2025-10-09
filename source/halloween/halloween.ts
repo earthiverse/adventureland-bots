@@ -100,6 +100,7 @@ const HALLOWEEN_EVENT_MONSTERS: MonsterName[] = ["mrpumpkin", "mrgreen", "slende
 
 /** All monsters we're farming */
 const HALLOWEEN_MONSTERS: MonsterName[] = [
+    "slenderman",
     "greenjr",
     "jr",
     ...HALLOWEEN_EVENT_MONSTERS,
