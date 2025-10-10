@@ -305,7 +305,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
             strategist = mage
             mage.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, MAGIPORT_STRATEGY])
             mage.applyStrategy(
-                identifier === "PVP" && monster === "mrpumpkin" ? MAGE_ATTACK_STRATEGY : MAGE_ATTACK_STRATEGY_SPLASH,
+                identifier === "PVP" || monster === "mrgreen" ? MAGE_ATTACK_STRATEGY : MAGE_ATTACK_STRATEGY_SPLASH,
             )
             break
         }
@@ -344,9 +344,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
             const ranger = new Strategist(await AL.Game.startRanger(name, region, identifier))
             ranger.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, RANGER_ATTACK_STRATEGY])
             ranger.applyStrategy(
-                identifier === "PVP" && monster === "mrpumpkin"
-                    ? RANGER_ATTACK_STRATEGY
-                    : RANGER_ATTACK_STRATEGY_SPLASH,
+                identifier === "PVP" || monster === "mrgreen" ? RANGER_ATTACK_STRATEGY : RANGER_ATTACK_STRATEGY_SPLASH,
             )
             strategist = ranger
             break
@@ -376,7 +374,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
             const warrior = new Strategist(await AL.Game.startWarrior(name, region, identifier))
             warrior.applyStrategies([BOOSTER_STRATEGY, CHARGE_STRATEGY, DESTROY_STRATEGY, WARRIOR_ATTACK_STRATEGY])
             warrior.applyStrategy(
-                identifier === "PVP" && monster === "mrpumpkin"
+                identifier === "PVP" || monster === "mrgreen"
                     ? WARRIOR_ATTACK_STRATEGY
                     : WARRIOR_ATTACK_STRATEGY_SPLASH,
             )
@@ -526,21 +524,63 @@ const logicLoop = async () => {
             return
         }
 
-        // Same characters, just ensure we're using the correct move strategy
+        // Same characters, just ensure we're using the correct strategies
         for (const strategist of activeStrategists) {
             if (strategist.bot.ctype === "merchant") continue // Merchant does their own thing
             if (target.type === "mrpumpkin") {
                 if (strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.removeStrategy(OSNAKE_MOVE_STRATEGY)
                 if (strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.removeStrategy(MRGREEN_MOVE_STRATEGY)
                 if (!strategist.hasStrategy(MRPUMPKIN_MOVE_STRATEGY)) strategist.applyStrategy(MRPUMPKIN_MOVE_STRATEGY)
+                if (currentIdentifier !== "PVP") {
+                    if (strategist.hasStrategy(MAGE_ATTACK_STRATEGY)) {
+                        strategist.removeStrategy(MAGE_ATTACK_STRATEGY)
+                        strategist.applyStrategy(MAGE_ATTACK_STRATEGY_SPLASH)
+                    }
+                    if (strategist.hasStrategy(RANGER_ATTACK_STRATEGY)) {
+                        strategist.removeStrategy(RANGER_ATTACK_STRATEGY)
+                        strategist.applyStrategy(RANGER_ATTACK_STRATEGY_SPLASH)
+                    }
+                    if (strategist.hasStrategy(WARRIOR_ATTACK_STRATEGY)) {
+                        strategist.removeStrategy(WARRIOR_ATTACK_STRATEGY)
+                        strategist.applyStrategy(WARRIOR_ATTACK_STRATEGY_SPLASH)
+                    }
+                }
             } else if (target.type === "mrgreen") {
                 if (strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.removeStrategy(OSNAKE_MOVE_STRATEGY)
                 if (strategist.hasStrategy(MRPUMPKIN_MOVE_STRATEGY)) strategist.removeStrategy(MRPUMPKIN_MOVE_STRATEGY)
                 if (!strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.applyStrategy(MRGREEN_MOVE_STRATEGY)
+                if (currentIdentifier !== "PVP") {
+                    if (strategist.hasStrategy(MAGE_ATTACK_STRATEGY_SPLASH)) {
+                        strategist.removeStrategy(MAGE_ATTACK_STRATEGY_SPLASH)
+                        strategist.applyStrategy(MAGE_ATTACK_STRATEGY)
+                    }
+                    if (strategist.hasStrategy(RANGER_ATTACK_STRATEGY_SPLASH)) {
+                        strategist.removeStrategy(RANGER_ATTACK_STRATEGY_SPLASH)
+                        strategist.applyStrategy(RANGER_ATTACK_STRATEGY)
+                    }
+                    if (strategist.hasStrategy(WARRIOR_ATTACK_STRATEGY_SPLASH)) {
+                        strategist.removeStrategy(WARRIOR_ATTACK_STRATEGY_SPLASH)
+                        strategist.applyStrategy(WARRIOR_ATTACK_STRATEGY)
+                    }
+                }
             } else if (target.type === HALLOWEEN_IDLE_MONSTER) {
                 if (strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.removeStrategy(MRGREEN_MOVE_STRATEGY)
                 if (strategist.hasStrategy(MRPUMPKIN_MOVE_STRATEGY)) strategist.removeStrategy(MRPUMPKIN_MOVE_STRATEGY)
                 if (!strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.applyStrategy(OSNAKE_MOVE_STRATEGY)
+                if (currentIdentifier !== "PVP") {
+                    if (strategist.hasStrategy(MAGE_ATTACK_STRATEGY)) {
+                        strategist.removeStrategy(MAGE_ATTACK_STRATEGY)
+                        strategist.applyStrategy(MAGE_ATTACK_STRATEGY_SPLASH)
+                    }
+                    if (strategist.hasStrategy(RANGER_ATTACK_STRATEGY)) {
+                        strategist.removeStrategy(RANGER_ATTACK_STRATEGY)
+                        strategist.applyStrategy(RANGER_ATTACK_STRATEGY_SPLASH)
+                    }
+                    if (strategist.hasStrategy(WARRIOR_ATTACK_STRATEGY)) {
+                        strategist.removeStrategy(WARRIOR_ATTACK_STRATEGY)
+                        strategist.applyStrategy(WARRIOR_ATTACK_STRATEGY_SPLASH)
+                    }
+                }
             }
         }
     } catch (e) {
