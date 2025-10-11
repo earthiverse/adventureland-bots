@@ -63,6 +63,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
             const entities = bot.getEntities({
                 canDamage: "purify",
                 hasTarget: false,
+                isCooperative: false,
                 typeList: Array.isArray(this.options.enableGreedyAggro)
                     ? this.options.enableGreedyAggro
                     : this.options.typeList,
@@ -84,6 +85,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
             ...this.options,
             canDamage: "purify",
             withinRange: "purify",
+            isCooperative: false,
         })
         if (entities.length == 0) return // No targets to purify
 
