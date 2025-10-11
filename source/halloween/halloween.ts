@@ -138,6 +138,7 @@ const GIVE_ROGUE_SPEED_STRATEGY = new GiveRogueSpeedStrategy()
 const ITEM_STRATEGY = new ItemStrategy({
     contexts: activeStrategists,
     itemConfig: DEFAULT_ITEM_CONFIG,
+    transferItemsTo: "earthMer"
 })
 const MAGIPORT_STRATEGY = new MagiportOthersSmartMovingToUsStrategy(activeStrategists)
 const MERCHANT_DESTROY_STRATEGY = new MerchantDestroyStrategy()
