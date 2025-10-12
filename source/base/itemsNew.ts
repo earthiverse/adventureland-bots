@@ -437,7 +437,15 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     intring: {
         ...SELL_TO_NPC,
     },
+    jacko: {
+        buy: true,
+        buyPrice: "ponty"
+    },
     lantern: {
+        buy: true,
+        buyPrice: "ponty",
+        sell: true,
+        sellPrice: 2_000_000,
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 3,
     },
