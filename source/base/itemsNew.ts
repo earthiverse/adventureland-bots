@@ -439,7 +439,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     jacko: {
         buy: true,
-        buyPrice: "ponty"
+        buyPrice: "ponty",
     },
     lantern: {
         buy: true,
@@ -506,6 +506,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: ["merchant"],
         buy: true,
         buyPrice: 2_500_000,
+    },
+    ololipop: {
+        buy: true,
+        buyPrice: "ponty"
     },
     orba: {
         craft: true,
@@ -861,6 +865,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: 50_000_000,
         useOfferingFromLevel: 0,
+    },
+    yorick: {
+        buy: true,
+        buyPrice: "ponty",
     },
     zapper: {
         buy: true,
