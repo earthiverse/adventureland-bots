@@ -513,7 +513,10 @@ const logicLoop = async () => {
                 `Switching from ${currentRegion}${currentIdentifier} to ${target.serverRegion}${target.serverIdentifier}...`,
             )
             // Stop current bots
-            for (const strategist of activeStrategists) strategist.stop()
+            for (const strategist of activeStrategists) {
+                for (const [id] of strategist.bot.chests) await strategist.bot.openChest(id).catch(console.error)
+                strategist.stop()
+            }
             activeStrategists.splice(0, activeStrategists.length)
 
             // Start new bots
