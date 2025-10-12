@@ -218,7 +218,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         upgradeUntilLevel: 0,
     },
     coat: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     coat1: {
         buy: true,
@@ -246,9 +246,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         holdSlot: 30,
     },
     dagger: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     dexamulet: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    dexbelt: {
         buy: true,
         buyPrice: "ponty",
     },
@@ -260,7 +264,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         ...SELL_TO_NPC,
     },
     eears: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     eggnog: {
         sellExcess: 9999 * 3,
@@ -290,10 +294,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         craft: true,
     },
     epyjamas: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     eslippers: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     essenceoflife: {
         sellExcess: 9999 * 5,
@@ -303,6 +307,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: 250_000_000,
         usePrimlingFromLevel: 0,
         useOfferingFromLevel: 1,
+    },
+    fallen: {
+        buy: true,
+        buyPrice: 100_000_000,
+        upgradeUntilLevel: 0,
     },
     fieldgen0: {
         sell: true,
@@ -358,7 +367,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: true,
     },
     gphelmet: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     greenenvelope: {
         exchange: true,
@@ -376,7 +385,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 9,
     },
     helmet: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     helmet1: {
         buy: true,
@@ -416,7 +425,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellExcess: 9999,
     },
     iceskates: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
+    },
+    intbelt: {
+        buy: true,
+        buyPrice: "ponty",
     },
     intearring: {
         ...SELL_TO_NPC,
@@ -446,7 +459,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: true,
     },
     mace: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     mistletoe: {
         exchange: true,
@@ -471,7 +484,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 0,
     },
     mushroomstaff: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     northstar: {
         buy: true,
@@ -515,7 +528,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         exchange: true,
     },
     pants: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     pants1: {
         buy: true,
@@ -523,7 +536,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         upgradeUntilLevel: 9,
     },
     phelmet: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     pickaxe: {
         hold: ["merchant"],
@@ -541,7 +554,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellExcess: 9999 * 3,
     },
     pyjamas: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     rabbitsfoot: {
         usePrimlingFromLevel: 1,
@@ -592,7 +605,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         upgradeUntilLevel: 9,
     },
     slimestaff: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     smoke: {
         sellExcess: 200,
@@ -614,7 +627,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 0,
     },
     spear: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     spookyamulet: {
         sellExcess: 5,
@@ -637,7 +650,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         upgradeUntilLevel: 9,
     },
     stinger: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     stramulet: {
         ...SELL_TO_NPC,
@@ -659,7 +672,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 2,
     },
     swifty: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     sword: {
         sellExcess: 5,
@@ -813,19 +826,19 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 4,
     },
     xmace: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     xmashat: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     xmaspants: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     xmasshoes: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     xmassweater: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     xpants: {
         buy: true,
