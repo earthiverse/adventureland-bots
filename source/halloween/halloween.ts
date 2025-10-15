@@ -1,11 +1,17 @@
 import AL, {
     EntityModel,
     IPosition,
+    Mage,
     Merchant,
     MonsterName,
+    Paladin,
     PingCompensatedCharacter,
+    Priest,
+    Ranger,
+    Rogue,
     ServerIdentifier,
     ServerRegion,
+    Warrior,
 } from "alclient"
 import { Strategist } from "../strategy_pattern/context.js"
 import { defaultNewMerchantStrategyOptions, NewMerchantStrategy } from "../merchant/strategy.js"
@@ -27,8 +33,9 @@ import { ItemStrategy } from "../strategy_pattern/strategies/item.js"
 import { RespawnStrategy } from "../strategy_pattern/strategies/respawn.js"
 import { ElixirStrategy } from "../strategy_pattern/strategies/elixir.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "../strategy_pattern/strategies/magiport.js"
-import { MageAttackStrategy } from "../strategy_pattern/strategies/attack_mage.js"
+import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategy_pattern/strategies/attack_mage.js"
 import {
+    GenerateEnsureEquipped,
     MAGE_SPLASH_WEAPONS,
     RANGER_SPLASH_WEAPONS,
     RETURN_HIGHEST,
@@ -36,11 +43,11 @@ import {
     ZAPPER_CRING,
     ZAPPER_STRRING,
 } from "../strategy_pattern/setups/equipment.js"
-import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_priest.js"
-import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
-import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
-import { RogueAttackStrategy } from "../strategy_pattern/strategies/attack_rogue.js"
-import { PaladinAttackStrategy } from "../strategy_pattern/strategies/attack_paladin.js"
+import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategy_pattern/strategies/attack_priest.js"
+import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategy_pattern/strategies/attack_warrior.js"
+import { RangerAttackStrategy, RangerAttackStrategyOptions } from "../strategy_pattern/strategies/attack_ranger.js"
+import { RogueAttackStrategy, RogueAttackStrategyOptions } from "../strategy_pattern/strategies/attack_rogue.js"
+import { PaladinAttackStrategy, PaladinAttackStrategyOptions } from "../strategy_pattern/strategies/attack_paladin.js"
 import { SlendermanAttackStrategy, SlendermanMoveStrategy } from "../strategy_pattern/setups/slenderman.js"
 import { SpecialMonsterMoveStrategy, SpreadOutImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { halloweenGreenJr } from "../base/locations.js"
@@ -111,6 +118,8 @@ const HALLOWEEN_MONSTERS: MonsterName[] = [
     "snake",
 ]
 
+const SWITCH_TO_LUCK_AT_HP: number = 2_000_000
+
 const MERCHANT_HOLD_POSITION: IPosition = { map: "halloween", x: 0, y: 0 }
 
 let currentRegion: ServerRegion = "US"
@@ -138,7 +147,7 @@ const GIVE_ROGUE_SPEED_STRATEGY = new GiveRogueSpeedStrategy()
 const ITEM_STRATEGY = new ItemStrategy({
     contexts: activeStrategists,
     itemConfig: DEFAULT_ITEM_CONFIG,
-    transferItemsTo: "earthMer"
+    transferItemsTo: "earthMer",
 })
 const MAGIPORT_STRATEGY = new MagiportOthersSmartMovingToUsStrategy(activeStrategists)
 const MERCHANT_DESTROY_STRATEGY = new MerchantDestroyStrategy()
@@ -159,7 +168,28 @@ const TOGGLE_STAND_STRATEGY = new ToggleStandStrategy({
 })
 const TRACKER_STRATEGY = new TrackerStrategy()
 
-const MAGE_ATTACK_STRATEGY = new MageAttackStrategy({
+class MageHalloweenAttackStrategy extends MageAttackStrategy {
+    private originalGenerateEnsureEquipped: GenerateEnsureEquipped
+
+    public constructor(options?: MageAttackStrategyOptions) {
+        super(options)
+        this.originalGenerateEnsureEquipped = options.generateEnsureEquipped
+    }
+
+    protected ensureEquipped(bot: Mage): Promise<void> {
+        const pumpkin = bot.getEntity({ typeList: ["mrgreen", "mrpumpkin"] })
+        if (pumpkin && pumpkin.hp < SWITCH_TO_LUCK_AT_HP) {
+            this.options.generateEnsureEquipped = {
+                attributes: ["luck"],
+            }
+        } else {
+            this.options.generateEnsureEquipped = this.originalGenerateEnsureEquipped
+        }
+
+        return super.ensureEquipped(bot)
+    }
+}
+const MAGE_ATTACK_STRATEGY = new MageHalloweenAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: {
@@ -173,7 +203,7 @@ const MAGE_ATTACK_STRATEGY = new MageAttackStrategy({
     },
     typeList: HALLOWEEN_MONSTERS,
 })
-const MAGE_ATTACK_STRATEGY_SPLASH = new MageAttackStrategy({
+const MAGE_ATTACK_STRATEGY_SPLASH = new MageHalloweenAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: {
@@ -187,7 +217,28 @@ const MAGE_ATTACK_STRATEGY_SPLASH = new MageAttackStrategy({
     typeList: HALLOWEEN_MONSTERS,
 })
 
-const PALADIN_ATTACK_STRATEGY = new PaladinAttackStrategy({
+class PaladinHalloweenAttackStrategy extends PaladinAttackStrategy {
+    private originalGenerateEnsureEquipped: GenerateEnsureEquipped
+
+    public constructor(options?: PaladinAttackStrategyOptions) {
+        super(options)
+        this.originalGenerateEnsureEquipped = options.generateEnsureEquipped
+    }
+
+    protected ensureEquipped(bot: Paladin): Promise<void> {
+        const pumpkin = bot.getEntity({ typeList: ["mrgreen", "mrpumpkin"] })
+        if (pumpkin && pumpkin.hp < SWITCH_TO_LUCK_AT_HP) {
+            this.options.generateEnsureEquipped = {
+                attributes: ["luck"],
+            }
+        } else {
+            this.options.generateEnsureEquipped = this.originalGenerateEnsureEquipped
+        }
+
+        return super.ensureEquipped(bot)
+    }
+}
+const PALADIN_ATTACK_STRATEGY = new PaladinHalloweenAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: { mainhand: { name: "fireblade", filters: RETURN_HIGHEST } },
@@ -196,7 +247,28 @@ const PALADIN_ATTACK_STRATEGY = new PaladinAttackStrategy({
     typeList: HALLOWEEN_MONSTERS,
 })
 
-const PRIEST_ATTACK_STRATEGY = new PriestAttackStrategy({
+class PriestHalloweenAttackStrategy extends PriestAttackStrategy {
+    private originalGenerateEnsureEquipped: GenerateEnsureEquipped
+
+    public constructor(options?: PriestAttackStrategyOptions) {
+        super(options)
+        this.originalGenerateEnsureEquipped = options.generateEnsureEquipped
+    }
+
+    protected ensureEquipped(bot: Priest): Promise<void> {
+        const pumpkin = bot.getEntity({ typeList: ["mrgreen", "mrpumpkin"] })
+        if (pumpkin && pumpkin.hp < SWITCH_TO_LUCK_AT_HP) {
+            this.options.generateEnsureEquipped = {
+                attributes: ["luck"],
+            }
+        } else {
+            this.options.generateEnsureEquipped = this.originalGenerateEnsureEquipped
+        }
+
+        return super.ensureEquipped(bot)
+    }
+}
+const PRIEST_ATTACK_STRATEGY = new PriestHalloweenAttackStrategy({
     contexts: activeStrategists,
     enableAbsorbToTank: true,
     enableHealStrangers: true,
@@ -213,7 +285,28 @@ const PRIEST_ATTACK_STRATEGY = new PriestAttackStrategy({
     typeList: HALLOWEEN_MONSTERS,
 })
 
-const RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({
+class RangerHalloweenAttackStrategy extends RangerAttackStrategy {
+    private originalGenerateEnsureEquipped: GenerateEnsureEquipped
+
+    public constructor(options?: RangerAttackStrategyOptions) {
+        super(options)
+        this.originalGenerateEnsureEquipped = options.generateEnsureEquipped
+    }
+
+    protected ensureEquipped(bot: Ranger): Promise<void> {
+        const pumpkin = bot.getEntity({ typeList: ["mrgreen", "mrpumpkin"] })
+        if (pumpkin && pumpkin.hp < SWITCH_TO_LUCK_AT_HP) {
+            this.options.generateEnsureEquipped = {
+                attributes: ["luck"],
+            }
+        } else {
+            this.options.generateEnsureEquipped = this.originalGenerateEnsureEquipped
+        }
+
+        return super.ensureEquipped(bot)
+    }
+}
+const RANGER_ATTACK_STRATEGY = new RangerHalloweenAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: {
@@ -224,7 +317,7 @@ const RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({
     },
     typeList: HALLOWEEN_MONSTERS,
 })
-const RANGER_ATTACK_STRATEGY_SPLASH = new RangerAttackStrategy({
+const RANGER_ATTACK_STRATEGY_SPLASH = new RangerHalloweenAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: {
@@ -235,7 +328,28 @@ const RANGER_ATTACK_STRATEGY_SPLASH = new RangerAttackStrategy({
     typeList: HALLOWEEN_MONSTERS,
 })
 
-const ROGUE_ATTACK_STRATEGY = new RogueAttackStrategy({
+class RogueHalloweenAttackStrategy extends RogueAttackStrategy {
+    private originalGenerateEnsureEquipped: GenerateEnsureEquipped
+
+    public constructor(options?: RogueAttackStrategyOptions) {
+        super(options)
+        this.originalGenerateEnsureEquipped = options.generateEnsureEquipped
+    }
+
+    protected ensureEquipped(bot: Rogue): Promise<void> {
+        const pumpkin = bot.getEntity({ typeList: ["mrgreen", "mrpumpkin"] })
+        if (pumpkin && pumpkin.hp < SWITCH_TO_LUCK_AT_HP) {
+            this.options.generateEnsureEquipped = {
+                attributes: ["luck"],
+            }
+        } else {
+            this.options.generateEnsureEquipped = this.originalGenerateEnsureEquipped
+        }
+
+        return super.ensureEquipped(bot)
+    }
+}
+const ROGUE_ATTACK_STRATEGY = new RogueHalloweenAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: {
@@ -258,7 +372,28 @@ const ROGUE_ATTACK_STRATEGY = new RogueAttackStrategy({
 })
 const ROGUE_SLENDERMAN_ATTACK_STRATEGY = new SlendermanAttackStrategy()
 
-const WARRIOR_ATTACK_STRATEGY = new WarriorAttackStrategy({
+class WarriorHalloweenAttackStrategy extends WarriorAttackStrategy {
+    private originalGenerateEnsureEquipped: GenerateEnsureEquipped
+
+    public constructor(options?: WarriorAttackStrategyOptions) {
+        super(options)
+        this.originalGenerateEnsureEquipped = options.generateEnsureEquipped
+    }
+
+    protected ensureEquipped(bot: Warrior): Promise<void> {
+        const pumpkin = bot.getEntity({ typeList: ["mrgreen", "mrpumpkin"] })
+        if (pumpkin && pumpkin.hp < SWITCH_TO_LUCK_AT_HP) {
+            this.options.generateEnsureEquipped = {
+                attributes: ["luck"],
+            }
+        } else {
+            this.options.generateEnsureEquipped = this.originalGenerateEnsureEquipped
+        }
+
+        return super.ensureEquipped(bot)
+    }
+}
+const WARRIOR_ATTACK_STRATEGY = new WarriorHalloweenAttackStrategy({
     contexts: activeStrategists,
     disableStomp: true,
     enableEquipForCleave: true,
@@ -273,7 +408,7 @@ const WARRIOR_ATTACK_STRATEGY = new WarriorAttackStrategy({
     },
     typeList: HALLOWEEN_MONSTERS,
 })
-const WARRIOR_ATTACK_STRATEGY_SPLASH = new WarriorAttackStrategy({
+const WARRIOR_ATTACK_STRATEGY_SPLASH = new WarriorHalloweenAttackStrategy({
     contexts: activeStrategists,
     disableStomp: true,
     enableEquipForCleave: true,
