@@ -509,7 +509,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     ololipop: {
         buy: true,
-        buyPrice: "ponty"
+        buyPrice: "ponty",
     },
     orba: {
         craft: true,
@@ -1049,6 +1049,14 @@ export async function adjustItemConfig(itemConfig: ItemConfig) {
         const itemName = iN as ItemName
         const gItem = AL.Game.G.items[itemName]
         let config = itemConfig[itemName]
+
+        // TODO: Temporary stop buying things we have no money
+        if (config && config.buy) {
+            delete config.buy
+            delete config.buyPrice
+            continue
+        }
+
         if (config && (config.buy || config.sell)) continue // Buy (or sell) is already set, don't change it
 
         if (!config) config = {}
@@ -1063,9 +1071,9 @@ export async function adjustItemConfig(itemConfig: ItemConfig) {
             gItem.tier >= 4 || // Buy all super high tier items
             gItem.name.includes("Darkforge") // Buy all darkforge items
         ) {
-            config.buy = true
-            config.buyPrice = "ponty"
-            continue
+            // TODO: Temporary stop buying things we have no money
+            // config.buy = true
+            // config.buyPrice = "ponty"
         }
 
         // Use primlings and offerings for higher level items
