@@ -773,6 +773,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 return AL.Tools.distance(target, bot.smartMoving) > bot.range // It's moved far from where we're smart moving to
             },
             useBlink: true,
+            avoidTownWarps: bot.targets > 0,
         }
 
         const target = await this.checkGoodData(bot)
