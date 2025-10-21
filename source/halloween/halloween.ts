@@ -127,7 +127,7 @@ let currentRegion: ServerRegion = "US"
 let currentIdentifier: ServerIdentifier = "HARDCORE" // Start on a non-existent server, the first loop will set this to something else
 
 type Server = `${ServerRegion}${ServerIdentifier}`
-const SERVER_PRIORITY: Server[] = ["EUI", "USIII", "EUII", "USI", "USII", "ASIAI", "USPVP", "EUPVP"]
+const SERVER_PRIORITY: Server[] = ["EUI", "USIII", "USII", "EUII", "USI", "ASIAI", "USPVP", "EUPVP"]
 
 const activeStrategists: Strategist<PingCompensatedCharacter>[] = []
 
