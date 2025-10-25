@@ -141,6 +141,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
             withinRange: "heal",
         })) {
             if (player.hp / player.max_hp > 0.8) continue // They have enough hp
+            if (player.name === "Geoffriel") continue // Aria asked me on 2025-10-23 not to heal their priest
 
             // TODO: Check for healing projectiles, if they'll be fully healed from them, don't heal
 
