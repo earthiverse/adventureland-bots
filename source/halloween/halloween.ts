@@ -567,6 +567,7 @@ const logicLoop = async () => {
         console.debug("Looking for Halloween monsters...")
         const liveHalloweenMonsters = await EntityModel.find({
             type: { $in: HALLOWEEN_EVENT_MONSTERS },
+            serverIdentifier: { $ne: "PVP" },
         })
             .lean()
             .exec()
