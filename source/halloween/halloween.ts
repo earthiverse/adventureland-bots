@@ -120,6 +120,7 @@ const HALLOWEEN_MONSTERS: MonsterName[] = [
 ]
 
 const SWITCH_TO_LUCK_AT_HP: number = 2_000_000
+const STAY_ON_SERVER_IF_HP_LESS_THAN: number = 5_000_000
 
 const MERCHANT_HOLD_POSITION: IPosition = { map: "halloween", x: 0, y: 0 }
 
@@ -585,12 +586,16 @@ const logicLoop = async () => {
             const bRank = monsterRank(b.type)
             if (aRank !== bRank) return aRank - bRank
 
+            const aSameServer = a.serverIdentifier === currentIdentifier && a.serverRegion === currentRegion
+            const bSameServer = b.serverIdentifier === currentIdentifier && b.serverRegion === currentRegion
+
+            if (aSameServer && a.hp < STAY_ON_SERVER_IF_HP_LESS_THAN) return -1
+            if (bSameServer && b.hp < STAY_ON_SERVER_IF_HP_LESS_THAN) return 1
+
             // Prioritize lower HP
             if (a.hp !== b.hp) return a.hp - b.hp
 
             // Prioritize same server
-            const aSameServer = a.serverIdentifier === currentIdentifier && a.serverRegion === currentRegion
-            const bSameServer = b.serverIdentifier === currentIdentifier && b.serverRegion === currentRegion
             if (aSameServer && !bSameServer) return -1
             if (!aSameServer && bSameServer) return 1
 
