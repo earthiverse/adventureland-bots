@@ -593,7 +593,7 @@ const logicLoop = async () => {
             if (bSameServer && b.hp < STAY_ON_SERVER_IF_HP_LESS_THAN) return 1
 
             // Prioritize lower HP
-            if (a.hp !== b.hp) return a.hp - b.hp
+            if (Math.abs(a.hp - b.hp) > 1_000_000) return a.hp - b.hp
 
             // Prioritize same server
             if (aSameServer && !bSameServer) return -1
