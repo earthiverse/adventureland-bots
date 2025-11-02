@@ -355,6 +355,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     gemfragment: {
         exchange: true,
     },
+    glolipop: {
+        ...SELL_TO_NPC
+    },
     gloves: {
         ...SELL_TO_NPC,
     },
@@ -506,10 +509,6 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: ["merchant"],
         buy: true,
         buyPrice: 2_500_000,
-    },
-    ololipop: {
-        buy: true,
-        buyPrice: "ponty",
     },
     orba: {
         craft: true,
