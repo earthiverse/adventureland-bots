@@ -82,13 +82,13 @@ import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.j
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
 
-// TODO: Make these configurable through /comm using a similar system to how lulz works
+// TODO: Make these configurable through /comm
 // Toggles
 const ENABLE_EVENTS = true
 const ENABLE_SERVER_HOPS = true
 const ENABLE_SPECIAL_MONSTERS = true
 let ENABLE_MONSTERHUNTS = true
-const DEFAULT_MONSTERS: MonsterName[] = ["ghost", "rat"]
+const DEFAULT_MONSTERS: MonsterName[] = ["plantoid"]
 const SPECIAL_MONSTERS: MonsterName[] = [
     "crabxx",
     "cutebee",
@@ -109,10 +109,10 @@ const SPECIAL_MONSTERS: MonsterName[] = [
 const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT: string = "earthMer" // earthMer, earthMer2, earthMer3
-const WARRIORS: string[] = [] // earthWar, earthWar2, earthWar3
-const MAGES: string[] = [] // earthMag, earthMag2, earthMag3
+const WARRIORS: string[] = ["earthWar"] // earthWar, earthWar2, earthWar3
+const MAGES: string[] = ["earthMag"] // earthMag, earthMag2, earthMag3
 const PRIESTS: string[] = ["earthPri"] // earthPri, earthPri2
-const RANGERS: string[] = ["earthiverse"] // earthiverse, earthRan2, earthRan3
+const RANGERS: string[] = [] // earthiverse, earthRan2, earthRan3
 const PALADINS: string[] = [] // earthPal
 const ROGUES: string[] = [] // earthRog, earthRog2, earthRog3
 
@@ -856,9 +856,9 @@ const startMerchantContext = async () => {
         ...defaultNewMerchantStrategyOptions,
         goldToHold: 4_000_000_000,
         enableInstanceProvider: {
-            // crypt: {
-            //     maxInstances: 1,
-            // },
+            crypt: {
+                maxInstances: 10,
+            },
             tomb: {
                 maxInstances: 3,
             },
