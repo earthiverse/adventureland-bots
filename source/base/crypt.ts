@@ -48,19 +48,6 @@ export function getKeyForCrypt(map: MapName): ItemName {
 }
 
 export function getCryptWaitTime(map: MapName): number {
-    const today = new Date()
-    const month = today.getMonth()
-
-    if (
-        // From the beginning of October
-        month >= 9 ||
-        // To the end of April
-        month <= 3
-    ) {
-        // Don't wait for crypts to open
-        return 0
-    }
-
     switch (map) {
         case "crypt":
             return CRYPT_WAIT_TIME
