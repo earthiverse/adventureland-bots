@@ -185,12 +185,12 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         ...SELL_TO_NPC,
     },
     /** Blue Candy */
-    candy0: {
-        // exchange: true,
-    },
+    // candy0: {
+    //     exchange: true,
+    // },
     /** Pink Candy */
     candy1: {
-        // exchange: true,
+        exchange: true,
     },
     candycane: {
         exchange: true,
@@ -558,9 +558,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: "ponty",
     },
-    pouchbow: {
-        // craft: true,
-    },
+    // pouchbow: {
+    //     craft: true,
+    // },
     pumpkinspice: {
         sellExcess: 9999 * 3,
     },
@@ -614,6 +614,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: "ponty",
         upgradeUntilLevel: 9,
+    },
+    skullamulet: {
+        ...SELL_TO_NPC,
     },
     slimestaff: {
         ...SELL_TO_NPC,
