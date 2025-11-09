@@ -337,9 +337,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     // frostbow: {
     //     craft: true,
     // },
-    froststaff: {
-        craft: true,
-    },
+    // froststaff: {
+    //     craft: true,
+    // },
     fury: {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 2,
