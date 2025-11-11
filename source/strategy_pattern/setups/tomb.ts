@@ -6,6 +6,8 @@ import { CharacterConfig, Setup } from "./base.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { RETURN_HIGHEST } from "./equipment.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
+import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
+import { MageAttackStrategy } from "../strategies/attack_mage.js"
 
 export const TOMB_MONSTERS: MonsterName[] = ["ggreenpro", "gredpro", "gbluepro", "gpurplepro"]
 
@@ -16,7 +18,7 @@ class TombMoveStrategy extends SpecialMonsterMoveStrategy {
             typeList: TOMB_MONSTERS,
         })
 
-        // Only include crypt map positions
+        // Only include tomb map positions
         this.spawns = this.spawns.filter((p) => p.map === "tomb")
     }
 
@@ -85,6 +87,22 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
         move: moveStrategy,
     }
 
+    const mageConfig: CharacterConfig = {
+        ctype: "mage",
+        attack: new MageAttackStrategy({
+            contexts: contexts,
+            generateEnsureEquipped: {
+                attributes: ["armor", "resistance"],
+                prefer: {
+                    mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
+                    orb: { name: "orba", filters: RETURN_HIGHEST },
+                },
+            },
+            typeList: TOMB_MONSTERS,
+        }),
+        move: moveStrategy,
+    }
+
     const priestConfig: CharacterConfig = {
         ctype: "priest",
         attack: new PriestAttackStrategy({
@@ -102,11 +120,33 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
         move: moveStrategy,
     }
 
+    const warriorConfig: CharacterConfig = {
+        ctype: "warrior",
+        attack: new WarriorAttackStrategy({
+            contexts: contexts,
+            enableEquipForCleave: true,
+            generateEnsureEquipped: {
+                attributes: ["armor", "resistance"],
+                prefer: {
+                    mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
+                    offhand: { name: "fireblade", filters: RETURN_HIGHEST },
+                    orb: { name: "orba", filters: RETURN_HIGHEST },
+                },
+            },
+            typeList: TOMB_MONSTERS,
+        }),
+        move: moveStrategy,
+    }
+
     return {
         configs: [
             {
                 id: "tomb_rogue,rogue,priest",
                 characters: [rogueConfig, rogueConfig, priestConfig],
+            },
+            {
+                id: "tomb_mage,priest,warrior",
+                characters: [mageConfig, priestConfig, warriorConfig],
             },
             {
                 id: "tomb_rogue,priest",
