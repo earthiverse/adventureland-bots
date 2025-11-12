@@ -1,8 +1,14 @@
 import { Game } from "alclient";
-import type { GData, ItemInfo } from "typed-adventureland";
-import { CRAFT, EXCHANGE, type Config } from "../../config/items.js";
+import type { DismantleKey, GData, ItemInfo, ItemKey } from "typed-adventureland";
+import { CRAFT, DISMANTLE, EXCHANGE, type Config } from "../../config/items.js";
 import { getGFromCache } from "../../src/plugins/g_cache.js";
-import { adjustItemConfig, getCraftableItems, wantToDestroy, wantToSell } from "../../src/utilities/items.js";
+import {
+  adjustItemConfig,
+  getCraftableItems,
+  wantToDestroy,
+  wantToDismantle,
+  wantToSell,
+} from "../../src/utilities/items.js";
 
 let g: GData | undefined = undefined;
 const itemsToCraftOrbOfAdventures: ItemInfo[] = [
@@ -125,6 +131,88 @@ test("`wantToDestroy()` destroys special and non-special items up to the set lev
   expect(wantToDestroy({ name: "bow", level: 1 }, config)).toBe(true);
   expect(wantToDestroy({ name: "bow", level: 1, p: "shiny" }, config)).toBe(true);
   expect(wantToDestroy({ name: "bow", level: 2 }, config)).toBe(false);
+});
+
+test("`wantToDismantle()` does not dismantle items that are not in the config", () => {
+  const config: Config = {};
+  if (g === undefined) throw new Error("G data is not available");
+  expect(wantToDismantle({ name: "orba", level: 1 }, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, g, config)).toBe(
+    false,
+  );
+});
+
+test("`wantToDismantle()` dismantles only non-special items when dismantleSpecial is not set", () => {
+  const config: Config = {
+    orba: { dismantle: {} },
+  };
+  if (g === undefined) throw new Error("G data is not available");
+  expect(wantToDismantle({ name: "orba", level: 1 }, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, g, config)).toBe(
+    true,
+  );
+  expect(
+    wantToDismantle(
+      { name: "orba", level: 1, p: "shiny" },
+      Number.MAX_SAFE_INTEGER,
+      Number.MAX_SAFE_INTEGER,
+      g,
+      config,
+    ),
+  ).toBe(false);
+});
+
+test("`wantToDismantle()` dismantles special and non-special items when dismantleSpecial is set", () => {
+  const config: Config = {
+    orba: { dismantle: { dismantleSpecial: true } },
+  };
+  if (g === undefined) throw new Error("G data is not available");
+  expect(wantToDismantle({ name: "orba", level: 1 }, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, g, config)).toBe(
+    true,
+  );
+  expect(
+    wantToDismantle(
+      { name: "orba", level: 1, p: "shiny" },
+      Number.MAX_SAFE_INTEGER,
+      Number.MAX_SAFE_INTEGER,
+      g,
+      config,
+    ),
+  ).toBe(true);
+});
+
+test("`wantToDismantle()` does not dismantle items that have a config, but do not have a dismantle config", () => {
+  const config: Config = {
+    orba: {},
+  };
+  if (g === undefined) throw new Error("G data is not available");
+  expect(wantToDismantle({ name: "orba", level: 1 }, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, g, config)).toBe(
+    false,
+  );
+});
+
+test("`wantToDismantle()` dismantles compoundable items", () => {
+  const config: Config = {
+    lostearring: { dismantle: {} },
+    orba: { dismantle: {} },
+  };
+  if (g === undefined) throw new Error("G data is not available");
+  // Level 0 compoundables cannot be dismantled (unless set in G.dismantle, but orba is not)
+  expect(wantToDismantle({ name: "orba", level: 0 }, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, g, config)).toBe(
+    false,
+  );
+
+  // lostearring is also dismantleable at level 0
+  expect(
+    wantToDismantle({ name: "lostearring", level: 0 }, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, g, config),
+  ).toBe(true);
+
+  // Leveled compoundables can be dismantled
+  for (const itemName of ["orba", "lostearring"] as ItemKey[]) {
+    for (let level = 1; level <= 5; level++) {
+      expect(
+        wantToDismantle({ name: itemName, level }, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, g, config),
+      ).toBe(true);
+    }
+  }
 });
 
 test("`wantToSell()` does not sell items that are not in the config", () => {
@@ -271,6 +359,34 @@ test("`adjustItemConfig()` ensures we're selling at a higher price than we're bu
   expect(typeof config.hbow!.buy!.buyPrice).toBe("number");
   expect(typeof config.hbow!.sell!.sellPrice).toBe("number");
   expect(config.hbow!.buy!.buyPrice as number).toBeLessThan(config.hbow!.sell!.sellPrice as number);
+});
+
+test("`adjustItemConfig()` ensures non-dismantleable items don't have dismantle config", () => {
+  const config: Config = {
+    bow: {
+      ...DISMANTLE,
+    },
+    orba: {
+      ...DISMANTLE,
+    },
+    platinumingot: {
+      ...DISMANTLE,
+    },
+  };
+  if (g === undefined) throw new Error("G data is not available");
+  adjustItemConfig(config, g);
+
+  // `bow`s should not be dismantleable, and therefore the dismantle config should be removed
+  expect(g.dismantle["bow" as DismantleKey]).toBeUndefined();
+  expect(config.bow?.dismantle).toBeUndefined();
+
+  // `orba`s should be compoundable (and therefore dismantleable), and therefore the dismantle config should be kept
+  expect(g.items.orba.compound).toBeDefined();
+  expect(config.orba?.dismantle).toBeDefined();
+
+  // `platinumingot`s should be dismantleable, and therefore the dismantle config should be kept
+  expect(g.dismantle.platinumingot).toBeDefined();
+  expect(config.platinumingot?.dismantle).toBeDefined();
 });
 
 test("`adjustItemConfig()` ensures uncraftable items don't have craft config", () => {

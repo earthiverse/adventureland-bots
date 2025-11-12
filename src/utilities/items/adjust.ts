@@ -1,4 +1,4 @@
-import type { GData, ItemKey } from "typed-adventureland";
+import type { DismantleKey, GData, ItemKey } from "typed-adventureland";
 import type { Config, Price } from "../../../config/items.js";
 import { calculateNpcBuyPrice, calculatePrice, wantToList, wantToSell } from "../items.js";
 import { logDebug, logError } from "../logging.js";
@@ -187,6 +187,26 @@ export function optimizeUpgrades(config: Config) {
   }
 
   // TODO: Look in the config for items that we're upgrading, and use Aria's helper to calculate when to primstack, and what scrolls to use
+}
+
+/**
+ * If items are marked as dismantlable in the config, but not in the game data, we remove them from the config.
+ *
+ * NOTE: Compoundable items are also dismantlable
+ */
+export function removeNonDismantlable(config: Config, g: GData) {
+  for (const name of Object.keys(config) as ItemKey[]) {
+    const itemConfig = config[name];
+    if (itemConfig === undefined) continue; // No config
+    if (itemConfig.dismantle === undefined) continue; // No dismantle config
+    const gDismantle = g.dismantle[name as DismantleKey];
+    const gItem = g.items[name];
+    if (gDismantle === undefined && gItem.compound === undefined) {
+      logError(`Item ${name} is not dismantlable, but has a dismantle config`);
+      delete itemConfig.dismantle;
+      continue;
+    }
+  }
 }
 
 /**

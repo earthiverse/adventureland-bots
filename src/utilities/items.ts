@@ -1,5 +1,5 @@
 import type { Character } from "alclient";
-import type { GData, ItemInfo, ItemKey } from "typed-adventureland";
+import type { DismantleKey, GData, ItemInfo, ItemKey } from "typed-adventureland";
 import Config, { type Price } from "../../config/items.js";
 import {
   buyKeys,
@@ -9,6 +9,7 @@ import {
   ensureSellMultiplierAtLeastOne,
   ensureSellPriceAtLeastNpcPrice,
   optimizeUpgrades,
+  removeNonDismantlable,
   removeUncraftable,
   removeUnexchangable,
 } from "./items/adjust.js";
@@ -213,6 +214,38 @@ export function wantToDestroy(item: ItemInfo, config = Config): boolean {
   return true;
 }
 
+export function wantToDismantle(
+  item: ItemInfo,
+  emptyInventorySlots: number,
+  gold: number,
+  g: GData,
+  config = Config,
+): boolean {
+  if (item.l !== undefined) return false; // We can't dismantle locked items
+
+  const itemConfig = config[item.name]?.dismantle;
+  if (!itemConfig) return false; // We have no dismantle config for this item
+  if (item.p && !itemConfig.dismantleSpecial) return false; // We don't want to dismantle special items
+
+  if (g.items[item.name].compound !== undefined && (item.level ?? 0) > 0) {
+    if (emptyInventorySlots < 2) return false; // We need at least 2 empty inventory slots to dismantle a compoundable
+
+    // TODO: Price check as dismantling compoundables costs money based on the item value
+
+    return true;
+  }
+
+  const goldRequired = g.dismantle[item.name as DismantleKey]?.cost;
+  if (goldRequired === undefined) {
+    // Should have been fixed by `removeNonDismantlable`, but it might happen because of a game update
+    logError(`${item.name} is not dismantlable`);
+    return false;
+  }
+  if (gold < goldRequired) return false; // We don't have enough gold to dismantle this item
+
+  return true;
+}
+
 export function wantToExchange(item: ItemInfo, emptyInventorySlots: number, g: GData, config = Config): boolean {
   if (item.l !== undefined) return false; // We can't exchange locked items
 
@@ -336,6 +369,7 @@ export function adjustItemConfig(
   ensureSellPriceAtLeastNpcPrice(config, g);
   ensureSellMultiplierAtLeastOne(config);
   ensureBuyPriceLessThanSellPrice(config);
+  removeNonDismantlable(config, g);
   removeUncraftable(config, g);
   removeUnexchangable(config, g);
   if (options.optimizeUpgrades === true) optimizeUpgrades(config);

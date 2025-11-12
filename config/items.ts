@@ -31,6 +31,11 @@ export type DestroyConfigBase = {
   destroyUpToLevel?: number;
 };
 
+export type DismantleConfigBase = {
+  /** If set, we will dismantle special items (items with a `.p`), too */
+  dismantleSpecial?: true;
+};
+
 export type HoldConfigBase = {
   /**
    * If set to "all", we will hold the item on all character types.
@@ -82,12 +87,14 @@ export type UpgradeConfigBase = {
   makeShinyBeforeUpgrading?: true;
   /** If set, we will upgrade special items (items with a `.p`), too */
   upgradeSpecial?: true;
+  // TODO: Add strategy
 };
 
 export type ItemConfig = {
   buy?: BuyConfigBase;
   craft?: CraftConfigBase;
   destroy?: DestroyConfigBase;
+  dismantle?: DismantleConfigBase;
   exchange?: ExchangeConfigBase;
   hold?: HoldConfigBase;
   list?: ListConfigBase;
@@ -98,13 +105,16 @@ export type ItemConfig = {
 
 export type Config = Partial<Record<ItemKey, ItemConfig>>;
 
-export const BUY_AT_GOBLIN_PRICE: ItemConfig = Object.freeze({ buy: { buyPrice: "goblin" } });
-export const BUY_AT_PONTY_PRICE: ItemConfig = Object.freeze({ buy: { buyPrice: "ponty" } });
-export const CRAFT: ItemConfig = Object.freeze({ craft: { craftWithSpecial: true } });
-export const DESTROY: ItemConfig = Object.freeze({ destroy: { destroySpecial: true } });
-export const EXCHANGE: ItemConfig = Object.freeze({ exchange: {} });
-export const HOLD_FULL_STACK: ItemConfig = Object.freeze({ hold: { characterTypes: "all", replenish: 9999 } });
-export const SELL_TO_NPC: ItemConfig = Object.freeze({ sell: { sellPrice: "npc" } });
+export const BUY_AT_GOBLIN_PRICE: ItemConfig = Object.freeze({ buy: Object.freeze({ buyPrice: "goblin" }) });
+export const BUY_AT_PONTY_PRICE: ItemConfig = Object.freeze({ buy: Object.freeze({ buyPrice: "ponty" }) });
+export const CRAFT: ItemConfig = Object.freeze({ craft: Object.freeze({ craftWithSpecial: true }) });
+export const DESTROY: ItemConfig = Object.freeze({ destroy: Object.freeze({ destroySpecial: true }) });
+export const DISMANTLE: ItemConfig = Object.freeze({ dismantle: Object.freeze({ dismantleSpecial: true }) });
+export const EXCHANGE: ItemConfig = Object.freeze({ exchange: Object.freeze({}) });
+export const HOLD_FULL_STACK: ItemConfig = Object.freeze({
+  hold: Object.freeze({ characterTypes: "all", replenish: 9999 }),
+});
+export const SELL_TO_NPC: ItemConfig = Object.freeze({ sell: Object.freeze({ sellPrice: "npc" }) });
 
 const config: Config = {
   "5bucks": {
@@ -127,7 +137,6 @@ const config: Config = {
   cclaw: {
     ...BUY_AT_PONTY_PRICE,
     ...CRAFT,
-    ...DESTROY,
   },
   crabclaw: {
     // Used to craft cclaw
@@ -171,7 +180,7 @@ const config: Config = {
     ...BUY_AT_GOBLIN_PRICE,
   },
   slimestaff: {
-    ...DESTROY,
+    ...SELL_TO_NPC,
   },
   vitring: {
     // We craft from level 2, higher level vitrings are not needed
