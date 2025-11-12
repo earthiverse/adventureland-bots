@@ -1,6 +1,6 @@
 import { Game } from "alclient";
 import type { DismantleKey, GData, ItemInfo, ItemKey } from "typed-adventureland";
-import { CRAFT, DISMANTLE, EXCHANGE, type Config } from "../../config/items.js";
+import { CRAFT, DISMANTLE, EXCHANGE, type ItemsConfig } from "../../config/items.js";
 import { getGFromCache } from "../../src/plugins/g_cache.js";
 import {
   adjustItemConfig,
@@ -34,14 +34,14 @@ beforeAll(async () => {
 }, 15_000);
 
 test("`getCraftableItems()` returns an empty array when we don't have any craft config", () => {
-  const config: Config = {};
+  const config: ItemsConfig = {};
   if (g === undefined) throw new Error("G data is not available");
   const result = getCraftableItems(itemsToCraftOrbOfAdventures, g, config);
   expect(result).toEqual([]);
 });
 
 test("`getCraftableItems()` checks quantities in recipes", () => {
-  const config: Config = {
+  const config: ItemsConfig = {
     cake: {
       ...CRAFT,
     },
@@ -61,7 +61,7 @@ test("`getCraftableItems()` checks quantities in recipes", () => {
 });
 
 test("`getCraftableItems()` returns craftable items", () => {
-  const config: Config = {
+  const config: ItemsConfig = {
     cake: {
       ...CRAFT,
     },
@@ -91,24 +91,24 @@ test("`getCraftableItems()` returns craftable items", () => {
 });
 
 test("`wantToDestroy()` does not destroy items that are not in the config", () => {
-  const config: Config = {};
+  const config: ItemsConfig = {};
   expect(wantToDestroy({ name: "bow", level: 0 }, config)).toBe(false);
 });
 
 test("`wantToDestroy()` does not destroy items that have a config, but do not have a destroy config", () => {
-  const config: Config = { bow: {} };
+  const config: ItemsConfig = { bow: {} };
   expect(wantToDestroy({ name: "bow", level: 0 }, config)).toBe(false);
 });
 
 test("`wantToDestroy()` destroys only non-special level 0 items when destroy config is set, but empty", () => {
-  const config: Config = { bow: { destroy: {} } };
+  const config: ItemsConfig = { bow: { destroy: {} } };
   expect(wantToDestroy({ name: "bow", level: 0 }, config)).toBe(true);
   expect(wantToDestroy({ name: "bow", level: 0, p: "shiny" }, config)).toBe(false);
   expect(wantToDestroy({ name: "bow", level: 1 }, config)).toBe(false);
 });
 
 test("`wantToDestroy()` destroys special and non-special level 0 items when destroySpecial is set", () => {
-  const config: Config = { bow: { destroy: { destroySpecial: true } } };
+  const config: ItemsConfig = { bow: { destroy: { destroySpecial: true } } };
   expect(wantToDestroy({ name: "bow", level: 0 }, config)).toBe(true);
   expect(wantToDestroy({ name: "bow", level: 0, p: "shiny" }, config)).toBe(true);
   expect(wantToDestroy({ name: "bow", level: 1 }, config)).toBe(false);
@@ -116,7 +116,7 @@ test("`wantToDestroy()` destroys special and non-special level 0 items when dest
 });
 
 test("`wantToDestroy()` destroys items up to the set level", () => {
-  const config: Config = { bow: { destroy: { destroyUpToLevel: 1 } } };
+  const config: ItemsConfig = { bow: { destroy: { destroyUpToLevel: 1 } } };
   expect(wantToDestroy({ name: "bow", level: 0 }, config)).toBe(true);
   expect(wantToDestroy({ name: "bow", level: 0, p: "shiny" }, config)).toBe(false);
   expect(wantToDestroy({ name: "bow", level: 1 }, config)).toBe(true);
@@ -125,7 +125,7 @@ test("`wantToDestroy()` destroys items up to the set level", () => {
 });
 
 test("`wantToDestroy()` destroys special and non-special items up to the set level when destroySpecial is set", () => {
-  const config: Config = { bow: { destroy: { destroySpecial: true, destroyUpToLevel: 1 } } };
+  const config: ItemsConfig = { bow: { destroy: { destroySpecial: true, destroyUpToLevel: 1 } } };
   expect(wantToDestroy({ name: "bow", level: 0 }, config)).toBe(true);
   expect(wantToDestroy({ name: "bow", level: 0, p: "shiny" }, config)).toBe(true);
   expect(wantToDestroy({ name: "bow", level: 1 }, config)).toBe(true);
@@ -134,7 +134,7 @@ test("`wantToDestroy()` destroys special and non-special items up to the set lev
 });
 
 test("`wantToDismantle()` does not dismantle items that are not in the config", () => {
-  const config: Config = {};
+  const config: ItemsConfig = {};
   if (g === undefined) throw new Error("G data is not available");
   expect(wantToDismantle({ name: "orba", level: 1 }, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, g, config)).toBe(
     false,
@@ -142,7 +142,7 @@ test("`wantToDismantle()` does not dismantle items that are not in the config", 
 });
 
 test("`wantToDismantle()` dismantles only non-special items when dismantleSpecial is not set", () => {
-  const config: Config = {
+  const config: ItemsConfig = {
     orba: { dismantle: {} },
   };
   if (g === undefined) throw new Error("G data is not available");
@@ -161,7 +161,7 @@ test("`wantToDismantle()` dismantles only non-special items when dismantleSpecia
 });
 
 test("`wantToDismantle()` dismantles special and non-special items when dismantleSpecial is set", () => {
-  const config: Config = {
+  const config: ItemsConfig = {
     orba: { dismantle: { dismantleSpecial: true } },
   };
   if (g === undefined) throw new Error("G data is not available");
@@ -180,7 +180,7 @@ test("`wantToDismantle()` dismantles special and non-special items when dismantl
 });
 
 test("`wantToDismantle()` does not dismantle items that have a config, but do not have a dismantle config", () => {
-  const config: Config = {
+  const config: ItemsConfig = {
     orba: {},
   };
   if (g === undefined) throw new Error("G data is not available");
@@ -190,7 +190,7 @@ test("`wantToDismantle()` does not dismantle items that have a config, but do no
 });
 
 test("`wantToDismantle()` dismantles compoundable items", () => {
-  const config: Config = {
+  const config: ItemsConfig = {
     lostearring: { dismantle: {} },
     orba: { dismantle: {} },
   };
@@ -216,19 +216,19 @@ test("`wantToDismantle()` dismantles compoundable items", () => {
 });
 
 test("`wantToSell()` does not sell items that are not in the config", () => {
-  const config: Config = {};
+  const config: ItemsConfig = {};
   if (g === undefined) throw new Error("G data is not available");
   expect(wantToSell({ name: "hbow", level: 0 }, g, "npc", config)).toBe(false);
 });
 
 test("`wantToSell()` does not sell items that have a config, but do not have a sell config", () => {
-  const config: Config = { bow: {} };
+  const config: ItemsConfig = { bow: {} };
   if (g === undefined) throw new Error("G data is not available");
   expect(wantToSell({ name: "bow", level: 0 }, g, "npc", config)).toBe(false);
 });
 
 test("`wantToSell()` sells only non-special level 0 items when sellPrice is not an object", () => {
-  const config: Config = { bow: { sell: { sellPrice: "npc" } } };
+  const config: ItemsConfig = { bow: { sell: { sellPrice: "npc" } } };
   if (g === undefined) throw new Error("G data is not available");
   expect(wantToSell({ name: "bow", level: 0 }, g, "npc", config)).toBe(true);
   expect(wantToSell({ name: "bow", level: 0, p: "shiny" }, g, "npc", config)).toBe(false);
@@ -236,7 +236,7 @@ test("`wantToSell()` sells only non-special level 0 items when sellPrice is not 
 });
 
 test("`adjustItemConfig()` computes the buyPrice and sellPrice for `g`", () => {
-  const config: Config = {
+  const config: ItemsConfig = {
     hbow: {
       buy: {
         buyPrice: "g",
@@ -258,7 +258,7 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for `g`", () => {
 
 test("`adjustItemConfig()` computes the buyPrice and sellPrice for `goblin`", () => {
   // Buy price should be set from "g"
-  const config: Config = {
+  const config: ItemsConfig = {
     hbow: {
       buy: {
         buyPrice: "goblin",
@@ -279,7 +279,7 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for `goblin`", ()
 });
 
 test("`adjustItemConfig()` computes the buyPrice and sellPrice for `ponty`", () => {
-  const config: Config = {
+  const config: ItemsConfig = {
     hbow: {
       buy: {
         buyPrice: "ponty",
@@ -301,7 +301,7 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for `ponty`", () 
 
 test("`adjustItemConfig()` computes the buyPrice and sellPrice for `npc`", () => {
   // Buy price should be set from "g"
-  const config: Config = {
+  const config: ItemsConfig = {
     hbow: {
       buy: {
         buyPrice: "npc",
@@ -323,7 +323,7 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for `npc`", () =>
 
 test("`adjustItemConfig()` computes the buyPrice and sellPrice for multipliers (`x${number}`)", () => {
   // Buy price should be set from "g"
-  const config: Config = {
+  const config: ItemsConfig = {
     hbow: {
       buy: {
         buyPrice: "x2.5",
@@ -344,7 +344,7 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for multipliers (
 });
 
 test("`adjustItemConfig()` ensures we're selling at a higher price than we're buying", () => {
-  const config: Config = {
+  const config: ItemsConfig = {
     hbow: {
       buy: {
         buyPrice: "x2.5",
@@ -362,7 +362,7 @@ test("`adjustItemConfig()` ensures we're selling at a higher price than we're bu
 });
 
 test("`adjustItemConfig()` ensures non-dismantleable items don't have dismantle config", () => {
-  const config: Config = {
+  const config: ItemsConfig = {
     bow: {
       ...DISMANTLE,
     },
@@ -390,7 +390,7 @@ test("`adjustItemConfig()` ensures non-dismantleable items don't have dismantle 
 });
 
 test("`adjustItemConfig()` ensures uncraftable items don't have craft config", () => {
-  const config: Config = {
+  const config: ItemsConfig = {
     bow: {
       ...CRAFT,
     },
@@ -411,7 +411,7 @@ test("`adjustItemConfig()` ensures uncraftable items don't have craft config", (
 });
 
 test("`adjustItemConfig()` ensures unexchangable items don't have exchange config", () => {
-  const config: Config = {
+  const config: ItemsConfig = {
     bow: {
       ...EXCHANGE,
     },

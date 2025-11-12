@@ -1,12 +1,12 @@
 import type { DismantleKey, GData, ItemKey } from "typed-adventureland";
-import type { Config, Price } from "../../../config/items.js";
+import type { ItemsConfig, Price } from "../../../config/items.js";
 import { calculateNpcBuyPrice, calculatePrice, wantToList, wantToSell } from "../items.js";
 import { logDebug, logError } from "../logging.js";
 
 /**
  * Changes the config to buy keys at the given price.
  */
-export function buyKeys(config: Config, g: GData, price: Exclude<Price, number>) {
+export function buyKeys(config: ItemsConfig, g: GData, price: Exclude<Price, number>) {
   for (const itemName of Object.keys(g.items) as ItemKey[]) {
     const gItem = g.items[itemName];
     if (gItem.type !== "bank_key" && gItem.type !== "dungeon_key") continue; // Not a key
@@ -26,7 +26,7 @@ export function buyKeys(config: Config, g: GData, price: Exclude<Price, number>)
 /**
  * Calculates the buy prices (changes them to numbers) for items based on their config.
  */
-export function calculateBuyPrices(config: Config, g: GData) {
+export function calculateBuyPrices(config: ItemsConfig, g: GData) {
   for (const name of Object.keys(config) as ItemKey[]) {
     const itemConfig = config[name];
     if (itemConfig === undefined) continue; // No config
@@ -61,7 +61,7 @@ export function calculateBuyPrices(config: Config, g: GData) {
 /**
  * Calculates the sell prices (changes them to numbers) for items based on their config.
  */
-export function calculateSellPrices(config: Config, g: GData) {
+export function calculateSellPrices(config: ItemsConfig, g: GData) {
   for (const name of Object.keys(config) as ItemKey[]) {
     const itemConfig = config[name];
     if (itemConfig === undefined) continue; // No config
@@ -97,7 +97,7 @@ export function calculateSellPrices(config: Config, g: GData) {
  *
  * NOTE: Run {@see calculateBuyPrices} and {@see calculateSellPrices} before this function
  */
-export function ensureBuyPriceLessThanSellPrice(config: Config) {
+export function ensureBuyPriceLessThanSellPrice(config: ItemsConfig) {
   for (const name of Object.keys(config) as ItemKey[]) {
     const itemConfig = config[name];
     if (itemConfig === undefined) continue; // No config
@@ -126,7 +126,7 @@ export function ensureBuyPriceLessThanSellPrice(config: Config) {
 /**
  * Ensures that the special multiplier for selling items is at least 1.
  */
-export function ensureSellMultiplierAtLeastOne(config: Config) {
+export function ensureSellMultiplierAtLeastOne(config: ItemsConfig) {
   for (const name of Object.keys(config) as ItemKey[]) {
     const itemConfig = config[name];
     if (itemConfig === undefined) continue; // No config
@@ -142,7 +142,7 @@ export function ensureSellMultiplierAtLeastOne(config: Config) {
 /**
  * Ensures that we are selling items for at least the price an NPC would buy them for.
  */
-export function ensureSellPriceAtLeastNpcPrice(config: Config, g: GData) {
+export function ensureSellPriceAtLeastNpcPrice(config: ItemsConfig, g: GData) {
   for (const name of Object.keys(config) as ItemKey[]) {
     const itemConfig = config[name];
     if (typeof itemConfig?.sell?.sellPrice === "number") {
@@ -178,7 +178,7 @@ export function ensureSellPriceAtLeastNpcPrice(config: Config, g: GData) {
   }
 }
 
-export function optimizeUpgrades(config: Config) {
+export function optimizeUpgrades(config: ItemsConfig) {
   // TODO: Optimize upgrades
   // TODO: Look for primling price, make sure we have it defined
   if (config.offeringp?.buy?.buyPrice === undefined) {
@@ -194,7 +194,7 @@ export function optimizeUpgrades(config: Config) {
  *
  * NOTE: Compoundable items are also dismantlable
  */
-export function removeNonDismantlable(config: Config, g: GData) {
+export function removeNonDismantlable(config: ItemsConfig, g: GData) {
   for (const name of Object.keys(config) as ItemKey[]) {
     const itemConfig = config[name];
     if (itemConfig === undefined) continue; // No config
@@ -212,7 +212,7 @@ export function removeNonDismantlable(config: Config, g: GData) {
 /**
  * If items are marked as craftable in the config, but not in the game data, we remove them from the config.
  */
-export function removeUncraftable(config: Config, g: GData) {
+export function removeUncraftable(config: ItemsConfig, g: GData) {
   for (const name of Object.keys(config) as ItemKey[]) {
     const itemConfig = config[name];
     if (itemConfig === undefined) continue; // No config
@@ -253,7 +253,7 @@ export function removeUncraftable(config: Config, g: GData) {
 /**
  * If items are marked as exchangable in the config, but not in the game data, we remove them from the config.
  */
-export function removeUnexchangable(config: Config, g: GData) {
+export function removeUnexchangable(config: ItemsConfig, g: GData) {
   for (const name of Object.keys(config) as ItemKey[]) {
     const itemConfig = config[name];
     if (itemConfig === undefined) continue; // No config

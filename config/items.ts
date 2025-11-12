@@ -103,7 +103,7 @@ export type ItemConfig = {
   upgrade?: UpgradeConfigBase;
 };
 
-export type Config = Partial<Record<ItemKey, ItemConfig>>;
+export type ItemsConfig = Partial<Record<ItemKey, ItemConfig>>;
 
 export const BUY_AT_GOBLIN_PRICE: ItemConfig = Object.freeze({ buy: Object.freeze({ buyPrice: "goblin" }) });
 export const BUY_AT_PONTY_PRICE: ItemConfig = Object.freeze({ buy: Object.freeze({ buyPrice: "ponty" }) });
@@ -116,7 +116,7 @@ export const HOLD_FULL_STACK: ItemConfig = Object.freeze({
 });
 export const SELL_TO_NPC: ItemConfig = Object.freeze({ sell: Object.freeze({ sellPrice: "npc" }) });
 
-const config: Config = {
+const itemsConfig: ItemsConfig = {
   "5bucks": {
     buy: {
       buyPrice: 100_000_000,
@@ -197,4 +197,4 @@ const config: Config = {
   },
 };
 
-export default config;
+export default itemsConfig;
