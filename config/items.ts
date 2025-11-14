@@ -70,6 +70,7 @@ export type MailConfigBase = {
   mailSpecial?: true;
 };
 
+// TODO: Config to sell items we have an excess of
 export type SellConfigBase = {
   /**
    * If set to "npc" or a number, we will sell level 0 items to an NPC or at the specified price to other players.

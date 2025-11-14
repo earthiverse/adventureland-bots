@@ -37,7 +37,7 @@ EventBus.on("version_mismatch", (observer, newestVersion) => {
   logDebug("Updating G...");
   observer.game
     .updateG()
-    .then((g) => logNotice(`Updated G to v${g.version}!`))
+    .then((g) => logNotice(`Updated G to v${g.version}`))
     .catch(logWarning);
 });
 
