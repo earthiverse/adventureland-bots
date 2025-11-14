@@ -11,6 +11,7 @@ import type {
 } from "typed-adventureland";
 import url from "url";
 import { logWarning } from "../utilities/logging.js";
+import { WANT_TO_TRACK } from "../../config/monsters.js";
 
 /**
  * This plugin tracks monsters and players
@@ -18,46 +19,6 @@ import { logWarning } from "../utilities/logging.js";
 
 const LOOP_INTERVAL_MS = 30_000; // 30 Seconds
 const STALE_MS = 300_000; // 5 Minutes
-
-// TODO: Review list
-const WANT_TO_TRACK = new Set<MonsterKey>([
-  "a1",
-  "a2",
-  "a3",
-  "a4",
-  "a5",
-  "a6",
-  "a7",
-  "a8",
-  "bgoo",
-  "cutebee",
-  "franky",
-  "fvampire",
-  "gbluepro",
-  "ggreenpro",
-  "gpurplepro",
-  "gredpro",
-  "goldenbat",
-  "goldenbot",
-  "greenjr",
-  "icegolem",
-  "jr",
-  "mvampire",
-  "phoenix",
-  "rgoo",
-  "rharpy",
-  "skeletor",
-  "snowman",
-  "stompy",
-  "spiderbl",
-  "spiderbr",
-  "spiderr",
-  "vbat",
-  "xmagefi",
-  "xmagefz",
-  "xmagen",
-  "xmagex",
-]);
 
 type CharacterData = {
   lastSeen: number;
