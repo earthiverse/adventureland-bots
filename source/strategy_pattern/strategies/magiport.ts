@@ -70,8 +70,11 @@ export class MagiportOthersSmartMovingToUsStrategy implements Strategy<Mage> {
 }
 
 export class MagiportServiceStrategyOptions {
-    /** If set, we will only allow magiport requests from these characters */
-    allowList?: string[]
+    /**
+     * If set to a list, we will only allow magiport requests from those characters.
+     * If set to "party", we will only allow magiport requests from characters in our party.
+     */
+    allowList?: string[] | "party"
 }
 
 export class MagiportServiceStrategy implements Strategy<Mage> {
@@ -87,7 +90,12 @@ export class MagiportServiceStrategy implements Strategy<Mage> {
 
     public onApply(bot: Mage) {
         this.inviteListener = async (data: CMData) => {
-            if (this.options.allowList && !this.options.allowList.includes(data.name)) return // Not in allow list
+            if (this.options.allowList) {
+                if (this.options.allowList === "party") {
+                    if (!bot.party || !bot.partyData.list.some((m) => m === data.name)) return // Not in party
+                    if (!this.options.allowList.includes(data.name)) return // Not in allow list
+                }
+            }
             if (!data.message.includes("magiport")) return // Different CM
             if (bot.players.get(data.name)) return // They're "nearby"
             if (!bot.canUse("magiport")) return // We can't use magiport (probably no MP)

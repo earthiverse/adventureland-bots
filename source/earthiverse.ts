@@ -169,7 +169,7 @@ const partyAcceptStrategy =
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 // Mage
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(ALL_CONTEXTS)
-const magiportServiceStrategy = new MagiportServiceStrategy()
+const magiportServiceStrategy = new MagiportServiceStrategy({ allowList: "party" })
 // Merchant
 const merchantDestroyStrategy = new MerchantDestroyStrategy()
 // Priest
