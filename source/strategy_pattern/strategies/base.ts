@@ -144,7 +144,8 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
         if (Tools.squaredDistance(chest, bot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return // It's far away from us
         if (BaseStrategy.recentlyLooted.has(chest.id)) return // One of our characters is already looting it
 
-        // Temporary because Crown has better gear
+        // TODO: Add party check
+        // Crown has better gear
         if (bot.players.has("CrownsAnal") || bot.players.has("CrownTown") || bot.players.has("CrownPriest")) return
 
         let goldM = 0

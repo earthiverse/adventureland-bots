@@ -93,8 +93,7 @@ export class MagiportServiceStrategy implements Strategy<Mage> {
             if (this.options.allowList) {
                 if (this.options.allowList === "party") {
                     if (!bot.party || !bot.partyData.list.some((m) => m === data.name)) return // Not in party
-                    if (!this.options.allowList.includes(data.name)) return // Not in allow list
-                }
+                } else if (!this.options.allowList.includes(data.name)) return // Not in allow list
             }
             if (!data.message.includes("magiport")) return // Different CM
             if (bot.players.get(data.name)) return // They're "nearby"
