@@ -82,11 +82,10 @@ import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.j
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true, remove_abtesting: true, remove_test: true })
 
-// TODO: Make these configurable through /comm
 // Toggles
-const ENABLE_EVENTS = true
-const ENABLE_SERVER_HOPS = true
-const ENABLE_SPECIAL_MONSTERS = true
+let ENABLE_EVENTS = true
+let ENABLE_SERVER_HOPS = true
+let ENABLE_SPECIAL_MONSTERS = true
 let ENABLE_MONSTERHUNTS = true
 const DEFAULT_MONSTERS: MonsterName[] = ["plantoid"]
 const SPECIAL_MONSTERS: MonsterName[] = [
@@ -198,10 +197,10 @@ let OVERRIDE_MONSTERS: MonsterName[]
 let OVERRIDE_REGION: ServerRegion
 let OVERRIDE_IDENTIFIER: ServerIdentifier
 class OverrideStrategy implements Strategy<PingCompensatedCharacter> {
-    private onCodeEval: (data: string) => Promise<void>
+    private onCodeEval: (data: string) => void
 
     public onApply(bot: PingCompensatedCharacter) {
-        this.onCodeEval = async (data: string) => {
+        this.onCodeEval = (data: string) => {
             const args = data.split(" ")
             switch (args[0].toLowerCase()) {
                 case "monster":
@@ -213,6 +212,15 @@ class OverrideStrategy implements Strategy<PingCompensatedCharacter> {
                         console.log(`Overriding monsters to [${OVERRIDE_MONSTERS.join(", ")}]`)
                     } else {
                         console.log("Clearing monster override...")
+                    }
+                    break
+                case "events":
+                    if ((!ENABLE_EVENTS && args[1] == "on") || args[1] == "true") {
+                        console.log("Turning events on...")
+                        ENABLE_EVENTS = true
+                    } else if ((ENABLE_EVENTS && args[1] == "off") || args[1] == "false") {
+                        console.log("Turning events off...")
+                        ENABLE_EVENTS = false
                     }
                     break
                 case "monsterhunt":
@@ -233,6 +241,24 @@ class OverrideStrategy implements Strategy<PingCompensatedCharacter> {
                         OVERRIDE_REGION = undefined
                         OVERRIDE_IDENTIFIER = undefined
                         console.log("Clearing server override...")
+                    }
+                    break
+                case "serverhops":
+                    if ((!ENABLE_SERVER_HOPS && args[1] == "on") || args[1] == "true") {
+                        console.log("Turning server hops on...")
+                        ENABLE_SERVER_HOPS = true
+                    } else if ((ENABLE_SERVER_HOPS && args[1] == "off") || args[1] == "false") {
+                        console.log("Turning server hops off...")
+                        ENABLE_SERVER_HOPS = false
+                    }
+                    break
+                case "specialmonsters":
+                    if ((!ENABLE_SPECIAL_MONSTERS && args[1] == "on") || args[1] == "true") {
+                        console.log("Turning special monsters on...")
+                        ENABLE_SPECIAL_MONSTERS = true
+                    } else if ((ENABLE_SPECIAL_MONSTERS && args[1] == "off") || args[1] == "false") {
+                        console.log("Turning special monsters off...")
+                        ENABLE_SPECIAL_MONSTERS = false
                     }
                     break
             }
