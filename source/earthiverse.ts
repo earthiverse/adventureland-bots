@@ -185,7 +185,7 @@ const privateSetups = constructSetups(ALL_CONTEXTS)
 const publicSetups = constructHelperSetups(ALL_CONTEXTS)
 // Etc.
 const destroyStrategy = new DestroyStrategy()
-const elixirStrategy = new ElixirStrategy("elixirluck")
+const elixirStrategy = new ElixirStrategy("pumpkinspice")
 const homeServerStrategy = new HomeServerStrategy(DEFAULT_REGION, DEFAULT_IDENTIFIER)
 const privateItemStrategy = new ItemStrategy({
     contexts: PRIVATE_CONTEXTS,

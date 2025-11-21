@@ -563,6 +563,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     // },
     pumpkinspice: {
         sellExcess: 9999 * 3,
+        hold: true,
     },
     pyjamas: {
         ...SELL_TO_NPC,
