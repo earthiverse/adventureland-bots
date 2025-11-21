@@ -41,9 +41,6 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            generateEnsureEquipped: {
-                                attributes: ["armor", "int", "attack"],
-                            },
                             typeList: monsters,
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } }),
