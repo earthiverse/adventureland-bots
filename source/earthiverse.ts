@@ -83,11 +83,11 @@ await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true, remove_abtesting: true, remove_test: true })
 
 // Toggles
-let ENABLE_EVENTS = true
-let ENABLE_SERVER_HOPS = true
-let ENABLE_SPECIAL_MONSTERS = true
-let ENABLE_MONSTERHUNTS = true
-const DEFAULT_MONSTERS: MonsterName[] = ["plantoid"]
+let ENABLE_EVENTS = false
+let ENABLE_SERVER_HOPS = false
+let ENABLE_SPECIAL_MONSTERS = false
+let ENABLE_MONSTERHUNTS = false
+const DEFAULT_MONSTERS: MonsterName[] = ["xscorpion"]
 const SPECIAL_MONSTERS: MonsterName[] = [
     "crabxx",
     "cutebee",
