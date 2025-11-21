@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy, ImprovedMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH_WEAPONS, MP_RECOVERY, WARRIOR_SPLASH_WEAPONS } from "./equipment.js"
+import { MAGE_SPLASH_WEAPONS, MP_RECOVERY, RETURN_HIGHEST, WARRIOR_SPLASH_WEAPONS } from "./equipment.js"
 
 export function constructXScorpionSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const spawn = AL.Pathfinder.locateMonster("xscorpion")[0]
@@ -56,6 +56,7 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                                 prefer: {
                                     ...WARRIOR_SPLASH_WEAPONS,
                                     ...MP_RECOVERY,
+                                    orb: { name: "orbofstr", filters: RETURN_HIGHEST },
                                 },
                             },
                             typeList: monsters,
