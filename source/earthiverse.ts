@@ -168,7 +168,7 @@ const partyAcceptStrategy =
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 // Mage
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(ALL_CONTEXTS)
-const magiportServiceStrategy = new MagiportServiceStrategy({ allowList: "party" })
+const magiportServiceStrategy = new MagiportServiceStrategy({ allowList: ["CrownMerch"] }) // TODO: Change after farming
 // Merchant
 const merchantDestroyStrategy = new MerchantDestroyStrategy()
 // Priest
