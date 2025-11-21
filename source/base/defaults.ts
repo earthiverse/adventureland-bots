@@ -1,7 +1,7 @@
 import AL, { ItemName, ServerIdentifier, ServerRegion } from "alclient"
 
 export const DEFAULT_REGION: ServerRegion = "US"
-export const DEFAULT_IDENTIFIER: ServerIdentifier = "III"
+export const DEFAULT_IDENTIFIER: ServerIdentifier = "II"
 
 export const DEFAULT_CRAFTABLES = new Set<ItemName>([
     "armorring",
@@ -19,7 +19,7 @@ export const DEFAULT_CRAFTABLES = new Set<ItemName>([
     "wbreeches",
     "wcap",
     "wgloves",
-    "wshoes"
+    "wshoes",
 ])
 
 export const DEFAULT_EXCHANGEABLES = new Set<ItemName>([
