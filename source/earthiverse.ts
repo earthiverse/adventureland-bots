@@ -882,12 +882,12 @@ const startMerchantContext = async () => {
         ...defaultNewMerchantStrategyOptions,
         goldToHold: 4_000_000_000,
         enableInstanceProvider: {
-            crypt: {
-                maxInstances: 10,
-            },
-            tomb: {
-                maxInstances: 3,
-            },
+            // crypt: {
+            //     maxInstances: 10,
+            // },
+            // tomb: {
+            //     maxInstances: 3,
+            // },
             // winter_instance: {
             //     maxInstances: 1,
             // },
