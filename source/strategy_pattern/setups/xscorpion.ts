@@ -26,7 +26,6 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             disableEnergize: true,
                             disableZapper: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "int", "attack", "blast", "explosion"],
                                 prefer: {
                                     ...MAGE_SPLASH_WEAPONS,
                                     ...MP_RECOVERY,
@@ -57,7 +56,6 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "str", "explosion", "blast"],
                                 prefer: {
                                     ...WARRIOR_SPLASH_WEAPONS,
                                     ...MP_RECOVERY,
