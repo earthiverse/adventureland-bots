@@ -5,10 +5,11 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy, ImprovedMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
+import { MAGE_SPLASH_WEAPONS, MP_RECOVERY, WARRIOR_SPLASH_WEAPONS } from "./equipment.js"
 
 export function constructXScorpionSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const spawn = AL.Pathfinder.locateMonster("xscorpion")[0]
-    const monsters: MonsterName[] = ["xscorpion", "tinyp"]
+    const monsters: MonsterName[] = ["xscorpion", "tinyp", "mechagnome"] // TODO: Mechagnome temporarily for Crown
 
     const moveInCircleStrategy = new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
     const moveStrategy = new ImprovedMoveStrategy("xscorpion")
@@ -26,11 +27,15 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             disableZapper: true,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "attack", "blast", "explosion"],
+                                prefer: {
+                                    ...MAGE_SPLASH_WEAPONS,
+                                    ...MP_RECOVERY,
+                                },
                             },
                             targetingPartyMember: true,
                             typeList: monsters,
                         }),
-                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } })
+                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } }),
                     },
                     {
                         ctype: "priest",
@@ -42,7 +47,7 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             },
                             typeList: monsters,
                         }),
-                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } })
+                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } }),
                     },
                     {
                         ctype: "warrior",
@@ -53,12 +58,16 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "str", "explosion", "blast"],
+                                prefer: {
+                                    ...WARRIOR_SPLASH_WEAPONS,
+                                    ...MP_RECOVERY,
+                                },
                             },
                             typeList: monsters,
                         }),
-                        move: moveInCircleStrategy
-                    }
-                ]
+                        move: moveInCircleStrategy,
+                    },
+                ],
             },
             {
                 id: "greedy_xscorpion_priest,warrior",
@@ -73,7 +82,7 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             },
                             typeList: monsters,
                         }),
-                        move: new HoldPositionMoveStrategy(spawn)
+                        move: new HoldPositionMoveStrategy(spawn),
                     },
                     {
                         ctype: "warrior",
@@ -87,9 +96,9 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             },
                             typeList: monsters,
                         }),
-                        move: moveInCircleStrategy
-                    }
-                ]
+                        move: moveInCircleStrategy,
+                    },
+                ],
             },
             {
                 id: "xscorpion_mage,priest",
@@ -106,7 +115,7 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             targetingPartyMember: true,
                             typeList: monsters,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "priest",
@@ -118,10 +127,10 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                             },
                             typeList: monsters,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
-                ]
+                ],
             },
-        ]
+        ],
     }
 }
