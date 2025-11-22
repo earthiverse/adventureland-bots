@@ -2157,6 +2157,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                     let bestItem: [Item, BankPackName, number]
                     for (const [packName, packItems] of bot.getBankItems()) {
                         for (const [packSlot, packItem] of packItems) {
+                            if (packItem.l) continue // Can't deliver locked items
                             if (packItem.name !== slot.name) continue // Not the same item
                             if (packItem.level <= slot.level) continue // Not higher level
                             if (bestItem && bestItem[0].level >= packItem.level) continue // We already found something better
