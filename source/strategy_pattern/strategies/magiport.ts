@@ -1,4 +1,4 @@
-import AL, { CMData, Mage, PingCompensatedCharacter } from "alclient"
+import AL, { CharacterData, CMData, Mage, PingCompensatedCharacter } from "alclient"
 import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 
 export class MagiportOthersSmartMovingToUsStrategyOptions {
@@ -83,6 +83,8 @@ export class MagiportServiceStrategy implements Strategy<Mage> {
     protected options: MagiportServiceStrategyOptions
 
     protected inviteListener: (data: CMData) => Promise<unknown>
+    protected mpListener: (data: CharacterData) => Promise<unknown>
+    protected waitingList: string[] = []
 
     public constructor(options: MagiportServiceStrategyOptions = {}) {
         this.options = options
@@ -97,14 +99,36 @@ export class MagiportServiceStrategy implements Strategy<Mage> {
             }
             if (!data.message.includes("magiport")) return // Different CM
             if (bot.players.get(data.name)) return // They're "nearby"
+            if (this.waitingList.includes(data.name)) return // They're already waiting
+            this.waitingList.push(data.name)
             if (!bot.canUse("magiport")) return // We can't use magiport (probably no MP)
-            return bot.magiport(data.name)
+            try {
+                await bot.magiport(data.name)
+                this.waitingList.splice(this.waitingList.indexOf(data.name), 1)
+            } catch (e) {
+                // Suppress errors
+            }
+        }
+
+        this.mpListener = async (data: CharacterData) => {
+            if (this.waitingList.length === 0) return // Nobody waiting
+            if (data.mp < bot.G.skills.magiport.mp) return // Not enough MP
+            if (bot.isOnCooldown("magiport")) return // Magiport is on cooldown
+            try {
+                const name = this.waitingList[0]
+                await bot.magiport(name)
+                this.waitingList.splice(this.waitingList.indexOf(name), 1)
+            } catch (e) {
+                // Suppress errors
+            }
         }
 
         bot.socket.on("cm", this.inviteListener)
+        bot.socket.on("player", this.mpListener)
     }
 
     public onRemove(bot: Mage) {
         if (this.inviteListener) bot.socket.removeListener("cm", this.inviteListener)
+        if (this.mpListener) bot.socket.removeListener("player", this.mpListener)
     }
 }
