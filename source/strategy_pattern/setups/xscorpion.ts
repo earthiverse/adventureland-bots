@@ -3,7 +3,7 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { HoldPositionMoveStrategy, ImprovedMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
+import { HoldPositionMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_SPLASH_WEAPONS, MP_RECOVERY, RETURN_HIGHEST, WARRIOR_SPLASH_WEAPONS } from "./equipment.js"
 
@@ -12,7 +12,6 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
     const monsters: MonsterName[] = ["xscorpion", "tinyp", "mechagnome"] // TODO: Mechagnome temporarily for Crown
 
     const moveInCircleStrategy = new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
-    const moveStrategy = new ImprovedMoveStrategy("xscorpion")
 
     return {
         configs: [
@@ -29,6 +28,10 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                                 prefer: {
                                     ...MAGE_SPLASH_WEAPONS,
                                     ...MP_RECOVERY,
+                                    gloves: { name: "supermittens", filters: RETURN_HIGHEST },
+                                    orb: { name: "jacko", filters: RETURN_HIGHEST },
+                                    pants: { name: "starkillers", filters: RETURN_HIGHEST },
+                                    shoes: { name: "wingedboots", filters: RETURN_HIGHEST },
                                 },
                             },
                             targetingPartyMember: true,
@@ -41,6 +44,12 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
+                            generateEnsureEquipped: {
+                                prefer: {
+                                    orb: { name: "jacko", filters: RETURN_HIGHEST },
+                                    shoes: { name: "wingedboots", filters: RETURN_HIGHEST },
+                                },
+                            },
                             typeList: monsters,
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } }),
@@ -56,74 +65,17 @@ export function constructXScorpionSetup(contexts: Strategist<PingCompensatedChar
                                 prefer: {
                                     ...WARRIOR_SPLASH_WEAPONS,
                                     ...MP_RECOVERY,
+                                    gloves: { name: "supermittens", filters: RETURN_HIGHEST },
                                     orb: { name: "orbofstr", filters: RETURN_HIGHEST },
+                                    pants: { name: "fallen", filters: RETURN_HIGHEST },
+                                    shoes: { name: "wingedboots", filters: RETURN_HIGHEST },
+                                    ring1: { name: "suckerpunch", filters: RETURN_HIGHEST },
+                                    ring2: { name: "suckerpunch", filters: RETURN_HIGHEST },
                                 },
                             },
                             typeList: monsters,
                         }),
                         move: moveInCircleStrategy,
-                    },
-                ],
-            },
-            {
-                id: "greedy_xscorpion_priest,warrior",
-                characters: [
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            generateEnsureEquipped: {
-                                attributes: ["armor", "int", "attack"],
-                            },
-                            typeList: monsters,
-                        }),
-                        move: new HoldPositionMoveStrategy(spawn),
-                    },
-                    {
-                        ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
-                            contexts: contexts,
-                            disableZapper: true,
-                            enableEquipForCleave: true,
-                            enableGreedyAggro: true,
-                            generateEnsureEquipped: {
-                                attributes: ["armor", "str", "explosion", "blast"],
-                            },
-                            typeList: monsters,
-                        }),
-                        move: moveInCircleStrategy,
-                    },
-                ],
-            },
-            {
-                id: "xscorpion_mage,priest",
-                characters: [
-                    {
-                        ctype: "mage",
-                        attack: new MageAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            disableZapper: true,
-                            generateEnsureEquipped: {
-                                attributes: ["armor", "int", "attack", "blast", "explosion"],
-                            },
-                            targetingPartyMember: true,
-                            typeList: monsters,
-                        }),
-                        move: moveStrategy,
-                    },
-                    {
-                        ctype: "priest",
-                        attack: new PriestAttackStrategy({
-                            contexts: contexts,
-                            disableEnergize: true,
-                            generateEnsureEquipped: {
-                                attributes: ["armor", "int", "attack"],
-                            },
-                            typeList: monsters,
-                        }),
-                        move: moveStrategy,
                     },
                 ],
             },
