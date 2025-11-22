@@ -189,9 +189,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     //     exchange: true,
     // },
     /** Pink Candy */
-    candy1: {
-        exchange: true,
-    },
+    // candy1: {
+    //     exchange: true,
+    // },
     candycane: {
         exchange: true,
     },
@@ -721,8 +721,35 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: 500_000_000,
         useOfferingFromLevel: 0,
     },
-    tshirt88: {
-        // Don't upgrade, it's special
+    troll: {
+        buy: true,
+        buyPrice: "ponty",
+        exchange: true,
+    },
+    tshirt3: { // xp
+        buy: true,
+        buyPrice: "ponty"
+    },
+    tshirt4: { // speed
+        buy: true,
+        buyPrice: "ponty"
+    },
+    tshirt6: { // rpierce
+        buy: true,
+        buyPrice: "ponty"
+    },
+    tshirt7: { // apierce
+        buy: true,
+        buyPrice: "ponty"
+    },
+    tshirt8: { // attack mp cost
+        buy: true,
+        buyPrice: "ponty"
+    },
+    tshirt88: { // lucky
+        upgradeUntilLevel: 0,
+    },
+    tshirt9: { // manasteal
         upgradeUntilLevel: 0,
     },
     vattire: {
