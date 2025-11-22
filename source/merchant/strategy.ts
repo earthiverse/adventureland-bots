@@ -1828,8 +1828,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                     if (!wantToUpgrade(packItem, itemConfig, itemCounts)) continue
 
                     // Withdraw the item, we'll upgrade it
-                    await goAndWithdrawItem(bot, packName, packSlot, emptySlot)
-                    emptySlot = bot.getFirstEmptyInventorySlot()
+                    await goAndWithdrawItem(bot, packName, packSlot, -1)
                     if (bot.esize < 2) break bankSearch // Not enough empty slots
                 }
             }
@@ -1844,6 +1843,9 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 if (!config.craft) continue // We don't want to craft it
 
                 const itemsNeeded = [...AL.Game.G.craft[itmeName].items]
+
+                if (itemsNeeded.length > bot.esize) continue // No space
+
                 const itemsFound: [BankPackName, number][] = []
                 bankSearch: for (const [packName, packItems] of bot.getBankItems()) {
                     for (const [packSlot, packItem] of packItems) {
@@ -1864,16 +1866,13 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                     }
                 }
 
-                if (
-                    itemsNeeded.length === 0 && // We found everything
-                    bot.esize >= itemsFound.length // We have enough space for everything
-                ) {
+                if (itemsNeeded.length === 0) {
+                    // We found everything
                     for (const [packName, packSlot] of itemsFound) {
                         await goAndWithdrawItem(bot, packName, packSlot)
                     }
-                } else if (
-                    bot.esize >= itemsNeeded.length // We have enough space to buy the remaining items
-                ) {
+                } else {
+                    // Check if we can buy the remaining items from an NPC
                     let canBuyRemainingFromNPC = true
                     for (let i = 0; i < itemsNeeded.length; i++) {
                         const itemNeeded = itemsNeeded[i]
@@ -1889,7 +1888,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                     }
                 }
 
-                if (bot.esize <= 0) break // No mre space
+                if (bot.esize <= 1) break // No mre space
             }
         }
 
