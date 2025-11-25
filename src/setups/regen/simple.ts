@@ -1,7 +1,8 @@
-import type { Character, Game } from "alclient";
+import type { Character } from "alclient";
 import type { Comparator } from "tinyqueue";
 import TinyQueue from "tinyqueue";
 import type { ItemKey, SkillKey } from "typed-adventureland";
+import { REGEN_ITEMS } from "../../../config/items.js";
 import { logDebug } from "../../utilities/logging.js";
 
 type ActiveData = {
@@ -11,7 +12,7 @@ const active = new Map<Character, ActiveData>();
 
 export function calculateItemScore(
   item: ItemKey,
-  character: { max_hp: number; hp: number; max_mp: number; mp: number; game: Game },
+  character: Pick<Character, "max_hp" | "hp" | "max_mp" | "mp" | "game">,
 ): number {
   const missingHp = character.max_hp - character.hp;
   const missingMp = character.max_mp - character.mp;
@@ -96,6 +97,8 @@ export const setup = (character: Character) => {
   const activeData: ActiveData = { cancelled: false };
   active.set(character, activeData);
 
+  const comparator = getComparator(character);
+
   const regenLoop = async () => {
     if (activeData.cancelled) return;
 
@@ -106,14 +109,10 @@ export const setup = (character: Character) => {
       const missingMp = character.max_mp - character.mp;
       if (missingHp <= 0 && missingMp <= 0) return; // We are full
 
-      const bestActions = new TinyQueue<ItemKey | SkillKey>(["regen_hp", "regen_mp"], getComparator(character));
-
-      // TODO: Add use of items
-      // for (const item of character.items) {
-      //   if (!item) continue; // Empty slot
-      //   if (!REGEN_ITEMS.includes(item.name)) continue; // Not an item we want to use
-      //   bestActions.push(item.name);
-      // }
+      const bestActions = new TinyQueue<ItemKey | SkillKey>(
+        ["regen_hp", "regen_mp", ...REGEN_ITEMS.filter((name) => character.items.some((item) => item?.name === name))],
+        comparator,
+      );
 
       const bestAction = bestActions.pop();
       if (bestAction === "regen_hp") {
