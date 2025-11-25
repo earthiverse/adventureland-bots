@@ -26,8 +26,8 @@
   },
   "homepage": "https://github.com/earthiverse/adventureland-bots#readme",
   "dependencies": {
-    "@isaacs/ttlcache": "^1.4.1",
-    "alclient": "file:../ALClient/alclient-1.0.0.tgz",
+    "@isaacs/ttlcache": "^2.1.2",
+    "alclient": "file:../../ALClient.worktrees/new-alclient/alclient-1.0.0.tgz",
     "config": "^4.1.0",
     "discord.js": "^14.19.3",
     "lru-cache": "^11.1.0",
@@ -50,7 +50,7 @@
     "prettier-plugin-organize-imports": "^4.2.0",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
-    "typed-adventureland": "^0.0.47",
+    "typed-adventureland": "^0.0.50",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.0"
   }

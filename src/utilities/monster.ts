@@ -1,4 +1,4 @@
-import TTLCache from "@isaacs/ttlcache";
+import { TTLCache } from "@isaacs/ttlcache";
 import type { Character, EntityMonster } from "alclient";
 import TinyQueue, { type Comparator } from "tinyqueue";
 import type { MonsterKey } from "typed-adventureland";
