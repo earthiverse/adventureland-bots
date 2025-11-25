@@ -4,10 +4,6 @@ import TinyQueue from "tinyqueue";
 import type { ItemKey, SkillKey } from "typed-adventureland";
 import { logDebug } from "../../utilities/logging.js";
 
-/** Which items we want to use to heal / regen */
-// TODO: Move this to item config
-export const REGEN_ITEMS: ItemKey[] = ["hpot0", "hpot1", "mpot0", "mpot1"];
-
 type ActiveData = {
   cancelled: boolean;
 };

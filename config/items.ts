@@ -198,4 +198,7 @@ const itemsConfig: ItemsConfig = {
   },
 };
 
+/** Which items we want to use to heal / regen */
+export const REGEN_ITEMS = Object.freeze(["hpot0", "hpot1", "mpot0", "mpot1"] as ItemKey[]);
+
 export default itemsConfig;
