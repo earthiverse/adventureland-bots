@@ -2,7 +2,6 @@ import type { Character } from "alclient";
 import type { Comparator } from "tinyqueue";
 import TinyQueue from "tinyqueue";
 import type { ItemKey, SkillKey } from "typed-adventureland";
-import { REGEN_ITEMS } from "../../../config/items.js";
 import { logDebug } from "../../utilities/logging.js";
 
 type ActiveData = {
@@ -46,7 +45,10 @@ export function calculateSkillScore(skill: SkillKey, character: Character): numb
     case "regen_mp":
       givesMp = 100;
       break;
-    // TODO: Paladin heal?
+    case "selfheal":
+      givesHp =
+        character.game.G.skills.selfheal?.levels?.findLast(([reqLevel]) => character.level >= reqLevel)?.[1] ?? 0;
+      break;
     default:
       break;
   }
@@ -110,7 +112,12 @@ export const setup = (character: Character) => {
       if (missingHp <= 0 && missingMp <= 0) return; // We are full
 
       const bestActions = new TinyQueue<ItemKey | SkillKey>(
-        ["regen_hp", "regen_mp", ...REGEN_ITEMS.filter((name) => character.items.some((item) => item?.name === name))],
+        [
+          "regen_hp",
+          "regen_mp",
+          // ...(character.ctype === "paladin" ? (["selfheal"] as SkillKey[]) : []),
+          // ...REGEN_ITEMS.filter((name) => character.items.some((item) => item?.name === name)),
+        ],
         comparator,
       );
 
@@ -120,11 +127,13 @@ export const setup = (character: Character) => {
       } else if (bestAction === "regen_mp") {
         await character.regenMp();
       } else {
-        // TODO: Add use
+        // TODO: Add paladin self heal
+        // TODO: Add item use
       }
     } catch (e) {
       if (e instanceof Error || typeof e === "string") logDebug(e);
     } finally {
+      // TODO: If paladin, add selfheal
       setTimeout(() => void regenLoop(), Math.max(100, character.getTimeout("use_mp")));
     }
   };
