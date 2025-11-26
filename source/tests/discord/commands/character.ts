@@ -21,7 +21,7 @@ export const Character: Command = {
 
             if (getData.status === 200) {
                 const { lastSeen, ...json } = await getData.json()
-                const lastSeenDiscordFormat = `<t:${Math.floor(new Date(iso).getTime() / 1000)}:R>`
+                const lastSeenDiscordFormat = `<t:${Math.floor(new Date(lastSeen).getTime() / 1000)}:R>`
                 await interaction.followUp({
                     ephemeral: true,
                     content: `I last saw \`${character}\` ${lastSeenDiscordFormat} 🙂\n\`\`\`json\n${JSON.stringify(
