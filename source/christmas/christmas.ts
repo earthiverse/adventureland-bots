@@ -36,10 +36,7 @@ import { MagiportOthersSmartMovingToUsStrategy } from "../strategy_pattern/strat
 import { MageAttackStrategy } from "../strategy_pattern/strategies/attack_mage.js"
 import {
     generateEnsureEquipped,
-    MAGE_SPLASH_WEAPONS,
-    RANGER_SPLASH_WEAPONS,
     RETURN_HIGHEST,
-    WARRIOR_SPLASH_WEAPONS,
     ZAPPER_CRING,
     ZAPPER_STRRING,
 } from "../strategy_pattern/setups/equipment.js"
@@ -48,9 +45,8 @@ import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_war
 import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategy_pattern/strategies/attack_rogue.js"
 import { PaladinAttackStrategy } from "../strategy_pattern/strategies/attack_paladin.js"
-import { SlendermanAttackStrategy, SlendermanMoveStrategy } from "../strategy_pattern/setups/slenderman.js"
 import { SpecialMonsterMoveStrategy, SpreadOutImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
-import { halloweenGreenJr } from "../base/locations.js"
+import { mainFrogs } from "../base/locations.js"
 import { BoosterStrategy } from "../strategy_pattern/strategies/booster.js"
 import { checkOnlyEveryMS } from "../base/general.js"
 
@@ -59,7 +55,7 @@ await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: tr
 void adjustItemConfig(DEFAULT_ITEM_CONFIG)
 
 /**
- * Characters to use for mrgreen and mrpumpkin
+ * Characters to use for grinch
  * PRIEST_CHARACTER will be the third attacking character
  * earthMer will be the merchant
  */
@@ -101,28 +97,18 @@ for (const region of Object.keys(CHARACTERS_FOR_SERVERS)) {
 }
 
 /** What monster to farm while waiting */
-const HALLOWEEN_IDLE_MONSTER: MonsterName = "osnake"
+const CHRISTMAS_IDLE_MONSTER: MonsterName = "tortoise"
 
-/** Halloween monsters, sorted by priority (high -> low) */
-const HALLOWEEN_EVENT_MONSTERS: MonsterName[] = ["mrpumpkin", "mrgreen", "slenderman"]
+/** Christmas monsters, sorted by priority (high -> low) */
+const CHRISTMAS_EVENT_MONSTERS: MonsterName[] = ["grinch", "snowman"]
 
 /** All monsters we're farming */
-const HALLOWEEN_MONSTERS: MonsterName[] = [
-    "slenderman",
-    "greenjr",
-    "jr",
-    ...HALLOWEEN_EVENT_MONSTERS,
-    "osnake",
-    "xscorpion",
-    "minimush",
-    "osnake",
-    "snake",
-]
+const HALLOWEEN_MONSTERS: MonsterName[] = [...CHRISTMAS_EVENT_MONSTERS, "frog", "tortoise"]
 
 const SWITCH_TO_LUCK_AT_HP: number = 2_000_000
 const STAY_ON_SERVER_IF_HP_LESS_THAN: number = 5_000_000
 
-const MERCHANT_HOLD_POSITION: IPosition = { map: "halloween", x: 0, y: 0 }
+const MERCHANT_HOLD_POSITION: IPosition = { map: "main", x: 0, y: 0 }
 
 let currentRegion: ServerRegion = "US"
 let currentIdentifier: ServerIdentifier = "HARDCORE" // Start on a non-existent server, the first loop will set this to something else
@@ -170,11 +156,11 @@ const TOGGLE_STAND_STRATEGY = new ToggleStandStrategy({
 })
 const TRACKER_STRATEGY = new TrackerStrategy()
 
-class MageHalloweenAttackStrategy extends MageAttackStrategy {
+class MageChristmasAttackStrategy extends MageAttackStrategy {
     protected ensureEquipped(bot: Mage): Promise<void> {
-        const pumpkin = bot.getEntity({ typeList: ["mrgreen", "mrpumpkin"] })
+        const grinch = bot.getEntity({ typeList: ["grinch"] })
         if (checkOnlyEveryMS(`luck_${bot.id}`, 5_000)) {
-            if (pumpkin && pumpkin.hp < SWITCH_TO_LUCK_AT_HP) {
+            if (grinch && grinch.hp < SWITCH_TO_LUCK_AT_HP) {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["luck"] }))
             } else {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
@@ -184,7 +170,7 @@ class MageHalloweenAttackStrategy extends MageAttackStrategy {
         return super.ensureEquipped(bot)
     }
 }
-const MAGE_ATTACK_STRATEGY = new MageHalloweenAttackStrategy({
+const MAGE_ATTACK_STRATEGY = new MageChristmasAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: {
@@ -198,25 +184,12 @@ const MAGE_ATTACK_STRATEGY = new MageHalloweenAttackStrategy({
     },
     typeList: HALLOWEEN_MONSTERS,
 })
-const MAGE_ATTACK_STRATEGY_SPLASH = new MageHalloweenAttackStrategy({
-    contexts: activeStrategists,
-    generateEnsureEquipped: {
-        prefer: {
-            ...MAGE_SPLASH_WEAPONS,
-            orb: { name: "jacko", filters: RETURN_HIGHEST },
-            ...ZAPPER_CRING,
-            earring1: { name: "cearring", filters: RETURN_HIGHEST },
-            earring2: { name: "cearring", filters: RETURN_HIGHEST },
-        },
-    },
-    typeList: HALLOWEEN_MONSTERS,
-})
 
-class PaladinHalloweenAttackStrategy extends PaladinAttackStrategy {
+class PaladinChristmasAttackStrategy extends PaladinAttackStrategy {
     protected ensureEquipped(bot: Paladin): Promise<void> {
-        const pumpkin = bot.getEntity({ typeList: ["mrgreen", "mrpumpkin"] })
+        const grinch = bot.getEntity({ typeList: ["grinch"] })
         if (checkOnlyEveryMS(`luck_${bot.id}`, 5_000)) {
-            if (pumpkin && pumpkin.hp < SWITCH_TO_LUCK_AT_HP) {
+            if (grinch && grinch.hp < SWITCH_TO_LUCK_AT_HP) {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["luck"] }))
             } else {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
@@ -226,7 +199,7 @@ class PaladinHalloweenAttackStrategy extends PaladinAttackStrategy {
         return super.ensureEquipped(bot)
     }
 }
-const PALADIN_ATTACK_STRATEGY = new PaladinHalloweenAttackStrategy({
+const PALADIN_ATTACK_STRATEGY = new PaladinChristmasAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: { mainhand: { name: "fireblade", filters: RETURN_HIGHEST } },
@@ -235,11 +208,11 @@ const PALADIN_ATTACK_STRATEGY = new PaladinHalloweenAttackStrategy({
     typeList: HALLOWEEN_MONSTERS,
 })
 
-class PriestHalloweenAttackStrategy extends PriestAttackStrategy {
+class PriestChristmasAttackStrategy extends PriestAttackStrategy {
     protected ensureEquipped(bot: Priest): Promise<void> {
-        const pumpkin = bot.getEntity({ typeList: ["mrgreen", "mrpumpkin"] })
+        const grinch = bot.getEntity({ typeList: ["grinch"] })
         if (checkOnlyEveryMS(`luck_${bot.id}`, 5_000)) {
-            if (pumpkin && pumpkin.hp < SWITCH_TO_LUCK_AT_HP) {
+            if (grinch && grinch.hp < SWITCH_TO_LUCK_AT_HP) {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["luck"] }))
             } else {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
@@ -249,7 +222,7 @@ class PriestHalloweenAttackStrategy extends PriestAttackStrategy {
         return super.ensureEquipped(bot)
     }
 }
-const PRIEST_ATTACK_STRATEGY = new PriestHalloweenAttackStrategy({
+const PRIEST_ATTACK_STRATEGY = new PriestChristmasAttackStrategy({
     contexts: activeStrategists,
     enableAbsorbToTank: true,
     enableHealStrangers: true,
@@ -266,11 +239,11 @@ const PRIEST_ATTACK_STRATEGY = new PriestHalloweenAttackStrategy({
     typeList: HALLOWEEN_MONSTERS,
 })
 
-class RangerHalloweenAttackStrategy extends RangerAttackStrategy {
+class RangerChristmasAttackStrategy extends RangerAttackStrategy {
     protected ensureEquipped(bot: Ranger): Promise<void> {
-        const pumpkin = bot.getEntity({ typeList: ["mrgreen", "mrpumpkin"] })
+        const grinch = bot.getEntity({ typeList: ["grinch"] })
         if (checkOnlyEveryMS(`luck_${bot.id}`, 5_000)) {
-            if (pumpkin && pumpkin.hp < SWITCH_TO_LUCK_AT_HP) {
+            if (grinch && grinch.hp < SWITCH_TO_LUCK_AT_HP) {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["luck"] }))
             } else {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
@@ -280,7 +253,7 @@ class RangerHalloweenAttackStrategy extends RangerAttackStrategy {
         return super.ensureEquipped(bot)
     }
 }
-const RANGER_ATTACK_STRATEGY = new RangerHalloweenAttackStrategy({
+const RANGER_ATTACK_STRATEGY = new RangerChristmasAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: {
@@ -291,22 +264,12 @@ const RANGER_ATTACK_STRATEGY = new RangerHalloweenAttackStrategy({
     },
     typeList: HALLOWEEN_MONSTERS,
 })
-const RANGER_ATTACK_STRATEGY_SPLASH = new RangerHalloweenAttackStrategy({
-    contexts: activeStrategists,
-    generateEnsureEquipped: {
-        prefer: {
-            ...RANGER_SPLASH_WEAPONS,
-            ...ZAPPER_CRING,
-        },
-    },
-    typeList: HALLOWEEN_MONSTERS,
-})
 
-class RogueHalloweenAttackStrategy extends RogueAttackStrategy {
+class RogueChristmasAttackStrategy extends RogueAttackStrategy {
     protected ensureEquipped(bot: Rogue): Promise<void> {
-        const pumpkin = bot.getEntity({ typeList: ["mrgreen", "mrpumpkin"] })
+        const grinch = bot.getEntity({ typeList: ["grinch"] })
         if (checkOnlyEveryMS(`luck_${bot.id}`, 5_000)) {
-            if (pumpkin && pumpkin.hp < SWITCH_TO_LUCK_AT_HP) {
+            if (grinch && grinch.hp < SWITCH_TO_LUCK_AT_HP) {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["luck"] }))
             } else {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
@@ -316,7 +279,7 @@ class RogueHalloweenAttackStrategy extends RogueAttackStrategy {
         return super.ensureEquipped(bot)
     }
 }
-const ROGUE_ATTACK_STRATEGY = new RogueHalloweenAttackStrategy({
+const ROGUE_ATTACK_STRATEGY = new RogueChristmasAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: {
@@ -337,13 +300,12 @@ const ROGUE_ATTACK_STRATEGY = new RogueHalloweenAttackStrategy({
     },
     typeList: HALLOWEEN_MONSTERS,
 })
-const ROGUE_SLENDERMAN_ATTACK_STRATEGY = new SlendermanAttackStrategy()
 
-class WarriorHalloweenAttackStrategy extends WarriorAttackStrategy {
+class WarriorChristmasAttackStrategy extends WarriorAttackStrategy {
     protected ensureEquipped(bot: Warrior): Promise<void> {
-        const pumpkin = bot.getEntity({ typeList: ["mrgreen", "mrpumpkin"] })
+        const grinch = bot.getEntity({ typeList: ["grinch"] })
         if (checkOnlyEveryMS(`luck_${bot.id}`, 5_000)) {
-            if (pumpkin && pumpkin.hp < SWITCH_TO_LUCK_AT_HP) {
+            if (grinch && grinch.hp < SWITCH_TO_LUCK_AT_HP) {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["luck"] }))
             } else {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
@@ -353,7 +315,7 @@ class WarriorHalloweenAttackStrategy extends WarriorAttackStrategy {
         return super.ensureEquipped(bot)
     }
 }
-const WARRIOR_ATTACK_STRATEGY = new WarriorHalloweenAttackStrategy({
+const WARRIOR_ATTACK_STRATEGY = new WarriorChristmasAttackStrategy({
     contexts: activeStrategists,
     disableStomp: true,
     enableEquipForCleave: true,
@@ -369,28 +331,9 @@ const WARRIOR_ATTACK_STRATEGY = new WarriorHalloweenAttackStrategy({
     },
     typeList: HALLOWEEN_MONSTERS,
 })
-const WARRIOR_ATTACK_STRATEGY_SPLASH = new WarriorHalloweenAttackStrategy({
-    contexts: activeStrategists,
-    disableStomp: true,
-    enableEquipForCleave: true,
-    generateEnsureEquipped: {
-        prefer: {
-            ...WARRIOR_SPLASH_WEAPONS,
-            ...ZAPPER_STRRING,
-            earring1: { name: "cearring", filters: RETURN_HIGHEST },
-            earring2: { name: "cearring", filters: RETURN_HIGHEST },
-            amulet: { name: "snring", filters: RETURN_HIGHEST },
-        },
-    },
-    typeList: HALLOWEEN_MONSTERS,
-})
 
-const MRGREEN_MOVE_STRATEGY = new SpecialMonsterMoveStrategy({ contexts: activeStrategists, typeList: ["mrgreen"] })
-const MRPUMPKIN_MOVE_STRATEGY = new SpecialMonsterMoveStrategy({ contexts: activeStrategists, typeList: ["mrpumpkin"] })
-const OSNAKE_MOVE_STRATEGY = new SpreadOutImprovedMoveStrategy(["osnake", "snake"], { idlePosition: halloweenGreenJr })
-const SLENDERMAN_MOVE_STRATEGY_1 = new SlendermanMoveStrategy({ map: "cave" })
-const SLENDERMAN_MOVE_STRATEGY_2 = new SlendermanMoveStrategy({ map: "halloween" })
-const SLENDERMAN_MOVE_STRATEGY_3 = new SlendermanMoveStrategy({ map: "spookytown" })
+const GRINCH_MOVE_STRATEGY = new SpecialMonsterMoveStrategy({ contexts: activeStrategists, typeList: ["grinch"] })
+const TORTOISE_MOVE_STRATEGY = new SpreadOutImprovedMoveStrategy(["tortoise"], { idlePosition: mainFrogs })
 
 const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name: string, monster: MonsterName) => {
     let strategist: Strategist<PingCompensatedCharacter>
@@ -401,10 +344,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         case "earthMag3": {
             const mage = new Strategist(await AL.Game.startMage(name, region, identifier))
             strategist = mage
-            mage.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, MAGIPORT_STRATEGY])
-            mage.applyStrategy(
-                identifier === "PVP" || monster === "mrgreen" ? MAGE_ATTACK_STRATEGY : MAGE_ATTACK_STRATEGY_SPLASH,
-            )
+            mage.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, MAGIPORT_STRATEGY, MAGE_ATTACK_STRATEGY])
             break
         }
 
@@ -440,10 +380,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         case "earthRan2":
         case "earthRan3": {
             const ranger = new Strategist(await AL.Game.startRanger(name, region, identifier))
-            ranger.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY])
-            ranger.applyStrategy(
-                identifier === "PVP" || monster === "mrgreen" ? RANGER_ATTACK_STRATEGY : RANGER_ATTACK_STRATEGY_SPLASH,
-            )
+            ranger.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, RANGER_ATTACK_STRATEGY])
             strategist = ranger
             break
         }
@@ -453,14 +390,12 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         case "earthRog2":
         case "earthRog3": {
             const rogue = new Strategist(await AL.Game.startRogue(name, region, identifier))
-            rogue.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, GIVE_ROGUE_SPEED_STRATEGY])
-
-            if (monster === "slenderman") {
-                rogue.applyStrategy(ROGUE_SLENDERMAN_ATTACK_STRATEGY)
-            } else {
-                rogue.applyStrategy(ROGUE_ATTACK_STRATEGY)
-            }
-
+            rogue.applyStrategies([
+                BOOSTER_STRATEGY,
+                DESTROY_STRATEGY,
+                GIVE_ROGUE_SPEED_STRATEGY,
+                ROGUE_ATTACK_STRATEGY,
+            ])
             strategist = rogue
             break
         }
@@ -470,12 +405,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         case "earthWar2":
         case "earthWar3": {
             const warrior = new Strategist(await AL.Game.startWarrior(name, region, identifier))
-            warrior.applyStrategies([BOOSTER_STRATEGY, CHARGE_STRATEGY, DESTROY_STRATEGY])
-            warrior.applyStrategy(
-                identifier === "PVP" || monster === "mrgreen"
-                    ? WARRIOR_ATTACK_STRATEGY
-                    : WARRIOR_ATTACK_STRATEGY_SPLASH,
-            )
+            warrior.applyStrategies([BOOSTER_STRATEGY, CHARGE_STRATEGY, DESTROY_STRATEGY, WARRIOR_ATTACK_STRATEGY])
             strategist = warrior
             break
         }
@@ -497,18 +427,11 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
 
     // Move strategies
     if (!(strategist.bot instanceof Merchant)) {
-        if (monster === "mrgreen") strategist.applyStrategy(MRGREEN_MOVE_STRATEGY)
-        else if (monster === "mrpumpkin") strategist.applyStrategy(MRPUMPKIN_MOVE_STRATEGY)
-        else if (monster === "osnake") strategist.applyStrategy(OSNAKE_MOVE_STRATEGY)
-        else if (monster === "slenderman") {
-            if (name === "earthRog") strategist.applyStrategy(SLENDERMAN_MOVE_STRATEGY_1)
-            else if (name === "earthRog2") strategist.applyStrategy(SLENDERMAN_MOVE_STRATEGY_2)
-            else if (name === "earthRog3") strategist.applyStrategy(SLENDERMAN_MOVE_STRATEGY_3)
-            else throw new Error(`${name} shouldn't be farming slenderman`)
-        }
+        if (monster === "grinch") strategist.applyStrategy(GRINCH_MOVE_STRATEGY)
+        else if (monster === "tortoise") strategist.applyStrategy(TORTOISE_MOVE_STRATEGY)
     }
 
-    if (monster !== "slenderman" && identifier !== "PVP" && name !== PRIEST_CHARACTER)
+    if (identifier !== "PVP" && name !== PRIEST_CHARACTER)
         strategist.applyStrategy(new HomeServerStrategy(region, identifier))
 
     // First character to start becomes party leader
@@ -526,14 +449,9 @@ const startBotsOnServer = async (region: ServerRegion, identifier: ServerIdentif
     // Determine which bots to use
     let attackingCharacters: string[]
     switch (monster) {
-        case "osnake":
-        case "mrpumpkin":
-        case "mrgreen": {
+        case "tortoise":
+        case "grinch": {
             attackingCharacters = [...CHARACTERS_FOR_SERVERS[region][identifier], PRIEST_CHARACTER]
-            break
-        }
-        case "slenderman": {
-            attackingCharacters = ["earthRog", "earthRog2", "earthRog3"]
             break
         }
     }
@@ -567,9 +485,9 @@ const logicLoop = async () => {
     /** How many ms to wait until the next check */
     let timeoutMs = 10_000
     try {
-        console.debug("Looking for Halloween monsters...")
-        const liveHalloweenMonsters = await EntityModel.find({
-            type: { $in: HALLOWEEN_EVENT_MONSTERS },
+        console.debug("Looking for Christmas monsters...")
+        const liveChristmasMonsters = await EntityModel.find({
+            type: { $in: CHRISTMAS_EVENT_MONSTERS },
             serverIdentifier: { $ne: "PVP" },
         })
             .lean()
@@ -577,10 +495,10 @@ const logicLoop = async () => {
 
         // Sort monsters by priority
         const monsterRank = (t: MonsterName) => {
-            if (t === "mrpumpkin" || t === "mrgreen") return 0
-            return 1 // slenderman
+            if (t === "grinch") return 0
+            return 1 // snowman
         }
-        liveHalloweenMonsters.sort((a, b) => {
+        liveChristmasMonsters.sort((a, b) => {
             // Prioritize by type
             const aRank = monsterRank(a.type)
             const bRank = monsterRank(b.type)
@@ -606,9 +524,9 @@ const logicLoop = async () => {
         })
 
         const target =
-            liveHalloweenMonsters.length === 0
-                ? { serverRegion: currentRegion, serverIdentifier: currentIdentifier, type: HALLOWEEN_IDLE_MONSTER }
-                : liveHalloweenMonsters[0]
+            liveChristmasMonsters.length === 0
+                ? { serverRegion: currentRegion, serverIdentifier: currentIdentifier, type: CHRISTMAS_IDLE_MONSTER }
+                : liveChristmasMonsters[0]
 
         if (target.serverRegion !== currentRegion || target.serverIdentifier !== currentIdentifier) {
             console.debug(
@@ -634,59 +552,11 @@ const logicLoop = async () => {
         for (const strategist of activeStrategists) {
             if (strategist.bot.ctype === "merchant") continue // Merchant does their own thing
             if (target.type === "mrpumpkin") {
-                if (strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.removeStrategy(OSNAKE_MOVE_STRATEGY)
-                if (strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.removeStrategy(MRGREEN_MOVE_STRATEGY)
-                if (!strategist.hasStrategy(MRPUMPKIN_MOVE_STRATEGY)) strategist.applyStrategy(MRPUMPKIN_MOVE_STRATEGY)
-                if (currentIdentifier !== "PVP") {
-                    if (strategist.hasStrategy(MAGE_ATTACK_STRATEGY)) {
-                        strategist.removeStrategy(MAGE_ATTACK_STRATEGY)
-                        strategist.applyStrategy(MAGE_ATTACK_STRATEGY_SPLASH)
-                    }
-                    if (strategist.hasStrategy(RANGER_ATTACK_STRATEGY)) {
-                        strategist.removeStrategy(RANGER_ATTACK_STRATEGY)
-                        strategist.applyStrategy(RANGER_ATTACK_STRATEGY_SPLASH)
-                    }
-                    if (strategist.hasStrategy(WARRIOR_ATTACK_STRATEGY)) {
-                        strategist.removeStrategy(WARRIOR_ATTACK_STRATEGY)
-                        strategist.applyStrategy(WARRIOR_ATTACK_STRATEGY_SPLASH)
-                    }
-                }
-            } else if (target.type === "mrgreen") {
-                if (strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.removeStrategy(OSNAKE_MOVE_STRATEGY)
-                if (strategist.hasStrategy(MRPUMPKIN_MOVE_STRATEGY)) strategist.removeStrategy(MRPUMPKIN_MOVE_STRATEGY)
-                if (!strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.applyStrategy(MRGREEN_MOVE_STRATEGY)
-                if (currentIdentifier !== "PVP") {
-                    if (strategist.hasStrategy(MAGE_ATTACK_STRATEGY_SPLASH)) {
-                        strategist.removeStrategy(MAGE_ATTACK_STRATEGY_SPLASH)
-                        strategist.applyStrategy(MAGE_ATTACK_STRATEGY)
-                    }
-                    if (strategist.hasStrategy(RANGER_ATTACK_STRATEGY_SPLASH)) {
-                        strategist.removeStrategy(RANGER_ATTACK_STRATEGY_SPLASH)
-                        strategist.applyStrategy(RANGER_ATTACK_STRATEGY)
-                    }
-                    if (strategist.hasStrategy(WARRIOR_ATTACK_STRATEGY_SPLASH)) {
-                        strategist.removeStrategy(WARRIOR_ATTACK_STRATEGY_SPLASH)
-                        strategist.applyStrategy(WARRIOR_ATTACK_STRATEGY)
-                    }
-                }
-            } else if (target.type === HALLOWEEN_IDLE_MONSTER) {
-                if (strategist.hasStrategy(MRGREEN_MOVE_STRATEGY)) strategist.removeStrategy(MRGREEN_MOVE_STRATEGY)
-                if (strategist.hasStrategy(MRPUMPKIN_MOVE_STRATEGY)) strategist.removeStrategy(MRPUMPKIN_MOVE_STRATEGY)
-                if (!strategist.hasStrategy(OSNAKE_MOVE_STRATEGY)) strategist.applyStrategy(OSNAKE_MOVE_STRATEGY)
-                if (currentIdentifier !== "PVP") {
-                    if (strategist.hasStrategy(MAGE_ATTACK_STRATEGY)) {
-                        strategist.removeStrategy(MAGE_ATTACK_STRATEGY)
-                        strategist.applyStrategy(MAGE_ATTACK_STRATEGY_SPLASH)
-                    }
-                    if (strategist.hasStrategy(RANGER_ATTACK_STRATEGY)) {
-                        strategist.removeStrategy(RANGER_ATTACK_STRATEGY)
-                        strategist.applyStrategy(RANGER_ATTACK_STRATEGY_SPLASH)
-                    }
-                    if (strategist.hasStrategy(WARRIOR_ATTACK_STRATEGY)) {
-                        strategist.removeStrategy(WARRIOR_ATTACK_STRATEGY)
-                        strategist.applyStrategy(WARRIOR_ATTACK_STRATEGY_SPLASH)
-                    }
-                }
+                if (strategist.hasStrategy(TORTOISE_MOVE_STRATEGY)) strategist.removeStrategy(TORTOISE_MOVE_STRATEGY)
+                if (strategist.hasStrategy(GRINCH_MOVE_STRATEGY)) strategist.removeStrategy(GRINCH_MOVE_STRATEGY)
+            } else if (target.type === CHRISTMAS_IDLE_MONSTER) {
+                if (strategist.hasStrategy(GRINCH_MOVE_STRATEGY)) strategist.removeStrategy(GRINCH_MOVE_STRATEGY)
+                if (!strategist.hasStrategy(TORTOISE_MOVE_STRATEGY)) strategist.applyStrategy(TORTOISE_MOVE_STRATEGY)
             }
         }
     } catch (e) {

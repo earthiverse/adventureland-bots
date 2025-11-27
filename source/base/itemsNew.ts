@@ -713,8 +713,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: true,
     },
     supermittens: {
-        usePrimlingFromLevel: 1,
+        buy: true,
+        buyPrice: 100_000_000,
+        usePrimlingFromLevel: 0,
         useOfferingFromLevel: 2,
+        upgradeUntilLevel: 4, // TODO: We need to stack a bunch of primlings at 4
     },
     swifty: {
         ...SELL_TO_NPC,
@@ -726,7 +729,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: "ponty",
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2,
+        useScroll2FromLevel: 3,
+        upgradeUntilLevel: 7, // TODO: We need to stack a bunch of primlings at 7
     },
     t3bow: {
         usePrimlingFromLevel: 1,
