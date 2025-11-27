@@ -96,6 +96,9 @@ export type UpgradeConfig = {
     usePrimlingFromLevel?: number
     /** If set, we should use an offering to upgrade the item if it's at or above the specified level */
     useOfferingFromLevel?: number
+    useScroll1FromLevel?: number
+    useScroll2FromLevel?: number
+    useScroll3FromLevel?: number
 }
 
 export type CombinedConfig = BuyConfig &
@@ -251,6 +254,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     dexamulet: {
         buy: true,
         buyPrice: "ponty",
+        usePrimlingFromLevel: 3,
+        useOfferingFromLevel: 5,
     },
     dexbelt: {
         buy: true,
@@ -356,7 +361,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         exchange: true,
     },
     glolipop: {
-        ...SELL_TO_NPC
+        ...SELL_TO_NPC,
     },
     gloves: {
         ...SELL_TO_NPC,
@@ -429,6 +434,12 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     iceskates: {
         ...SELL_TO_NPC,
+    },
+    intamulet: {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 3,
+        useOfferingFromLevel: 5,
     },
     intbelt: {
         buy: true,
@@ -567,6 +578,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     pyjamas: {
         ...SELL_TO_NPC,
+    },
+    quiver: {
+        usePrimlingFromLevel: 8,
+        useOfferingFromLevel: 9,
+        upgradeUntilLevel: 11, // TODO: We need to stack a bunch of primlings at 11
     },
     rabbitsfoot: {
         usePrimlingFromLevel: 1,
@@ -726,30 +742,37 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
         exchange: true,
     },
-    tshirt3: { // xp
+    tshirt3: {
+        // xp
         buy: true,
-        buyPrice: "ponty"
+        buyPrice: "ponty",
     },
-    tshirt4: { // speed
+    tshirt4: {
+        // speed
         buy: true,
-        buyPrice: "ponty"
+        buyPrice: "ponty",
     },
-    tshirt6: { // rpierce
+    tshirt6: {
+        // rpierce
         buy: true,
-        buyPrice: "ponty"
+        buyPrice: "ponty",
     },
-    tshirt7: { // apierce
+    tshirt7: {
+        // apierce
         buy: true,
-        buyPrice: "ponty"
+        buyPrice: "ponty",
     },
-    tshirt8: { // attack mp cost
+    tshirt8: {
+        // attack mp cost
         buy: true,
-        buyPrice: "ponty"
+        buyPrice: "ponty",
     },
-    tshirt88: { // lucky
+    tshirt88: {
+        // lucky
         upgradeUntilLevel: 0,
     },
-    tshirt9: { // manasteal
+    tshirt9: {
+        // manasteal
         upgradeUntilLevel: 0,
     },
     vattire: {
@@ -818,6 +841,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: "ponty",
         craft: true,
+        usePrimlingFromLevel: 8,
+        useOfferingFromLevel: 10,
+        upgradeUntilLevel: 11, // TODO: We need to stack a bunch of primlings at 11
     },
     wcap: {
         buy: true,
@@ -831,6 +857,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: "ponty",
         craft: true,
+        usePrimlingFromLevel: 9,
+        useOfferingFromLevel: 10,
+        upgradeUntilLevel: 11, // TODO: We need to stack a bunch of primlings at 11
     },
     wingedboots: {
         craft: true,

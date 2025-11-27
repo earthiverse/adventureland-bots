@@ -273,14 +273,22 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
             if (items.length < 3) continue // Not enough to compound
 
             let offering: ItemName
+            let cscroll = `cscroll${item.calculateGrade()}` as ItemName
             if (itemConfig) {
                 if (item.level >= itemConfig.useOfferingFromLevel) offering = "offering"
                 else if (item.level >= itemConfig.usePrimlingFromLevel) offering = "offeringp"
 
-                if (offering && !bot.hasItem(offering)) continue // We don't have the offering needed
+                if (offering && !bot.hasItem(offering)) {
+                    // We don't have the offering needed
+                    if (bot.canBuy(offering)) await bot.buy(offering)
+                    else continue // We can't buy it
+                }
+
+                if (item.level >= itemConfig.useScroll3FromLevel) cscroll = "cscroll3"
+                else if (item.level >= itemConfig.useScroll2FromLevel) cscroll = "cscroll2"
+                else if (item.level >= itemConfig.useScroll1FromLevel) cscroll = "cscroll1"
             }
 
-            const cscroll = `cscroll${item.calculateGrade()}` as ItemName
             let cscrollSlot = bot.locateItem(cscroll)
             if (cscrollSlot === undefined) {
                 // We don't have the scroll needed
@@ -344,7 +352,8 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
         for (let [slot, item] of itemsToUpgrade) {
             const itemConfig: UpgradeConfig = this.options.itemConfig[item.name]
 
-            let offering: ItemName
+            let offering: ItemName = undefined
+            let scroll = `scroll${item.calculateGrade()}` as ItemName
             if (itemConfig) {
                 if (item.level >= itemConfig.useOfferingFromLevel) offering = "offering"
                 else if (item.level >= itemConfig.usePrimlingFromLevel) offering = "offeringp"
@@ -354,9 +363,12 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
                     if (bot.canBuy(offering)) await bot.buy(offering)
                     else continue // We can't buy it
                 }
+
+                if (item.level >= itemConfig.useScroll3FromLevel) scroll = "scroll3"
+                else if (item.level >= itemConfig.useScroll2FromLevel) scroll = "scroll2"
+                else if (item.level >= itemConfig.useScroll1FromLevel) scroll = "scroll1"
             }
 
-            const scroll = `scroll${item.calculateGrade()}` as ItemName
             let scrollSlot = bot.locateItem(scroll)
             if (scrollSlot === undefined) {
                 // We don't have the scroll needed
