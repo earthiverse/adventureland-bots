@@ -10,8 +10,8 @@ import type {
   ServerToClient_server_info_notlive,
 } from "typed-adventureland";
 import url from "url";
-import { logWarning } from "../utilities/logging.js";
 import { WANT_TO_TRACK } from "../../config/monsters.js";
+import { logWarning } from "../utilities/logging.js";
 
 /**
  * This plugin tracks monsters and players
