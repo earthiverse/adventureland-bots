@@ -160,6 +160,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: 1_000_000,
         craft: true,
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 3,
+        useScroll2FromLevel: 2,
+        useScroll3FromLevel: 5,
     },
     basketofeggs: {
         craft: true,
@@ -168,12 +172,15 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     bcape: {
         // We can craft other capes at level 7
         upgradeUntilLevel: 7,
-        usePrimlingFromLevel: 5,
+        usePrimlingFromLevel: 3,
+        useOfferingFromLevel: 6,
     },
     bfangamulet: {
         buy: true,
         buyPrice: "ponty",
         craft: true,
+        useOfferingFromLevel: 0,
+        useScroll3FromLevel: 3,
     },
     blade: {
         sellExcess: 5,
@@ -233,8 +240,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         holdSlot: 40,
     },
     crossbow: {
-        usePrimlingFromLevel: 4,
-        useOfferingFromLevel: 7,
+        usePrimlingFromLevel: 6,
+        useOfferingFromLevel: 8,
+        useScroll2FromLevel: 6,
+        upgradeUntilLevel: 9, // TODO: We need to stack a bunch of primlings at 9
     },
     cscroll0: {
         hold: ["merchant"],
@@ -585,8 +594,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         upgradeUntilLevel: 11, // TODO: We need to stack a bunch of primlings at 11
     },
     rabbitsfoot: {
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2,
+        useOfferingFromLevel: 0,
+        useScroll2FromLevel: 0,
+        useScroll3FromLevel: 3,
     },
     rapier: {
         buy: true,
@@ -594,6 +604,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     resistancering: {
         craft: true,
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 3,
+        useScroll2FromLevel: 2,
+        useScroll3FromLevel: 5,
     },
     ringsj: {
         ...SELL_TO_NPC,
