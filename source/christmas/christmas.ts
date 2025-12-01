@@ -45,7 +45,11 @@ import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_war
 import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategy_pattern/strategies/attack_rogue.js"
 import { PaladinAttackStrategy } from "../strategy_pattern/strategies/attack_paladin.js"
-import { SpecialMonsterMoveStrategy, SpreadOutImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
+import {
+    GetHolidaySpiritStrategy,
+    SpecialMonsterMoveStrategy,
+    SpreadOutImprovedMoveStrategy,
+} from "../strategy_pattern/strategies/move.js"
 import { mainFrogs } from "../base/locations.js"
 import { BoosterStrategy } from "../strategy_pattern/strategies/booster.js"
 import { checkOnlyEveryMS } from "../base/general.js"
@@ -103,7 +107,7 @@ const CHRISTMAS_IDLE_MONSTER: MonsterName = "tortoise"
 const CHRISTMAS_EVENT_MONSTERS: MonsterName[] = ["grinch", "snowman"]
 
 /** All monsters we're farming */
-const HALLOWEEN_MONSTERS: MonsterName[] = [...CHRISTMAS_EVENT_MONSTERS, "frog", "tortoise"]
+const CHRISTMAS_MONSTERS: MonsterName[] = [...CHRISTMAS_EVENT_MONSTERS, "frog", "tortoise"]
 
 const SWITCH_TO_LUCK_AT_HP: number = 2_000_000
 const STAY_ON_SERVER_IF_HP_LESS_THAN: number = 5_000_000
@@ -182,7 +186,7 @@ const MAGE_ATTACK_STRATEGY = new MageChristmasAttackStrategy({
             earring2: { name: "cearring", filters: RETURN_HIGHEST },
         },
     },
-    typeList: HALLOWEEN_MONSTERS,
+    typeList: CHRISTMAS_MONSTERS,
 })
 
 class PaladinChristmasAttackStrategy extends PaladinAttackStrategy {
@@ -205,7 +209,7 @@ const PALADIN_ATTACK_STRATEGY = new PaladinChristmasAttackStrategy({
         prefer: { mainhand: { name: "fireblade", filters: RETURN_HIGHEST } },
         ...ZAPPER_CRING,
     },
-    typeList: HALLOWEEN_MONSTERS,
+    typeList: CHRISTMAS_MONSTERS,
 })
 
 class PriestChristmasAttackStrategy extends PriestAttackStrategy {
@@ -236,7 +240,7 @@ const PRIEST_ATTACK_STRATEGY = new PriestChristmasAttackStrategy({
             earring2: { name: "cearring", filters: RETURN_HIGHEST },
         },
     },
-    typeList: HALLOWEEN_MONSTERS,
+    typeList: CHRISTMAS_MONSTERS,
 })
 
 class RangerChristmasAttackStrategy extends RangerAttackStrategy {
@@ -262,7 +266,7 @@ const RANGER_ATTACK_STRATEGY = new RangerChristmasAttackStrategy({
             ...ZAPPER_CRING,
         },
     },
-    typeList: HALLOWEEN_MONSTERS,
+    typeList: CHRISTMAS_MONSTERS,
 })
 
 class RogueChristmasAttackStrategy extends RogueAttackStrategy {
@@ -298,7 +302,7 @@ const ROGUE_ATTACK_STRATEGY = new RogueChristmasAttackStrategy({
             earring2: { name: "dexearring", filters: RETURN_HIGHEST },
         },
     },
-    typeList: HALLOWEEN_MONSTERS,
+    typeList: CHRISTMAS_MONSTERS,
 })
 
 class WarriorChristmasAttackStrategy extends WarriorAttackStrategy {
@@ -329,9 +333,10 @@ const WARRIOR_ATTACK_STRATEGY = new WarriorChristmasAttackStrategy({
             amulet: { name: "snring", filters: RETURN_HIGHEST },
         },
     },
-    typeList: HALLOWEEN_MONSTERS,
+    typeList: CHRISTMAS_MONSTERS,
 })
 
+const HOLIDAY_SPIRIT_STRATEGY = new GetHolidaySpiritStrategy()
 const GRINCH_MOVE_STRATEGY = new SpecialMonsterMoveStrategy({ contexts: activeStrategists, typeList: ["grinch"] })
 const TORTOISE_MOVE_STRATEGY = new SpreadOutImprovedMoveStrategy(["tortoise"], { idlePosition: mainFrogs })
 
@@ -551,10 +556,16 @@ const logicLoop = async () => {
         // Same characters, just ensure we're using the correct strategies
         for (const strategist of activeStrategists) {
             if (strategist.bot.ctype === "merchant") continue // Merchant does their own thing
-            if (target.type === "mrpumpkin") {
+            if (strategist.bot.S.holidayseason && !strategist.bot.s.holidayspirit) {
                 if (strategist.hasStrategy(TORTOISE_MOVE_STRATEGY)) strategist.removeStrategy(TORTOISE_MOVE_STRATEGY)
                 if (strategist.hasStrategy(GRINCH_MOVE_STRATEGY)) strategist.removeStrategy(GRINCH_MOVE_STRATEGY)
+                if (!strategist.hasStrategy(HOLIDAY_SPIRIT_STRATEGY)) strategist.applyStrategy(HOLIDAY_SPIRIT_STRATEGY)
+            } else if (target.type === "grinch") {
+                if (strategist.hasStrategy(HOLIDAY_SPIRIT_STRATEGY)) strategist.removeStrategy(HOLIDAY_SPIRIT_STRATEGY)
+                if (strategist.hasStrategy(TORTOISE_MOVE_STRATEGY)) strategist.removeStrategy(TORTOISE_MOVE_STRATEGY)
+                if (!strategist.hasStrategy(GRINCH_MOVE_STRATEGY)) strategist.applyStrategy(GRINCH_MOVE_STRATEGY)
             } else if (target.type === CHRISTMAS_IDLE_MONSTER) {
+                if (strategist.hasStrategy(HOLIDAY_SPIRIT_STRATEGY)) strategist.removeStrategy(HOLIDAY_SPIRIT_STRATEGY)
                 if (strategist.hasStrategy(GRINCH_MOVE_STRATEGY)) strategist.removeStrategy(GRINCH_MOVE_STRATEGY)
                 if (!strategist.hasStrategy(TORTOISE_MOVE_STRATEGY)) strategist.applyStrategy(TORTOISE_MOVE_STRATEGY)
             }

@@ -165,6 +165,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useScroll2FromLevel: 2,
         useScroll3FromLevel: 5,
     },
+    basher: {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 8,
+        useScroll3FromLevel: 9,
+        upgradeUntilLevel: 9, // TODO: We need to stack a bunch of primlings at 9
+    },
     basketofeggs: {
         craft: true,
         exchange: true,
@@ -222,6 +230,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     charmer: {
         craft: true,
         upgradeUntilLevel: 1,
+        usePrimlingFromLevel: 0,
+        useOfferingFromLevel: 3,
+        useScroll2FromLevel: 1,
+        useScroll3FromLevel: 4,
     },
     claw: {
         sellExcess: 5,
@@ -233,7 +245,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     coat1: {
         buy: true,
         buyPrice: "ponty",
-        upgradeUntilLevel: 9,
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 8,
+        upgradeUntilLevel: 9, // TODO: We need to stack a bunch of primlings at 9
     },
     computer: {
         hold: true,
@@ -269,6 +283,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     dexbelt: {
         buy: true,
         buyPrice: "ponty",
+        usePrimlingFromLevel: 2,
+        useOfferingFromLevel: 5,
+        useScroll2FromLevel: 4,
     },
     dexearring: {
         buy: true,
@@ -392,14 +409,16 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     harmor: {
         buy: true,
         buyPrice: "ponty",
-        usePrimlingFromLevel: 7,
-        useOfferingFromLevel: 9,
+        usePrimlingFromLevel: 4,
+        useOfferingFromLevel: 6,
+        upgradeUntilLevel: 6, // We need to stack a bunch of primlings at 6
     },
     hboots: {
         buy: true,
         buyPrice: "ponty",
-        usePrimlingFromLevel: 7,
-        useOfferingFromLevel: 9,
+        usePrimlingFromLevel: 4,
+        useOfferingFromLevel: 6,
+        upgradeUntilLevel: 6, // We need to stack a bunch of primlings at 6
     },
     helmet: {
         ...SELL_TO_NPC,
@@ -412,14 +431,16 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     hgloves: {
         buy: true,
         buyPrice: "ponty",
-        usePrimlingFromLevel: 7,
-        useOfferingFromLevel: 9,
+        usePrimlingFromLevel: 4,
+        useOfferingFromLevel: 6,
+        upgradeUntilLevel: 6, // We need to stack a bunch of primlings at 6
     },
     hhelmet: {
         buy: true,
         buyPrice: "ponty",
-        usePrimlingFromLevel: 7,
-        useOfferingFromLevel: 9,
+        usePrimlingFromLevel: 4,
+        useOfferingFromLevel: 6,
+        upgradeUntilLevel: 6, // We need to stack a bunch of primlings at 6
     },
     hotchocolate: {
         sellExcess: 9999 * 3,
@@ -430,8 +451,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     hpants: {
         buy: true,
         buyPrice: "ponty",
-        usePrimlingFromLevel: 7,
-        useOfferingFromLevel: 9,
+        usePrimlingFromLevel: 4,
+        useOfferingFromLevel: 6,
+        upgradeUntilLevel: 6, // We need to stack a bunch of primlings at 6
     },
     hpbelt: {
         ...SELL_TO_NPC,
@@ -453,6 +475,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     intbelt: {
         buy: true,
         buyPrice: "ponty",
+        usePrimlingFromLevel: 2,
+        useOfferingFromLevel: 5,
+        useScroll2FromLevel: 4,
     },
     intearring: {
         ...SELL_TO_NPC,
@@ -469,8 +494,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
         sell: true,
         sellPrice: 2_000_000,
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 3,
+        usePrimlingFromLevel: 0,
+        useOfferingFromLevel: 2,
+        useScroll3FromLevel: 5,
     },
     // "lbelt": {
     //     craft: true
@@ -482,9 +508,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         exchange: true,
         exchangeAtLevel: 2,
         upgradeUntilLevel: 2,
-        // Don't use offerings or primlings
-        useOfferingFromLevel: 99,
-        usePrimlingFromLevel: 98,
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 3,
     },
     luckbooster: {
         hold: true,
@@ -573,6 +598,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: ["merchant"],
         sell: true,
         sellPrice: 1_000_000,
+        usePrimlingFromLevel: 6,
+        useOfferingFromLevel: 9,
+        useScroll1FromLevel: 2,
+        useScroll2FromLevel: 7,
+        upgradeUntilLevel: 10, // TODO: We need to stack a bunch of primlings at 10
     },
     pinkie: {
         buy: true,
@@ -591,7 +621,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     quiver: {
         usePrimlingFromLevel: 8,
         useOfferingFromLevel: 9,
-        upgradeUntilLevel: 11, // TODO: We need to stack a bunch of primlings at 11
+        upgradeUntilLevel: 10, // TODO: We need to stack a bunch of primlings at 10
     },
     rabbitsfoot: {
         useOfferingFromLevel: 0,
@@ -616,6 +646,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: ["merchant"],
         sell: true,
         sellPrice: 1_000_000,
+        usePrimlingFromLevel: 6,
+        useOfferingFromLevel: 9,
+        useScroll1FromLevel: 2,
+        useScroll2FromLevel: 7,
+        upgradeUntilLevel: 10, // TODO: We need to stack a bunch of primlings at 10
     },
     sanguine: {
         buy: true,
@@ -700,6 +735,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     stramulet: {
         ...SELL_TO_NPC,
     },
+    strbelt: {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 2,
+        useOfferingFromLevel: 5,
+        useScroll2FromLevel: 4,
+    },
     strearring: {
         ...SELL_TO_NPC,
     },
@@ -717,7 +759,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: 100_000_000,
         usePrimlingFromLevel: 0,
         useOfferingFromLevel: 2,
-        upgradeUntilLevel: 4, // TODO: We need to stack a bunch of primlings at 4
+        upgradeUntilLevel: 3, // TODO: We need to stack a bunch of primlings at 3
     },
     swifty: {
         ...SELL_TO_NPC,
@@ -730,7 +772,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
         usePrimlingFromLevel: 1,
         useScroll2FromLevel: 3,
-        upgradeUntilLevel: 7, // TODO: We need to stack a bunch of primlings at 7
+        upgradeUntilLevel: 6, // TODO: We need to stack a bunch of primlings at 6
     },
     t3bow: {
         usePrimlingFromLevel: 1,
@@ -849,7 +891,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     wbook1: {
         usePrimlingFromLevel: 0,
-        useOfferingFromLevel: 1,
+        useOfferingFromLevel: 2,
+        useScroll2FromLevel: 1,
+        useScroll3FromLevel: 4,
     },
     wbookhs: {
         usePrimlingFromLevel: 1,
@@ -861,7 +905,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         craft: true,
         usePrimlingFromLevel: 8,
         useOfferingFromLevel: 10,
-        upgradeUntilLevel: 11, // TODO: We need to stack a bunch of primlings at 11
+        upgradeUntilLevel: 10, // TODO: We need to stack a bunch of primlings at 10
     },
     wcap: {
         buy: true,
@@ -877,7 +921,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         craft: true,
         usePrimlingFromLevel: 9,
         useOfferingFromLevel: 10,
-        upgradeUntilLevel: 11, // TODO: We need to stack a bunch of primlings at 11
+        upgradeUntilLevel: 10, // TODO: We need to stack a bunch of primlings at 10
     },
     wingedboots: {
         craft: true,
@@ -891,13 +935,15 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
+        useOfferingFromLevel: 5,
+        upgradeUntilLevel: 5, // TODO: We need to stack a bunch of primlings at 5
     },
     xboots: {
         buy: true,
         buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
+        useOfferingFromLevel: 5,
+        upgradeUntilLevel: 5, // TODO: We need to stack a bunch of primlings at 5
     },
     xbox: {
         craft: true,
@@ -906,13 +952,15 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
+        useOfferingFromLevel: 5,
+        upgradeUntilLevel: 5, // TODO: We need to stack a bunch of primlings at 5
     },
     xhelmet: {
         buy: true,
         buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
+        useOfferingFromLevel: 5,
+        upgradeUntilLevel: 5, // TODO: We need to stack a bunch of primlings at 5
     },
     xmace: {
         ...SELL_TO_NPC,
@@ -933,7 +981,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: 15_000_000,
         usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 4,
+        useOfferingFromLevel: 5,
+        upgradeUntilLevel: 5, // TODO: We need to stack a bunch of primlings at 5
     },
     xpbooster: {
         hold: true,
