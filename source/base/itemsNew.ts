@@ -227,6 +227,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     cdragon: {
         sellExcess: 5,
     },
+    cearring: {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 4,
+        useScroll2FromLevel: 3,
+    },
     charmer: {
         craft: true,
         upgradeUntilLevel: 1,
@@ -252,6 +259,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     computer: {
         hold: true,
         holdSlot: 40,
+    },
+    cring: {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 4,
+        useScroll2FromLevel: 3,
     },
     crossbow: {
         usePrimlingFromLevel: 6,
@@ -290,6 +304,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     dexearring: {
         buy: true,
         buyPrice: "ponty",
+    },
+    dexearringx: {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 0,
+        useOfferingFromLevel: 2,
+        useScroll2FromLevel: 1,
+        useScroll3FromLevel: 3,
     },
     dexring: {
         ...SELL_TO_NPC,
@@ -517,6 +539,12 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     mace: {
         ...SELL_TO_NPC,
     },
+    mearring: {
+        buy: true,
+        buyPrice: 50_000_000,
+        useOfferingFromLevel: 0,
+        useScroll3FromLevel: 3,
+    },
     mistletoe: {
         exchange: true,
     },
@@ -639,6 +667,18 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useScroll2FromLevel: 2,
         useScroll3FromLevel: 5,
     },
+    ringhs: {
+        buy: true,
+        buyPrice: 50_000_000,
+        useOfferingFromLevel: 0,
+        useScroll3FromLevel: 3,
+    },
+    ringofluck: {
+        buy: true,
+        buyPrice: 100_000_000,
+        useOfferingFromLevel: 0,
+        useScroll3FromLevel: 3,
+    },
     ringsj: {
         ...SELL_TO_NPC,
     },
@@ -748,8 +788,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     suckerpunch: {
         buy: true,
         buyPrice: 250_000_000,
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2,
+        useOfferingFromLevel: 0,
+        useScroll3FromLevel: 3,
     },
     supercomputer: {
         hold: true,
@@ -874,6 +914,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: 250_000_000,
         useOfferingFromLevel: 0,
+    },
+    vring: {
+        buy: true,
+        buyPrice: 25_000_000,
+        usePrimlingFromLevel: 0,
+        useOfferingFromLevel: 1,
+        useScroll3FromLevel: 3,
     },
     wattire: {
         buy: true,
