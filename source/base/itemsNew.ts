@@ -561,11 +561,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: 500_000_000,
         useOfferingFromLevel: 0,
+        useScroll3FromLevel: 3,
     },
     mpxgloves: {
         buy: true,
         buyPrice: 500_000_000,
-        useOfferingFromLevel: 0,
+        usePrimlingFromLevel: 0,
+        useOfferingFromLevel: 5,
+        upgradeUntilLevel: 3, // TODO: We need to stack a bunch of primlings at 3
     },
     mushroomstaff: {
         ...SELL_TO_NPC,
@@ -585,8 +588,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     orba: {
         craft: true,
-        usePrimlingFromLevel: 1,
+        usePrimlingFromLevel: 0,
         useOfferingFromLevel: 2,
+        useScroll3FromLevel: 5,
     },
     orboffire: {
         upgradeUntilLevel: 0,
@@ -745,12 +749,18 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: 250_000_000,
         useOfferingFromLevel: 0,
+        useScroll3FromLevel: 3,
     },
     spear: {
         ...SELL_TO_NPC,
     },
     spookyamulet: {
-        sellExcess: 5,
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 0,
+        useOfferingFromLevel: 3,
+        useScroll2FromLevel: 2,
+        useScroll3FromLevel: 5,
     },
     staff: {
         sellExcess: 5,
@@ -952,6 +962,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         craft: true,
         usePrimlingFromLevel: 8,
         useOfferingFromLevel: 10,
+        useScroll2FromLevel: 8,
         upgradeUntilLevel: 10, // TODO: We need to stack a bunch of primlings at 10
     },
     wcap: {
