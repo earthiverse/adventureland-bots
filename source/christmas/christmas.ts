@@ -338,6 +338,7 @@ const WARRIOR_ATTACK_STRATEGY = new WarriorChristmasAttackStrategy({
 
 const HOLIDAY_SPIRIT_STRATEGY = new GetHolidaySpiritStrategy()
 const GRINCH_MOVE_STRATEGY = new SpecialMonsterMoveStrategy({ contexts: activeStrategists, typeList: ["grinch"] })
+const SNOWMAN_MOVE_STRATEGY = new SpecialMonsterMoveStrategy({ contexts: activeStrategists, typeList: ["snowman"] })
 const TORTOISE_MOVE_STRATEGY = new SpreadOutImprovedMoveStrategy(["tortoise"], { idlePosition: mainFrogs })
 
 const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name: string, monster: MonsterName) => {
@@ -552,14 +553,22 @@ const logicLoop = async () => {
             if (strategist.bot.S.holidayseason && !strategist.bot.s.holidayspirit) {
                 if (strategist.hasStrategy(TORTOISE_MOVE_STRATEGY)) strategist.removeStrategy(TORTOISE_MOVE_STRATEGY)
                 if (strategist.hasStrategy(GRINCH_MOVE_STRATEGY)) strategist.removeStrategy(GRINCH_MOVE_STRATEGY)
+                if (strategist.hasStrategy(SNOWMAN_MOVE_STRATEGY)) strategist.removeStrategy(SNOWMAN_MOVE_STRATEGY)
                 if (!strategist.hasStrategy(HOLIDAY_SPIRIT_STRATEGY)) strategist.applyStrategy(HOLIDAY_SPIRIT_STRATEGY)
             } else if (target.type === "grinch") {
                 if (strategist.hasStrategy(HOLIDAY_SPIRIT_STRATEGY)) strategist.removeStrategy(HOLIDAY_SPIRIT_STRATEGY)
                 if (strategist.hasStrategy(TORTOISE_MOVE_STRATEGY)) strategist.removeStrategy(TORTOISE_MOVE_STRATEGY)
+                if (strategist.hasStrategy(SNOWMAN_MOVE_STRATEGY)) strategist.removeStrategy(SNOWMAN_MOVE_STRATEGY)
                 if (!strategist.hasStrategy(GRINCH_MOVE_STRATEGY)) strategist.applyStrategy(GRINCH_MOVE_STRATEGY)
+            } else if (target.type === "snowman") {
+                if (strategist.hasStrategy(HOLIDAY_SPIRIT_STRATEGY)) strategist.removeStrategy(HOLIDAY_SPIRIT_STRATEGY)
+                if (strategist.hasStrategy(TORTOISE_MOVE_STRATEGY)) strategist.removeStrategy(TORTOISE_MOVE_STRATEGY)
+                if (strategist.hasStrategy(GRINCH_MOVE_STRATEGY)) strategist.removeStrategy(GRINCH_MOVE_STRATEGY)
+                if (!strategist.hasStrategy(SNOWMAN_MOVE_STRATEGY)) strategist.applyStrategy(SNOWMAN_MOVE_STRATEGY)
             } else if (target.type === CHRISTMAS_IDLE_MONSTER) {
                 if (strategist.hasStrategy(HOLIDAY_SPIRIT_STRATEGY)) strategist.removeStrategy(HOLIDAY_SPIRIT_STRATEGY)
                 if (strategist.hasStrategy(GRINCH_MOVE_STRATEGY)) strategist.removeStrategy(GRINCH_MOVE_STRATEGY)
+                if (strategist.hasStrategy(SNOWMAN_MOVE_STRATEGY)) strategist.removeStrategy(SNOWMAN_MOVE_STRATEGY)
                 if (!strategist.hasStrategy(TORTOISE_MOVE_STRATEGY)) strategist.applyStrategy(TORTOISE_MOVE_STRATEGY)
             }
         }
