@@ -488,6 +488,14 @@ const logicLoop = async () => {
         console.debug("Looking for Christmas monsters...")
         const liveChristmasMonsters = await EntityModel.find({
             type: { $in: CHRISTMAS_EVENT_MONSTERS },
+            $and: [
+                {
+                    $or: [{ "s.fullguardx": undefined }, { "s.fullguardx.ms": { $lt: 30000 } }],
+                },
+                {
+                    $or: [{ "s.fullguard": undefined }, { "s.fullguard.ms": { $lt: 30000 } }],
+                },
+            ],
             serverIdentifier: { $ne: "PVP" },
         })
             .lean()
