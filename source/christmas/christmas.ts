@@ -434,6 +434,7 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
     // Move strategies
     if (!(strategist.bot instanceof Merchant)) {
         if (monster === "grinch") strategist.applyStrategy(GRINCH_MOVE_STRATEGY)
+        else if (monster === "snowman") strategist.applyStrategy(SNOWMAN_MOVE_STRATEGY)
         else if (monster === "tortoise") strategist.applyStrategy(TORTOISE_MOVE_STRATEGY)
     }
 
