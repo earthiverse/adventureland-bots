@@ -452,14 +452,7 @@ const startBotsOnServer = async (region: ServerRegion, identifier: ServerIdentif
     currentIdentifier = identifier
 
     // Determine which bots to use
-    let attackingCharacters: string[]
-    switch (monster) {
-        case "tortoise":
-        case "grinch": {
-            attackingCharacters = [...CHARACTERS_FOR_SERVERS[region][identifier], PRIEST_CHARACTER]
-            break
-        }
-    }
+    const attackingCharacters: string[] = [...CHARACTERS_FOR_SERVERS[region][identifier], PRIEST_CHARACTER]
 
     // Start bots
     for (const name of attackingCharacters) await startBot(region, identifier, name, monster).catch(console.error)
