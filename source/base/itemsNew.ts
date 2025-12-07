@@ -150,6 +150,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     angelwings: {
         buy: true,
         buyPrice: "ponty",
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 8,
+        upgradeUntilLevel: 8, // TODO: We need to stack a bunch of primlings at 8
     },
     armorbox: {
         buy: true,
@@ -212,6 +215,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     // },
     candycane: {
         exchange: true,
+    },
+    candycanesword: {
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 9,
+        upgradeUntilLevel: 9, // TODO: We need to stack a bunch of primlings at 9
     },
     candypop: {
         exchange: true,
@@ -545,6 +553,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 0,
         useScroll3FromLevel: 3,
     },
+    merry: {
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 9,
+        upgradeUntilLevel: 9, // TODO: We need to stack a bunch of primlings at 9
+    },
     mistletoe: {
         exchange: true,
     },
@@ -552,6 +565,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     //     sell: true,
     //     sellPrice: 350_000,
     // },
+    mittens: {
+        usePrimlingFromLevel: 8,
+        useOfferingFromLevel: 9,
+        upgradeUntilLevel: 9, // TODO: We need to stack a bunch of primlings at 9
+    },
     mpot0: {
         // sell: true,
         // sellPrice: "npc"
@@ -569,6 +587,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         usePrimlingFromLevel: 0,
         useOfferingFromLevel: 5,
         upgradeUntilLevel: 3, // TODO: We need to stack a bunch of primlings at 3
+    },
+    mshield: {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 3,
+        useOfferingFromLevel: 6,
+        useScroll3FromLevel: 8,
+        upgradeUntilLevel: 6, // TODO: We need to stack a bunch of primlings at 6
     },
     mushroomstaff: {
         ...SELL_TO_NPC,
@@ -614,6 +640,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     ornament: {
         exchange: true,
+    },
+    ornamentstaff: {
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 8,
+        upgradeUntilLevel: 8, // TODO: We need to stack a bunch of primlings at 8
     },
     pants: {
         ...SELL_TO_NPC,
@@ -664,6 +695,12 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: "ponty",
     },
+    rednose: {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 3,
+        useOfferingFromLevel: 4,
+    },
     resistancering: {
         craft: true,
         usePrimlingFromLevel: 1,
@@ -700,6 +737,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: 500_000_000,
         useOfferingFromLevel: 0,
+    },
+    santasbelt: {
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 4,
     },
     scroll0: {
         hold: ["merchant"],
@@ -744,6 +785,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: "ponty",
         craft: true,
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 8,
+        upgradeUntilLevel: 8, // TODO: We need to stack a bunch of primlings at 8
     },
     snring: {
         buy: true,
@@ -931,6 +975,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         usePrimlingFromLevel: 0,
         useOfferingFromLevel: 1,
         useScroll3FromLevel: 3,
+    },
+    warmscarf: {
+        ...SELL_TO_NPC,
     },
     wattire: {
         buy: true,
