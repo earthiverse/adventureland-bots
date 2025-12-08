@@ -1,4 +1,5 @@
 import AL, {
+    Character,
     EntityModel,
     IPosition,
     Mage,
@@ -10,6 +11,7 @@ import AL, {
     Ranger,
     Rogue,
     ServerIdentifier,
+    ServerInfoDataLive,
     ServerRegion,
     Warrior,
 } from "alclient"
@@ -336,8 +338,18 @@ const WARRIOR_ATTACK_STRATEGY = new WarriorChristmasAttackStrategy({
     typeList: CHRISTMAS_MONSTERS,
 })
 
+class GrinchMoveStrategy extends SpecialMonsterMoveStrategy {
+    protected move(bot: Character): Promise<IPosition> {
+        const map = (bot.S.grinch as ServerInfoDataLive).map
+        if (!map) return // Not live
+        if (bot.G.maps[map].safe) return // Can't farm on safe map
+
+        return super.move(bot)
+    }
+}
+
 const HOLIDAY_SPIRIT_STRATEGY = new GetHolidaySpiritStrategy()
-const GRINCH_MOVE_STRATEGY = new SpecialMonsterMoveStrategy({ contexts: activeStrategists, typeList: ["grinch"] })
+const GRINCH_MOVE_STRATEGY = new GrinchMoveStrategy({ contexts: activeStrategists, typeList: ["grinch"] })
 const SNOWMAN_MOVE_STRATEGY = new SpecialMonsterMoveStrategy({ contexts: activeStrategists, typeList: ["snowman"] })
 const TORTOISE_MOVE_STRATEGY = new SpreadOutImprovedMoveStrategy(["tortoise"], { idlePosition: mainFrogs })
 

@@ -518,6 +518,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     jacko: {
         buy: true,
         buyPrice: "ponty",
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 4,
+        useScroll2FromLevel: 3,
     },
     lantern: {
         buy: true,
