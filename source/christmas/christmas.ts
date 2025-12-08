@@ -164,13 +164,20 @@ const TRACKER_STRATEGY = new TrackerStrategy()
 
 class MageChristmasAttackStrategy extends MageAttackStrategy {
     protected ensureEquipped(bot: Mage): Promise<void> {
-        const grinch = bot.getEntity({ typeList: ["grinch"] })
-        if (checkOnlyEveryMS(`luck_${bot.id}`, 5_000)) {
+        if (checkOnlyEveryMS(`equip_${bot.id}`, 5_000)) {
+            const grinch = bot.getEntity({ type: "grinch" })
             if (grinch && grinch.hp < SWITCH_TO_LUCK_AT_HP) {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["luck"] }))
-            } else {
-                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
+                return super.ensureEquipped(bot)
             }
+
+            const snowman = bot.getEntity({ type: "snowman" })
+            if (snowman) {
+                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["frequency"] }))
+                return super.ensureEquipped(bot)
+            }
+
+            this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
         }
 
         return super.ensureEquipped(bot)
@@ -193,13 +200,20 @@ const MAGE_ATTACK_STRATEGY = new MageChristmasAttackStrategy({
 
 class PaladinChristmasAttackStrategy extends PaladinAttackStrategy {
     protected ensureEquipped(bot: Paladin): Promise<void> {
-        const grinch = bot.getEntity({ typeList: ["grinch"] })
-        if (checkOnlyEveryMS(`luck_${bot.id}`, 5_000)) {
+        if (checkOnlyEveryMS(`equip_${bot.id}`, 5_000)) {
+            const grinch = bot.getEntity({ type: "grinch" })
             if (grinch && grinch.hp < SWITCH_TO_LUCK_AT_HP) {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["luck"] }))
-            } else {
-                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
+                return super.ensureEquipped(bot)
             }
+
+            const snowman = bot.getEntity({ type: "snowman" })
+            if (snowman) {
+                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["frequency"] }))
+                return super.ensureEquipped(bot)
+            }
+
+            this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
         }
 
         return super.ensureEquipped(bot)
@@ -216,13 +230,20 @@ const PALADIN_ATTACK_STRATEGY = new PaladinChristmasAttackStrategy({
 
 class PriestChristmasAttackStrategy extends PriestAttackStrategy {
     protected ensureEquipped(bot: Priest): Promise<void> {
-        const grinch = bot.getEntity({ typeList: ["grinch"] })
-        if (checkOnlyEveryMS(`luck_${bot.id}`, 5_000)) {
+        if (checkOnlyEveryMS(`equip_${bot.id}`, 5_000)) {
+            const grinch = bot.getEntity({ type: "grinch" })
             if (grinch && grinch.hp < SWITCH_TO_LUCK_AT_HP) {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["luck"] }))
-            } else {
-                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
+                return super.ensureEquipped(bot)
             }
+
+            const snowman = bot.getEntity({ type: "snowman" })
+            if (snowman) {
+                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["frequency"] }))
+                return super.ensureEquipped(bot)
+            }
+
+            this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
         }
 
         return super.ensureEquipped(bot)
@@ -248,13 +269,20 @@ const PRIEST_ATTACK_STRATEGY = new PriestChristmasAttackStrategy({
 
 class RangerChristmasAttackStrategy extends RangerAttackStrategy {
     protected ensureEquipped(bot: Ranger): Promise<void> {
-        const grinch = bot.getEntity({ typeList: ["grinch"] })
-        if (checkOnlyEveryMS(`luck_${bot.id}`, 5_000)) {
+        if (checkOnlyEveryMS(`equip_${bot.id}`, 5_000)) {
+            const grinch = bot.getEntity({ type: "grinch" })
             if (grinch && grinch.hp < SWITCH_TO_LUCK_AT_HP) {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["luck"] }))
-            } else {
-                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
+                return super.ensureEquipped(bot)
             }
+
+            const snowman = bot.getEntity({ type: "snowman" })
+            if (snowman) {
+                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["frequency"] }))
+                return super.ensureEquipped(bot)
+            }
+
+            this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
         }
 
         return super.ensureEquipped(bot)
@@ -274,13 +302,20 @@ const RANGER_ATTACK_STRATEGY = new RangerChristmasAttackStrategy({
 
 class RogueChristmasAttackStrategy extends RogueAttackStrategy {
     protected ensureEquipped(bot: Rogue): Promise<void> {
-        const grinch = bot.getEntity({ typeList: ["grinch"] })
-        if (checkOnlyEveryMS(`luck_${bot.id}`, 5_000)) {
+        if (checkOnlyEveryMS(`equip_${bot.id}`, 5_000)) {
+            const grinch = bot.getEntity({ type: "grinch" })
             if (grinch && grinch.hp < SWITCH_TO_LUCK_AT_HP) {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["luck"] }))
-            } else {
-                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
+                return super.ensureEquipped(bot)
             }
+
+            const snowman = bot.getEntity({ type: "snowman" })
+            if (snowman) {
+                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["frequency"] }))
+                return super.ensureEquipped(bot)
+            }
+
+            this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
         }
 
         return super.ensureEquipped(bot)
@@ -310,13 +345,20 @@ const ROGUE_ATTACK_STRATEGY = new RogueChristmasAttackStrategy({
 
 class WarriorChristmasAttackStrategy extends WarriorAttackStrategy {
     protected ensureEquipped(bot: Warrior): Promise<void> {
-        const grinch = bot.getEntity({ typeList: ["grinch"] })
-        if (checkOnlyEveryMS(`luck_${bot.id}`, 5_000)) {
+        if (checkOnlyEveryMS(`equip_${bot.id}`, 5_000)) {
+            const grinch = bot.getEntity({ type: "grinch" })
             if (grinch && grinch.hp < SWITCH_TO_LUCK_AT_HP) {
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["luck"] }))
-            } else {
-                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
+                return super.ensureEquipped(bot)
             }
+
+            const snowman = bot.getEntity({ type: "snowman" })
+            if (snowman) {
+                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["frequency"] }))
+                return super.ensureEquipped(bot)
+            }
+
+            this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
         }
 
         return super.ensureEquipped(bot)
