@@ -226,6 +226,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     carrotsword: {
         craft: true,
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 8,
+        upgradeUntilLevel: 8, // TODO: We need to stack a bunch of primlings at 8
     },
     cclaw: {
         buy: true,
@@ -405,6 +408,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 2,
     },
+    gcape: {
+        useOfferingFromLevel: 8,
+        upgradeUntilLevel: 8, // TODO: We need to stack a bunch of primlings at 8
+    },
     gem0: {
         /** Green Gem */
         exchange: true,
@@ -441,14 +448,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
         usePrimlingFromLevel: 4,
         useOfferingFromLevel: 6,
-        upgradeUntilLevel: 6, // We need to stack a bunch of primlings at 6
+        upgradeUntilLevel: 6, // TODO: We need to stack a bunch of primlings at 6
     },
     hboots: {
         buy: true,
         buyPrice: "ponty",
         usePrimlingFromLevel: 4,
         useOfferingFromLevel: 6,
-        upgradeUntilLevel: 6, // We need to stack a bunch of primlings at 6
+        upgradeUntilLevel: 6, // TODO: We need to stack a bunch of primlings at 6
     },
     helmet: {
         ...SELL_TO_NPC,
@@ -463,14 +470,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
         usePrimlingFromLevel: 4,
         useOfferingFromLevel: 6,
-        upgradeUntilLevel: 6, // We need to stack a bunch of primlings at 6
+        upgradeUntilLevel: 6, // TODO: We need to stack a bunch of primlings at 6
     },
     hhelmet: {
         buy: true,
         buyPrice: "ponty",
         usePrimlingFromLevel: 4,
         useOfferingFromLevel: 6,
-        upgradeUntilLevel: 6, // We need to stack a bunch of primlings at 6
+        upgradeUntilLevel: 6, // TODO: We need to stack a bunch of primlings at 6
     },
     hotchocolate: {
         sellExcess: 9999 * 3,
@@ -483,7 +490,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
         usePrimlingFromLevel: 4,
         useOfferingFromLevel: 6,
-        upgradeUntilLevel: 6, // We need to stack a bunch of primlings at 6
+        upgradeUntilLevel: 6, // TODO: We need to stack a bunch of primlings at 6
     },
     hpbelt: {
         ...SELL_TO_NPC,

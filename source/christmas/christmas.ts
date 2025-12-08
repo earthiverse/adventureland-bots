@@ -510,7 +510,6 @@ const logicLoop = async () => {
                     $or: [{ "s.fullguard": undefined }, { "s.fullguard.ms": { $lt: 30000 } }],
                 },
             ],
-            serverIdentifier: { $ne: "PVP" },
         })
             .lean()
             .exec()
