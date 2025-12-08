@@ -231,6 +231,7 @@ class PriestChristmasAttackStrategy extends PriestAttackStrategy {
 const PRIEST_ATTACK_STRATEGY = new PriestChristmasAttackStrategy({
     contexts: activeStrategists,
     enableAbsorbToTank: true,
+    enableGreedyAggro: ["grinch"],
     enableHealStrangers: true,
     generateEnsureEquipped: {
         prefer: {
@@ -325,6 +326,7 @@ const WARRIOR_ATTACK_STRATEGY = new WarriorChristmasAttackStrategy({
     contexts: activeStrategists,
     disableStomp: true,
     enableEquipForCleave: true,
+    enableGreedyAggro: ["grinch"],
     generateEnsureEquipped: {
         prefer: {
             mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
