@@ -504,10 +504,18 @@ const logicLoop = async () => {
             type: { $in: CHRISTMAS_EVENT_MONSTERS },
             $and: [
                 {
-                    $or: [{ "s.fullguardx": undefined }, { "s.fullguardx.ms": { $lt: 30000 } }],
+                    $or: [
+                        { "s.fullguardx": undefined },
+                        { "s.fullguardx.ms": { $lt: 60_000 } },
+                        { serverIdentifier: "PVP" },
+                    ],
                 },
                 {
-                    $or: [{ "s.fullguard": undefined }, { "s.fullguard.ms": { $lt: 30000 } }],
+                    $or: [
+                        { "s.fullguard": undefined },
+                        { "s.fullguard.ms": { $lt: 60_000 } },
+                        { serverIdentifier: "PVP" },
+                    ],
                 },
             ],
         })
