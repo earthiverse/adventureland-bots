@@ -109,7 +109,7 @@ const CHRISTMAS_IDLE_MONSTER: MonsterName = "tortoise"
 const CHRISTMAS_EVENT_MONSTERS: MonsterName[] = ["grinch", "snowman"]
 
 /** All monsters we're farming */
-const CHRISTMAS_MONSTERS: MonsterName[] = [...CHRISTMAS_EVENT_MONSTERS, "frog", "tortoise"]
+const CHRISTMAS_MONSTERS: MonsterName[] = [...CHRISTMAS_EVENT_MONSTERS, "frog", "tortoise", "arcticbee"]
 
 const SWITCH_TO_LUCK_AT_HP: number = 2_000_000
 const STAY_ON_SERVER_IF_HP_LESS_THAN: number = 5_000_000
