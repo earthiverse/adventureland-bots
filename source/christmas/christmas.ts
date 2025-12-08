@@ -327,14 +327,10 @@ const ROGUE_ATTACK_STRATEGY = new RogueChristmasAttackStrategy({
         prefer: {
             mainhand: { name: "crabclaw", filters: RETURN_HIGHEST },
             offhand: { name: "firestars", filters: RETURN_HIGHEST },
-            helmet: { name: "helmet1", filters: RETURN_HIGHEST },
-            chest: { name: "coat1", filters: RETURN_HIGHEST },
-            pants: { name: "pants1", filters: RETURN_HIGHEST },
-            shoes: { name: "shoes1", filters: RETURN_HIGHEST },
             gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
             belt: { name: "dexbelt", filters: RETURN_HIGHEST },
             amulet: { name: "mpxamulet", filters: RETURN_HIGHEST },
-            // TODO: Orb?
+            orb: { name: "orbofdex", filters: RETURN_HIGHEST },
             ...ZAPPER_CRING,
             earring1: { name: "dexearring", filters: RETURN_HIGHEST },
             earring2: { name: "dexearring", filters: RETURN_HIGHEST },
@@ -377,6 +373,7 @@ const WARRIOR_ATTACK_STRATEGY = new WarriorChristmasAttackStrategy({
             earring1: { name: "cearring", filters: RETURN_HIGHEST },
             earring2: { name: "cearring", filters: RETURN_HIGHEST },
             amulet: { name: "snring", filters: RETURN_HIGHEST },
+            orb: { name: "orbofstr", filters: RETURN_HIGHEST },
         },
     },
     typeList: CHRISTMAS_MONSTERS,
