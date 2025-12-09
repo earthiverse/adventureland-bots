@@ -313,7 +313,16 @@ class RogueChristmasAttackStrategy extends RogueAttackStrategy {
             }
 
             if (snowman) {
-                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes: ["frequency"] }))
+                this.botEnsureEquipped.set(
+                    bot.id,
+                    generateEnsureEquipped(bot, {
+                        attributes: ["frequency"],
+                        // Prefer crabclaw in mainhand so we can continue to punch, too
+                        prefer: {
+                            mainhand: { name: "crabclaw", filters: RETURN_HIGHEST },
+                        },
+                    }),
+                )
                 return super.ensureEquipped(bot)
             }
         }
