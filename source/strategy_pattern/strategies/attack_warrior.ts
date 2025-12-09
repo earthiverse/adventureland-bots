@@ -151,7 +151,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         const unwantedEntity = bot.getEntity({
             hasTarget: false,
             notTypeList: [
-                ...(this.options.typeList ?? []),
+                ...(this.options.notTypeList ?? []),
                 ...(this.options.disableIdleAttack ? [] : IDLE_ATTACK_MONSTERS),
             ],
             withinRange: "cleave",
