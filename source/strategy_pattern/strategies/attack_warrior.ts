@@ -55,7 +55,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
         const priority = this.botSort.get(bot.id)
 
-        await this.ensureEquipped(bot)
+        await this.ensureEquipped(bot).catch(console.error)
 
         if (!this.options.disableAgitate) await this.agitateTargets(bot).catch(suppress_errors)
         if (!this.options.disableStomp) await this.stomp(bot).catch(suppress_errors)
@@ -64,7 +64,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority).catch(suppress_errors)
         if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
 
-        await this.ensureEquipped(bot)
+        await this.ensureEquipped(bot).catch(console.error)
     }
 
     protected async agitateTargets(bot: Warrior) {

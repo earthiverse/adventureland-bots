@@ -63,14 +63,14 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
 
         const priority = this.botSort.get(bot.id)
 
-        await this.ensureEquipped(bot)
+        await this.ensureEquipped(bot).catch(console.error)
 
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority).catch(suppress_errors)
         if (!this.options.disableAbsorb) await this.absorbTargets(bot).catch(suppress_errors)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority).catch(suppress_errors)
         if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
 
-        await this.ensureEquipped(bot)
+        await this.ensureEquipped(bot).catch(console.error)
     }
 
     protected async basicAttack(bot: Priest, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {

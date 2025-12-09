@@ -26,12 +26,12 @@ class PriestTigerHealStrategy extends PriestAttackStrategy {
 
         const priority = this.botSort.get(bot.id)
 
-        await this.ensureEquipped(bot)
+        await this.ensureEquipped(bot).catch(console.error)
 
         if (!this.options.disableBasicAttack) await this.basicHeal(bot, priority).catch(suppress_errors)
         if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
 
-        await this.ensureEquipped(bot)
+        await this.ensureEquipped(bot).catch(console.error)
     }
 
     protected async basicHeal(bot: Priest, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
@@ -41,7 +41,7 @@ class PriestTigerHealStrategy extends PriestAttackStrategy {
         const entities = bot.getEntities({
             ...this.options,
             canDamage: "heal",
-            withinRange: "heal"
+            withinRange: "heal",
         })
         if (entities.length == 0) return // No targets to attack
 
@@ -93,13 +93,13 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                                     ...UNEQUIP_EVERYTHING,
                                     earring2: { name: "dexearringx" },
                                     orb: { name: "jacko" },
-                                }
+                                },
                             },
-                            typeList: typeList
+                            typeList: typeList,
                         }),
-                        move: tigerMoveStrategy
-                    }
-                ]
+                        move: tigerMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "tiger_paladin",
@@ -111,9 +111,9 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                             ensureEquipped: { ...UNEQUIP_EVERYTHING },
                             typeList: typeList,
                         }),
-                        move: tigerMoveStrategy
+                        move: tigerMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "tiger_rogue",
@@ -125,9 +125,9 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                             ensureEquipped: { ...UNEQUIP_EVERYTHING },
                             typeList: typeList,
                         }),
-                        move: tigerMoveStrategy
+                        move: tigerMoveStrategy,
                     },
-                ]
+                ],
             },
             {
                 id: "tiger_priest",
@@ -138,11 +138,11 @@ export function constructTigerSetup(contexts: Strategist<PingCompensatedCharacte
                             contexts: contexts,
                             typeList: typeList,
                         }),
-                        move: tigerMoveStrategy
+                        move: tigerMoveStrategy,
                     },
-                ]
+                ],
             },
-        ]
+        ],
     }
 }
 
@@ -157,9 +157,9 @@ export function constructTigerHelperSetup(contexts: Strategist<PingCompensatedCh
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({ contexts: contexts, typeList: typeList }),
-                        move: tigerMoveStrategy
-                    }
-                ]
+                        move: tigerMoveStrategy,
+                    },
+                ],
             },
             // {
             //     id: "tiger_helper_priest",
@@ -180,9 +180,9 @@ export function constructTigerHelperSetup(contexts: Strategist<PingCompensatedCh
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, typeList: typeList }),
-                        move: tigerMoveStrategy
-                    }
-                ]
+                        move: tigerMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "tiger_helper_rogue",
@@ -190,20 +190,26 @@ export function constructTigerHelperSetup(contexts: Strategist<PingCompensatedCh
                     {
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({ contexts: contexts, typeList: typeList }),
-                        move: tigerMoveStrategy
-                    }
-                ]
+                        move: tigerMoveStrategy,
+                    },
+                ],
             },
             {
                 id: "tiger_helper_warrior",
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, enableEquipForCleave: true, enableEquipForStomp: true, typeList: typeList }),
-                        move: tigerMoveStrategy
-                    }
-                ]
-            }
-        ]
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            disableAgitate: true,
+                            enableEquipForCleave: true,
+                            enableEquipForStomp: true,
+                            typeList: typeList,
+                        }),
+                        move: tigerMoveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }

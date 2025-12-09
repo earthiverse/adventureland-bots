@@ -30,7 +30,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
 
         const priority = this.botSort.get(bot.id)
 
-        await this.ensureEquipped(bot)
+        await this.ensureEquipped(bot).catch(console.error)
 
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority).catch(suppress_errors)
         if (!this.options.disablePurify) await this.purify(bot, priority).catch(suppress_errors)
@@ -38,7 +38,7 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority).catch(suppress_errors)
         if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
 
-        await this.ensureEquipped(bot)
+        await this.ensureEquipped(bot).catch(console.error)
     }
 
     protected async selfHeal(bot: Paladin): Promise<unknown> {

@@ -253,13 +253,13 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             return
         }
 
-        await this.ensureEquipped(bot)
+        await this.ensureEquipped(bot).catch(console.error)
 
         if (!this.options.disableBasicAttack) await this.basicAttack(bot, priority).catch(suppress_errors)
         if (!this.options.disableZapper) await this.zapperAttack(bot, priority).catch(suppress_errors)
         if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
 
-        await this.ensureEquipped(bot)
+        await this.ensureEquipped(bot).catch(console.error)
     }
 
     protected async basicAttack(bot: Type, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
@@ -456,7 +456,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         // We have enough space to unequip something
                         bot.esize > 0
                     ) {
-                        toEquip = await bot.unequip("earring1")
+                        toEquip = await bot.unequip("ring1")
                     } else if (
                         slotType === "earring1" &&
                         // We have it equipped in the other slot
@@ -473,9 +473,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         bot.esize > 0
                     ) {
                         toEquip = await bot.unequip("earring1")
-                    }
-                    // TODO: Add cases for earrings and rings
-                    else {
+                    } else {
                         throw new Error(`${bot.name} couldn't find ${ensure.name} to equip in ${sT}.`)
                     }
                 }

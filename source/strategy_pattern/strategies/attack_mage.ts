@@ -60,7 +60,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
 
         const priority = this.botSort.get(bot.id)
 
-        await this.ensureEquipped(bot)
+        await this.ensureEquipped(bot).catch(console.error)
 
         if (!this.options.disableCburst) {
             await this.cburstHumanoids(bot).catch(suppress_errors)
@@ -71,7 +71,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
         if (!this.options.disableIdleAttack) await this.idleAttack(bot, priority).catch(suppress_errors)
         // TODO: Idle cburst
 
-        await this.ensureEquipped(bot)
+        await this.ensureEquipped(bot).catch(console.error)
     }
 
     /**
