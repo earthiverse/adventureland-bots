@@ -317,9 +317,9 @@ class RogueChristmasAttackStrategy extends RogueAttackStrategy {
                     bot.id,
                     generateEnsureEquipped(bot, {
                         attributes: ["frequency"],
-                        // Prefer crabclaw in mainhand so we can continue to punch, too
+                        // Prefer cclaw in mainhand so we can continue to punch, too
                         prefer: {
-                            mainhand: { name: "crabclaw", filters: RETURN_HIGHEST },
+                            mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
                         },
                     }),
                 )
@@ -334,7 +334,7 @@ const ROGUE_ATTACK_STRATEGY = new RogueChristmasAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: {
-            mainhand: { name: "crabclaw", filters: RETURN_HIGHEST },
+            mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
             offhand: { name: "firestars", filters: RETURN_HIGHEST },
             gloves: { name: "mpxgloves", filters: RETURN_HIGHEST },
             belt: { name: "dexbelt", filters: RETURN_HIGHEST },

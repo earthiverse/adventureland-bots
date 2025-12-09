@@ -320,7 +320,7 @@ const ROGUE_ATTACK_STRATEGY = new RogueHalloweenAttackStrategy({
     contexts: activeStrategists,
     generateEnsureEquipped: {
         prefer: {
-            mainhand: { name: "crabclaw", filters: RETURN_HIGHEST },
+            mainhand: { name: "cclaw", filters: RETURN_HIGHEST },
             offhand: { name: "firestars", filters: RETURN_HIGHEST },
             helmet: { name: "helmet1", filters: RETURN_HIGHEST },
             chest: { name: "coat1", filters: RETURN_HIGHEST },
