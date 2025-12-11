@@ -405,8 +405,12 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     //     craft: true,
     // },
     fury: {
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2,
+        buy: true,
+        buyPrice: 100_000_000,
+        usePrimlingFromLevel: 0,
+        useOfferingFromLevel: 4,
+        useScroll3FromLevel: 6,
+        upgradeUntilLevel: 3, // TODO: We need to stack a bunch of primlings at 3
     },
     gcape: {
         useOfferingFromLevel: 8,
@@ -442,6 +446,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     greenenvelope: {
         exchange: true,
+    },
+    harbringer: {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 8,
+        upgradeUntilLevel: 8, // TODO: We need to stack a bunch of primlings at 8
+        useScroll3FromLevel: 9,
     },
     harmor: {
         buy: true,
@@ -826,8 +838,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     starkillers: {
         buy: true,
         buyPrice: 250_000_000,
-        usePrimlingFromLevel: 1,
-        useOfferingFromLevel: 2,
+        usePrimlingFromLevel: 0,
+        useOfferingFromLevel: 5,
+        useScroll3FromLevel: 7,
+        upgradeUntilLevel: 3, // TODO: We need to stack a bunch of primlings at 3
     },
     stick: {
         // We can craft sticks at level 9
@@ -864,6 +878,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         usePrimlingFromLevel: 0,
         useOfferingFromLevel: 2,
         upgradeUntilLevel: 3, // TODO: We need to stack a bunch of primlings at 3
+    },
+    sweaterhs: {
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 8,
+        upgradeUntilLevel: 8, // TODO: We need to stack a bunch of primlings at 8
     },
     swifty: {
         ...SELL_TO_NPC,
