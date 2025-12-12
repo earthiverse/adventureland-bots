@@ -555,13 +555,21 @@ const logicLoop = async () => {
                 {
                     $or: [
                         { "s.fullguardx": { $exists: false } },
-                        { $expr: { $lt: [{ $subtract: [now, "$lastSeen"] }, { $min: ["$s.fullguardx.ms", 60000] }] } },
+                        {
+                            $expr: {
+                                $lte: [{ $subtract: ["$s.fullguardx.ms", { $subtract: [now, "$lastSeen"] }] }, 60000],
+                            },
+                        },
                     ],
                 },
                 {
                     $or: [
                         { "s.fullguard": { $exists: false } },
-                        { $expr: { $lt: [{ $subtract: [now, "$lastSeen"] }, { $min: ["$s.fullguard.ms", 60000] }] } },
+                        {
+                            $expr: {
+                                $lte: [{ $subtract: ["$s.fullguard.ms", { $subtract: [now, "$lastSeen"] }] }, 60000],
+                            },
+                        },
                     ],
                 },
             ],
@@ -603,6 +611,8 @@ const logicLoop = async () => {
             liveChristmasMonsters.length === 0
                 ? { serverRegion: currentRegion, serverIdentifier: currentIdentifier, type: CHRISTMAS_IDLE_MONSTER }
                 : liveChristmasMonsters[0]
+
+        if (target.serverIdentifier === "HARDCORE") target.serverIdentifier = "I" // First run, nothing is live
 
         if (target.serverRegion !== currentRegion || target.serverIdentifier !== currentIdentifier) {
             console.debug(
