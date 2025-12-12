@@ -546,6 +546,7 @@ const startBotsOnServer = async (region: ServerRegion, identifier: ServerIdentif
 const logicLoop = async () => {
     /** How many ms to wait until the next check */
     let timeoutMs = 10_000
+    const now = Date.now()
     try {
         console.debug("Looking for Christmas monsters...")
         const liveChristmasMonsters = await EntityModel.find({
@@ -553,16 +554,14 @@ const logicLoop = async () => {
             $and: [
                 {
                     $or: [
-                        { "s.fullguardx": undefined },
-                        { "s.fullguardx.ms": { $lt: 60_000 } },
-                        { serverIdentifier: "PVP" },
+                        { "s.fullguardx": { $exists: false } },
+                        { $expr: { $lt: [{ $subtract: [now, "$lastSeen"] }, { $min: ["$s.fullguardx.ms", 60000] }] } },
                     ],
                 },
                 {
                     $or: [
-                        { "s.fullguard": undefined },
-                        { "s.fullguard.ms": { $lt: 60_000 } },
-                        { serverIdentifier: "PVP" },
+                        { "s.fullguard": { $exists: false } },
+                        { $expr: { $lt: [{ $subtract: [now, "$lastSeen"] }, { $min: ["$s.fullguard.ms", 60000] }] } },
                     ],
                 },
             ],
