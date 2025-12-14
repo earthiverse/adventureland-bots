@@ -46,7 +46,7 @@ export const setup = (character: Character, options: AttackOptions = { monster: 
       await character.basicAttack(entity);
     } catch (e) {
       if (entity !== undefined) unignoreMonster(entity);
-      if (e instanceof Error || typeof e === "string") logDebug(e);
+      if (e instanceof Error || typeof e === "string") logDebug(`attackLoop: ${e}`);
     } finally {
       setTimeout(() => void attackLoop(), Math.max(100, character.getTimeout("attack")));
     }

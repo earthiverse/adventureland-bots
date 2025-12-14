@@ -131,7 +131,7 @@ export const setup = (character: Character) => {
         // TODO: Add item use
       }
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(e);
+      if (e instanceof Error || typeof e === "string") logDebug(`regenLoop: ${e}`);
     } finally {
       // TODO: If paladin, add selfheal
       setTimeout(() => void regenLoop(), Math.max(100, character.getTimeout("use_mp")));

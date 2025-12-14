@@ -28,7 +28,7 @@ const pingLoop = async () => {
     }
     await Promise.allSettled(pings);
   } catch (e) {
-    if (e instanceof Error || typeof e === "string") logDebug(e);
+    if (e instanceof Error || typeof e === "string") logDebug(`pingLoop: ${e}`);
   } finally {
     setTimeout(() => void pingLoop(), pingEveryMs);
   }

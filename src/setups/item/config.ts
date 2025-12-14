@@ -70,11 +70,11 @@ export const setup = (character: Character) => {
             log(`${character.id} sold ${getItemDescription(item)} to NPC`, SELL_LOG_LEVEL);
           }
         } catch (e) {
-          if (e instanceof Error || typeof e === "string") logDebug(e);
+          if (e instanceof Error || typeof e === "string") logDebug(`itemLoop: ${e}`);
         }
       }
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(e);
+      if (e instanceof Error || typeof e === "string") logDebug(`itemLoop: ${e}`);
     } finally {
       setTimeout(() => void itemLoop(), CHECK_EVERY_MS);
     }
@@ -97,7 +97,7 @@ export const setup = (character: Character) => {
         await character.craft(itemName, itemIndexes as number[]);
       }
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(e);
+      if (e instanceof Error || typeof e === "string") logDebug(`craftLoop: ${e}`);
     } finally {
       setTimeout(() => void craftLoop(), CHECK_EVERY_MS);
     }
@@ -124,7 +124,7 @@ export const setup = (character: Character) => {
         return;
       }
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(e);
+      if (e instanceof Error || typeof e === "string") logDebug(`exchangeLoop: ${e}`);
     } finally {
       setTimeout(() => void exchangeLoop(), checkMs);
     }

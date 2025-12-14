@@ -34,7 +34,7 @@ export const setup = (character: Character, monster: MonsterKey = "goo") => {
         character.move((entity.x + character.x) / 2, (entity.y + character.y) / 2).catch(logDebug);
       }
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(e);
+      if (e instanceof Error || typeof e === "string") logDebug(`moveLoop: ${e}`);
     } finally {
       setTimeout(moveLoop, 100);
     }

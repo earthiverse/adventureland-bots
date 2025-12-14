@@ -25,7 +25,7 @@ export const setup = (character: Character) => {
 
       await character.openChest(data.id);
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(e);
+      if (e instanceof Error || typeof e === "string") logDebug(`dropHandler: ${e}`);
     }
   };
   character.socket.on("drop", dropHandler);
