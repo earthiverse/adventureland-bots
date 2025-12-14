@@ -24,6 +24,7 @@ logDebug("Getting Servers...");
 const promises: Promise<unknown>[] = [game.updateServers()];
 if (!g) promises.push(game.updateG());
 await Promise.all(promises);
+game.preparePathfinder();
 
 logDebug("Logging in...");
 const player = await game.login(email, password);
@@ -35,6 +36,12 @@ player.characters.sort((a, b) => {
 let merchantStarted = false;
 let numStarted = 0;
 for (const characterInfo of player.characters) {
+  if (numStarted >= 3) {
+    // Already started maximum number of characters
+    if (merchantStarted) break; // Started three characters and a merchant
+    continue;
+  }
+
   let character: Character;
   switch (characterInfo.type) {
     case "merchant":
@@ -53,15 +60,8 @@ for (const characterInfo of player.characters) {
       break;
   }
 
-  if (numStarted >= 3) {
-    // Already started maximum number of characters
-    if (merchantStarted) break; // Started three characters and a merchant
-    continue;
-  }
-
   logInformational(`Starting ${characterInfo.name} (${characterInfo.type}) on ASIA I`);
   await character.start("ASIA", "I");
-  numStarted++;
-
   setup(character, MONSTER);
+  numStarted++;
 }
