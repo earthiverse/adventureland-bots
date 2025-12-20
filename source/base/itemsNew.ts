@@ -226,9 +226,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     carrotsword: {
         craft: true,
-        usePrimlingFromLevel: 7,
-        useOfferingFromLevel: 8,
-        upgradeUntilLevel: 8, // TODO: We need to stack a bunch of primlings at 8
+        sell: true, // We get way too many during christmas
+        // usePrimlingFromLevel: 7,
+        // useOfferingFromLevel: 8,
+        // upgradeUntilLevel: 8, // TODO: We need to stack a bunch of primlings at 8
     },
     cclaw: {
         buy: true,
