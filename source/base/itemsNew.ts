@@ -213,9 +213,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     // candy1: {
     //     exchange: true,
     // },
-    candycane: {
-        exchange: true,
-    },
+    // candycane: {
+    //     exchange: true,
+    // },
     candycanesword: {
         usePrimlingFromLevel: 7,
         useOfferingFromLevel: 9,
@@ -581,9 +581,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 9,
         upgradeUntilLevel: 9, // TODO: We need to stack a bunch of primlings at 9
     },
-    mistletoe: {
-        exchange: true,
-    },
+    // mistletoe: {
+    //     exchange: true,
+    // },
     // monstertoken: {
     //     sell: true,
     //     sellPrice: 350_000,
