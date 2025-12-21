@@ -7,14 +7,20 @@ import { logDebug, logInformational } from "../utilities/logging.js";
  * This plugin adds party support
  */
 
-const { allowed, checkEveryMs, leader } = config.party;
+const { allowed, checkEveryMs, leader: configLeader } = config.party;
 
 const characters = new Set<Character>();
 
 const partyLoop = async () => {
   try {
     const requests = [];
+    let leader = configLeader;
     for (const character of characters) {
+      if (leader === undefined) {
+        // Use the first character as the leader
+        leader = character.id;
+        continue;
+      }
       if (character.socket.disconnected) continue;
 
       if (character.id === leader) continue; // The leader only accepts requests
@@ -34,15 +40,17 @@ void partyLoop();
 // Send party requests
 EventBus.on("character_started", (character) => {
   characters.add(character);
-  if (character.id !== leader) character.sendPartyRequest(leader).catch(logDebug);
+  if (configLeader !== undefined && character.id !== configLeader)
+    character.sendPartyRequest(configLeader).catch(logDebug);
 });
 EventBus.on("observer_stopped", (observer) => characters.delete(observer as Character));
 
 // Accept party requests
 EventBus.on("party_request_received", (character, name) => {
   if (
-    allowed === true || // We're accepting everyone
-    allowed.includes(name) // They're in our list
+    allowed !== undefined &&
+    (allowed === true || // We're accepting everyone
+      allowed.includes(name)) // They're in our list
   ) {
     character.acceptPartyRequest(name).catch(logDebug);
   } else {

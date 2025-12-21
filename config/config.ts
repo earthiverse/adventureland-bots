@@ -28,9 +28,14 @@ interface Config {
     map: Record<Level, Method>;
   };
   party: {
-    allowed: true | string[];
+    /**
+     * If true, we will accept anyone who sends a party request.
+     * If set to an array, we will only accept those players.
+     **/
+    allowed?: true | string[];
     checkEveryMs: number;
-    leader: string;
+    /** If undefined, the first character to connect will be chosen as the leader. */
+    leader?: string;
   };
   pingCompensation: {
     maxPings: number;
