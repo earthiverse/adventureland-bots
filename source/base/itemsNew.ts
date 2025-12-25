@@ -1257,9 +1257,11 @@ export function wantToUpgrade(item: Item, itemConfig: CombinedConfig, itemCounts
 
     if (!item.upgrade && !item.compound) return false // Not upgradable or compoundable
 
-    if (item.level === 0 && itemConfig.sell === true) return false // We want to sell it
-    if (item.level < itemConfig.destroyBelowLevel) return false // We want to destroy it
-    if (itemConfig.upgradeUntilLevel !== undefined && item.level >= itemConfig.upgradeUntilLevel) return false // We don't want to upgrade it any further
+    if (itemConfig) {
+        if (item.level === 0 && itemConfig.sell === true) return false // We want to sell it
+        if (item.level < itemConfig.destroyBelowLevel) return false // We want to destroy it
+        if (itemConfig.upgradeUntilLevel !== undefined && item.level >= itemConfig.upgradeUntilLevel) return false // We don't want to upgrade it any further
+    }
 
     const levelCounts = itemCounts.get(item.name)
     if (levelCounts === undefined) return false // We don't have count information for this item
