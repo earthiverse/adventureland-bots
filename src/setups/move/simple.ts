@@ -20,26 +20,37 @@ export const setup = (character: Character, monster: MonsterKey = "goo") => {
   const activeData: ActiveData = { cancelled: false };
   active.set(character, activeData);
 
-  const moveLoop = () => {
+  const moveLoop = async () => {
     if (activeData.cancelled) return;
 
     try {
       if (character.socket.disconnected) return;
 
-      const entity = getBestTarget(character, { monster: monster });
-      if (!entity) return;
+      const entity = getBestTarget(character, { canMoveTo: true, monster });
+      if (!entity) {
+        return await character.smartMove(monster);
+      }
 
       // Move if far away
-      if (character.getDistanceTo(entity) > character.range) {
+      const distance = character.getDistanceTo(entity);
+      if (distance > character.range) {
+        const dx = entity.x - character.x;
+        const dy = entity.y - character.y;
+
+        const moveDistance = distance - character.range + 10;
+
+        character
+          .move(character.x + (dx / distance) * moveDistance, character.y + (dy / distance) * moveDistance)
+          .catch(logDebug);
         character.move((entity.x + character.x) / 2, (entity.y + character.y) / 2).catch(logDebug);
       }
     } catch (e) {
       if (e instanceof Error || typeof e === "string") logDebug(`moveLoop: ${e}`);
     } finally {
-      setTimeout(moveLoop, 100);
+      setTimeout(() => void moveLoop(), 100);
     }
   };
-  moveLoop();
+  void moveLoop();
 };
 
 /**

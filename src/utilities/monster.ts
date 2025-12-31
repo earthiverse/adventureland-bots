@@ -28,6 +28,8 @@ export type BestTargetOptions = {
   monster?: MonsterKey;
   /** Only target monsters within this range */
   withinRange?: number;
+  /** Only target monsters we can move to in a straight line */
+  canMoveTo?: true;
 };
 
 export const DEFAULT_BEST_TARGET_OPTIONS: BestTargetOptions = {
@@ -61,6 +63,7 @@ export function getBestTargets(
     // Filter out unwanted monsters
     if (options.monster !== undefined && monster.type !== options.monster) continue; // Not the wanted monster
     if (options.withinRange !== undefined && character.getDistanceTo(monster) > options.withinRange) continue; // Too far away
+    if (options.canMoveTo === true && !character.canMoveTo(monster)) continue; // Can't move to in a straight line
 
     // The monster is OK
     bestEntities.push(monster);
