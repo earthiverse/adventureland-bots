@@ -1,7 +1,8 @@
-import type { Character } from "alclient";
+import { isItemKey, type Character } from "alclient";
 import type { Comparator } from "tinyqueue";
 import TinyQueue from "tinyqueue";
 import type { ItemKey, SkillKey } from "typed-adventureland";
+import { REGEN_ITEMS } from "../../../config/items.js";
 import { logDebug } from "../../utilities/logging.js";
 
 type ActiveData = {
@@ -115,20 +116,23 @@ export const setup = (character: Character) => {
         [
           "regen_hp",
           "regen_mp",
-          // ...(character.ctype === "paladin" ? (["selfheal"] as SkillKey[]) : []),
-          // ...REGEN_ITEMS.filter((name) => character.items.some((item) => item?.name === name)),
+          // ...(character.ctype === "paladin" && character.canUse("selfheal") ? (["selfheal"] as SkillKey[]) : []),
+          ...REGEN_ITEMS.filter((name) => character.items.some((item) => item?.name === name)),
         ],
         comparator,
       );
 
       const bestAction = bestActions.pop();
-      if (bestAction === "regen_hp") {
+      if (bestAction === undefined) {
+        return;
+      } else if (bestAction === "regen_hp") {
         await character.regenHp();
       } else if (bestAction === "regen_mp") {
         await character.regenMp();
-      } else {
+      } else if (bestAction === "selfheal") {
         // TODO: Add paladin self heal
-        // TODO: Add item use
+      } else if (isItemKey(bestAction, character.game.G)) {
+        await character.consumeItem(character.locateItem({ name: bestAction }) as number);
       }
     } catch (e) {
       if (e instanceof Error || typeof e === "string") logDebug(`regenLoop: ${e}`);
