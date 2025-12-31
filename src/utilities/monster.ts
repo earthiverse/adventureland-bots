@@ -24,8 +24,8 @@ export const DEFAULT_COMPARATOR: Comparator<EntityMonster> = (a, b) => {
 
 export type BestTargetOptions = {
   comparator?: Comparator<EntityMonster>;
-  /** Which monster to attack */
-  monster?: MonsterKey;
+  /** Which monsters to attack */
+  monsters?: MonsterKey[];
   /** Only target monsters within this range */
   withinRange?: number;
   /** Only target monsters we can move to in a straight line */
@@ -34,7 +34,7 @@ export type BestTargetOptions = {
 
 export const DEFAULT_BEST_TARGET_OPTIONS: BestTargetOptions = {
   comparator: DEFAULT_COMPARATOR,
-  monster: "goo",
+  monsters: ["goo"],
 };
 
 export function getBestTarget(
@@ -61,7 +61,7 @@ export function getBestTargets(
 
   for (const [, monster] of character.monsters) {
     // Filter out unwanted monsters
-    if (options.monster !== undefined && monster.type !== options.monster) continue; // Not the wanted monster
+    if (options.monsters !== undefined && !options.monsters.includes(monster.type)) continue; // Not the wanted monster
     if (options.withinRange !== undefined && character.getDistanceTo(monster) > options.withinRange) continue; // Too far away
     if (options.canMoveTo === true && !character.canMoveTo(monster)) continue; // Can't move to in a straight line
 

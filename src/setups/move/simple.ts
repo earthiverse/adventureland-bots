@@ -13,8 +13,9 @@ const active = new Map<Character, ActiveData>();
  * @param character
  * @param monster
  */
-export const setup = (character: Character, monster: MonsterKey = "goo") => {
+export const setup = (character: Character, monsters: MonsterKey[] = ["goo"]) => {
   // Cancel any existing move logic for this character
+  if (monsters.length === 0) throw new Error("No monsters provided");
   if (active.has(character)) active.get(character)!.cancelled = true;
 
   const activeData: ActiveData = { cancelled: false };
@@ -26,9 +27,9 @@ export const setup = (character: Character, monster: MonsterKey = "goo") => {
     try {
       if (character.socket.disconnected) return;
 
-      const entity = getBestTarget(character, { canMoveTo: true, monster });
+      const entity = getBestTarget(character, { canMoveTo: true, monsters });
       if (!entity) {
-        return await character.smartMove(monster);
+        return await character.smartMove(monsters[0] as MonsterKey);
       }
 
       // Move if far away

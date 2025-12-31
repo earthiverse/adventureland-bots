@@ -84,7 +84,7 @@ function getComparator(character: Character): Comparator<EntityMonster> {
  * @param character
  * @param monster
  */
-export const setup = (character: Character, monster: MonsterKey = "goo") => {
+export const setup = (character: Character, monsters: MonsterKey[] = ["goo"]) => {
   // Cancel any existing move logic for this character
   if (active.has(character)) active.get(character)!.cancelled = true;
 
@@ -98,7 +98,7 @@ export const setup = (character: Character, monster: MonsterKey = "goo") => {
     try {
       if (character.socket.disconnected) return;
 
-      const entity = getBestTarget(character, { comparator, monster });
+      const entity = getBestTarget(character, { comparator, monsters });
       if (!entity) return;
 
       // Move if far away

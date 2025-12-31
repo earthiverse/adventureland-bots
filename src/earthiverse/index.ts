@@ -127,10 +127,10 @@ const logicLoop = async () => {
       const characterStrategy = strategy.characters[character.id as keyof typeof characters] as CharacterStrategy;
       activeAttackingCharacters.add(character);
 
-      (characterStrategy.attack ?? attackSetup)(character, { monster: targetMonster });
+      (characterStrategy.attack ?? attackSetup)(character, { monsters: [targetMonster] });
       itemSetup(character);
       lootSetup(character);
-      moveSetup(character, defaultMonster);
+      moveSetup(character, [defaultMonster]);
       regenSetup(character);
     }
   } catch (e) {

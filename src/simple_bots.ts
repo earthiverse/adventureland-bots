@@ -14,7 +14,7 @@ import { logDebug, logInformational } from "./utilities/logging.js";
 
 // Config
 const { server, email, password } = config.credentials;
-const MONSTER: MonsterKey = "goo";
+const MONSTERS: MonsterKey[] = ["snake", "osnake"];
 
 logDebug("Getting G from Cache...");
 const g = getGFromCache();
@@ -62,6 +62,6 @@ for (const characterInfo of player.characters) {
 
   logInformational(`Starting ${characterInfo.name} (${characterInfo.type}) on ASIA I`);
   await character.start("ASIA", "I");
-  setup(character, MONSTER);
+  setup(character, MONSTERS);
   numStarted++;
 }

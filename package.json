@@ -27,11 +27,11 @@
   "homepage": "https://github.com/earthiverse/adventureland-bots#readme",
   "dependencies": {
     "@isaacs/ttlcache": "^2.1.2",
-    "alclient": "file:../../ALClient.worktrees/new-alclient/alclient-1.0.0.tgz",
+    "alclient": "file:../ALClient/alclient-1.0.0.tgz",
     "config": "^4.1.0",
     "discord.js": "^14.19.3",
     "lru-cache": "^11.1.0",
-    "nodemailer": "^7.0.5",
+    "nodemailer": "^7.0.10",
     "tinyqueue": "^3.0.0"
   },
   "devDependencies": {
@@ -50,7 +50,7 @@
     "prettier-plugin-organize-imports": "^4.2.0",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
-    "typed-adventureland": "^0.0.50",
+    "typed-adventureland": "^0.0.52",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.0"
   }

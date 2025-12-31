@@ -6,10 +6,10 @@ import { setup as lootSetup } from "./loot/simple.js";
 import { setup as moveSetup } from "./move/simple.js";
 import { setup as regenSetup } from "./regen/simple.js";
 
-export const setup = (character: Character, monster: MonsterKey = "goo") => {
-  attackSetup(character, { monster });
+export const setup = (character: Character, monsters: MonsterKey[] = ["goo"]) => {
+  attackSetup(character, { monsters });
   itemSetup(character);
   lootSetup(character);
-  moveSetup(character, monster);
+  moveSetup(character, monsters);
   regenSetup(character);
 };
