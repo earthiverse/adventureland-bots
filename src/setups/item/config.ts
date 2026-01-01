@@ -47,11 +47,11 @@ export const setup = (character: Character) => {
 
         try {
           const numToReplenish = wantToReplenish(character, item);
-          if (numToReplenish) {
+          if (numToReplenish && character.canBuy(item.name, { quantity: numToReplenish })) {
             await character.buy(item.name, numToReplenish);
           }
 
-          if (wantToDestroy(item)) {
+          if (wantToDestroy(character, item)) {
             await character.destroy(index);
             log(`${character.id} destroyed ${getItemDescription(item)}`, DESTROY_LOG_LEVEL);
           }

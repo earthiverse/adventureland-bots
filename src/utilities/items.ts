@@ -9,6 +9,7 @@ import {
   ensureSellMultiplierAtLeastOne,
   ensureSellPriceAtLeastNpcPrice,
   optimizeUpgrades,
+  removeDestroyableWithoutBenefit,
   removeNonDismantlable,
   removeUncraftable,
   removeUnexchangable,
@@ -200,8 +201,9 @@ export function getCraftableItems(
   return craftableItems;
 }
 
-export function wantToDestroy(item: ItemInfo, config = Config): boolean {
+export function wantToDestroy(character: Character, item: ItemInfo, config = Config): boolean {
   if (item.l !== undefined) return false; // We can't destroy locked items
+  if (character.getDistanceTo({ map: "halloween", in: "halloween", x: 0, y: 0 }) >= 400) return false; // No +13 chance
 
   const itemConfig = config[item.name]?.destroy;
   if (!itemConfig) return false; // We have no destroy config for this item
@@ -369,6 +371,7 @@ export function adjustItemConfig(
   ensureSellPriceAtLeastNpcPrice(config, g);
   ensureSellMultiplierAtLeastOne(config);
   ensureBuyPriceLessThanSellPrice(config);
+  removeDestroyableWithoutBenefit(config, g);
   removeNonDismantlable(config, g);
   removeUncraftable(config, g);
   removeUnexchangable(config, g);

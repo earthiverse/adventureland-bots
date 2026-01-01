@@ -189,6 +189,20 @@ export function optimizeUpgrades(config: ItemsConfig) {
   // TODO: Look in the config for items that we're upgrading, and use Aria's helper to calculate when to primstack, and what scrolls to use
 }
 
+export function removeDestroyableWithoutBenefit(config: ItemsConfig, g: GData) {
+  for (const name of Object.keys(config) as ItemKey[]) {
+    const itemConfig = config[name];
+    if (itemConfig === undefined) continue; // No config
+    if (itemConfig.destroy === undefined) continue; // No destroy config
+    const gItem = g.items[name];
+    if (gItem.upgrade === undefined) {
+      logError(`Item ${name} is not upgradable, but has a destroy config`);
+      delete itemConfig.destroy;
+      continue;
+    }
+  }
+}
+
 /**
  * If items are marked as dismantlable in the config, but not in the game data, we remove them from the config.
  *
