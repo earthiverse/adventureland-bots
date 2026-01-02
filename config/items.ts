@@ -90,7 +90,16 @@ export type UpgradeConfigBase = {
   makeShinyBeforeUpgrading?: true;
   /** If set, we will upgrade special items (items with a `.p`), too */
   upgradeSpecial?: true;
-  // TODO: Add strategy
+  /**
+   * If set, we will use this value to optimize the upgrade path.
+   * If not set, we will use the values in this order:
+   *  - Price we are buying at
+   *  - Price we are selling at
+   *  - Price from G
+   */
+  upgradeValue?: number;
+  /** Only upgrade if we have more than this many of the item across characters / bank */
+  minTotalQuantity?: number;
 };
 
 export type ItemConfig = {
@@ -118,6 +127,14 @@ export const HOLD_FULL_STACK: ItemConfig = Object.freeze({
   hold: Object.freeze({ characterTypes: "all", replenish: 9999 }),
 });
 export const SELL_TO_NPC: ItemConfig = Object.freeze({ sell: Object.freeze({ sellPrice: "npc" }) });
+/** slots other than rings or earrings */
+export const UPGRADE_ONE_SLOT: ItemConfig = Object.freeze({
+  upgrade: Object.freeze({ upgradeUntilLevel: 9, upgradeSpecial: true, minTotalQuantity: 4 }),
+});
+/** rings or earrings */
+export const UPGRADE_TWO_SLOTS: ItemConfig = Object.freeze({
+  upgrade: Object.freeze({ upgradeUntilLevel: 9, upgradeSpecial: true, minTotalQuantity: 7 }),
+});
 
 const itemsConfig: ItemsConfig = {
   "5bucks": {
