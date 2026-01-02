@@ -2,7 +2,9 @@ import { EventBus } from "alclient";
 import fs from "fs";
 import path from "path";
 import type {
+  BankPackTypeItemsOnly,
   GData,
+  ItemInfo,
   MapKey,
   MonsterKey,
   ServerKey,
@@ -10,11 +12,11 @@ import type {
   ServerToClient_server_info_notlive,
 } from "typed-adventureland";
 import url from "url";
-import { logWarning } from "../utilities/logging.js";
 import { WANT_TO_TRACK } from "../../config/monsters.js";
+import { logWarning } from "../utilities/logging.js";
 
 /**
- * This plugin tracks monsters and players
+ * This plugin tracks various data
  */
 
 const LOOP_INTERVAL_MS = 30_000; // 30 Seconds
@@ -50,10 +52,13 @@ type ServerData = {
   /** Time the next monster will spawn */
   spawns: {
     [T in MonsterKey]?: number;
+    // TODO: Add location where it died
+    // TODO: Track temporal orb usage
   };
 };
 
-const serverData = new Map<ServerKey, ServerData>();
+export const serverData = new Map<ServerKey, ServerData>();
+export const itemData = new Map<string, (ItemInfo | null)[]>();
 
 function getServerData(key: ServerKey): ServerData {
   let serverDatum = serverData.get(key);
@@ -205,6 +210,18 @@ EventBus.on("server_info_updated", (observer, serverInfo) => {
   }
 });
 
+EventBus.on("bank_updated", (_character, bank) => {
+  for (const packName in bank) {
+    if (!packName.startsWith("items")) continue; // Not items
+    const items = bank[packName as BankPackTypeItemsOnly];
+    itemData.set(packName, items);
+  }
+});
+
+EventBus.on("items_updated", (character, items) => {
+  itemData.set(character.id, items);
+});
+
 const DATA_FOLDER = path.join(path.dirname(url.fileURLToPath(import.meta.url)), "../../data");
 const CHARACTER_DATA_FOLDER = path.join(DATA_FOLDER, `characters`);
 const MONSTER_DATA_FOLDER = path.join(DATA_FOLDER, `monsters`);
@@ -316,5 +333,3 @@ const loop = () => {
 };
 
 void loop();
-
-export default serverData;
