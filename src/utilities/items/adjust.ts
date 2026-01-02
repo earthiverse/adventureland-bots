@@ -7,19 +7,33 @@ import { logDebug, logError } from "../logging.js";
  * Changes the config to buy keys at the given price.
  */
 export function buyKeys(config: ItemsConfig, g: GData, price: Exclude<Price, number>) {
-  for (const itemName of Object.keys(g.items) as ItemKey[]) {
-    const gItem = g.items[itemName];
+  for (const name of Object.keys(g.items) as ItemKey[]) {
+    const gItem = g.items[name];
     if (gItem.type !== "bank_key" && gItem.type !== "dungeon_key") continue; // Not a key
-    if (config[itemName]?.buy !== undefined) {
-      logDebug(`Item ${itemName} already has a buy config, skipping buyKeys...`);
+    if (config[name]?.buy !== undefined) {
+      logDebug(`Item ${name} already has a buy config, skipping buyKeys...`);
       continue; // Already has a buy config
     }
-    if (!config[itemName]) {
-      config[itemName] = {};
+    config[name] ??= {};
+    const buyPrice = calculatePrice({ name }, g, price);
+    logDebug(`Adding buy config for ${name} to buy for ${buyPrice}`);
+    config[name].buy = { buyPrice };
+  }
+}
+
+/**
+ * Changes the config to buy any item if someone is selling it for less than what an NPC would buy it for.
+ */
+export function buyForProfit(config: ItemsConfig, g: GData) {
+  for (const name of Object.keys(g.items) as ItemKey[]) {
+    if (config[name]?.buy !== undefined) {
+      logDebug(`Item ${name} already has a buy config, skipping buyForProfit...`);
+      continue;
     }
-    const buyPrice = calculatePrice({ name: itemName }, g, price);
-    logDebug(`Adding buy config for ${itemName} to buy for ${buyPrice}`);
-    config[itemName].buy = { buyPrice: buyPrice };
+    config[name] ??= {};
+    const buyPrice = calculatePrice({ name }, g, "npc") - 1;
+    logDebug(`Adding buy config for ${name} to buy for ${buyPrice}`);
+    config[name].buy = { buyPrice };
   }
 }
 
@@ -176,17 +190,6 @@ export function ensureSellPriceAtLeastNpcPrice(config: ItemsConfig, g: GData) {
       }
     }
   }
-}
-
-export function optimizeUpgrades(config: ItemsConfig) {
-  // TODO: Optimize upgrades
-  // TODO: Look for primling price, make sure we have it defined
-  if (config.offeringp?.buy?.buyPrice === undefined) {
-    logError("`offeringp` buy price is not defined in our item config");
-    return;
-  }
-
-  // TODO: Look in the config for items that we're upgrading, and use Aria's helper to calculate when to primstack, and what scrolls to use
 }
 
 export function removeDestroyableWithoutBenefit(config: ItemsConfig, g: GData) {

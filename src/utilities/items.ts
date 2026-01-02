@@ -2,13 +2,13 @@ import type { Character } from "alclient";
 import type { DismantleKey, GData, ItemInfo, ItemKey } from "typed-adventureland";
 import Config, { type Price } from "../../config/items.js";
 import {
+  buyForProfit,
   buyKeys,
   calculateBuyPrices,
   calculateSellPrices,
   ensureBuyPriceLessThanSellPrice,
   ensureSellMultiplierAtLeastOne,
   ensureSellPriceAtLeastNpcPrice,
-  optimizeUpgrades,
   removeDestroyableWithoutBenefit,
   removeNonDismantlable,
   removeUncraftable,
@@ -363,9 +363,10 @@ export function wantToSell(item: ItemInfo, g: GData, canSellForPrice: Price = "n
 export function adjustItemConfig(
   config = Config,
   g: GData,
-  options: { buyKeys?: Exclude<Price, number>; optimizeUpgrades?: true } = {},
+  options: { buyKeys?: Exclude<Price, number>; buyForProfit?: true } = {},
 ) {
   if (options.buyKeys !== undefined) buyKeys(config, g, options.buyKeys);
+  if (options.buyForProfit) buyForProfit(config, g);
   calculateBuyPrices(config, g);
   calculateSellPrices(config, g);
   ensureSellPriceAtLeastNpcPrice(config, g);
@@ -375,5 +376,4 @@ export function adjustItemConfig(
   removeNonDismantlable(config, g);
   removeUncraftable(config, g);
   removeUnexchangable(config, g);
-  if (options.optimizeUpgrades === true) optimizeUpgrades(config);
 }
