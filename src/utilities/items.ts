@@ -14,6 +14,7 @@ import {
   removeUncraftable,
   removeUnexchangable,
 } from "./items/adjust.js";
+import { getTotalItemCount } from "./items/counts.js";
 import { isPurchasableFromNpc } from "./items/npc.js";
 import { logError } from "./logging.js";
 
@@ -199,6 +200,25 @@ export function getCraftableItems(
   }
 
   return craftableItems;
+}
+
+export function wantToBuy(item: ItemInfo, canBuyForPrice: number, g: GData, config = Config): boolean {
+  const itemConfig = config[item.name]?.buy;
+  if (!itemConfig) return false; // No buy config
+
+  if (itemConfig.maxTotalQuantity !== undefined) {
+    if (getTotalItemCount(item.name) >= itemConfig.maxTotalQuantity) return false; // We have enough
+  }
+
+  if (typeof itemConfig.buyPrice === "object") {
+    const buyPrice = itemConfig.buyPrice[item.level ?? 0];
+    if (buyPrice === undefined) return false; // We don't want to buy this item at this level
+    if (canBuyForPrice > calculatePrice(item, g, buyPrice)) return false;
+  } else {
+    if (canBuyForPrice > calculatePrice(item, g, itemConfig.buyPrice)) return false;
+  }
+
+  return true;
 }
 
 export function wantToDestroy(character: Character, item: ItemInfo, config = Config): boolean {
