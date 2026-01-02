@@ -1,12 +1,12 @@
 import type { ClassKey, ItemKey } from "typed-adventureland";
 
 /**
- * When set to a number, we will buy the item if it's that price or lower.
- * When set to "ponty", we will buy the item at the price Ponty (Secondhand) sells it for.
- * When set to "g", we will buy the item at the price listed in G.
- * When set to "goblin", we will buy the item at the price Goblin (Lost and Found) sells it for.
- * When set to "npc", we will buy the item at the price an NPC would buy it for.
- * When set to "x${number}", we will buy the item for its base price multiplied by the number.
+ * When set to a number, we will buy/sell the item if it's lower/higher than that price.
+ * When set to "ponty", we will buy/sell the item at the price Ponty (Secondhand) sells it for.
+ * When set to "g", we will buy/sell the item at the price listed in G.
+ * When set to "goblin", we will buy/sell the item at the price Goblin (Lost and Found) sells it for.
+ * When set to "npc", we will buy/sell the item at the price an NPC would buy it for.
+ * When set to "x${number}", we will buy/sell the item for its base price multiplied by the number.
  */
 export type Price = number | "g" | "goblin" | "npc" | "ponty" | `x${number}`;
 export type BuyConfigBase = {
@@ -15,6 +15,8 @@ export type BuyConfigBase = {
    * Otherwise, the buy price is for the level 0 item.
    */
   buyPrice: Price | Record<number, Price>;
+  /** Don't buy if we have more than this many of the item across characters / bank */
+  maxTotalQuantity?: number;
 };
 
 export type CraftConfigBase = {
@@ -159,6 +161,12 @@ const itemsConfig: ItemsConfig = {
   },
   mpot1: {
     ...HOLD_FULL_STACK,
+  },
+  offeringp: {
+    buy: {
+      buyPrice: 2_500_000,
+      maxTotalQuantity: 50,
+    },
   },
   orba: {
     ...BUY_AT_GOBLIN_PRICE,
