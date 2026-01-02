@@ -12,8 +12,10 @@ import {
 import { Level, log, logDebug } from "../../utilities/logging.js";
 
 const CHECK_EVERY_MS = 1000;
+const BUY_LOG_LEVEL = Level.Informational;
 const CRAFT_LOG_LEVEL = Level.Notice;
 const DESTROY_LOG_LEVEL = Level.Notice;
+const EXCHANGE_LOG_LEVEL = Level.Informational;
 const SELL_LOG_LEVEL = Level.Notice;
 
 type ActiveData = {
@@ -32,8 +34,11 @@ export const setup = (character: Character) => {
   const activeData: ActiveData = { cancelled: false };
   active.set(character, activeData);
 
+  // TODO: merchantLoop
+  // for buying, selling, & joining giveaways
+
   /**
-   * For buying, selling, destroying, listing, mailing items
+   * For buying (NPC), selling (NPC), destroying, listing, mailing items
    */
   const itemLoop = async () => {
     if (activeData.cancelled) return;
@@ -47,27 +52,34 @@ export const setup = (character: Character) => {
 
         try {
           const numToReplenish = wantToReplenish(character, item);
+          // TODO: Buy as many as we can if we can't buy all
           if (numToReplenish && character.canBuy(item.name, { quantity: numToReplenish })) {
             await character.buy(item.name, numToReplenish);
+            log(`${character.id} bought ${numToReplenish} ${getItemDescription(item)}`, BUY_LOG_LEVEL);
+            continue;
           }
 
           if (wantToDestroy(character, item)) {
             await character.destroy(index);
             log(`${character.id} destroyed ${getItemDescription(item)}`, DESTROY_LOG_LEVEL);
+            continue;
           }
 
           const listPrice = wantToList(item, character.game.G);
           if (listPrice !== false) {
             // TODO: List
+            continue;
           }
 
           if (wantToMail(item)) {
             // TODO: Mail
+            continue;
           }
 
-          if (wantToSell(item, character.game.G)) {
+          if (wantToSell(item, character.game.G) && character.canSell()) {
             await character.sell(index, item.q ?? 1);
             log(`${character.id} sold ${getItemDescription(item)} to NPC`, SELL_LOG_LEVEL);
+            continue;
           }
         } catch (e) {
           if (e instanceof Error || typeof e === "string") logDebug(`itemLoop: ${e}`);
@@ -93,8 +105,8 @@ export const setup = (character: Character) => {
         if (gCraft.cost > character.gold) continue; // Not enough gold
         // TODO: Add buying logic for missing items
         if (itemIndexes.some((i) => i === "npc")) continue; // Can't craft unless we buy the item from an NPC
-        log(`${character.id} crafting ${itemName}...`, CRAFT_LOG_LEVEL);
         await character.craft(itemName, itemIndexes as number[]);
+        log(`${character.id} crafted ${itemName}`, CRAFT_LOG_LEVEL);
       }
     } catch (e) {
       if (e instanceof Error || typeof e === "string") logDebug(`craftLoop: ${e}`);
@@ -121,6 +133,7 @@ export const setup = (character: Character) => {
         if (!wantToExchange(item, character.esize, character.game.G)) continue;
 
         await character.exchange(index);
+        log(`${character.id} exchanged ${getItemDescription(item)}`, EXCHANGE_LOG_LEVEL);
         return;
       }
     } catch (e) {
