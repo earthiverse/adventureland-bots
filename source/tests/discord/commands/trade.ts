@@ -1,5 +1,5 @@
 import AL, { ItemDataTrade, ItemName } from "alclient"
-import { CommandInteraction, Client, ApplicationCommandType, ApplicationCommandOptionType, AutocompleteInteraction } from "discord.js"
+import { Client, ApplicationCommandType, ApplicationCommandOptionType, AutocompleteInteraction, ChatInputCommandInteraction } from "discord.js"
 import { Command } from "../command.js"
 
 // TODO: How do I type this for autocomplete?
@@ -34,7 +34,7 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
             filtered,
         )
     },
-    run: async (client: Client, interaction: CommandInteraction) => {
+    run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         const G = await AL.Game.getGData()
 
         const item = interaction.options.get("item").value

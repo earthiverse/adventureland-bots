@@ -1,4 +1,4 @@
-import { CommandInteraction, Client, ApplicationCommandType, ApplicationCommandOptionType } from "discord.js"
+import { Client, ApplicationCommandType, ApplicationCommandOptionType, ChatInputCommandInteraction } from "discord.js"
 import { Command } from "../command.js"
 
 export const Character: Command = {
@@ -13,7 +13,7 @@ export const Character: Command = {
         },
     ],
     type: ApplicationCommandType.ChatInput,
-    run: async (client: Client, interaction: CommandInteraction) => {
+    run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         const character = interaction.options.get("character").value
         console.log(character)
         try {
