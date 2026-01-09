@@ -55,6 +55,7 @@ import {
 import { mainFrogs } from "../base/locations.js"
 import { BoosterStrategy } from "../strategy_pattern/strategies/booster.js"
 import { checkOnlyEveryMS } from "../base/general.js"
+import { FixStuffStrategy } from "../strategy_pattern/strategies/fixes.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
@@ -137,6 +138,7 @@ const BUY_STRATEGY = new BuyStrategy({
 const CHARGE_STRATEGY = new ChargeStrategy()
 const DESTROY_STRATEGY = new DestroyStrategy()
 const ELIXIR_STRATEGY = new ElixirStrategy("elixirluck")
+const FIX_STUFF_STRATEGY = new FixStuffStrategy()
 const GIVE_ROGUE_SPEED_STRATEGY = new GiveRogueSpeedStrategy()
 const ITEM_STRATEGY = new ItemStrategy({
     contexts: activeStrategists,
@@ -486,15 +488,16 @@ const startBot = async (region: ServerRegion, identifier: ServerIdentifier, name
         AVOID_STACKING_STRATEGY,
         BASE_STRATEGY,
         BUY_STRATEGY,
-        ELIXIR_STRATEGY,
         ITEM_STRATEGY,
         RESPAWN_STRATEGY,
         SELL_STRATEGY,
         TRACKER_STRATEGY,
     ])
 
-    // Move strategies
     if (!(strategist.bot instanceof Merchant)) {
+        strategist.applyStrategies([ELIXIR_STRATEGY, FIX_STUFF_STRATEGY])
+
+        // Move strategies
         if (monster === "grinch") strategist.applyStrategy(GRINCH_MOVE_STRATEGY)
         else if (monster === "snowman") strategist.applyStrategy(SNOWMAN_MOVE_STRATEGY)
         else if (monster === "tortoise") strategist.applyStrategy(TORTOISE_MOVE_STRATEGY)
