@@ -1,4 +1,4 @@
-import { Game } from "alclient";
+import { Character, Game, Player } from "alclient";
 import type { DismantleKey, GData, ItemInfo, ItemKey } from "typed-adventureland";
 import { CRAFT, DISMANTLE, EXCHANGE, type ItemsConfig } from "../../config/items.js";
 import { getGFromCache } from "../../src/plugins/g_cache.js";
@@ -10,7 +10,11 @@ import {
   wantToSell,
 } from "../../src/utilities/items.js";
 
-let g: GData | undefined = undefined;
+let game: Game;
+let g: GData;
+let player: Player;
+let characterInMain: Character;
+let characterNearStatue: Character;
 const itemsToCraftOrbOfAdventures: ItemInfo[] = [
   {
     name: "orboffire",
@@ -30,12 +34,36 @@ const itemsToCraftOrbOfAdventures: ItemInfo[] = [
   },
 ];
 beforeAll(async () => {
-  g = getGFromCache() ?? (await new Game().updateG());
+  const gCached = getGFromCache();
+  if (gCached === undefined) {
+    game = new Game();
+    g = await game.updateG();
+  } else {
+    game = new Game({ url: "example.com", G: gCached });
+    g = gCached;
+  }
+
+  player = new Player(game, "test", "test");
+
+  characterNearStatue = new Character(player, "test", "test");
+  characterNearStatue.updateData({
+    x: 0,
+    y: 0,
+    map: "spookytown",
+    in: "spookytown",
+  });
+
+  characterInMain = new Character(player, "test", "test");
+  characterInMain.updateData({
+    x: 0,
+    y: 0,
+    map: "main",
+    in: "main",
+  });
 }, 15_000);
 
 test("`getCraftableItems()` returns an empty array when we don't have any craft config", () => {
   const config: ItemsConfig = {};
-  if (g === undefined) throw new Error("G data is not available");
   const result = getCraftableItems(itemsToCraftOrbOfAdventures, g, config);
   expect(result).toEqual([]);
 });
@@ -46,7 +74,6 @@ test("`getCraftableItems()` checks quantities in recipes", () => {
       ...CRAFT,
     },
   };
-  if (g === undefined) throw new Error("G data is not available");
   const result = getCraftableItems(
     [
       {
@@ -69,7 +96,6 @@ test("`getCraftableItems()` returns craftable items", () => {
       ...CRAFT,
     },
   };
-  if (g === undefined) throw new Error("G data is not available");
   expect(getCraftableItems(itemsToCraftOrbOfAdventures, g, config)).toEqual([["orba", [0, 1, 2, 3]]]);
 
   expect(
@@ -92,50 +118,55 @@ test("`getCraftableItems()` returns craftable items", () => {
 
 test("`wantToDestroy()` does not destroy items that are not in the config", () => {
   const config: ItemsConfig = {};
-  expect(wantToDestroy({ name: "bow", level: 0 }, config)).toBe(false);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 0 }, config)).toBe(false);
 });
 
 test("`wantToDestroy()` does not destroy items that have a config, but do not have a destroy config", () => {
   const config: ItemsConfig = { bow: {} };
-  expect(wantToDestroy({ name: "bow", level: 0 }, config)).toBe(false);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 0 }, config)).toBe(false);
+});
+
+test("`wantToDestroy()` destroys only when near statue", () => {
+  const config: ItemsConfig = { bow: { destroy: {} } };
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 0 }, config)).toBe(true);
+  expect(wantToDestroy(characterInMain, { name: "bow", level: 0 }, config)).toBe(false);
 });
 
 test("`wantToDestroy()` destroys only non-special level 0 items when destroy config is set, but empty", () => {
   const config: ItemsConfig = { bow: { destroy: {} } };
-  expect(wantToDestroy({ name: "bow", level: 0 }, config)).toBe(true);
-  expect(wantToDestroy({ name: "bow", level: 0, p: "shiny" }, config)).toBe(false);
-  expect(wantToDestroy({ name: "bow", level: 1 }, config)).toBe(false);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 0 }, config)).toBe(true);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 0, p: "shiny" }, config)).toBe(false);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 1 }, config)).toBe(false);
 });
 
 test("`wantToDestroy()` destroys special and non-special level 0 items when destroySpecial is set", () => {
   const config: ItemsConfig = { bow: { destroy: { destroySpecial: true } } };
-  expect(wantToDestroy({ name: "bow", level: 0 }, config)).toBe(true);
-  expect(wantToDestroy({ name: "bow", level: 0, p: "shiny" }, config)).toBe(true);
-  expect(wantToDestroy({ name: "bow", level: 1 }, config)).toBe(false);
-  expect(wantToDestroy({ name: "bow", level: 1, p: "shiny" }, config)).toBe(false);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 0 }, config)).toBe(true);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 0, p: "shiny" }, config)).toBe(true);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 1 }, config)).toBe(false);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 1, p: "shiny" }, config)).toBe(false);
 });
 
 test("`wantToDestroy()` destroys items up to the set level", () => {
   const config: ItemsConfig = { bow: { destroy: { destroyUpToLevel: 1 } } };
-  expect(wantToDestroy({ name: "bow", level: 0 }, config)).toBe(true);
-  expect(wantToDestroy({ name: "bow", level: 0, p: "shiny" }, config)).toBe(false);
-  expect(wantToDestroy({ name: "bow", level: 1 }, config)).toBe(true);
-  expect(wantToDestroy({ name: "bow", level: 1, p: "shiny" }, config)).toBe(false);
-  expect(wantToDestroy({ name: "bow", level: 2 }, config)).toBe(false);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 0 }, config)).toBe(true);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 0, p: "shiny" }, config)).toBe(false);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 1 }, config)).toBe(true);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 1, p: "shiny" }, config)).toBe(false);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 2 }, config)).toBe(false);
 });
 
 test("`wantToDestroy()` destroys special and non-special items up to the set level when destroySpecial is set", () => {
   const config: ItemsConfig = { bow: { destroy: { destroySpecial: true, destroyUpToLevel: 1 } } };
-  expect(wantToDestroy({ name: "bow", level: 0 }, config)).toBe(true);
-  expect(wantToDestroy({ name: "bow", level: 0, p: "shiny" }, config)).toBe(true);
-  expect(wantToDestroy({ name: "bow", level: 1 }, config)).toBe(true);
-  expect(wantToDestroy({ name: "bow", level: 1, p: "shiny" }, config)).toBe(true);
-  expect(wantToDestroy({ name: "bow", level: 2 }, config)).toBe(false);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 0 }, config)).toBe(true);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 0, p: "shiny" }, config)).toBe(true);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 1 }, config)).toBe(true);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 1, p: "shiny" }, config)).toBe(true);
+  expect(wantToDestroy(characterNearStatue, { name: "bow", level: 2 }, config)).toBe(false);
 });
 
 test("`wantToDismantle()` does not dismantle items that are not in the config", () => {
   const config: ItemsConfig = {};
-  if (g === undefined) throw new Error("G data is not available");
   expect(wantToDismantle({ name: "orba", level: 1 }, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, g, config)).toBe(
     false,
   );
@@ -145,7 +176,6 @@ test("`wantToDismantle()` dismantles only non-special items when dismantleSpecia
   const config: ItemsConfig = {
     orba: { dismantle: {} },
   };
-  if (g === undefined) throw new Error("G data is not available");
   expect(wantToDismantle({ name: "orba", level: 1 }, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, g, config)).toBe(
     true,
   );
@@ -164,7 +194,6 @@ test("`wantToDismantle()` dismantles special and non-special items when dismantl
   const config: ItemsConfig = {
     orba: { dismantle: { dismantleSpecial: true } },
   };
-  if (g === undefined) throw new Error("G data is not available");
   expect(wantToDismantle({ name: "orba", level: 1 }, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, g, config)).toBe(
     true,
   );
@@ -183,7 +212,6 @@ test("`wantToDismantle()` does not dismantle items that have a config, but do no
   const config: ItemsConfig = {
     orba: {},
   };
-  if (g === undefined) throw new Error("G data is not available");
   expect(wantToDismantle({ name: "orba", level: 1 }, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, g, config)).toBe(
     false,
   );
@@ -194,7 +222,6 @@ test("`wantToDismantle()` dismantles compoundable items", () => {
     lostearring: { dismantle: {} },
     orba: { dismantle: {} },
   };
-  if (g === undefined) throw new Error("G data is not available");
   // Level 0 compoundables cannot be dismantled (unless set in G.dismantle, but orba is not)
   expect(wantToDismantle({ name: "orba", level: 0 }, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, g, config)).toBe(
     false,
@@ -217,19 +244,16 @@ test("`wantToDismantle()` dismantles compoundable items", () => {
 
 test("`wantToSell()` does not sell items that are not in the config", () => {
   const config: ItemsConfig = {};
-  if (g === undefined) throw new Error("G data is not available");
   expect(wantToSell({ name: "hbow", level: 0 }, g, "npc", config)).toBe(false);
 });
 
 test("`wantToSell()` does not sell items that have a config, but do not have a sell config", () => {
   const config: ItemsConfig = { bow: {} };
-  if (g === undefined) throw new Error("G data is not available");
   expect(wantToSell({ name: "bow", level: 0 }, g, "npc", config)).toBe(false);
 });
 
 test("`wantToSell()` sells only non-special level 0 items when sellPrice is not an object", () => {
   const config: ItemsConfig = { bow: { sell: { sellPrice: "npc" } } };
-  if (g === undefined) throw new Error("G data is not available");
   expect(wantToSell({ name: "bow", level: 0 }, g, "npc", config)).toBe(true);
   expect(wantToSell({ name: "bow", level: 0, p: "shiny" }, g, "npc", config)).toBe(false);
   expect(wantToSell({ name: "bow", level: 1 }, g, "npc", config)).toBe(false);
@@ -248,7 +272,6 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for `g`", () => {
       },
     },
   };
-  if (g === undefined) throw new Error("G data is not available");
   adjustItemConfig(config, g);
   expect(g.items.hbow.g).toBeGreaterThan(0);
   expect(g.items.t2bow.g).toBeGreaterThan(0);
@@ -270,7 +293,6 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for `goblin`", ()
       },
     },
   };
-  if (g === undefined) throw new Error("G data is not available");
   adjustItemConfig(config, g);
   expect(g.items.hbow.g).toBeGreaterThan(0);
   expect(g.items.t2bow.g).toBeGreaterThan(0);
@@ -291,7 +313,6 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for `ponty`", () 
       },
     },
   };
-  if (g === undefined) throw new Error("G data is not available");
   adjustItemConfig(config, g);
   expect(g.items.hbow.g).toBeGreaterThan(0);
   expect(g.items.t2bow.g).toBeGreaterThan(0);
@@ -313,7 +334,6 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for `npc`", () =>
       },
     },
   };
-  if (g === undefined) throw new Error("G data is not available");
   adjustItemConfig(config, g);
   expect(g.items.hbow.g).toBeGreaterThan(0);
   expect(g.items.t2bow.g).toBeGreaterThan(0);
@@ -335,7 +355,6 @@ test("`adjustItemConfig()` computes the buyPrice and sellPrice for multipliers (
       },
     },
   };
-  if (g === undefined) throw new Error("G data is not available");
   adjustItemConfig(config, g);
   expect(g.items.hbow.g).toBeGreaterThan(0);
   expect(g.items.t2bow.g).toBeGreaterThan(0);
@@ -354,7 +373,6 @@ test("`adjustItemConfig()` ensures we're selling at a higher price than we're bu
       },
     },
   };
-  if (g === undefined) throw new Error("G data is not available");
   adjustItemConfig(config, g);
   expect(typeof config.hbow!.buy!.buyPrice).toBe("number");
   expect(typeof config.hbow!.sell!.sellPrice).toBe("number");
@@ -373,7 +391,6 @@ test("`adjustItemConfig()` ensures non-dismantleable items don't have dismantle 
       ...DISMANTLE,
     },
   };
-  if (g === undefined) throw new Error("G data is not available");
   adjustItemConfig(config, g);
 
   // `bow`s should not be dismantleable, and therefore the dismantle config should be removed
@@ -398,7 +415,6 @@ test("`adjustItemConfig()` ensures uncraftable items don't have craft config", (
       ...CRAFT,
     },
   };
-  if (g === undefined) throw new Error("G data is not available");
   adjustItemConfig(config, g);
 
   // `bow`s should not be craftable, and therefore the craft config should be removed
@@ -421,7 +437,6 @@ test("`adjustItemConfig()` ensures unexchangable items don't have exchange confi
       },
     },
   };
-  if (g === undefined) throw new Error("G data is not available");
   adjustItemConfig(config, g);
 
   // `bow`s should not be exchangable, and therefore the craft config should be removed

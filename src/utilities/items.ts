@@ -223,7 +223,7 @@ export function wantToBuy(item: ItemInfo, canBuyForPrice: number, g: GData, conf
 
 export function wantToDestroy(character: Character, item: ItemInfo, config = Config): boolean {
   if (item.l !== undefined) return false; // We can't destroy locked items
-  if (character.getDistanceTo({ map: "halloween", in: "halloween", x: 0, y: 0 }) >= 400) return false; // No +13 chance
+  if (character.getDistanceTo(character.game.G.maps.spookytown.ref!.poof!) >= 400) return false; // No +13 chance
 
   const itemConfig = config[item.name]?.destroy;
   if (!itemConfig) return false; // We have no destroy config for this item
