@@ -2,6 +2,7 @@ import { EventBus } from "alclient";
 import type { GData, TradeItemInfo } from "typed-adventureland";
 import Config from "../../config/items.js";
 import { adjustItemConfig, getItemDescription } from "../utilities/items.js";
+import { getScrollAndOfferingPricesFromItemsConfig } from "../utilities/items/upgrade.js";
 import { logDebug, logError, logInformational } from "../utilities/logging.js";
 
 /**
@@ -14,6 +15,7 @@ function adjust(g: GData, logFail = true) {
   if (configAdjusted) return; // Already adjusted
   try {
     adjustItemConfig(Config, g, { buyKeys: "x2" });
+    getScrollAndOfferingPricesFromItemsConfig(Config);
     configAdjusted = true;
   } catch (e) {
     if (logFail) {

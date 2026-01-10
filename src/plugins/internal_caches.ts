@@ -1,6 +1,7 @@
 import { EventBus } from "alclient";
 import type { GData } from "typed-adventureland";
 import { getNpcPurchasableItems } from "../utilities/items/npc.js";
+import { getScrollAndOfferingPricesFromG } from "../utilities/items/upgrade.js";
 import { logDebug } from "../utilities/logging.js";
 
 /**
@@ -9,6 +10,7 @@ import { logDebug } from "../utilities/logging.js";
 
 function updateCaches(g: GData) {
   getNpcPurchasableItems(g);
+  getScrollAndOfferingPricesFromG(g);
 }
 
 // Adjust our item config when we get G data
