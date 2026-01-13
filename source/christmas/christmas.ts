@@ -132,7 +132,7 @@ const CHRISTMAS_MONSTERS: MonsterName[] = [...CHRISTMAS_EVENT_MONSTERS, "frog", 
 const SWITCH_TO_LUCK_AT_HP: number = 2_000_000
 const STAY_ON_SERVER_IF_HP_LESS_THAN: number = 5_000_000
 
-const MERCHANT_HOLD_POSITION: IPosition = { map: "main", x: 0, y: 0 }
+const MERCHANT_HOLD_POSITION: IPosition = { map: "hut", x: 0, y: 0 }
 
 let currentRegion: ServerRegion = "US"
 let currentIdentifier: ServerIdentifier = "HARDCORE" // Start on a non-existent server, the first loop will set this to something else
