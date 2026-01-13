@@ -3,7 +3,7 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy, KiteMonsterMoveStrategy } from "../strategies/move.js"
+import { ImprovedMoveStrategy, KiteMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Requirements, Setup } from "./base.js"
 import { MAGE_SPLASH, PRIEST_LUCK, WARRIOR_SPLASH } from "./equipment.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
@@ -52,7 +52,7 @@ export function constructStoneWormSetup(contexts: Strategist<PingCompensatedChar
         move: moveStrategy,
     }
 
-    const soloMoveStrategy = new KiteMonsterMoveStrategy({
+    const soloMoveStrategy = new KiteMoveStrategy({
         contexts: contexts,
         disableCheckDB: true,
         typeList: ["stoneworm"],
@@ -100,7 +100,7 @@ export function constructStoneWormSetup(contexts: Strategist<PingCompensatedChar
 }
 
 export function constructStoneWormHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new KiteMonsterMoveStrategy({
+    const moveStrategy = new KiteMoveStrategy({
         contexts: contexts,
         disableCheckDB: true,
         typeList: ["stoneworm"],

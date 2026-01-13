@@ -9,6 +9,7 @@ import AL, {
     MonsterName,
     Pathfinder,
     PingCompensatedCharacter,
+    Player,
     ServerInfoDataLive,
     SmartMoveOptions,
     Tools,
@@ -951,7 +952,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
     }
 }
 
-export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
+export class KiteMoveStrategy extends SpecialMonsterMoveStrategy {
     public constructor(options: SpecialMonsterMoveStrategyOptions) {
         super(options)
 
@@ -971,16 +972,16 @@ export class KiteMonsterMoveStrategy extends SpecialMonsterMoveStrategy {
         this.kite(bot, entity)
     }
 
-    protected async kite(bot: Character, entity: Entity) {
+    protected kite(bot: Character, entity: Entity | Player) {
         if (bot.map !== entity.map || bot.in !== entity.in) {
             // We're on different maps
-            if (!bot.smartMoving) bot.smartMove(entity, { getWithin: bot.range, useBlink: true })
+            if (!bot.smartMoving) bot.smartMove(entity, { getWithin: bot.range, useBlink: true }).catch(suppress_errors)
             return
         }
 
         // Look for the best position to kite to
         const angleFromEntityToBot = Math.atan2(bot.y - entity.y, bot.x - entity.x)
-        const kiteDistance = Math.min(bot.range, (entity.charge ?? entity.speed ?? 0) + entity.range + 50)
+        const kiteDistance = Math.min(bot.range, ((entity as Entity).charge ?? entity.speed ?? 0) + entity.range + 50)
         const lookDistance = kiteDistance * 1.25
         const NUM_ANGLES = 40
         for (let i = 1; i < NUM_ANGLES; i++) {

@@ -2,7 +2,7 @@ import { PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy, KiteMonsterMoveStrategy } from "../strategies/move.js"
+import { ImprovedMoveStrategy, KiteMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
 import { RETURN_HIGHEST, WARRIOR_SPLASH_WEAPONS, ZAPPER_STRRING } from "./equipment.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
@@ -15,7 +15,7 @@ export function constructMoleSetup(contexts: Strategist<PingCompensatedCharacter
             y: -735,
         },
     })
-    const kiteMoveStrategy = new KiteMonsterMoveStrategy({ contexts: contexts, typeList: ["mole"] })
+    const kiteMoveStrategy = new KiteMoveStrategy({ contexts: contexts, typeList: ["mole"] })
 
     const priestConfig: CharacterConfig = {
         ctype: "priest",

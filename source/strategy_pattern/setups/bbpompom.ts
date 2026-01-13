@@ -3,7 +3,7 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy, KiteMonsterMoveStrategy } from "../strategies/move.js"
+import { ImprovedMoveStrategy, KiteMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
 import { ZAPPER_CRING } from "./equipment.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
@@ -11,7 +11,7 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export function constructBBPomPomSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new ImprovedMoveStrategy("bbpompom")
-    const kiteStrategy = new KiteMonsterMoveStrategy({
+    const kiteStrategy = new KiteMoveStrategy({
         contexts: contexts,
         typeList: ["bbpompom"],
         disableCheckDB: true,

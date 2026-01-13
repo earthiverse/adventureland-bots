@@ -13,6 +13,7 @@ import AL, {
     ServerIdentifier,
     ServerInfoDataLive,
     ServerRegion,
+    Tools,
     Warrior,
 } from "alclient"
 import { Strategist } from "../strategy_pattern/context.js"
@@ -49,13 +50,15 @@ import { RogueAttackStrategy } from "../strategy_pattern/strategies/attack_rogue
 import { PaladinAttackStrategy } from "../strategy_pattern/strategies/attack_paladin.js"
 import {
     GetHolidaySpiritStrategy,
+    KiteMoveStrategy,
     SpecialMonsterMoveStrategy,
     SpreadOutImprovedMoveStrategy,
 } from "../strategy_pattern/strategies/move.js"
-import { mainFrogs } from "../base/locations.js"
+import { mainFrogs, offsetPositionParty } from "../base/locations.js"
 import { BoosterStrategy } from "../strategy_pattern/strategies/booster.js"
 import { checkOnlyEveryMS } from "../base/general.js"
 import { FixStuffStrategy } from "../strategy_pattern/strategies/fixes.js"
+import { suppress_errors } from "../strategy_pattern/logging.js"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
@@ -108,6 +111,20 @@ const CHRISTMAS_IDLE_MONSTER: MonsterName = "tortoise"
 
 /** Christmas monsters, sorted by priority (high -> low) */
 const CHRISTMAS_EVENT_MONSTERS: MonsterName[] = ["grinch", "snowman"]
+
+const NAUGHTY_LIST: string[] = [
+    "YTFAN",
+    "Bonjour",
+    "derped",
+    "trololol",
+    "Knight",
+    "ryaaahs",
+    "pbuffme",
+    "learningad",
+    "merchire",
+    "altfire",
+    "nofreebies",
+]
 
 /** All monsters we're farming */
 const CHRISTMAS_MONSTERS: MonsterName[] = [...CHRISTMAS_EVENT_MONSTERS, "frog", "tortoise", "arcticbee"]
@@ -184,6 +201,17 @@ class MageChristmasAttackStrategy extends MageAttackStrategy {
 
         return super.ensureEquipped(bot)
     }
+
+    protected async attack(bot: Mage): Promise<void> {
+        const naughtyPlayers = [...bot.players.values()].filter((p) => !p.rip && NAUGHTY_LIST.includes(p.id))
+        for (const naughtyPlayer of naughtyPlayers) {
+            if (bot.canUse("attack") && Tools.distance(bot, naughtyPlayer) <= bot.range) {
+                await bot.basicAttack(naughtyPlayer.id).catch(suppress_errors)
+            }
+        }
+
+        return super.attack(bot)
+    }
 }
 const MAGE_ATTACK_STRATEGY = new MageChristmasAttackStrategy({
     contexts: activeStrategists,
@@ -220,6 +248,19 @@ class PaladinChristmasAttackStrategy extends PaladinAttackStrategy {
 
         return super.ensureEquipped(bot)
     }
+
+    protected async attack(bot: Paladin): Promise<void> {
+        if (!this.options.disableSelfHeal) await this.selfHeal(bot)
+
+        const naughtyPlayers = [...bot.players.values()].filter((p) => !p.rip && NAUGHTY_LIST.includes(p.id))
+        for (const naughtyPlayer of naughtyPlayers) {
+            if (bot.canUse("attack") && Tools.distance(bot, naughtyPlayer) <= bot.range) {
+                await bot.basicAttack(naughtyPlayer.id).catch(suppress_errors)
+            }
+        }
+
+        return super.attack(bot)
+    }
 }
 const PALADIN_ATTACK_STRATEGY = new PaladinChristmasAttackStrategy({
     contexts: activeStrategists,
@@ -249,6 +290,23 @@ class PriestChristmasAttackStrategy extends PriestAttackStrategy {
         }
 
         return super.ensureEquipped(bot)
+    }
+
+    protected async attack(bot: Priest): Promise<void> {
+        await this.healFriendsOrSelf(bot).catch(suppress_errors)
+        if (!this.options.disableDarkBlessing) this.applyDarkBlessing(bot).catch(suppress_errors)
+
+        const naughtyPlayers = [...bot.players.values()].filter((p) => !p.rip && NAUGHTY_LIST.includes(p.id))
+        for (const naughtyPlayer of naughtyPlayers) {
+            if (bot.canUse("curse") && Tools.distance(bot, naughtyPlayer) <= AL.Game.G.skills.curse.range) {
+                await bot.curse(naughtyPlayer.id).catch(suppress_errors)
+            }
+            if (bot.canUse("attack") && Tools.distance(bot, naughtyPlayer) <= bot.range) {
+                await bot.basicAttack(naughtyPlayer.id).catch(suppress_errors)
+            }
+        }
+
+        return super.attack(bot)
     }
 }
 const PRIEST_ATTACK_STRATEGY = new PriestChristmasAttackStrategy({
@@ -288,6 +346,29 @@ class RangerChristmasAttackStrategy extends RangerAttackStrategy {
         }
 
         return super.ensureEquipped(bot)
+    }
+
+    protected async attack(bot: Ranger): Promise<void> {
+        const naughtyPlayers = [...bot.players.values()].filter((p) => !p.rip && NAUGHTY_LIST.includes(p.id))
+        for (const naughtyPlayer of naughtyPlayers) {
+            if (
+                bot.canUse("huntersmark") &&
+                Tools.distance(bot, naughtyPlayer) <= bot.range * AL.Game.G.skills.huntersmark.range_multiplier
+            ) {
+                await bot.huntersMark(naughtyPlayer.id).catch(suppress_errors)
+            }
+            if (bot.canUse("attack") && Tools.distance(bot, naughtyPlayer) <= bot.range) {
+                await bot.basicAttack(naughtyPlayer.id).catch(suppress_errors)
+            }
+            if (
+                bot.canUse("supershot") &&
+                Tools.distance(bot, naughtyPlayer) <= bot.range * AL.Game.G.skills.supershot.range_multiplier
+            ) {
+                await bot.superShot(naughtyPlayer.id).catch(suppress_errors)
+            }
+        }
+
+        return super.attack(bot)
     }
 }
 const RANGER_ATTACK_STRATEGY = new RangerChristmasAttackStrategy({
@@ -331,6 +412,30 @@ class RogueChristmasAttackStrategy extends RogueAttackStrategy {
 
         return super.ensureEquipped(bot)
     }
+
+    protected async attack(bot: Rogue): Promise<void> {
+        const naughtyPlayers = [...bot.players.values()].filter((p) => !p.rip && NAUGHTY_LIST.includes(p.id))
+        for (const naughtyPlayer of naughtyPlayers) {
+            if (bot.canUse("quickpunch") && Tools.distance(bot, naughtyPlayer) <= bot.range) {
+                await bot.quickPunch(naughtyPlayer.id).catch(suppress_errors)
+            }
+            if (bot.canUse("quickstab") && Tools.distance(bot, naughtyPlayer) <= bot.range) {
+                await bot.quickStab(naughtyPlayer.id).catch(suppress_errors)
+            }
+            if (bot.canUse("attack") && Tools.distance(bot, naughtyPlayer) <= bot.range) {
+                await bot.basicAttack(naughtyPlayer.id).catch(suppress_errors)
+            }
+            if (
+                bot.canUse("mentalburst") &&
+                Tools.distance(bot, naughtyPlayer) <= bot.range * AL.Game.G.skills.mentalburst.range_multiplier &&
+                naughtyPlayer.hp < bot.attack * 0.1
+            ) {
+                await bot.mentalBurst(naughtyPlayer.id).catch(suppress_errors)
+            }
+        }
+
+        return super.attack(bot)
+    }
 }
 const ROGUE_ATTACK_STRATEGY = new RogueChristmasAttackStrategy({
     contexts: activeStrategists,
@@ -370,6 +475,17 @@ class WarriorChristmasAttackStrategy extends WarriorAttackStrategy {
 
         return super.ensureEquipped(bot)
     }
+
+    protected async attack(bot: Warrior): Promise<void> {
+        const naughtyPlayers = [...bot.players.values()].filter((p) => !p.rip && NAUGHTY_LIST.includes(p.id))
+        for (const naughtyPlayer of naughtyPlayers) {
+            if (bot.canUse("attack") && Tools.distance(bot, naughtyPlayer) <= bot.range) {
+                await bot.basicAttack(naughtyPlayer.id).catch(suppress_errors)
+            }
+        }
+
+        return super.attack(bot)
+    }
 }
 const WARRIOR_ATTACK_STRATEGY = new WarriorChristmasAttackStrategy({
     contexts: activeStrategists,
@@ -390,6 +506,20 @@ const WARRIOR_ATTACK_STRATEGY = new WarriorChristmasAttackStrategy({
     typeList: CHRISTMAS_MONSTERS,
 })
 
+class NaughtyMoveStrategy extends KiteMoveStrategy {
+    protected move(bot: Character): Promise<IPosition> {
+        const naughtyPlayers = [...bot.players.values()].filter((p) => !p.rip && NAUGHTY_LIST.includes(p.id))
+        if (naughtyPlayers.length > 0) {
+            naughtyPlayers.sort((a, b) => Tools.distance(bot, a) - Tools.distance(bot, b))
+            this.kite(bot, naughtyPlayers[0])
+            return
+        }
+        if (!bot.smartMoving) {
+            bot.smartMove(offsetPositionParty({ map: "main", x: 0, y: 0 }, bot, 20)).catch(suppress_errors)
+        }
+    }
+}
+
 class GrinchMoveStrategy extends SpecialMonsterMoveStrategy {
     protected move(bot: Character): Promise<IPosition> {
         const map = (bot.S.grinch as ServerInfoDataLive).map
@@ -400,6 +530,7 @@ class GrinchMoveStrategy extends SpecialMonsterMoveStrategy {
     }
 }
 
+const NAUGHTY_MOVE_STRATEGY = new NaughtyMoveStrategy({ contexts: activeStrategists, typeList: ["grinch", "snowman"] })
 const HOLIDAY_SPIRIT_STRATEGY = new GetHolidaySpiritStrategy()
 const GRINCH_MOVE_STRATEGY = new GrinchMoveStrategy({ contexts: activeStrategists, typeList: ["grinch"] })
 const SNOWMAN_MOVE_STRATEGY = new SpecialMonsterMoveStrategy({ contexts: activeStrategists, typeList: ["snowman"] })
@@ -637,9 +768,42 @@ const logicLoop = async () => {
             return
         }
 
+        // Naughty list
+        let naughtyPlayer: string | false = false
+        naughtySearch: for (const strategist of activeStrategists) {
+            if (!strategist.bot.isPVP()) continue
+            for (const player of strategist.bot.players.values()) {
+                if (!NAUGHTY_LIST.includes(player.name)) continue // Not naughty
+                if (player.rip) continue // Dead
+
+                naughtyPlayer = player.name
+                break naughtySearch
+            }
+        }
+        if (naughtyPlayer) {
+            // TODO: Attack them
+            console.warn(`Naughty player detected: ${naughtyPlayer}`)
+            for (const strategist of activeStrategists) {
+                if (strategist.bot.ctype === "merchant") continue // Merchant does their own thing
+
+                // Remove holiday strategies
+                if (strategist.hasStrategy(TORTOISE_MOVE_STRATEGY)) strategist.removeStrategy(TORTOISE_MOVE_STRATEGY)
+                if (strategist.hasStrategy(GRINCH_MOVE_STRATEGY)) strategist.removeStrategy(GRINCH_MOVE_STRATEGY)
+                if (strategist.hasStrategy(SNOWMAN_MOVE_STRATEGY)) strategist.removeStrategy(SNOWMAN_MOVE_STRATEGY)
+                if (strategist.hasStrategy(HOLIDAY_SPIRIT_STRATEGY)) strategist.removeStrategy(HOLIDAY_SPIRIT_STRATEGY)
+
+                // Apply naughty strategies
+                if (!strategist.hasStrategy(NAUGHTY_MOVE_STRATEGY)) strategist.applyStrategy(NAUGHTY_MOVE_STRATEGY)
+            }
+            return
+        }
+
         // Same characters, just ensure we're using the correct strategies
         for (const strategist of activeStrategists) {
             if (strategist.bot.ctype === "merchant") continue // Merchant does their own thing
+
+            if (strategist.hasStrategy(NAUGHTY_MOVE_STRATEGY)) strategist.removeStrategy(NAUGHTY_MOVE_STRATEGY)
+
             if (strategist.bot.S.holidayseason && !strategist.bot.s.holidayspirit) {
                 if (strategist.hasStrategy(TORTOISE_MOVE_STRATEGY)) strategist.removeStrategy(TORTOISE_MOVE_STRATEGY)
                 if (strategist.hasStrategy(GRINCH_MOVE_STRATEGY)) strategist.removeStrategy(GRINCH_MOVE_STRATEGY)

@@ -1,9 +1,20 @@
-import AL, { Character, Entity, GetEntityFilters, IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Rogue, Warrior } from "alclient"
+import AL, {
+    Character,
+    Entity,
+    GetEntityFilters,
+    IPosition,
+    Mage,
+    MonsterName,
+    PingCompensatedCharacter,
+    Priest,
+    Rogue,
+    Warrior,
+} from "alclient"
 import { Strategist, filterContexts } from "../context.js"
 import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy, PriestAttackStrategyOptions } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy, WarriorAttackStrategyOptions } from "../strategies/attack_warrior.js"
-import { KiteMonsterMoveStrategy } from "../strategies/move.js"
+import { KiteMoveStrategy } from "../strategies/move.js"
 import { Requirements, Setup } from "./base.js"
 import { RETURN_HIGHEST } from "./equipment.js"
 import { offsetPositionParty } from "../../base/locations.js"
@@ -13,15 +24,15 @@ import { RogueAttackStrategy, RogueAttackStrategyOptions } from "../strategies/a
 const CRYPT_MONSTERS: MonsterName[] = ["zapper0", "vbat", "nerfedbat", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8"]
 const CRYPT_PRIORITY: MonsterName[] = ["a5", "a6", "a8", "a3", "a2", "a7", "a4", "a1", "vbat"]
 
-class CryptMoveStratey extends KiteMonsterMoveStrategy {
+class CryptMoveStratey extends KiteMoveStrategy {
     public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {
         super({
             contexts: contexts,
-            typeList: CRYPT_MONSTERS
+            typeList: CRYPT_MONSTERS,
         })
 
         // Only include crypt map positions
-        this.spawns = this.spawns.filter(p => p.map === "crypt")
+        this.spawns = this.spawns.filter((p) => p.map === "crypt")
     }
 
     protected async move(bot: Character): Promise<IPosition> {
@@ -52,7 +63,7 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
                     bot.smartMove(offsetPositionParty(entity, bot)).catch(suppress_errors)
                 } else if (!entity.target) {
                     // Move within attacking range
-                    this.kite(bot, entity).catch(suppress_errors)
+                    this.kite(bot, entity)
                 } else {
                     const otherEntity = bot.getEntity({ notTypeList: ["a5", "vbat"], returnNearest: true })
                     if (otherEntity) {
@@ -60,13 +71,13 @@ class CryptMoveStratey extends KiteMonsterMoveStrategy {
                         bot.smartMove(offsetPositionParty(otherEntity, bot)).catch(suppress_errors)
                     } else {
                         // Kite until we find another monster
-                        this.kite(bot, entity).catch(suppress_errors)
+                        this.kite(bot, entity)
                     }
                 }
             } else if (entity.type == "a1" || entity.type == "a4" || entity.type == "vbat") {
                 bot.smartMove(offsetPositionParty(entity, bot)).catch(suppress_errors)
             } else {
-                this.kite(bot, entity).catch(suppress_errors)
+                this.kite(bot, entity)
             }
             return
         }
@@ -100,9 +111,12 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
 
     protected async attack(bot: Mage): Promise<void> {
         const nearbyEntities = bot.getEntities({ withinRange: Math.max(bot.range, 250) })
-        if (nearbyEntities.length && nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat" || e.type == "vbat"))) {
+        if (
+            nearbyEntities.length &&
+            nearbyEntities.every((e) => e.type === "a1" || e.type === "nerfedbat" || e.type == "vbat")
+        ) {
             // Disable scare if only a1 is around and we have a lot of hp
-            this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
+            this.options.disableScare = bot.hp > bot.max_hp / 2 ? true : undefined
             delete this.options.maximumTargets
         } else {
             // Opposite of what is above
@@ -122,12 +136,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
             const entity = bot.getEntity(filter)
             if (!entity) continue // This entity isn't around
 
-            if (
-                !nearbyPriest
-                && bot.hp < bot.max_hp / 2
-                && entity.target == bot.id
-                && !entity.immune
-            ) {
+            if (!nearbyPriest && bot.hp < bot.max_hp / 2 && entity.target == bot.id && !entity.immune) {
                 if (bot.canUse("scare")) await bot.scare().catch(suppress_errors)
                 return
             }
@@ -153,7 +162,7 @@ class MageCryptAttackStrategy extends MageAttackStrategy {
 
                 // Scare zapper0s if they're only targeting us
                 const zapper0s = bot.getEntities({ type: "zapper0" })
-                if (zapper0s.length && zapper0s.every(e => e.target == bot.id) && bot.canUse("scare")) {
+                if (zapper0s.length && zapper0s.every((e) => e.target == bot.id) && bot.canUse("scare")) {
                     for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
                     await bot.scare()
                 }
@@ -194,9 +203,12 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
 
     protected async attack(bot: Priest): Promise<void> {
         const nearbyEntities = bot.getEntities({ withinRange: Math.max(bot.range, 250) })
-        if (nearbyEntities.length && nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat" || e.type === "vbat"))) {
+        if (
+            nearbyEntities.length &&
+            nearbyEntities.every((e) => e.type === "a1" || e.type === "nerfedbat" || e.type === "vbat")
+        ) {
             // Disable scare if only a1 is around and we have a lot of hp
-            this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
+            this.options.disableScare = bot.hp > bot.max_hp / 2 ? true : undefined
             delete this.options.maximumTargets
         } else {
             // Opposite of what is above
@@ -236,13 +248,13 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                 // Scare zapper0s if they're only targeting us
                 const zapper0s = bot.getEntities({ type: "zapper0" })
                 if (zapper0s.length && bot.canUse("scare")) {
-                    if (zapper0s.every(e => e.target == bot.id)) {
+                    if (zapper0s.every((e) => e.target == bot.id)) {
                         // Every zapper0 is targeting us
                         for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
                         await bot.scare().catch(suppress_errors)
                     } else if (
-                        zapper0s.every(e => e.target == zapper0s[0].target)
-                        && bot.mp >= (AL.Game.G.skills.absorb.mp + AL.Game.G.skills.scare.mp)
+                        zapper0s.every((e) => e.target == zapper0s[0].target) &&
+                        bot.mp >= AL.Game.G.skills.absorb.mp + AL.Game.G.skills.scare.mp
                     ) {
                         // Every zapper0 is targeting one player
                         for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
@@ -265,8 +277,8 @@ class PriestCryptAttackStrategy extends PriestAttackStrategy {
                 // Curse Elena's target to slow it down and allow Elena to follow it better
                 const focusedEntity = bot.entities.get(entity.focus)
                 if (
-                    AL.Tools.distance(entity, focusedEntity) > (entity.range * 0.75) // It's far away
-                    && AL.Tools.distance(bot, focusedEntity) < bot.range
+                    AL.Tools.distance(entity, focusedEntity) > entity.range * 0.75 && // It's far away
+                    AL.Tools.distance(bot, focusedEntity) < bot.range
                 ) {
                     await bot.curse(focusedEntity.id).catch(suppress_errors)
                 }
@@ -304,9 +316,12 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
 
     protected async attack(bot: Warrior): Promise<void> {
         const nearbyEntities = bot.getEntities({ withinRange: Math.max(bot.range, 250) })
-        if (nearbyEntities.length && nearbyEntities.every(e => (e.type === "a1" || e.type === "nerfedbat" || e.type === "vbat"))) {
+        if (
+            nearbyEntities.length &&
+            nearbyEntities.every((e) => e.type === "a1" || e.type === "nerfedbat" || e.type === "vbat")
+        ) {
             // Disable scare if only a1 is around and we have a lot of hp
-            this.options.disableScare = bot.hp > (bot.max_hp / 2) ? true : undefined
+            this.options.disableScare = bot.hp > bot.max_hp / 2 ? true : undefined
             delete this.options.maximumTargets
             delete this.options.enableGreedyAggro
 
@@ -335,12 +350,7 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
             const entity = bot.getEntity(filter)
             if (!entity) continue // This entity isn't around
 
-            if (
-                !nearbyPriest
-                && bot.hp < bot.max_hp / 2
-                && entity.target == bot.id
-                && !entity.immune
-            ) {
+            if (!nearbyPriest && bot.hp < bot.max_hp / 2 && entity.target == bot.id && !entity.immune) {
                 if (bot.canUse("scare")) await bot.scare()
                 return
             }
@@ -357,11 +367,11 @@ class WarriorCryptAttackStrategy extends WarriorAttackStrategy {
                 // Scare zapper0s if they're only targeting us
                 const zapper0s = bot.getEntities({ type: "zapper0" })
                 if (zapper0s.length && bot.canUse("scare")) {
-                    if (zapper0s.every(e => e.target == bot.id)) {
+                    if (zapper0s.every((e) => e.target == bot.id)) {
                         // Every zapper0 is targeting us
                         for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
                         await bot.scare()
-                    } else if (bot.mp >= (AL.Game.G.skills.agitate.mp + AL.Game.G.skills.scare.mp)) {
+                    } else if (bot.mp >= AL.Game.G.skills.agitate.mp + AL.Game.G.skills.scare.mp) {
                         // Get all targets on us, then scare
                         for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
                         await bot.agitate()
@@ -393,14 +403,14 @@ export function constructCryptSetup(contexts: Strategist<PingCompensatedCharacte
                         attack: new MageCryptAttackStrategy({
                             contexts: contexts,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "priest",
                         attack: new PriestCryptAttackStrategy({
                             contexts: contexts,
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "warrior",
@@ -409,24 +419,24 @@ export function constructCryptSetup(contexts: Strategist<PingCompensatedCharacte
                             enableEquipForCleave: true,
                             enableEquipForStomp: true,
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
 
-class CryptHelperMoveStratey extends KiteMonsterMoveStrategy {
+class CryptHelperMoveStratey extends KiteMoveStrategy {
     public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {
         super({
             contexts: contexts,
             disableCheckDB: true,
-            typeList: CRYPT_MONSTERS
+            typeList: CRYPT_MONSTERS,
         })
 
         // Only include crypt map positions
-        this.spawns = this.spawns.filter(p => p.map === "crypt")
+        this.spawns = this.spawns.filter((p) => p.map === "crypt")
     }
 
     protected async move(bot: Character): Promise<IPosition> {
@@ -434,9 +444,14 @@ class CryptHelperMoveStratey extends KiteMonsterMoveStrategy {
 
         // Kite any close monster, except a1
         if (!bot.moving) {
-            const closeEntity = bot.getEntity({ typeList: CRYPT_MONSTERS, notTypeList: ["a1", "nerfedbat"], returnNearest: true, withinRange: bot.range / 2 })
+            const closeEntity = bot.getEntity({
+                typeList: CRYPT_MONSTERS,
+                notTypeList: ["a1", "nerfedbat"],
+                returnNearest: true,
+                withinRange: bot.range / 2,
+            })
             if (closeEntity) {
-                this.kite(bot, closeEntity).catch(suppress_errors)
+                this.kite(bot, closeEntity)
                 return
             }
         }
@@ -461,7 +476,7 @@ class CryptHelperMoveStratey extends KiteMonsterMoveStrategy {
             if (entity.type === "a1") {
                 bot.smartMove(offsetPositionParty(entity, bot)).catch(suppress_errors)
             } else {
-                this.kite(bot, entity).catch(suppress_errors)
+                this.kite(bot, entity)
             }
 
             return
@@ -489,12 +504,7 @@ class RogueCryptHelperAttackStrategy extends RogueAttackStrategy {
             const entity = bot.getEntity(filter)
             if (!entity) continue // This entity isn't around
 
-            if (
-                !nearbyPriest
-                && bot.hp < bot.max_hp / 2
-                && entity.target == bot.id
-                && !entity.immune
-            ) {
+            if (!nearbyPriest && bot.hp < bot.max_hp / 2 && entity.target == bot.id && !entity.immune) {
                 if (bot.canUse("scare")) await bot.scare()
                 return
             }
@@ -518,7 +528,7 @@ class RogueCryptHelperAttackStrategy extends RogueAttackStrategy {
                 // Scare zapper0s if they're only targeting us
                 const zapper0s = bot.getEntities({ type: "zapper0" })
                 if (zapper0s.length && bot.canUse("scare")) {
-                    if (zapper0s.every(e => e.target == bot.id)) {
+                    if (zapper0s.every((e) => e.target == bot.id)) {
                         // Every zapper0 is targeting us
                         for (const zapper0 of zapper0s) this.preventOverkill(bot, zapper0)
                         await bot.scare()
@@ -544,7 +554,7 @@ export function constructCryptHelperSetup(contexts: Strategist<PingCompensatedCh
             "firestars", // Needed to attack monsters
             "jacko", // Needed to scare
             "snowflakes", // Needed to slow down and kite monsters
-        ]
+        ],
     }
 
     return {
@@ -554,23 +564,22 @@ export function constructCryptHelperSetup(contexts: Strategist<PingCompensatedCh
                 characters: [
                     {
                         ctype: "rogue",
-                        attack: new RogueCryptHelperAttackStrategy(
-                            {
-                                contexts: contexts,
-                                generateEnsureEquipped: {
-                                    attributes: ["armor", "str"],
-                                    prefer: {
-                                        mainhand: { name: "firestars", filters: { returnHighestLevel: true } },
-                                        offhand: { name: "snowflakes", filters: { returnHighestLevel: true } },
-                                        orb: { name: "jacko", filters: { returnHighestLevel: true } }
-                                    }
-                                }
-                            }),
+                        attack: new RogueCryptHelperAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str"],
+                                prefer: {
+                                    mainhand: { name: "firestars", filters: { returnHighestLevel: true } },
+                                    offhand: { name: "snowflakes", filters: { returnHighestLevel: true } },
+                                    orb: { name: "jacko", filters: { returnHighestLevel: true } },
+                                },
+                            },
+                        }),
                         move: moveStrategy,
-                        require: requirements
-                    }
-                ]
-            }
-        ]
+                        require: requirements,
+                    },
+                ],
+            },
+        ],
     }
 }

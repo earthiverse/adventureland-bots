@@ -1,5 +1,5 @@
 import { IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Tools, Warrior } from "alclient"
-import { KiteMonsterMoveStrategy } from "../strategies/move.js"
+import { KiteMoveStrategy } from "../strategies/move.js"
 import { Strategist, filterContexts } from "../context.js"
 import { offsetPositionParty, winterlandXmageEntrance } from "../../base/locations.js"
 import { MageAttackStrategy, MageAttackStrategyOptions } from "../strategies/attack_mage.js"
@@ -15,7 +15,7 @@ import { generateEnsureEquipped } from "./equipment.js"
 export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xmagefz"]
 export const DOWNTIME_MONSTERS: MonsterName[] = ["snowman", "arcticbee"]
 
-class XMageMoveStrategy extends KiteMonsterMoveStrategy {
+class XMageMoveStrategy extends KiteMoveStrategy {
     public static activeBots = new Map<string, PingCompensatedCharacter>()
 
     public constructor(contexts: Strategist<PingCompensatedCharacter>[], disableCheckDB?: true) {

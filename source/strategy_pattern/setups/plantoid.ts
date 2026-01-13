@@ -3,7 +3,7 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { HoldPositionMoveStrategy, KiteMonsterMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
+import { HoldPositionMoveStrategy, KiteMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Requirements, Setup } from "./base"
 import { MAGE_SPLASH_WEAPONS, MAGE_SPLASH, ZAPPER_CRING, ZAPPER_STRRING, WARRIOR_SPLASH_WEAPONS } from "./equipment.js"
 
@@ -13,7 +13,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
         range: AL.Game.G.monsters.plantoid.range + 50,
         speed: AL.Game.G.monsters.plantoid.charge,
     }
-    const kiteMoveStrategy = new KiteMonsterMoveStrategy({
+    const kiteMoveStrategy = new KiteMoveStrategy({
         contexts: contexts,
         disableCheckDB: true,
         typeList: ["plantoid"],

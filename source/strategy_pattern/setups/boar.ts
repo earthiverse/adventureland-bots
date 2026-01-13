@@ -4,13 +4,13 @@ import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { KiteMonsterMoveStrategy, SpreadOutImprovedMoveStrategy } from "../strategies/move.js"
+import { KiteMoveStrategy, SpreadOutImprovedMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
 import { RETURN_HIGHEST } from "./equipment.js"
 
 export function constructBoarSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const moveStrategy = new SpreadOutImprovedMoveStrategy("boar")
-    const kiteMoveStrategy = new KiteMonsterMoveStrategy({ contexts: contexts, typeList: ["boar"] })
+    const kiteMoveStrategy = new KiteMoveStrategy({ contexts: contexts, typeList: ["boar"] })
 
     const mageConfig: CharacterConfig = {
         ctype: "mage",

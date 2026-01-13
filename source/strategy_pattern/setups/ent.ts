@@ -6,7 +6,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { HoldPositionMoveStrategy, KiteMonsterMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
+import { HoldPositionMoveStrategy, KiteMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 
 export function constructEntSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
@@ -23,13 +23,13 @@ export function constructEntSetup(contexts: Strategist<PingCompensatedCharacter>
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "int", "blast", "explosion"]
+                                attributes: ["armor", "int", "blast", "explosion"],
                             },
                             maximumTargets: 0,
                             targetingPartyMember: true,
                             type: "ent",
                         }),
-                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } })
+                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } }),
                     },
                     {
                         ctype: "priest",
@@ -37,13 +37,13 @@ export function constructEntSetup(contexts: Strategist<PingCompensatedCharacter>
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "int", "attack"]
+                                attributes: ["armor", "int", "attack"],
                             },
                             maximumTargets: 0,
                             targetingPartyMember: true,
                             type: "ent",
                         }),
-                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } })
+                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } }),
                     },
                     {
                         ctype: "warrior",
@@ -51,20 +51,20 @@ export function constructEntSetup(contexts: Strategist<PingCompensatedCharacter>
                             contexts: contexts,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "str", "blast", "explosion"]
+                                attributes: ["armor", "str", "blast", "explosion"],
                             },
                             type: "ent",
                         }),
-                        move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 })
-                    }
-                ]
+                        move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 }),
+                    },
+                ],
             },
-        ]
+        ],
     }
 }
 
 export function constructEntHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new KiteMonsterMoveStrategy({ typeList: ["ent"] })
+    const moveStrategy = new KiteMoveStrategy({ typeList: ["ent"] })
 
     return {
         configs: [
@@ -77,11 +77,11 @@ export function constructEntHelperSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             type: "ent",
                             hasTarget: true,
-                            maximumTargets: 0
+                            maximumTargets: 0,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "ent_paladin",
@@ -92,11 +92,11 @@ export function constructEntHelperSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             type: "ent",
                             hasTarget: true,
-                            maximumTargets: 0
+                            maximumTargets: 0,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "ent_priest",
@@ -108,11 +108,11 @@ export function constructEntHelperSetup(contexts: Strategist<PingCompensatedChar
                             disableAbsorb: true,
                             type: "ent",
                             hasTarget: true,
-                            maximumTargets: 0
+                            maximumTargets: 0,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "ent_ranger",
@@ -123,11 +123,11 @@ export function constructEntHelperSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             type: "ent",
                             hasTarget: true,
-                            maximumTargets: 0
+                            maximumTargets: 0,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "ent_rogue",
@@ -138,11 +138,11 @@ export function constructEntHelperSetup(contexts: Strategist<PingCompensatedChar
                             contexts: contexts,
                             type: "ent",
                             hasTarget: true,
-                            maximumTargets: 0
+                            maximumTargets: 0,
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "ent_warrior",
@@ -155,12 +155,12 @@ export function constructEntHelperSetup(contexts: Strategist<PingCompensatedChar
                             disableCleave: true,
                             type: "ent",
                             hasTarget: true,
-                            maximumTargets: 0
+                            maximumTargets: 0,
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
