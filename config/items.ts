@@ -127,13 +127,34 @@ export const HOLD_FULL_STACK: ItemConfig = Object.freeze({
   hold: Object.freeze({ characterTypes: "all", replenish: 9999 }),
 });
 export const SELL_TO_NPC: ItemConfig = Object.freeze({ sell: Object.freeze({ sellPrice: "npc" }) });
-/** slots other than rings or earrings */
-export const UPGRADE_ONE_SLOT: ItemConfig = Object.freeze({
-  upgrade: Object.freeze({ upgradeUntilLevel: 9, upgradeSpecial: true, minTotalQuantity: 4 }),
+
+export const COMPOUND_ONE_SLOT: ItemConfig = Object.freeze({
+  upgrade: Object.freeze({
+    upgradeUntilLevel: 5,
+    upgradeSpecial: true,
+    minTotalQuantity: 3, // Enough for 3 characters
+  }),
 });
-/** rings or earrings */
+export const COMPOUND_TWO_SLOTS: ItemConfig = Object.freeze({
+  upgrade: Object.freeze({
+    upgradeUntilLevel: 5,
+    upgradeSpecial: true,
+    minTotalQuantity: 6, // Enough for 3 characters
+  }),
+});
+export const UPGRADE_ONE_SLOT: ItemConfig = Object.freeze({
+  upgrade: Object.freeze({
+    upgradeUntilLevel: 10,
+    upgradeSpecial: true,
+    minTotalQuantity: 3, // Enough for 3 characters
+  }),
+});
 export const UPGRADE_TWO_SLOTS: ItemConfig = Object.freeze({
-  upgrade: Object.freeze({ upgradeUntilLevel: 9, upgradeSpecial: true, minTotalQuantity: 7 }),
+  upgrade: Object.freeze({
+    upgradeUntilLevel: 10,
+    upgradeSpecial: true,
+    minTotalQuantity: 6, // Enough for 3 characters
+  }),
 });
 
 const itemsConfig: ItemsConfig = {
@@ -174,6 +195,10 @@ const itemsConfig: ItemsConfig = {
   lostearring: {
     exchange: {
       exchangeAtLevel: 2,
+    },
+    upgrade: {
+      upgradeUntilLevel: 2,
+      upgradeSpecial: true,
     },
   },
   mpot1: {
@@ -219,6 +244,7 @@ const itemsConfig: ItemsConfig = {
     },
     upgrade: {
       upgradeUntilLevel: 2,
+      upgradeSpecial: true,
     },
   },
 };

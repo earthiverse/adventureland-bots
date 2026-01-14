@@ -1,6 +1,6 @@
-import type { Character } from "alclient";
+import { Utilities, type Character } from "alclient";
 import type { DismantleKey, GData, ItemInfo, ItemKey } from "typed-adventureland";
-import Config, { type Price } from "../../config/items.js";
+import Config, { type ItemsConfig, type Price } from "../../config/items.js";
 import {
   buyForProfit,
   buyKeys,
@@ -11,11 +11,13 @@ import {
   ensureSellPriceAtLeastNpcPrice,
   removeDestroyableWithoutBenefit,
   removeNonDismantlable,
+  removeNonUpgradable,
   removeUncraftable,
   removeUnexchangable,
 } from "./items/adjust.js";
 import { getTotalItemCount } from "./items/counts.js";
 import { isPurchasableFromNpc } from "./items/npc.js";
+import { calculateUpgrade } from "./items/upgrade.js";
 import { logError } from "./logging.js";
 
 export function calculateItemValue(item: ItemInfo, g: GData, multiplier = 1): number {
@@ -202,6 +204,57 @@ export function getCraftableItems(
   return craftableItems;
 }
 
+/**
+ * @returns what scroll and/or offering we should use next for the given item
+ */
+export async function getNextUpgradeParams(
+  character: Character,
+  itemPos: number,
+  g: GData,
+  config: ItemsConfig = Config,
+): Promise<
+  | {
+      scroll?: ItemKey;
+      offering?: ItemKey;
+    }
+  | undefined
+> {
+  const item = character.items[itemPos];
+  if (!item) throw new Error(`No items in position ${itemPos}`);
+
+  const grade = Utilities.getItemGrade(item, g);
+  const scroll = `scroll${grade}` as ItemKey;
+  const scrollPos = character.locateItem({ name: scroll });
+  if (scrollPos === undefined) return undefined; // We don't have scroll
+
+  // Calculate grace
+  const graceData = await character.upgrade(itemPos, undefined, undefined, { calculate: true });
+  const grace = graceData.grace;
+
+  // Calculate best path
+  const initialValue =
+    config[item.name]?.upgrade?.upgradeValue ??
+    config[item.name]?.buy?.buyPrice as number ??
+    config[item.name]?.sell?.sellPrice as number ??
+    g.items[item.name].g;
+  
+  const results: { [T in number]: ReturnType<typeof calculateUpgrade> } = {
+    1: calculateUpgrade({ name: item.name, level: 0 }, grace, initialValue, g),
+  };
+  for (let level = 1; level < (item.level ?? 0) + 1; level++) {
+    const lastResults = results[level]!;
+    const nextUpgrade = calculateUpgrade({ name: item.name, level }, lastResults.grace, lastResults.cost, g);
+
+    results[level + 1] = nextUpgrade;
+  }
+
+  const result = results[(item.level ?? 0) + 1];
+  if (result === undefined) return undefined;
+  if (result.numStacks > 0) return { offering: "offeringp" }; // Want to increase grace
+
+  return { scroll: result.scroll, offering: result.offering };
+}
+
 export function wantToBuy(item: ItemInfo, canBuyForPrice: number, g: GData, config = Config): boolean {
   const itemConfig = config[item.name]?.buy;
   if (!itemConfig) return false; // No buy config
@@ -340,11 +393,11 @@ export function wantToMail(item: ItemInfo, config = Config): boolean {
   return true;
 }
 
-export function wantToReplenish(character: Character, item: ItemInfo, config = Config): number {
-  if (!wantToHold(character, item)) return 0;
+export function wantToReplenish(character: Character, item: ItemInfo, config = Config): number | false {
+  if (!wantToHold(character, item)) return false;
 
   const itemConfig = config[item.name]!.hold;
-  if (itemConfig?.replenish === undefined) return 0; // We don't want to replenish this item
+  if (itemConfig?.replenish === undefined) return false; // We don't want to replenish this item
 
   return Math.max(0, itemConfig.replenish - character.countItems({ name: item.name }));
 }
@@ -380,6 +433,46 @@ export function wantToSell(item: ItemInfo, g: GData, canSellForPrice: Price = "n
   return true; // We're OK selling this item for this price
 }
 
+/**
+ * @param item
+ * @param config
+ * @returns true if we want to make the item shiny before upgrading
+ */
+export function wantToMakeShiny(item: ItemInfo, config = Config) {
+  if (item.p !== undefined) return false; // Item is already special
+  if (item.l !== undefined) return false; // We can't upgrade locked items
+  if (item.level !== undefined && item.level > 0) return false; // We can't make leveled items shiny
+
+  const itemConfig = config[item.name]?.upgrade;
+  if (!itemConfig) return false; // We have no upgrade config for this item
+  if (!itemConfig.makeShinyBeforeUpgrading) return false;
+
+  return true;
+}
+
+/**
+ * @param character
+ * @param item
+ * @param g
+ * @param config
+ * @returns true if we want to upgrade or compound the item, false otherwise
+ */
+export function wantToUpgrade(item: ItemInfo, g: GData, config = Config): boolean {
+  if (item.l !== undefined) return false; // We can't upgrade locked items
+
+  const itemConfig = config[item.name]?.upgrade;
+  if (!itemConfig) return false; // We have no upgrade config for this item
+  if (wantToMakeShiny(item, config)) return false; // We want to make it shiny first
+  if (itemConfig.upgradeUntilLevel !== undefined && (item.level ?? 0) >= itemConfig.upgradeUntilLevel) return false; // Don't upgrade anymore
+  if (itemConfig.minTotalQuantity !== undefined && getTotalItemCount(item.name) <= itemConfig.minTotalQuantity)
+    return false; // We don't have enough
+
+  const grade = Utilities.getItemGrade(item, g);
+  if (grade === undefined || grade >= 4) return false; // Not upgradable
+
+  return true;
+}
+
 export function adjustItemConfig(
   config = Config,
   g: GData,
@@ -394,6 +487,7 @@ export function adjustItemConfig(
   ensureBuyPriceLessThanSellPrice(config);
   removeDestroyableWithoutBenefit(config, g);
   removeNonDismantlable(config, g);
+  removeNonUpgradable(config, g);
   removeUncraftable(config, g);
   removeUnexchangable(config, g);
 }

@@ -10,7 +10,7 @@ import { setup as regenSetup } from "../setups/regen/simple.js";
 // Plugins
 import type { ServerKey } from "typed-adventureland";
 import "../plugins/auto_reconnect.js";
-import ServerData from "../plugins/data_tracker.js";
+import { serverData as SERVER_DATA } from "../plugins/data_tracker.js";
 import "../plugins/g_cache.js";
 import { getGFromCache } from "../plugins/g_cache.js";
 import "../plugins/party.js";
@@ -85,7 +85,7 @@ const logicLoop = async () => {
 
     // Add monsters we're checking for
     for (const serverKey of checkServers) {
-      const serverData = ServerData.get(serverKey);
+      const serverData = SERVER_DATA.get(serverKey);
       if (serverData === undefined) continue; // No data for this server
 
       for (const monsterKey of checkMonsters) {

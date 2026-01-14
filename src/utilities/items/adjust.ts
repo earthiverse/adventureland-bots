@@ -1,3 +1,4 @@
+import { Utilities } from "alclient";
 import type { DismantleKey, GData, ItemKey } from "typed-adventureland";
 import type { ItemsConfig, Price } from "../../../config/items.js";
 import { calculateNpcBuyPrice, calculatePrice, wantToList, wantToSell } from "../items.js";
@@ -222,6 +223,27 @@ export function removeNonDismantlable(config: ItemsConfig, g: GData) {
       logError(`Item ${name} is not dismantlable, but has a dismantle config`);
       delete itemConfig.dismantle;
       continue;
+    }
+  }
+}
+
+export function removeNonUpgradable(config: ItemsConfig, g: GData) {
+  for (const name of Object.keys(config) as ItemKey[]) {
+    const itemConfig = config[name];
+    if (itemConfig === undefined) continue; // No config
+    if (itemConfig.upgrade === undefined) continue; // No upgrade config
+    const gItem = g.items[name];
+    if (gItem.upgrade === undefined) {
+      logError(`Item ${name} is not upgradable, but has an upgrade config`);
+      delete itemConfig.upgrade;
+      continue;
+    }
+    if (itemConfig.upgrade.makeShinyBeforeUpgrading !== undefined) {
+      const grade = Utilities.getItemGrade({ name, level: 0 }, g);
+      if (grade === undefined) {
+        logError(`Item ${name} has no grade, but has makeShinyBeforeUpgrading set`);
+        delete itemConfig.upgrade.makeShinyBeforeUpgrading;
+      }
     }
   }
 }

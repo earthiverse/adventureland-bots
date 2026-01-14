@@ -3,6 +3,7 @@ import type { GData, ItemInfo, ItemKey } from "typed-adventureland";
 import type { ItemsConfig } from "../../../config/items.js";
 import { getItemDescription } from "../items.js";
 
+// TODO: Move to compound.ts
 /**
  * BASE_COMPOUND_CHANCE[grade][level] -> chance
  */
@@ -155,7 +156,7 @@ export function getScrollAndOfferingPricesFromItemsConfig(config: ItemsConfig) {
   }
 }
 
-export function calculateNextUpgrade(item: ItemInfo, grace: number, startingCost: number, g: GData) {
+export function calculateUpgrade(item: ItemInfo, grace: number, startingCost: number, g: GData) {
   const bestConfig: {
     cost: number;
     chance: number;

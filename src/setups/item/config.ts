@@ -1,22 +1,29 @@
-import type { Character } from "alclient";
+import { Utilities, type Character } from "alclient";
+import type { ItemKey } from "typed-adventureland";
+import Config from "../../../config/items.js";
 import {
   getCraftableItems,
   getItemDescription,
+  getNextUpgradeParams,
   wantToDestroy,
   wantToExchange,
   wantToList,
   wantToMail,
+  wantToMakeShiny,
   wantToReplenish,
   wantToSell,
+  wantToUpgrade,
 } from "../../utilities/items.js";
-import { Level, log, logDebug } from "../../utilities/logging.js";
+import { Level, log, logDebug, logError } from "../../utilities/logging.js";
 
+// TODO: Move these to config
 const CHECK_EVERY_MS = 1000;
 const BUY_LOG_LEVEL = Level.Informational;
 const CRAFT_LOG_LEVEL = Level.Notice;
 const DESTROY_LOG_LEVEL = Level.Notice;
 const EXCHANGE_LOG_LEVEL = Level.Informational;
 const SELL_LOG_LEVEL = Level.Notice;
+const UPGRADE_LOG_LEVEL = Level.Notice;
 
 type ActiveData = {
   cancelled: boolean;
@@ -52,10 +59,12 @@ export const setup = (character: Character) => {
 
         try {
           const numToReplenish = wantToReplenish(character, item);
-          // TODO: Buy as many as we can if we can't buy all
-          if (numToReplenish && character.canBuy(item.name, { quantity: numToReplenish })) {
-            await character.buy(item.name, numToReplenish);
-            log(`${character.id} bought ${numToReplenish} ${getItemDescription(item)}`, BUY_LOG_LEVEL);
+          if (numToReplenish !== false) {
+            if (numToReplenish > 0) {
+              // TODO: Buy as many as we can if we can't buy all
+              await character.buy(item.name, numToReplenish);
+              log(`${character.id} bought ${numToReplenish} ${getItemDescription(item)}`, BUY_LOG_LEVEL);
+            }
             continue;
           }
 
@@ -76,9 +85,11 @@ export const setup = (character: Character) => {
             continue;
           }
 
-          if (wantToSell(item, character.game.G) && character.canSell()) {
-            await character.sell(index, item.q ?? 1);
-            log(`${character.id} sold ${getItemDescription(item)} to NPC`, SELL_LOG_LEVEL);
+          if (wantToSell(item, character.game.G)) {
+            if (character.canSell()) {
+              await character.sell(index, item.q ?? 1);
+              log(`${character.id} sold ${getItemDescription(item)} to NPC`, SELL_LOG_LEVEL);
+            }
             continue;
           }
         } catch (e) {
@@ -144,7 +155,83 @@ export const setup = (character: Character) => {
   };
   void exchangeLoop();
 
-  // TODO: upgradeLoop
+  const upgradeLoop = async () => {
+    if (activeData.cancelled) return;
+    let checkMs = CHECK_EVERY_MS;
+
+    try {
+      if (character.socket.disconnected) return;
+      if (character.q.upgrade) {
+        checkMs = character.q.upgrade.ms;
+        return; // Already upgrading
+      }
+
+      for (let itemPos = 0; itemPos < character.items.length; itemPos++) {
+        const item = character.items[itemPos];
+        if (!item) continue; // No item in this slot
+
+        if (wantToMakeShiny(item)) {
+          const grade = Utilities.getItemGrade(item, character.game.G);
+          // TODO: Move this logic to wantToMakeShiny
+          let offering: ItemKey;
+          switch (grade) {
+            case 0:
+              offering = "bronzeingot";
+              break;
+            case 1:
+              offering = "goldingot";
+              break;
+            case 2:
+              offering = "platinumingot";
+              break;
+            default:
+              // NOTE: Higher grades are currently not possible to make shiny
+              //       (But I don't think any currently exist in the game, either)
+              continue;
+            case undefined:
+              // TODO: This should be a function in the adjust file instead
+              logError(`${item.name} has no grade, but itemConfig.makeShinyBeforeUpgrading is set`);
+              delete Config[item.name]?.upgrade?.makeShinyBeforeUpgrading;
+              continue;
+          }
+
+          const offeringPos = character.locateItem({ name: offering });
+          if (offeringPos === undefined) continue;
+          // TODO: Log wether it succeeded or failed
+          await character.upgrade(itemPos, undefined, offeringPos);
+          log(
+            `${character.id} used ${offering} to attempt to make ${getItemDescription(item)} shiny`,
+            UPGRADE_LOG_LEVEL,
+          );
+          return;
+        }
+
+        if (!wantToUpgrade(item, character.game.G)) continue; // No item to upgrade
+
+        // TODO: Lucky slot logic
+
+        // TODO: Calculate best upgrade
+        const nextUpgrade = await getNextUpgradeParams(character, itemPos, character.game.G);
+        if (nextUpgrade === undefined) continue;
+        const scrollPos =
+          nextUpgrade.scroll !== undefined ? character.locateItem({ name: nextUpgrade.scroll }) : undefined;
+        const offeringPos =
+          nextUpgrade.offering !== undefined ? character.locateItem({ name: nextUpgrade.offering }) : undefined;
+
+        // TODO: Log wether it succeeded or failed
+        await character.upgrade(itemPos, scrollPos, offeringPos);
+        log(`${character.id} upgraded ${getItemDescription(item)}`, EXCHANGE_LOG_LEVEL);
+        return;
+      }
+
+      checkMs = 10_000; // Didn't find anything to upgrade
+    } catch (e) {
+      if (e instanceof Error || typeof e === "string") logDebug(`upgradeLoop: ${e}`);
+    } finally {
+      setTimeout(() => void upgradeLoop(), checkMs);
+    }
+  };
+  void upgradeLoop();
 
   // TODO: compoundLoop
 };
