@@ -7,6 +7,7 @@ import AL, {
     MonsterName,
     Paladin,
     PingCompensatedCharacter,
+    Player,
     Priest,
     Ranger,
     Rogue,
@@ -59,6 +60,7 @@ import { BoosterStrategy } from "../strategy_pattern/strategies/booster.js"
 import { checkOnlyEveryMS } from "../base/general.js"
 import { FixStuffStrategy } from "../strategy_pattern/strategies/fixes.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
+import FastPriorityQueue from "fastpriorityqueue"
 
 await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
@@ -307,6 +309,35 @@ class PriestChristmasAttackStrategy extends PriestAttackStrategy {
         }
 
         return super.attack(bot)
+    }
+
+    protected async healFriendsOrSelf(bot: Priest): Promise<unknown> {
+        if (!bot.canUse("heal")) return
+
+        const healPriority = this.healPriority.get(bot.id)
+        const players = new FastPriorityQueue<PingCompensatedCharacter | Player>(healPriority)
+
+        // Potentially heal ourself
+        if (bot.hp / bot.max_hp <= 0.8) players.add(bot)
+
+        for (const player of bot.getPlayers({
+            isDead: false,
+            isFriendly: this.options.enableHealStrangers ? undefined : true,
+            isNPC: false,
+            ignoreIDs: [...NAUGHTY_LIST, "Geoffriel"],
+            withinRange: "heal",
+        })) {
+            if (player.hp / player.max_hp > 0.8) continue // They have enough hp
+
+            // TODO: Check for healing projectiles, if they'll be fully healed from them, don't heal
+
+            players.add(player)
+        }
+
+        const toHeal = players.peek()
+        if (toHeal) {
+            return bot.healSkill(toHeal.id)
+        }
     }
 }
 const PRIEST_ATTACK_STRATEGY = new PriestChristmasAttackStrategy({
