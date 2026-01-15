@@ -234,16 +234,21 @@ export async function getNextUpgradeParams(
   // Calculate best path
   const initialValue =
     config[item.name]?.upgrade?.upgradeValue ??
-    config[item.name]?.buy?.buyPrice as number ??
-    config[item.name]?.sell?.sellPrice as number ??
+    (config[item.name]?.buy?.buyPrice as number) ??
+    (config[item.name]?.sell?.sellPrice as number) ??
     g.items[item.name].g;
-  
+
   const results: { [T in number]: ReturnType<typeof calculateUpgrade> } = {
-    1: calculateUpgrade({ name: item.name, level: 0 }, grace, initialValue, g),
+    1: calculateUpgrade({ name: item.name, level: 0 }, 0, initialValue, g),
   };
   for (let level = 1; level < (item.level ?? 0) + 1; level++) {
     const lastResults = results[level]!;
-    const nextUpgrade = calculateUpgrade({ name: item.name, level }, lastResults.grace, lastResults.cost, g);
+    const nextUpgrade = calculateUpgrade(
+      { name: item.name, level },
+      item.level === level - 1 ? grace : lastResults.grace,
+      lastResults.cost,
+      g,
+    );
 
     results[level + 1] = nextUpgrade;
   }
