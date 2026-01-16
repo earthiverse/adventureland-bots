@@ -508,7 +508,11 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             }
         }
 
-        if (equipBatch.length) await bot.equipBatch(equipBatch).catch(console.error)
+        if (equipBatch.length) {
+            console.log("Equipping batch for ensureEquipped")
+            console.log(equipBatch)
+            await bot.equipBatch(equipBatch).catch(console.error)
+        }
     }
 
     protected async scare(bot: Type) {
