@@ -271,11 +271,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
                 if (num !== undefined) equipBatch.push({ num, slot: "offhand" })
             }
 
-            if (equipBatch.length) {
-                console.log("Re-equipping items after cleave")
-                console.log(equipBatch)
-                await bot.equipBatch(equipBatch)
-            }
+            if (equipBatch.length) await bot.equipBatch(equipBatch)
         }
     }
 
@@ -364,11 +360,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
                 if (num !== undefined) equipBatch.push({ num, slot: "offhand" })
             }
 
-            if (equipBatch.length) {
-                console.log("Re-equipping items after stomp")
-                console.log(equipBatch)
-                await bot.equipBatch(equipBatch)
-            }
+            if (equipBatch.length) await bot.equipBatch(equipBatch)
         }
     }
 

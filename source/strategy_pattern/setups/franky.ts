@@ -20,17 +20,17 @@ class MageFrankyAttackStrategy extends MageAttackStrategy {
             // No splash damage
             this.options.generateEnsureEquipped.prefer.mainhand = {
                 name: "firestaff",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
             this.options.generateEnsureEquipped.prefer.offhand = {
                 name: "wbookhs",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
         } else {
             // Splash damage & additional monsters
             this.options.generateEnsureEquipped.prefer.mainhand = {
                 name: "gstaff",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
             this.options.generateEnsureEquipped.prefer.offhand = UNEQUIP
         }
@@ -43,10 +43,10 @@ class PriestFrankyAttackStrategy extends PriestAttackStrategy {
         if (!this.options.generateEnsureEquipped) this.options.generateEnsureEquipped = {}
         if (!this.options.generateEnsureEquipped.prefer) this.options.generateEnsureEquipped.prefer = {}
         if (bot.isPVP()) {
-            this.options.generateEnsureEquipped.prefer.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "cring", filters: RETURN_HIGHEST }
         } else {
             // Additional monsters
-            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: RETURN_HIGHEST }
         }
         super.onApply(bot)
     }
@@ -61,15 +61,19 @@ class WarriorFrankyAttackStrategy extends WarriorAttackStrategy {
             this.options.disableCleave = true
             this.options.generateEnsureEquipped.prefer.mainhand = {
                 name: "fireblade",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
             this.options.generateEnsureEquipped.prefer.offhand = {
                 name: "fireblade",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
             this.options.generateEnsureEquipped.prefer.ring1 = {
                 name: "strring",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
+            }
+            this.options.generateEnsureEquipped.prefer.ring2 = {
+                name: "strring",
+                filters: RETURN_HIGHEST,
             }
             delete this.options.enableEquipForCleave
         } else {
@@ -77,13 +81,14 @@ class WarriorFrankyAttackStrategy extends WarriorAttackStrategy {
             delete this.options.disableCleave
             this.options.generateEnsureEquipped.prefer.mainhand = {
                 name: "vhammer",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
-            this.options.generateEnsureEquipped.prefer.offhand = {
-                name: "ololipop",
-                filters: { returnHighestLevel: true },
+            this.options.generateEnsureEquipped.prefer.offhand = { name: "ololipop", filters: RETURN_HIGHEST }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: RETURN_HIGHEST }
+            this.options.generateEnsureEquipped.prefer.ring2 = {
+                name: "strring",
+                filters: RETURN_HIGHEST,
             }
-            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
             this.options.enableEquipForCleave = true
         }
         super.onApply(bot)
@@ -103,7 +108,7 @@ export function constructFrankySetup(contexts: Strategist<PingCompensatedCharact
             generateEnsureEquipped: {
                 attributes: ["int", "attack"],
                 prefer: {
-                    orb: { name: "jacko", filters: { returnHighestLevel: true } },
+                    orb: { name: "jacko", filters: RETURN_HIGHEST },
                 },
             },
             typeList: ["nerfedmummy", "franky"],
@@ -258,7 +263,7 @@ export function constructFrankyHelperSetup(contexts: Strategist<PingCompensatedC
                             generateEnsureEquipped: {
                                 prefer: {
                                     // Stab for extra stacked damage
-                                    mainhand: { name: "claw", filters: { returnHighestLevel: true } },
+                                    mainhand: { name: "claw", filters: RETURN_HIGHEST },
                                 },
                             },
                             typeList: ["nerfedmummy", "franky"],

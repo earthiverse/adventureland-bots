@@ -435,21 +435,6 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
                 // We don't have the item
                 continue
             }
-
-            // Check if this item is already assigned to a paired slot
-            let pairedSlot: SlotType | undefined
-            if (slotType === "ring1") pairedSlot = "ring2"
-            else if (slotType === "ring2") pairedSlot = "ring1"
-            else if (slotType === "earring1") pairedSlot = "earring2"
-            else if (slotType === "earring2") pairedSlot = "earring1"
-
-            if (pairedSlot && toEquip[pairedSlot]?.name === ensureEquippedSlot.name) {
-                // The item we want to prefer is already in the paired slot, swap them
-                toEquip[slotType] = toEquip[pairedSlot]
-                toEquip[pairedSlot] = ensureEquippedSlot
-            } else {
-                toEquip[slotType] = ensureEquippedSlot
-            }
         }
     }
 
