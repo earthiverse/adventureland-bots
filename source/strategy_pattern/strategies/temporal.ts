@@ -17,7 +17,7 @@ export class TemporalSurgeStrategy<Type extends Character> implements Strategy<T
     }
 
     private async temporalSurge(bot: Type) {
-        if (!bot.hasItem("orboftemporal") && bot.slots.orb.name !== "orboftemporal") return // No orb
+        if (!bot.hasItem("orboftemporal") && bot.slots.orb?.name !== "orboftemporal") return // No orb
         if (!bot.canUse("temporalsurge", { ignoreEquipped: true })) return // Can't use
 
         if (checkOnlyEveryMS(bot.map, 10_000)) {
@@ -42,6 +42,7 @@ export class TemporalSurgeStrategy<Type extends Character> implements Strategy<T
                     await bot.equip(slot, "orb")
                     if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
                 }
+                console.log("DEBUG: TEMPORAL SURGE")
                 await bot.temporalSurge()
                 if (slot !== undefined) bot.equip(slot).catch(console.error)
 
