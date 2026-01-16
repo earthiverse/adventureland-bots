@@ -78,6 +78,7 @@ import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js
 import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
 import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.js"
+import { TemporalSurgeStrategy } from "./strategy_pattern/strategies/temporal.js"
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true, remove_abtesting: true, remove_test: true })
@@ -87,7 +88,7 @@ let ENABLE_EVENTS = true
 let ENABLE_SERVER_HOPS = true
 let ENABLE_SPECIAL_MONSTERS = true
 let ENABLE_MONSTERHUNTS = false
-const DEFAULT_MONSTERS: MonsterName[] = ["xscorpion"]
+const DEFAULT_MONSTERS: MonsterName[] = ["stompy"]
 const SPECIAL_MONSTERS: MonsterName[] = [
     "crabxx",
     "cutebee",
@@ -191,6 +192,7 @@ const privateItemStrategy = new ItemStrategy({
     contexts: PRIVATE_CONTEXTS,
     itemConfig: DEFAULT_ITEM_CONFIG,
 })
+const temporalStrategy = new TemporalSurgeStrategy()
 const upgradeStatisticsStrategy = new TrackUpgradeStrategy()
 
 let OVERRIDE_MONSTERS: MonsterName[]
@@ -830,6 +832,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
     context.applyStrategy(elixirStrategy)
     context.applyStrategy(destroyStrategy)
     context.applyStrategy(upgradeStatisticsStrategy)
+    context.applyStrategy(temporalStrategy)
 }
 
 async function startMage(context: Strategist<Mage>, privateContext = false) {
@@ -881,6 +884,7 @@ const startMerchantContext = async () => {
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, {
         ...defaultNewMerchantStrategyOptions,
         goldToHold: 4_000_000_000,
+        defaultPosition: { map: "winterland", x: 600, y: -2725 },
         enableInstanceProvider: {
             // crypt: {
             //     maxInstances: 10,
@@ -900,6 +904,7 @@ const startMerchantContext = async () => {
     CONTEXT.applyStrategy(merchantDestroyStrategy)
     CONTEXT.applyStrategy(privateBuyStrategy)
     CONTEXT.applyStrategy(upgradeStatisticsStrategy)
+    CONTEXT.applyStrategy(temporalStrategy)
 
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)

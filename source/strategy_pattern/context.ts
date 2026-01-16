@@ -37,6 +37,7 @@ export type LoopName =
     | "respawn"
     | "rspeed"
     | "sell"
+    | "temporal"
     | "tracker"
     | "upgrade"
 
