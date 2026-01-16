@@ -35,14 +35,15 @@ export class TemporalSurgeStrategy<Type extends Character> implements Strategy<T
 
         const respawns = this.respawns.get(bot.map)
         for (const respawn of respawns) {
-            if (Tools.distance(bot, respawn) > 160) continue
+            if (Tools.distance(bot, respawn) > 160) continue // Too far
+            if (bot.getEntity({ type: respawn.type })) continue // Currently alive
             try {
                 const slot = bot.slots.orb.name === "orboftemporal" ? undefined : bot.locateItem("orboftemporal")
                 if (slot !== undefined) {
                     await bot.equip(slot, "orb")
                     if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
                 }
-                console.log("DEBUG: TEMPORAL SURGE")
+                console.log(`DEBUG: TEMPORAL SURGE (${bot.id})`)
                 await bot.temporalSurge()
                 if (slot !== undefined) bot.equip(slot).catch(console.error)
 
