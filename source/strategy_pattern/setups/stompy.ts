@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_ARMOR, WARRIOR_SPLASH } from "./equipment.js"
+import { MAGE_SPLASH, PRIEST_ARMOR, RETURN_HIGHEST, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructStompySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -19,12 +19,12 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                prefer: { ...MAGE_SPLASH }
+                                prefer: { ...MAGE_SPLASH, orb: { name: "orboftemporal", filters: RETURN_HIGHEST } },
                             },
                             targetingPartyMember: true,
-                            type: "stompy"
+                            typeList: ["stompy", "wolf"],
                         }),
-                        move: new ImprovedMoveStrategy("stompy")
+                        move: new ImprovedMoveStrategy("stompy"),
                     },
                     {
                         ctype: "priest",
@@ -32,11 +32,11 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                prefer: { ...PRIEST_ARMOR }
+                                prefer: { ...PRIEST_ARMOR, orb: { name: "orboftemporal", filters: RETURN_HIGHEST } },
                             },
-                            type: "stompy",
+                            typeList: ["stompy", "wolf"],
                         }),
-                        move: new ImprovedMoveStrategy("stompy")
+                        move: new ImprovedMoveStrategy("stompy"),
                     },
                     {
                         ctype: "warrior",
@@ -45,15 +45,15 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                prefer: { ...WARRIOR_SPLASH }
+                                prefer: { ...WARRIOR_SPLASH, orb: { name: "orboftemporal", filters: RETURN_HIGHEST } },
                             },
                             targetingPartyMember: true,
-                            typeList: ["stompy", "wolf"]
+                            typeList: ["stompy", "wolf"],
                         }),
-                        move: new ImprovedMoveStrategy(["stompy", "wolf"])
-                    }
-                ]
+                        move: new ImprovedMoveStrategy(["stompy", "wolf"]),
+                    },
+                ],
             },
-        ]
+        ],
     }
 }
