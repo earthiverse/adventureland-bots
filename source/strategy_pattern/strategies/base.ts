@@ -153,7 +153,6 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
         let best: string
         for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
             const friend = context.bot
-            if (!context.bot.chests.has(chest.id)) continue // They don't have the chest in their drops
             if (Tools.squaredDistance(chest, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // It's far away from them
             if (friend.goldm > goldM) {
                 goldM = friend.goldm
