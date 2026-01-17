@@ -144,23 +144,24 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
         if (Tools.squaredDistance(chest, bot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return // It's far away from us
         if (BaseStrategy.recentlyLooted.has(chest.id)) return // One of our characters is already looting it
 
-        // TODO: Add party check
         // Crown has better gear
-        if (bot.players.has("CrownsAnal") || bot.players.has("CrownTown") || bot.players.has("CrownPriest")) return
+        for (const player of ["CrownsAnal", "CrownTown", "CrownPriest"]) {
+            if (bot.partyData?.list?.includes(player) && bot.players.has(player)) return
+        }
 
         let goldM = 0
-        let best: Character
+        let best: string
         for (const context of filterContexts(this.contexts, { serverData: bot.serverData })) {
             const friend = context.bot
             if (!context.bot.chests.has(chest.id)) continue // They don't have the chest in their drops
             if (Tools.squaredDistance(chest, friend) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // It's far away from them
             if (friend.goldm > goldM) {
                 goldM = friend.goldm
-                best = friend
+                best = friend.id
             }
         }
 
-        if (best && best !== bot) return // We're not the best one to loot the chest
+        if (best && best !== bot.id) return // We're not the best one to loot the chest
 
         // Open the chest
         BaseStrategy.recentlyLooted.set(chest.id, true)
