@@ -33,7 +33,7 @@ export class TemporalSurgeBossesStrategy<Type extends Character> implements Stra
                 },
                 type: {
                     // TODO: Move this to constructor as an option
-                    in: ["fvampire", "greenjr", "jr", "mvampire", "phoenix", "rharpy", "skeletor", "stompy"],
+                    $in: ["fvampire", "greenjr", "jr", "mvampire", "phoenix", "rharpy", "skeletor", "stompy"],
                 },
                 x: { $exists: true },
                 y: { $exists: true },
