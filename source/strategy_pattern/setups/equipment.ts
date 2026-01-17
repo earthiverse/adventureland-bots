@@ -435,6 +435,8 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
                 // We don't have the item
                 continue
             }
+
+            toEquip[slotType] = ensureEquippedSlot
         }
     }
 
