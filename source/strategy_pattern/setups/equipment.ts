@@ -445,7 +445,6 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
     for (const [slot1, slot2] of [
         ["earring1", "earring2"],
         ["ring1", "ring2"],
-        ["mainhand", "offhand"],
     ] as [SlotType, SlotType][]) {
         const slot1Equipped = bot.slots[slot1]
         const slot2Equipped = bot.slots[slot2]
