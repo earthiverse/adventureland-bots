@@ -141,12 +141,21 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
     }
 
     private async lootChest(bot: Type, chest: ChestData) {
-        if (Tools.squaredDistance(chest, bot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) return // It's far away from us
-        if (BaseStrategy.recentlyLooted.has(chest.id)) return // One of our characters is already looting it
+        if (Tools.squaredDistance(chest, bot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) {
+            if (bot.id === "earthMer") console.log("chest is far away!")
+            return // It's far away from us
+        }
+        if (BaseStrategy.recentlyLooted.has(chest.id)) {
+            if (bot.id === "earthMer") console.log("someone else already looting!")
+            return // One of our characters is already looting it
+        }
 
         // Crown has better gear
         for (const player of ["CrownsAnal", "CrownTown", "CrownPriest"]) {
-            if (bot.partyData?.list?.includes(player) && bot.players.has(player)) return
+            if (bot.partyData?.list?.includes(player) && bot.players.has(player)) {
+                if (bot.id === "earthMer") console.log("crown is near!")
+                return
+            }
         }
 
         let goldM = 0
@@ -160,7 +169,12 @@ export class BaseStrategy<Type extends PingCompensatedCharacter> implements Stra
             }
         }
 
-        if (best && best !== bot.id) return // We're not the best one to loot the chest
+        if (best && best !== bot.id) {
+            if (bot.id === "earthMer") console.log(`earthMer not the best, ${best} is!`)
+            return // We're not the best one to loot the chest
+        }
+
+        if (bot.id === "earthMer") console.log("omg earthMer is looting!")
 
         // Open the chest
         BaseStrategy.recentlyLooted.set(chest.id, true)
