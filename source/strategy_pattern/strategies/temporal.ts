@@ -2,7 +2,10 @@ import { Character, IRespawn, MapName, RespawnModel, Tools } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
 import { checkOnlyEveryMS, sleep } from "../../base/general.js"
 
-export class TemporalSurgeStrategy<Type extends Character> implements Strategy<Type> {
+/**
+ * Temporal surge if there's a boss respawn nearby
+ */
+export class TemporalSurgeBossesStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
 
     public respawns = new Map<MapName, Required<IRespawn>[]>()
@@ -19,6 +22,7 @@ export class TemporalSurgeStrategy<Type extends Character> implements Strategy<T
     private async temporalSurge(bot: Type) {
         if (!bot.hasItem("orboftemporal") && bot.slots.orb?.name !== "orboftemporal") return // No orb
         if (!bot.canUse("temporalsurge", { ignoreEquipped: true })) return // Can't use
+        // TODO: Skip if not on a map with spawns
 
         if (checkOnlyEveryMS(bot.map, 10_000)) {
             // Get latest respawn information for the current map
@@ -26,6 +30,10 @@ export class TemporalSurgeStrategy<Type extends Character> implements Strategy<T
                 map: bot.map,
                 estimatedRespawn: {
                     $gt: Date.now(),
+                },
+                type: {
+                    // TODO: Move this to constructor as an option
+                    in: ["fvampire", "greenjr", "jr", "mvampire", "phoenix", "rharpy", "skeletor", "stompy"],
                 },
                 x: { $exists: true },
                 y: { $exists: true },
