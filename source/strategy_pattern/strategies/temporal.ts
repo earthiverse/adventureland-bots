@@ -46,7 +46,7 @@ export class TemporalSurgeBossesStrategy<Type extends Character> implements Stra
             if (Tools.distance(bot, respawn) > 160) continue // Too far
             if (bot.getEntity({ type: respawn.type })) continue // Currently alive
             try {
-                const slot = bot.slots.orb.name === "orboftemporal" ? undefined : bot.locateItem("orboftemporal")
+                const slot = bot.slots.orb?.name === "orboftemporal" ? undefined : bot.locateItem("orboftemporal")
                 if (slot !== undefined) {
                     await bot.equip(slot, "orb")
                     if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
