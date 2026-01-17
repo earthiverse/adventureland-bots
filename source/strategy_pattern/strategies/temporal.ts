@@ -41,7 +41,7 @@ export class TemporalSurgeBossesStrategy<Type extends Character> implements Stra
             this.respawns.set(bot.map, respawns as Required<IRespawn>[])
         }
 
-        const respawns = this.respawns.get(bot.map)
+        const respawns = this.respawns.get(bot.map) ?? []
         for (const respawn of respawns) {
             if (Tools.distance(bot, respawn) > 160) continue // Too far
             if (bot.getEntity({ type: respawn.type })) continue // Currently alive
