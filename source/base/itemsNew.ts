@@ -817,6 +817,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: 250_000_000,
         // NOTE: Currently selling to Aria
+        sell: true,
         sellPrice: 300_000_000,
         upgradeUntilLevel: 0,
         // useOfferingFromLevel: 0,
