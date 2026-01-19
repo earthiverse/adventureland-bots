@@ -816,8 +816,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     snring: {
         buy: true,
         buyPrice: 250_000_000,
-        useOfferingFromLevel: 0,
-        useScroll3FromLevel: 3,
+        // NOTE: Currently selling to Aria
+        sellPrice: 300_000_000,
+        upgradeUntilLevel: 0,
+        // useOfferingFromLevel: 0,
+        // useScroll3FromLevel: 3,
     },
     spear: {
         ...SELL_TO_NPC,
