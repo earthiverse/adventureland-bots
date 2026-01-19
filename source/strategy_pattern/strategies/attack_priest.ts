@@ -1,7 +1,9 @@
-import AL, { Entity, PingCompensatedCharacter, Player, Priest } from "alclient"
+import AL, { Attribute, Entity, MonsterName, PingCompensatedCharacter, Player, Priest } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
-import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
+import { BaseAttackStrategy, BaseAttackStrategyOptions, EnsureEquipped } from "./attack.js"
 import { suppress_errors } from "../logging.js"
+import { checkOnlyEveryMS } from "../../base/general.js"
+import { generateEnsureEquipped } from "../setups/equipment.js"
 
 export type PriestAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableAbsorb?: true
@@ -12,7 +14,7 @@ export type PriestAttackStrategyOptions = BaseAttackStrategyOptions & {
 }
 
 export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
-    public declare options: PriestAttackStrategyOptions
+    declare protected options: PriestAttackStrategyOptions
 
     protected healPriority = new Map<
         string,
@@ -210,5 +212,43 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
         if (!bot.getEntity(this.options)) return // We aren't about to attack
 
         return bot.darkBlessing()
+    }
+}
+
+export type PriestAttackWithLuckStrategyOptions = PriestAttackStrategyOptions & {
+    /** For the given monster name, if less than hp, switch to attributes */
+    switchConfig: [MonsterName, hp: number, attributes: Attribute[]][]
+}
+
+/**
+ * Can be used to change equipment if we see certain monsters
+ */
+export class PriestAttackWithAttributesStrategy extends PriestAttackStrategy {
+    declare public options: PriestAttackWithLuckStrategyOptions
+    public originalEnsureEquipped: EnsureEquipped
+
+    public constructor(options?: PriestAttackWithLuckStrategyOptions) {
+        super(options)
+
+        this.originalEnsureEquipped = structuredClone(options.ensureEquipped)
+    }
+
+    protected ensureEquipped(bot: Priest): Promise<void> {
+        if (checkOnlyEveryMS(`equip_${bot.id}`, 2_000)) {
+            this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
+
+            for (const [type, hpLessThan, attributes] of this.options.switchConfig) {
+                const monster = bot.getEntity({ type, hpLessThan })
+                if (!monster) continue // No monster, or not low enough HP
+
+                // Equip with our attributes
+                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes }))
+                break
+            }
+
+            // Equip our original equipment
+            this.botEnsureEquipped.set(bot.id, this.originalEnsureEquipped)
+        }
+        return super.ensureEquipped(bot)
     }
 }

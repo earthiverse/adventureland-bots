@@ -2,7 +2,7 @@ import { PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
-import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
+import { WarriorAttackWithAttributesStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_SPLASH, MP_RECOVERY, PRIEST_ARMOR, RETURN_HIGHEST, WARRIOR_SPLASH } from "./equipment.js"
@@ -25,7 +25,6 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                                     orb: { name: "orboftemporal", filters: RETURN_HIGHEST },
                                 },
                             },
-                            targetingPartyMember: true,
                             typeList: ["stompy", "wolf"],
                         }),
                         move: new ImprovedMoveStrategy("stompy"),
@@ -44,7 +43,7 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                     },
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
+                        attack: new WarriorAttackWithAttributesStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
@@ -55,8 +54,8 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                                     orb: { name: "orboftemporal", filters: RETURN_HIGHEST },
                                 },
                             },
-                            targetingPartyMember: true,
                             typeList: ["stompy", "wolf"],
+                            switchConfig: [["stompy", 100_000, ["luck"]]],
                         }),
                         move: new ImprovedMoveStrategy(["stompy", "wolf"]),
                     },

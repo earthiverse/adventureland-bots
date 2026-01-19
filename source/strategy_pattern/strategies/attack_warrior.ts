@@ -1,8 +1,8 @@
-import AL, { ItemData, SlotType, Tools, Warrior } from "alclient"
-import { sleep } from "../../base/general.js"
+import AL, { Attribute, ItemData, MonsterName, SlotType, Tools, Warrior } from "alclient"
+import { checkOnlyEveryMS, sleep } from "../../base/general.js"
 import { suppress_errors } from "../logging.js"
-import { RETURN_HIGHEST } from "../setups/equipment.js"
-import { BaseAttackStrategy, BaseAttackStrategyOptions, IDLE_ATTACK_MONSTERS } from "./attack.js"
+import { generateEnsureEquipped, RETURN_HIGHEST } from "../setups/equipment.js"
+import { BaseAttackStrategy, BaseAttackStrategyOptions, EnsureEquipped, IDLE_ATTACK_MONSTERS } from "./attack.js"
 
 export type WarriorAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableAgitate?: true
@@ -27,7 +27,7 @@ export type WarriorAttackStrategyOptions = BaseAttackStrategyOptions & {
 }
 
 export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
-    public declare options: WarriorAttackStrategyOptions
+    declare public options: WarriorAttackStrategyOptions
 
     public constructor(options?: WarriorAttackStrategyOptions) {
         super(options)
@@ -201,7 +201,8 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
                     else return // We can't tank any more, don't cleave
                     break
                 case "pure":
-                    if (bot.pcourage > targetingMe.pure) targetingMe.pure += 1 // We can tank one more pure monster
+                    if (bot.pcourage > targetingMe.pure)
+                        targetingMe.pure += 1 // We can tank one more pure monster
                     else return // We can't tank any more, don't cleave
                     break
             }
@@ -388,5 +389,43 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
         }
 
         return false
+    }
+}
+
+export type WarriorAttackWithLuckStrategyOptions = WarriorAttackStrategyOptions & {
+    /** For the given monster name, if less than hp, switch to attributes */
+    switchConfig: [MonsterName, hp: number, attributes: Attribute[]][]
+}
+
+/**
+ * Can be used to change equipment if we see certain monsters
+ */
+export class WarriorAttackWithAttributesStrategy extends WarriorAttackStrategy {
+    declare public options: WarriorAttackWithLuckStrategyOptions
+    public originalEnsureEquipped: EnsureEquipped
+
+    public constructor(options?: WarriorAttackWithLuckStrategyOptions) {
+        super(options)
+
+        this.originalEnsureEquipped = structuredClone(options.ensureEquipped)
+    }
+
+    protected ensureEquipped(bot: Warrior): Promise<void> {
+        if (checkOnlyEveryMS(`equip_${bot.id}`, 2_000)) {
+            this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
+
+            for (const [type, hpLessThan, attributes] of this.options.switchConfig) {
+                const monster = bot.getEntity({ type, hpLessThan })
+                if (!monster) continue // No monster, or not low enough HP
+
+                // Equip with our attributes
+                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes }))
+                break
+            }
+
+            // Equip our original equipment
+            this.botEnsureEquipped.set(bot.id, this.originalEnsureEquipped)
+        }
+        return super.ensureEquipped(bot)
     }
 }
