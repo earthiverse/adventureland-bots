@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, PRIEST_ARMOR, RETURN_HIGHEST, WARRIOR_SPLASH } from "./equipment.js"
+import { MAGE_SPLASH, MP_RECOVERY, PRIEST_ARMOR, RETURN_HIGHEST, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructStompySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     return {
@@ -19,7 +19,11 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                prefer: { ...MAGE_SPLASH, orb: { name: "orboftemporal", filters: RETURN_HIGHEST } },
+                                prefer: {
+                                    ...MAGE_SPLASH,
+                                    ...MP_RECOVERY,
+                                    orb: { name: "orboftemporal", filters: RETURN_HIGHEST },
+                                },
                             },
                             targetingPartyMember: true,
                             typeList: ["stompy", "wolf"],
@@ -45,7 +49,11 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                prefer: { ...WARRIOR_SPLASH, orb: { name: "orboftemporal", filters: RETURN_HIGHEST } },
+                                prefer: {
+                                    ...WARRIOR_SPLASH,
+                                    ...MP_RECOVERY,
+                                    orb: { name: "orboftemporal", filters: RETURN_HIGHEST },
+                                },
                             },
                             targetingPartyMember: true,
                             typeList: ["stompy", "wolf"],
