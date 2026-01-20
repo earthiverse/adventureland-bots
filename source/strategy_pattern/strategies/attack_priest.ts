@@ -225,12 +225,15 @@ export type PriestAttackWithLuckStrategyOptions = PriestAttackStrategyOptions & 
  */
 export class PriestAttackWithAttributesStrategy extends PriestAttackStrategy {
     declare public options: PriestAttackWithLuckStrategyOptions
-    public originalEnsureEquipped: EnsureEquipped
+    public originalEnsureEquipped = new Map<string, EnsureEquipped>()
 
     public constructor(options?: PriestAttackWithLuckStrategyOptions) {
         super(options)
+    }
 
-        this.originalEnsureEquipped = structuredClone(options.ensureEquipped)
+    public onApply(bot: Priest): void {
+        super.onApply(bot)
+        this.originalEnsureEquipped.set(bot.id, this.options.ensureEquipped)
     }
 
     protected ensureEquipped(bot: Priest): Promise<void> {
@@ -251,7 +254,7 @@ export class PriestAttackWithAttributesStrategy extends PriestAttackStrategy {
         }
 
         // Use our original equipment
-        if (!switched) this.botEnsureEquipped.set(bot.id, this.originalEnsureEquipped)
+        if (!switched) this.botEnsureEquipped.set(bot.id, this.originalEnsureEquipped.get(bot.id))
 
         return super.ensureEquipped(bot)
     }

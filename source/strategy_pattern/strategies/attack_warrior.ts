@@ -402,12 +402,15 @@ export type WarriorAttackWithLuckStrategyOptions = WarriorAttackStrategyOptions 
  */
 export class WarriorAttackWithAttributesStrategy extends WarriorAttackStrategy {
     declare public options: WarriorAttackWithLuckStrategyOptions
-    public originalEnsureEquipped: EnsureEquipped
+    public originalEnsureEquipped = new Map<string, EnsureEquipped>()
 
     public constructor(options?: WarriorAttackWithLuckStrategyOptions) {
         super(options)
+    }
 
-        this.originalEnsureEquipped = structuredClone(options.ensureEquipped)
+    public onApply(bot: Warrior): void {
+        super.onApply(bot)
+        this.originalEnsureEquipped.set(bot.id, this.options.ensureEquipped)
     }
 
     protected ensureEquipped(bot: Warrior): Promise<void> {
@@ -428,7 +431,7 @@ export class WarriorAttackWithAttributesStrategy extends WarriorAttackStrategy {
         }
 
         // Use our original equipment
-        if (!switched) this.botEnsureEquipped.set(bot.id, this.originalEnsureEquipped)
+        if (!switched) this.botEnsureEquipped.set(bot.id, this.originalEnsureEquipped.get(bot.id))
 
         return super.ensureEquipped(bot)
     }
