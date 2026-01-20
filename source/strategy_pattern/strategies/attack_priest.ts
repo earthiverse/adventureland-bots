@@ -1,9 +1,9 @@
-import AL, { Attribute, Entity, MonsterName, PingCompensatedCharacter, Player, Priest } from "alclient"
+import AL, { Entity, MonsterName, PingCompensatedCharacter, Player, Priest } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { BaseAttackStrategy, BaseAttackStrategyOptions, EnsureEquipped } from "./attack.js"
 import { suppress_errors } from "../logging.js"
 import { checkOnlyEveryMS } from "../../base/general.js"
-import { generateEnsureEquipped } from "../setups/equipment.js"
+import { GenerateEnsureEquipped, generateEnsureEquipped } from "../setups/equipment.js"
 
 export type PriestAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableAbsorb?: true
@@ -217,7 +217,7 @@ export class PriestAttackStrategy extends BaseAttackStrategy<Priest> {
 
 export type PriestAttackWithLuckStrategyOptions = PriestAttackStrategyOptions & {
     /** For the given monster name, if less than hp, switch to attributes */
-    switchConfig: [MonsterName, hp: number, attributes: Attribute[]][]
+    switchConfig: [MonsterName, hp: number, generate: GenerateEnsureEquipped][]
 }
 
 /**
@@ -238,13 +238,13 @@ export class PriestAttackWithAttributesStrategy extends PriestAttackStrategy {
         if (checkOnlyEveryMS(`equip_${bot.id}`, 2_000)) {
             this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
 
-            for (const [type, hpLessThan, attributes] of this.options.switchConfig) {
+            for (const [type, hpLessThan, generate] of this.options.switchConfig) {
                 const monster = bot.getEntity({ type, hpLessThan })
                 if (!monster) continue // No monster, or not low enough HP
 
                 // Equip with our attributes
                 console.debug("DEBUG: SWITCHING TO LUCK ON", bot.id, "FOR", type)
-                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes }))
+                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, generate))
                 switched = true
                 break
             }

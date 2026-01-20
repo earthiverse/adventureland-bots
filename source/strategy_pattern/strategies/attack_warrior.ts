@@ -1,7 +1,7 @@
-import AL, { Attribute, ItemData, MonsterName, SlotType, Tools, Warrior } from "alclient"
+import AL, { ItemData, MonsterName, SlotType, Tools, Warrior } from "alclient"
 import { checkOnlyEveryMS, sleep } from "../../base/general.js"
 import { suppress_errors } from "../logging.js"
-import { generateEnsureEquipped, RETURN_HIGHEST } from "../setups/equipment.js"
+import { GenerateEnsureEquipped, generateEnsureEquipped, RETURN_HIGHEST } from "../setups/equipment.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions, EnsureEquipped, IDLE_ATTACK_MONSTERS } from "./attack.js"
 
 export type WarriorAttackStrategyOptions = BaseAttackStrategyOptions & {
@@ -394,7 +394,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
 
 export type WarriorAttackWithLuckStrategyOptions = WarriorAttackStrategyOptions & {
     /** For the given monster name, if less than hp, switch to attributes */
-    switchConfig: [MonsterName, hp: number, attributes: Attribute[]][]
+    switchConfig: [MonsterName, hp: number, generate: GenerateEnsureEquipped][]
 }
 
 /**
@@ -415,13 +415,13 @@ export class WarriorAttackWithAttributesStrategy extends WarriorAttackStrategy {
         if (checkOnlyEveryMS(`equip_${bot.id}`, 2_000)) {
             this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
 
-            for (const [type, hpLessThan, attributes] of this.options.switchConfig) {
+            for (const [type, hpLessThan, generate] of this.options.switchConfig) {
                 const monster = bot.getEntity({ type, hpLessThan })
                 if (!monster) continue // No monster, or not low enough HP
 
                 // Equip with our attributes
                 console.debug("DEBUG: SWITCHING TO LUCK ON", bot.id, "FOR", type)
-                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes }))
+                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, generate))
                 switched = true
                 break
             }

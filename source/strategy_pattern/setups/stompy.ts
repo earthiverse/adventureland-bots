@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackWithAttributesStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, MP_RECOVERY, PRIEST_ARMOR, RETURN_HIGHEST, WARRIOR_SPLASH } from "./equipment.js"
+import { MAGE_SPLASH, MP_RECOVERY, PRIEST_ARMOR, RETURN_HIGHEST, WARRIOR_SPLASH_WEAPONS } from "./equipment.js"
 
 export function constructStompySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const typeList: MonsterName[] = ["stompy", "wolf", "mechagnome"]
@@ -50,13 +50,30 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
                                 prefer: {
-                                    ...WARRIOR_SPLASH,
-                                    ...MP_RECOVERY,
+                                    ...WARRIOR_SPLASH_WEAPONS,
+                                    amulet: { name: "stramulet", filters: RETURN_HIGHEST },
+                                    chest: { name: "tshirt9", filters: RETURN_HIGHEST },
+                                    ring1: { name: "strring", filters: RETURN_HIGHEST },
+                                    ring2: { name: "strring", filters: RETURN_HIGHEST },
+                                    earring1: { name: "cearring", filters: RETURN_HIGHEST },
+                                    earring2: { name: "cearring", filters: RETURN_HIGHEST },
                                     orb: { name: "orboftemporal", filters: RETURN_HIGHEST },
                                 },
                             },
                             typeList,
-                            switchConfig: [["stompy", 1_000_000, ["luck"]]],
+                            switchConfig: [
+                                [
+                                    "stompy",
+                                    1_000_000,
+                                    {
+                                        attributes: ["luck"],
+                                        prefer: {
+                                            mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
+                                            offhand: { name: "mshield", filters: RETURN_HIGHEST },
+                                        },
+                                    },
+                                ],
+                            ],
                         }),
                         move: new ImprovedMoveStrategy(["stompy", "wolf"]),
                     },
