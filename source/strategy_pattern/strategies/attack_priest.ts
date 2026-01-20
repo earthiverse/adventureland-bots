@@ -237,17 +237,20 @@ export class PriestAttackWithAttributesStrategy extends PriestAttackStrategy {
         if (checkOnlyEveryMS(`equip_${bot.id}`, 2_000)) {
             this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
 
+            let switched = false
             for (const [type, hpLessThan, attributes] of this.options.switchConfig) {
                 const monster = bot.getEntity({ type, hpLessThan })
                 if (!monster) continue // No monster, or not low enough HP
 
                 // Equip with our attributes
+                console.debug("DEBUG: SWITCHING TO LUCK ON", bot.id, "FOR", type)
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, { attributes }))
+                switched = true
                 break
             }
 
             // Equip our original equipment
-            this.botEnsureEquipped.set(bot.id, this.originalEnsureEquipped)
+            if (!switched) this.botEnsureEquipped.set(bot.id, this.originalEnsureEquipped)
         }
         return super.ensureEquipped(bot)
     }
