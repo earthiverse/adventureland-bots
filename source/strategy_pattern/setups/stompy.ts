@@ -56,7 +56,7 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                                 },
                             },
                             typeList,
-                            switchConfig: [["stompy", 100_000, ["luck"]]],
+                            switchConfig: [["stompy", 1_000_000, ["luck"]]],
                         }),
                         move: new ImprovedMoveStrategy(["stompy", "wolf"]),
                     },

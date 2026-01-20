@@ -51,7 +51,6 @@ export class TemporalSurgeBossesStrategy<Type extends Character> implements Stra
                     await bot.equip(slot, "orb")
                     if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
                 }
-                console.log(`DEBUG: TEMPORAL SURGE (${bot.id})`)
                 await bot.temporalSurge()
                 if (slot !== undefined) bot.equip(slot).catch(console.error)
 
