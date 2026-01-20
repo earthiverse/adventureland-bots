@@ -1,4 +1,4 @@
-import { PingCompensatedCharacter } from "alclient"
+import { MonsterName, PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
@@ -8,6 +8,7 @@ import { Setup } from "./base"
 import { MAGE_SPLASH, MP_RECOVERY, PRIEST_ARMOR, RETURN_HIGHEST, WARRIOR_SPLASH } from "./equipment.js"
 
 export function constructStompySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const typeList: MonsterName[] = ["stompy", "wolf", "mechagnome"]
     return {
         configs: [
             {
@@ -25,7 +26,7 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                                     orb: { name: "orboftemporal", filters: RETURN_HIGHEST },
                                 },
                             },
-                            typeList: ["stompy", "wolf"],
+                            typeList,
                         }),
                         move: new ImprovedMoveStrategy("stompy"),
                     },
@@ -37,7 +38,7 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                             generateEnsureEquipped: {
                                 prefer: { ...PRIEST_ARMOR, orb: { name: "orboftemporal", filters: RETURN_HIGHEST } },
                             },
-                            typeList: ["stompy", "wolf"],
+                            typeList,
                         }),
                         move: new ImprovedMoveStrategy("stompy"),
                     },
@@ -54,7 +55,7 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                                     orb: { name: "orboftemporal", filters: RETURN_HIGHEST },
                                 },
                             },
-                            typeList: ["stompy", "wolf"],
+                            typeList,
                             switchConfig: [["stompy", 100_000, ["luck"]]],
                         }),
                         move: new ImprovedMoveStrategy(["stompy", "wolf"]),
