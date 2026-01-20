@@ -64,7 +64,7 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                             switchConfig: [
                                 [
                                     "stompy",
-                                    1_000_000,
+                                    200_000,
                                     {
                                         attributes: ["luck"],
                                         prefer: {
