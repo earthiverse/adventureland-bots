@@ -416,8 +416,6 @@ export class WarriorAttackWithAttributesStrategy extends WarriorAttackStrategy {
     protected ensureEquipped(bot: Warrior): Promise<void> {
         let switched = false
         if (checkOnlyEveryMS(`equip_${bot.id}`, 2_000)) {
-            this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, this.options.generateEnsureEquipped))
-
             for (const [type, hpLessThan, generate] of this.options.switchConfig) {
                 const monster = bot.getEntity({ type, hpLessThan })
                 if (!monster) continue // No monster, or not low enough HP
@@ -425,6 +423,8 @@ export class WarriorAttackWithAttributesStrategy extends WarriorAttackStrategy {
                 // Equip with our attributes
                 console.debug("DEBUG: SWITCHING TO LUCK ON", bot.id, "FOR", type)
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, generate))
+                console.debug(this.originalEnsureEquipped.get(bot.id))
+                console.debug(this.botEnsureEquipped.get(bot.id))
                 switched = true
                 break
             }
