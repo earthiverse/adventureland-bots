@@ -1,4 +1,4 @@
-import { isItemKey, type Character } from "alclient";
+import { isItemKey, type Character, type Paladin } from "alclient";
 import type { Comparator } from "tinyqueue";
 import TinyQueue from "tinyqueue";
 import type { ItemKey, SkillKey } from "typed-adventureland";
@@ -116,7 +116,7 @@ export const setup = (character: Character) => {
         [
           "regen_hp",
           "regen_mp",
-          // ...(character.ctype === "paladin" && character.canUse("selfheal") ? (["selfheal"] as SkillKey[]) : []),
+          ...(character.ctype === "paladin" && character.canUse("selfheal") ? (["selfheal"] as SkillKey[]) : []),
           ...REGEN_ITEMS.filter((name) => character.items.some((item) => item?.name === name)),
         ],
         comparator,
@@ -130,15 +130,23 @@ export const setup = (character: Character) => {
       } else if (bestAction === "regen_mp") {
         await character.regenMp();
       } else if (bestAction === "selfheal") {
-        // TODO: Add paladin self heal
+        await (character as Paladin).selfHeal();
       } else if (isItemKey(bestAction, character.game.G)) {
         await character.consumeItem(character.locateItem({ name: bestAction }) as number);
       }
     } catch (e) {
       if (e instanceof Error || typeof e === "string") logDebug(`regenLoop: ${e}`);
     } finally {
-      // TODO: If paladin, add selfheal
-      setTimeout(() => void regenLoop(), Math.max(100, character.getTimeout("use_mp")));
+      setTimeout(
+        () => void regenLoop(),
+        Math.max(
+          100,
+          Math.min(
+            character.getTimeout("use_mp"),
+            character.ctype === "paladin" ? character.getTimeout("selfheal") : Number.POSITIVE_INFINITY,
+          ),
+        ),
+      );
     }
   };
   void regenLoop();
