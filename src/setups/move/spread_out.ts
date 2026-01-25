@@ -97,6 +97,7 @@ export const setup = (character: Character, monsters: MonsterKey[] = ["goo"]) =>
 
     try {
       if (character.socket.disconnected) return;
+      if (!character.canMove()) return;
 
       const entity = getBestTarget(character, { comparator, monsters });
       if (!entity) return;

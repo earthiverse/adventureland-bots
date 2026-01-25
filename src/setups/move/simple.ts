@@ -26,6 +26,7 @@ export const setup = (character: Character, monsters: MonsterKey[] = ["goo"]) =>
 
     try {
       if (character.socket.disconnected) return;
+      if (!character.canMove()) return;
 
       const entity = getBestTarget(character, { canMoveTo: true, monsters });
       if (!entity) {
@@ -42,8 +43,10 @@ export const setup = (character: Character, monsters: MonsterKey[] = ["goo"]) =>
 
         character
           .move(character.x + (dx / distance) * moveDistance, character.y + (dy / distance) * moveDistance)
-          .catch(logDebug);
-        character.move((entity.x + character.x) / 2, (entity.y + character.y) / 2).catch(logDebug);
+          .catch((e) => logDebug(`moveLoop: ${e}`));
+        character
+          .move((entity.x + character.x) / 2, (entity.y + character.y) / 2)
+          .catch((e) => logDebug(`moveLoop: ${e}`));
       }
     } catch (e) {
       if (e instanceof Error || typeof e === "string") logDebug(`moveLoop: ${e}`);
