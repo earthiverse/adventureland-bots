@@ -1,4 +1,4 @@
-import { type Character } from "alclient";
+import { Utilities, type Character } from "alclient";
 import type { MonsterKey } from "typed-adventureland";
 import { logDebug } from "../../utilities/logging.js";
 import { getBestTarget, ignoreMonster, unignoreMonster } from "../../utilities/monster.js";
@@ -38,8 +38,9 @@ export const setup = (character: Character, options: AttackOptions = { monsters:
       });
       if (!entity) return;
 
-      // TODO: Better ignore logic
-      if (entity.hp < character.attack / 2) ignoreMonster(entity);
+      // Ignore the monster if we're going to kill it
+      const damageRange = Utilities.damageRange(character, entity, character.game.G);
+      if (entity.hp <= damageRange.min) ignoreMonster(entity);
 
       // TODO: Better attack logic
       await character.basicAttack(entity);
