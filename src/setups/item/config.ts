@@ -207,16 +207,21 @@ export const setup = (character: Character) => {
         }
 
         if (!wantToUpgrade(item, character.game.G)) continue; // No item to upgrade
+        if (!character.canUpgrade()) continue; // Can't upgrade
 
         // TODO: Lucky slot logic
 
-        // TODO: Calculate best upgrade
+        // Calculate best upgrade
         const nextUpgrade = await getNextUpgradeParams(character, itemPos, character.game.G);
         if (nextUpgrade === undefined) continue;
         const scrollPos =
-          nextUpgrade.scroll !== undefined ? character.locateItem({ name: nextUpgrade.scroll }) : undefined;
+          nextUpgrade.scroll !== undefined ? (character.locateItem({ name: nextUpgrade.scroll }) ?? false) : undefined;
         const offeringPos =
-          nextUpgrade.offering !== undefined ? character.locateItem({ name: nextUpgrade.offering }) : undefined;
+          nextUpgrade.offering !== undefined
+            ? (character.locateItem({ name: nextUpgrade.offering }) ?? false)
+            : undefined;
+
+        if (scrollPos === false || offeringPos === false) continue; // We don't have what we want to upgrade
 
         // TODO: Log wether it succeeded or failed
         await character.upgrade(itemPos, scrollPos, offeringPos);
