@@ -47,8 +47,8 @@ export function calculateSkillScore(skill: SkillKey, character: Character): numb
       givesMp = 100;
       break;
     case "selfheal":
-      givesHp =
-        character.game.G.skills.selfheal?.levels?.findLast(([reqLevel]) => character.level >= reqLevel)?.[1] ?? 0;
+      givesHp = character.game.G.skills.selfheal.levels!.findLast(([reqLevel]) => character.level >= reqLevel)![1];
+      givesMp = -character.game.G.skills.selfheal.mp!;
       break;
     default:
       break;
