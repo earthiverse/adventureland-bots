@@ -124,8 +124,8 @@ EventBus.on("entities_updated", (observer, monsters, characters) => {
   }
 });
 
-function getNextSpawn(G: GData, type: MonsterKey): number | undefined {
-  const gMonster = G.monsters[type];
+function getNextSpawn(g: GData, type: MonsterKey): number | undefined {
+  const gMonster = g.monsters[type];
   if (gMonster.respawn < 0) {
     return undefined; // It doesn't respawn
   } else if (gMonster.respawn <= 200) {
