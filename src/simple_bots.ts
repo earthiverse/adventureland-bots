@@ -1,6 +1,7 @@
 import { Game, type Character } from "alclient";
 import type { MonsterKey } from "typed-adventureland";
 import config from "../config/config.js";
+import { setup as avoidStackingSetup } from "./setups/move/avoid_stacking.js";
 import { setup } from "./setups/simple.js";
 
 // Plugins
@@ -63,5 +64,6 @@ for (const characterInfo of player.characters) {
   logInformational(`Starting ${characterInfo.name} (${characterInfo.type}) on ASIA I`);
   await character.start("ASIA", "I");
   setup(character, MONSTERS);
+  avoidStackingSetup(character);
   numStarted++;
 }
