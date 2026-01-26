@@ -430,6 +430,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         // We have enough space to unequip something
                         bot.esize > 0
                     ) {
+                        if (bot.id === "earthPri")
+                            console.debug(`unequipping ${sT} to equip ${ensure.name} in the other slot`)
                         toEquip = await bot.unequip("offhand")
                     } else if (
                         slotType === "offhand" &&
@@ -440,6 +442,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         // We have enough space to unequip something
                         bot.esize > 0
                     ) {
+                        if (bot.id === "earthPri")
+                            console.debug(`unequipping ${sT} to equip ${ensure.name} in the other slot`)
                         toEquip = await bot.unequip("mainhand")
                     } else if (
                         slotType === "ring1" &&
@@ -448,6 +452,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         // We have enough space to unequip something
                         bot.esize > 0
                     ) {
+                        if (bot.id === "earthPri")
+                            console.debug(`unequipping ${sT} to equip ${ensure.name} in the other slot`)
                         toEquip = await bot.unequip("ring2")
                     } else if (
                         slotType === "ring2" &&
@@ -456,6 +462,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         // We have enough space to unequip something
                         bot.esize > 0
                     ) {
+                        if (bot.id === "earthPri")
+                            console.debug(`unequipping ${sT} to equip ${ensure.name} in the other slot`)
                         toEquip = await bot.unequip("ring1")
                     } else if (
                         slotType === "earring1" &&
@@ -464,6 +472,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         // We have enough space to unequip something
                         bot.esize > 0
                     ) {
+                        if (bot.id === "earthPri")
+                            console.debug(`unequipping ${sT} to equip ${ensure.name} in the other slot`)
                         toEquip = await bot.unequip("earring2")
                     } else if (
                         slotType === "earring2" &&
@@ -472,6 +482,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         // We have enough space to unequip something
                         bot.esize > 0
                     ) {
+                        if (bot.id === "earthPri")
+                            console.debug(`unequipping ${sT} to equip ${ensure.name} in the other slot`)
                         toEquip = await bot.unequip("earring1")
                     } else {
                         throw new Error(`${bot.name} couldn't find ${ensure.name} to equip in ${sT}.`)
@@ -508,7 +520,14 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             }
         }
 
-        if (equipBatch.length) await bot.equipBatch(equipBatch).catch(console.error)
+        if (equipBatch.length) {
+            if (bot.id === "earthPri") {
+                console.debug(
+                    `Equipping items for ${bot.name}: ${equipBatch.map((e) => `${e.slot}=${bot.items[e.num].name}`).join(", ")}`,
+                )
+            }
+            await bot.equipBatch(equipBatch).catch(console.error)
+        }
     }
 
     protected async scare(bot: Type) {
