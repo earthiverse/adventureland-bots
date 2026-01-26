@@ -126,12 +126,14 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
 class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
     public onApply(bot: Priest): void {
         this.options.generateEnsureEquipped.prefer = this.options.generateEnsureEquipped.prefer ?? {}
-        this.options.generateEnsureEquipped.prefer.orb = { name: "jacko", filters: { returnHighestLevel: true } }
+        this.options.generateEnsureEquipped.prefer.orb = { name: "jacko", filters: RETURN_HIGHEST }
 
         if (bot.serverData.name === "PVP" || !(bot.hasItem("zapper") || bot.isEquipped("zapper"))) {
-            this.options.generateEnsureEquipped.prefer.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "cring", filters: RETURN_HIGHEST }
+            this.options.generateEnsureEquipped.prefer.ring2 = { name: "cring", filters: RETURN_HIGHEST }
         } else {
-            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: RETURN_HIGHEST }
+            this.options.generateEnsureEquipped.prefer.ring2 = { name: "cring", filters: RETURN_HIGHEST }
         }
 
         super.onApply(bot)

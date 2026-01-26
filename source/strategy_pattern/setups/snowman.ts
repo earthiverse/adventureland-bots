@@ -8,6 +8,7 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
+import { RETURN_HIGHEST } from "./equipment.js"
 
 class MageSnowmanAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {
@@ -17,17 +18,17 @@ class MageSnowmanAttackStrategy extends MageAttackStrategy {
             // No splash damage
             this.options.generateEnsureEquipped.prefer.mainhand = {
                 name: "firestaff",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
             this.options.generateEnsureEquipped.prefer.offhand = {
                 name: "wbookhs",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
         } else {
             // Splash damage & additional monsters
             this.options.generateEnsureEquipped.prefer.mainhand = {
                 name: "gstaff",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
             delete this.options.generateEnsureEquipped.prefer.offhand
         }
@@ -39,12 +40,14 @@ class PriestSnowmanAttackStrategy extends PriestAttackStrategy {
     public onApply(bot: Priest): void {
         this.options.generateEnsureEquipped = this.options.generateEnsureEquipped ?? {}
         this.options.generateEnsureEquipped.prefer = this.options.generateEnsureEquipped.prefer ?? {}
-        this.options.generateEnsureEquipped.prefer.orb = { name: "jacko", filters: { returnHighestLevel: true } }
+        this.options.generateEnsureEquipped.prefer.orb = { name: "jacko", filters: RETURN_HIGHEST }
         if (bot.isPVP()) {
-            this.options.generateEnsureEquipped.prefer.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "cring", filters: RETURN_HIGHEST }
+            this.options.generateEnsureEquipped.prefer.ring2 = { name: "cring", filters: RETURN_HIGHEST }
         } else {
             // Additional monsters
-            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: RETURN_HIGHEST }
+            this.options.generateEnsureEquipped.prefer.ring2 = { name: "cring", filters: RETURN_HIGHEST }
         }
         super.onApply(bot)
     }
@@ -60,15 +63,15 @@ class WarriorSnowmanAttackStrategy extends WarriorAttackStrategy {
             delete this.options.enableEquipForCleave
             this.options.generateEnsureEquipped.prefer.mainhand = {
                 name: "fireblade",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
             this.options.generateEnsureEquipped.prefer.offhand = {
                 name: "fireblade",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
             this.options.generateEnsureEquipped.prefer.ring1 = {
                 name: "strring",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
         } else {
             // Splash Damage & additional monsters
@@ -76,13 +79,13 @@ class WarriorSnowmanAttackStrategy extends WarriorAttackStrategy {
             this.options.enableEquipForCleave = true
             this.options.generateEnsureEquipped.prefer.mainhand = {
                 name: "vhammer",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
             this.options.generateEnsureEquipped.prefer.offhand = {
                 name: "ololipop",
-                filters: { returnHighestLevel: true },
+                filters: RETURN_HIGHEST,
             }
-            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: RETURN_HIGHEST }
         }
         super.onApply(bot)
     }

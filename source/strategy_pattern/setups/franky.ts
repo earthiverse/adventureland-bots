@@ -44,9 +44,11 @@ class PriestFrankyAttackStrategy extends PriestAttackStrategy {
         if (!this.options.generateEnsureEquipped.prefer) this.options.generateEnsureEquipped.prefer = {}
         if (bot.isPVP()) {
             this.options.generateEnsureEquipped.prefer.ring1 = { name: "cring", filters: RETURN_HIGHEST }
+            this.options.generateEnsureEquipped.prefer.ring2 = { name: "cring", filters: RETURN_HIGHEST }
         } else {
             // Additional monsters
             this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: RETURN_HIGHEST }
+            this.options.generateEnsureEquipped.prefer.ring2 = { name: "cring", filters: RETURN_HIGHEST }
         }
         super.onApply(bot)
     }
