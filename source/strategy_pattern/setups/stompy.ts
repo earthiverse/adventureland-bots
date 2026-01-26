@@ -36,8 +36,13 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                             contexts: contexts,
                             disableEnergize: true,
                             generateEnsureEquipped: {
-                                prefer: { ...PRIEST_ARMOR, orb: { name: "orboftemporal", filters: RETURN_HIGHEST } },
+                                prefer: {
+                                    ...PRIEST_ARMOR,
+                                    orb: { name: "orboftemporal", filters: RETURN_HIGHEST },
+                                    ring1: { name: "zapper", filters: RETURN_HIGHEST },
+                                },
                             },
+                            enableGreedyAggro: ["wolf"],
                             typeList,
                         }),
                         move: new ImprovedMoveStrategy("stompy"),
