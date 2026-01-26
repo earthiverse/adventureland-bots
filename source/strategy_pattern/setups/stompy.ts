@@ -5,7 +5,14 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackWithAttributesStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_SPLASH, MP_RECOVERY, PRIEST_ARMOR, RETURN_HIGHEST, WARRIOR_SPLASH_WEAPONS } from "./equipment.js"
+import {
+    MAGE_SPLASH,
+    MP_RECOVERY,
+    PRIEST_ARMOR,
+    RETURN_HIGHEST,
+    WARRIOR_SPLASH_WEAPONS,
+    ZAPPER_CRING,
+} from "./equipment.js"
 
 export function constructStompySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const typeList: MonsterName[] = ["stompy", "wolf", "mechagnome"]
@@ -39,7 +46,7 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                                 prefer: {
                                     ...PRIEST_ARMOR,
                                     orb: { name: "orboftemporal", filters: RETURN_HIGHEST },
-                                    ring1: { name: "zapper", filters: RETURN_HIGHEST },
+                                    ...ZAPPER_CRING,
                                 },
                             },
                             enableGreedyAggro: ["wolf"],
