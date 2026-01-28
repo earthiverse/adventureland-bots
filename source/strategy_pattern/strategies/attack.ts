@@ -182,6 +182,9 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
                         if (AL.Game.G.monsters[monster.type].immune) continue // Can't damage immune monsters with zapperzap
                         if (AGGROED_MONSTERS.has(monster.id)) continue // Recently aggroed
+                        console.debug(
+                            `${bot.name} is greedily aggroing ${monster.type} (${monster.id}) with zapperzap (${Date.now()})`,
+                        )
                         AGGROED_MONSTERS.set(monster.id, true)
                         bot.nextSkill.set("zapperzap", new Date(Date.now() + bot.ping * 2))
                         return bot.zapperZap(monster.id).catch()
