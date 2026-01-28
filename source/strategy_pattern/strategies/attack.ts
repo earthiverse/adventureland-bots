@@ -20,6 +20,7 @@ import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 import { suppress_errors } from "../logging.js"
 import { GenerateEnsureEquipped, generateEnsureEquipped } from "../setups/equipment.js"
+import TTLCache from "@isaacs/ttlcache"
 
 export type EnsureEquippedSlot = {
     name: ItemName
@@ -91,6 +92,11 @@ export const IDLE_ATTACK_MONSTERS: MonsterName[] = [
     "tortoise",
     "wabbit",
 ]
+
+const AGGROED_MONSTERS = new TTLCache<string, true>({
+    max: 500,
+    ttl: 2000,
+})
 
 export class BaseAttackStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
@@ -175,6 +181,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
                         if (AL.Game.G.monsters[monster.type].immune) continue // Can't damage immune monsters with zapperzap
+                        if (AGGROED_MONSTERS.has(monster.id)) continue // Recently aggroed
+                        AGGROED_MONSTERS.set(monster.id, true)
                         bot.nextSkill.set("zapperzap", new Date(Date.now() + bot.ping * 2))
                         return bot.zapperZap(monster.id).catch()
                     }
@@ -190,6 +198,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                             continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.taunt.range) continue
+                        if (AGGROED_MONSTERS.has(monster.id)) continue // Recently aggroed
+                        AGGROED_MONSTERS.set(monster.id, true)
                         bot.nextSkill.set("taunt", new Date(Date.now() + bot.ping * 2))
                         return (bot as unknown as Warrior).taunt(monster.id).catch(suppress_errors)
                     }
@@ -206,6 +216,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                             continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.cburst.range) continue
+                        if (AGGROED_MONSTERS.has(monster.id)) continue // Recently aggroed
                         cbursts.push([monster.id, 1])
                     }
                     for (const monster of bot.getEntities({
@@ -214,9 +225,11 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         withinRange: "cburst",
                     })) {
                         if (cbursts.some((cburst) => cburst[0] == monster.id)) continue // Already in our list to cburst
+                        if (AGGROED_MONSTERS.has(monster.id)) continue // Recently aggroed
                         cbursts.push([monster.id, 1])
                     }
                     if (cbursts.length) {
+                        for (const cburst of cbursts) AGGROED_MONSTERS.set(cburst[0], true)
                         bot.nextSkill.set("cburst", new Date(Date.now() + bot.ping * 2))
                         return (bot as unknown as Mage).cburst(cbursts).catch()
                     }
@@ -231,6 +244,8 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                             continue
                         if (this.options.typeList && !this.options.typeList.includes(monster.type)) continue
                         if (AL.Tools.distance(bot, monster) > bot.range) continue
+                        if (AGGROED_MONSTERS.has(monster.id)) continue // Recently aggroed
+                        AGGROED_MONSTERS.set(monster.id, true)
                         bot.nextSkill.set("attack", new Date(Date.now() + bot.ping * 2))
                         return bot.basicAttack(monster.id).catch()
                     }
