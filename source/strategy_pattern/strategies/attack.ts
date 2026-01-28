@@ -93,7 +93,7 @@ export const IDLE_ATTACK_MONSTERS: MonsterName[] = [
     "wabbit",
 ]
 
-const AGGROED_MONSTERS = new TTLCache<string, true>({
+export const AGGROED_MONSTERS = new TTLCache<string, true>({
     max: 500,
     ttl: 2000,
 })
@@ -182,9 +182,6 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                         if (AL.Tools.distance(bot, monster) > AL.Game.G.skills.zapperzap.range) continue
                         if (AL.Game.G.monsters[monster.type].immune) continue // Can't damage immune monsters with zapperzap
                         if (AGGROED_MONSTERS.has(monster.id)) continue // Recently aggroed
-                        console.debug(
-                            `${bot.name} is greedily aggroing ${monster.type} (${monster.id}) with zapperzap (${Date.now()})`,
-                        )
                         AGGROED_MONSTERS.set(monster.id, true)
                         bot.nextSkill.set("zapperzap", new Date(Date.now() + bot.ping * 2))
                         return bot.zapperZap(monster.id).catch()
@@ -299,7 +296,10 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             ) {
                 // Prioritize the entities
                 const targets = new FastPriorityQueue<Entity>(priority)
-                for (const entity of entities) targets.add(entity)
+                for (const entity of entities) {
+                    if (AGGROED_MONSTERS.has(entity.id)) continue // Recently aggroed
+                    targets.add(entity)
+                }
                 const target = targets.peek()
 
                 const canKill = bot.canKillInOneShot(target)
@@ -311,6 +311,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                 )
                     this.getEnergizeFromOther(bot).catch(suppress_errors)
 
+                AGGROED_MONSTERS.set(target.id, true)
                 return bot.basicAttack(target.id)
             }
         }
@@ -577,9 +578,14 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
             ) {
                 // Prioritize the entities
                 const targets = new FastPriorityQueue<Entity>(priority)
-                for (const entity of entities) targets.add(entity)
+                for (const entity of entities) {
+                    if (AGGROED_MONSTERS.has(entity.id)) continue // Recently aggroed
+                    targets.add(entity)
+                }
 
-                return bot.zapperZap(targets.peek().id)
+                const target = targets.peek()
+                AGGROED_MONSTERS.set(target.id, true)
+                return bot.zapperZap(target.id)
             }
         }
 

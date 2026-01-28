@@ -1,7 +1,7 @@
 import AL, { Entity, Rogue } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { sortHighestHpFirst } from "../../base/sort.js"
-import { BaseAttackStrategy, BaseAttackStrategyOptions, KILL_STEAL_AVOID_MONSTERS } from "./attack.js"
+import { AGGROED_MONSTERS, BaseAttackStrategy, BaseAttackStrategyOptions, KILL_STEAL_AVOID_MONSTERS } from "./attack.js"
 import { suppress_errors } from "../logging.js"
 
 export type RogueAttackStrategyOptions = BaseAttackStrategyOptions & {
@@ -11,7 +11,7 @@ export type RogueAttackStrategyOptions = BaseAttackStrategyOptions & {
 }
 
 export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
-    public declare options: RogueAttackStrategyOptions
+    declare public options: RogueAttackStrategyOptions
 
     public constructor(options?: RogueAttackStrategyOptions) {
         super(options)
@@ -101,6 +101,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
 
                 const target = targets.peek()
                 if (bot.canKillInOneShot(target, "mentalburst")) this.preventOverkill(bot, target)
+                AGGROED_MONSTERS.set(target.id, true)
                 return bot.mentalBurst(target.id)
             }
         }
@@ -165,7 +166,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
                 const target = targets.peek()
                 const canKill = bot.canKillInOneShot(target, "quickpunch")
                 if (canKill) this.preventOverkill(bot, target)
-
+                AGGROED_MONSTERS.set(target.id, true)
                 return bot.quickPunch(target.id)
             }
         }
@@ -233,7 +234,7 @@ export class RogueAttackStrategy extends BaseAttackStrategy<Rogue> {
                 const target = targets.peek()
                 const canKill = bot.canKillInOneShot(target, "quickstab")
                 if (canKill) this.preventOverkill(bot, target)
-
+                AGGROED_MONSTERS.set(target.id, true)
                 return bot.quickStab(target.id)
             }
         }

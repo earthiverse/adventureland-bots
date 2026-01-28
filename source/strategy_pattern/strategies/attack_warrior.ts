@@ -2,7 +2,13 @@ import AL, { ItemData, MonsterName, SlotType, Tools, Warrior } from "alclient"
 import { checkOnlyEveryMS, sleep } from "../../base/general.js"
 import { suppress_errors } from "../logging.js"
 import { GenerateEnsureEquipped, generateEnsureEquipped, RETURN_HIGHEST } from "../setups/equipment.js"
-import { BaseAttackStrategy, BaseAttackStrategyOptions, EnsureEquipped, IDLE_ATTACK_MONSTERS } from "./attack.js"
+import {
+    AGGROED_MONSTERS,
+    BaseAttackStrategy,
+    BaseAttackStrategyOptions,
+    EnsureEquipped,
+    IDLE_ATTACK_MONSTERS,
+} from "./attack.js"
 
 export type WarriorAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableAgitate?: true
@@ -97,7 +103,13 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             }).length
 
             // We can reach the same number of targets (or more!?) if we cleave, so cleave instead
-            if (numIfAgitate >= numIfCleave) return this.cleave(bot)
+            if (numIfAgitate >= numIfCleave) {
+                for (const entity of bot.getEntities({ withinRange: "cleave" })) {
+                    if (bot.canKillInOneShot(entity, "cleave")) this.preventOverkill(bot, entity)
+                    AGGROED_MONSTERS.set(entity.id, true)
+                }
+                return this.cleave(bot)
+            }
         }
 
         if (!bot.canUse("agitate")) return // Can't agitate

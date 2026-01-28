@@ -1,6 +1,6 @@
 import AL, { Entity, Paladin } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
-import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
+import { AGGROED_MONSTERS, BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
 import { suppress_errors } from "../logging.js"
 
 export type PaladinAttackStrategyOptions = BaseAttackStrategyOptions & {
@@ -10,7 +10,7 @@ export type PaladinAttackStrategyOptions = BaseAttackStrategyOptions & {
 }
 
 export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
-    public declare options: PaladinAttackStrategyOptions
+    declare public options: PaladinAttackStrategyOptions
 
     public constructor(options?: PaladinAttackStrategyOptions) {
         super(options)
@@ -74,7 +74,9 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
 
-                return bot.purify(targets.peek().id)
+                const target = targets.peek()
+                AGGROED_MONSTERS.set(target.id, true)
+                return bot.purify(target.id)
             }
         }
 
@@ -137,7 +139,9 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
                 const targets = new FastPriorityQueue<Entity>(priority)
                 for (const entity of entities) targets.add(entity)
 
-                return bot.smash(targets.peek().id)
+                const target = targets.peek()
+                AGGROED_MONSTERS.set(target.id, true)
+                return bot.smash(target.id)
             }
         }
 

@@ -1,14 +1,14 @@
 import AL, { ActionData, ActionDataRay, Entity, Mage, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { suppress_errors } from "../logging.js"
-import { BaseAttackStrategy, BaseAttackStrategyOptions, KILL_STEAL_AVOID_MONSTERS } from "./attack.js"
+import { AGGROED_MONSTERS, BaseAttackStrategy, BaseAttackStrategyOptions, KILL_STEAL_AVOID_MONSTERS } from "./attack.js"
 
 export type MageAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableCburst?: boolean
 }
 
 export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
-    protected declare options: MageAttackStrategyOptions
+    declare protected options: MageAttackStrategyOptions
 
     protected stealOnActionCburst: (data: ActionData) => void
 
@@ -169,6 +169,7 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
                 toCburst.set(entity.id, mpNeededToKill)
             }
             this.preventOverkill(bot, entity)
+            AGGROED_MONSTERS.set(entity.id, true)
             mpPool -= mpNeededToKill
         })
 
