@@ -136,9 +136,13 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             AL.Game.G.skills.taunt.range >= Tools.distance(bot, ifAgitate[0])
         ) {
             // Taunt if there's only one, and we have it within range
+            AGGROED_MONSTERS.set(ifAgitate[0].id, true)
             return bot.taunt(ifAgitate[0].id).catch(suppress_errors)
         }
         // Agitate if there's more than one target
+        for (const entity of bot.getEntities({ withinRange: "agitate" })) {
+            AGGROED_MONSTERS.set(entity.id, true)
+        }
         return bot.agitate().catch(suppress_errors)
     }
 
