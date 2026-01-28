@@ -12,6 +12,7 @@ import {
     RETURN_HIGHEST,
     WARRIOR_SPLASH_WEAPONS,
     ZAPPER_CRING,
+    ZAPPER_STRRING,
 } from "./equipment.js"
 
 export function constructStompySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
@@ -45,8 +46,8 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                             generateEnsureEquipped: {
                                 prefer: {
                                     ...PRIEST_ARMOR,
-                                    orb: { name: "orboftemporal", filters: RETURN_HIGHEST },
                                     ...ZAPPER_CRING,
+                                    orb: { name: "orboftemporal", filters: RETURN_HIGHEST },
                                 },
                             },
                             enableGreedyAggro: ["wolf"],
@@ -63,11 +64,10 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                             generateEnsureEquipped: {
                                 prefer: {
                                     ...WARRIOR_SPLASH_WEAPONS,
+                                    ...ZAPPER_STRRING,
                                     amulet: { name: "stramulet", filters: RETURN_HIGHEST },
                                     chest: { name: "tshirt9", filters: RETURN_HIGHEST },
-                                    ring1: { name: "strring", filters: RETURN_HIGHEST },
                                     ring2: { name: "strring", filters: RETURN_HIGHEST },
-                                    earring1: { name: "cearring", filters: RETURN_HIGHEST },
                                     earring2: { name: "cearring", filters: RETURN_HIGHEST },
                                     orb: { name: "orboftemporal", filters: RETURN_HIGHEST },
                                 },
