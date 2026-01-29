@@ -60,11 +60,10 @@ export const setup = (character: Character) => {
         try {
           const numToReplenish = wantToReplenish(character, item);
           if (numToReplenish !== false) {
-            if (numToReplenish > 0) {
-              // TODO: Buy as many as we can if we can't buy all
-              await character.buy(item.name, numToReplenish);
-              log(`${character.id} bought ${numToReplenish} ${getItemDescription(item)}`, BUY_LOG_LEVEL);
-            }
+            // TODO: Buy as many as we can if we can't buy all
+            if (!character.canBuy(item.name, { quantity: numToReplenish })) continue; // Too far away
+            await character.buy(item.name, numToReplenish);
+            log(`${character.id} bought ${numToReplenish} ${getItemDescription(item)}`, BUY_LOG_LEVEL);
             continue;
           }
 
@@ -86,10 +85,9 @@ export const setup = (character: Character) => {
           }
 
           if (wantToSell(item, character.game.G)) {
-            if (character.canSell()) {
-              await character.sell(index, item.q ?? 1);
-              log(`${character.id} sold ${getItemDescription(item)} to NPC`, SELL_LOG_LEVEL);
-            }
+            if (!character.canSell()) continue; // Too far away
+            await character.sell(index, item.q ?? 1);
+            log(`${character.id} sold ${getItemDescription(item)} to NPC`, SELL_LOG_LEVEL);
             continue;
           }
         } catch (e) {
@@ -165,10 +163,12 @@ export const setup = (character: Character) => {
         checkMs = character.q.upgrade.ms;
         return; // Already upgrading
       }
+      if (!character.canUpgrade()) return; // Can't upgrade
 
       for (let itemPos = 0; itemPos < character.items.length; itemPos++) {
         const item = character.items[itemPos];
         if (!item) continue; // No item in this slot
+        if (character.game.G.items[item.name].upgrade === undefined) continue; // Not upgradable
 
         if (wantToMakeShiny(item)) {
           const grade = Utilities.getItemGrade(item, character.game.G);
@@ -206,8 +206,7 @@ export const setup = (character: Character) => {
           return;
         }
 
-        if (!wantToUpgrade(item, character.game.G)) continue; // No item to upgrade
-        if (!character.canUpgrade()) continue; // Can't upgrade
+        if (!wantToUpgrade(item, character.game.G)) continue; // Don't want to / can't upgrade
 
         // TODO: Lucky slot logic
 
