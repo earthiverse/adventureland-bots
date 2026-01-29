@@ -233,13 +233,17 @@ export function removeNonUpgradable(config: ItemsConfig, g: GData) {
     if (itemConfig === undefined) continue; // No config
     if (itemConfig.upgrade === undefined) continue; // No upgrade config
     const gItem = g.items[name];
-    if (gItem.upgrade === undefined) {
-      logError(`Item ${name} is not upgradable, but has an upgrade config`);
+    if (gItem.upgrade === undefined && gItem.compound === undefined) {
+      logError(`Item ${name} is not upgradable/compoundable, but has an upgrade config`);
       delete itemConfig.upgrade;
       continue;
     }
     if (itemConfig.upgrade.makeShinyBeforeUpgrading !== undefined) {
       const grade = Utilities.getItemGrade({ name, level: 0 }, g);
+      if (gItem.upgrade === undefined) {
+        logError(`Item ${name} has makeShinyBeforeUpgrading set, but is not upgradable`);
+        delete itemConfig.upgrade.makeShinyBeforeUpgrading;
+      }
       if (grade === undefined) {
         logError(`Item ${name} has no grade, but has makeShinyBeforeUpgrading set`);
         delete itemConfig.upgrade.makeShinyBeforeUpgrading;
