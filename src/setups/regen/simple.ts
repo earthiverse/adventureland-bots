@@ -114,10 +114,14 @@ export const setup = (character: Character) => {
 
       const bestActions = new TinyQueue<ItemKey | SkillKey>(
         [
-          "regen_hp",
-          "regen_mp",
+          ...(character.canUse("use_mp")
+            ? ([
+                "regen_hp",
+                "regen_mp",
+                ...REGEN_ITEMS.filter((name) => character.items.some((item) => item?.name === name)),
+              ] as (SkillKey | ItemKey)[])
+            : []),
           ...(character.ctype === "paladin" && character.canUse("selfheal") ? (["selfheal"] as SkillKey[]) : []),
-          ...REGEN_ITEMS.filter((name) => character.items.some((item) => item?.name === name)),
         ],
         comparator,
       );
