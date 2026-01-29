@@ -1,4 +1,5 @@
 import { Utilities } from "alclient";
+import TinyQueue from "tinyqueue";
 import type { GData, ItemInfo, ItemKey } from "typed-adventureland";
 import type { ItemsConfig } from "../../../config/items.js";
 import { getItemDescription } from "../items.js";
@@ -211,6 +212,160 @@ export function calculateUpgrade(item: ItemInfo, grace: number, startingCost: nu
   return bestConfig;
 }
 
+export function calculateOptimalUpgradePath(
+  item: ItemInfo,
+  initialGrace: number,
+  initialValue: number,
+  g: GData,
+  targetLevel: number | undefined = undefined,
+) {
+  const maxLevel = g.items[item.name].grades![3];
+  if (targetLevel === undefined || targetLevel > maxLevel) targetLevel = maxLevel; // Limit to its max
+  if ((item.level ?? 0) >= targetLevel) return undefined; // Already reached
+
+  const initialLevel = 0;
+  const levelZeroGrade = Utilities.getItemGrade({ name: item.name, level: 0 }, g);
+  const igrace = levelZeroGrade === 0 ? 1 : levelZeroGrade === 1 ? -1 : -2;
+
+  type MEMO_DATA = {
+    cost: number;
+    method: { scroll: ItemKey; offering?: ItemKey } | "stack" | "initial";
+    previous: { level: number; grace: number } | undefined;
+    chance: number;
+  };
+
+  /** level -> max grace */
+  const maxGrace = new Map<number, number>();
+  /** level -> grace -> cost */
+  const memo = new Map<number, Map<number, MEMO_DATA>>();
+  const getMemo = (level: number, grace: number) => {
+    return memo.get(level)?.get(grace);
+  };
+  const setMemo = (
+    level: number,
+    grace: number,
+    cost: number,
+    previous: { level: number; grace: number } | undefined,
+    method: { scroll: ItemKey; offering?: ItemKey } | "stack" | "initial",
+    chance: number,
+  ) => {
+    if (!memo.has(level)) memo.set(level, new Map());
+    memo.get(level)!.set(grace, { cost, method, previous, chance });
+  };
+
+  const queue = new TinyQueue<{
+    cost: number;
+    level: number;
+    grace: number;
+  }>([{ cost: initialValue, level: initialLevel, grace: initialGrace }], (a, b) => a.cost - b.cost);
+  setMemo(initialLevel, initialGrace, initialValue, undefined, "initial", 1);
+
+  while (queue.length > 0) {
+    const current = queue.pop()!;
+    if (current.level >= targetLevel) continue; // We're done
+
+    const previous = getMemo(current.level, current.grace)!;
+    if (previous.cost < current.cost) continue; // Not cheaper than our current path
+
+    const previousMaxGrace = maxGrace.get(current.level) ?? -1;
+    if (current.grace < previousMaxGrace) continue; // We had a lower cost with a higher grace (NOTE: because we visit lowest cost nodes first)
+    maxGrace.set(current.level, current.grace);
+
+    const currentItem = { name: item.name, level: current.level };
+
+    if (current.grace < Math.min(13, current.level + 2 - igrace)) {
+      const newGrace = Math.min(current.grace + 0.5, 13);
+      const primCost = OFFERINGS["offeringp"]!;
+      const newCost = current.cost + primCost;
+      const oldMemo = getMemo(current.level, newGrace);
+      if (!oldMemo || newCost < oldMemo.cost) {
+        setMemo(current.level, newGrace, newCost, { level: current.level, grace: current.grace }, "stack", 1);
+        queue.push({ cost: newCost, level: current.level, grace: newGrace });
+      }
+    }
+
+    const currentGrade = Utilities.getItemGrade(currentItem, g)!;
+    for (let grade = currentGrade; grade <= Math.min(currentGrade + 1, 4); grade++) {
+      const scroll = `scroll${grade}`;
+      const scrollCost = UPGRADE_SCROLLS[scroll as keyof typeof UPGRADE_SCROLLS];
+      if (scrollCost === undefined) continue; // We don't have a price for this scroll set
+      for (const offering of [...Object.keys(OFFERINGS), undefined] as (ItemKey | undefined)[]) {
+        const { chance, newGrace } = calculateUpgradeChance(currentItem, current.grace, scroll as ItemKey, g, offering);
+        if (!chance) continue; // Incompatible
+
+        const offeringCost = offering === undefined ? 0 : OFFERINGS[offering]!;
+        const newCost = (current.cost + scrollCost + offeringCost) / chance;
+        const newLevel = current.level + 1;
+
+        const oldMemo = getMemo(newLevel, newGrace);
+        if (!oldMemo || newCost < oldMemo.cost) {
+          setMemo(
+            newLevel,
+            newGrace,
+            newCost,
+            { level: current.level, grace: current.grace },
+            { scroll: scroll as ItemKey, offering },
+            chance,
+          );
+          queue.push({ cost: newCost, level: newLevel, grace: newGrace });
+        }
+      }
+    }
+  }
+
+  // Find the cheapest node for the target level
+  let finishGrace = Number.NEGATIVE_INFINITY;
+  let finishDatum: MEMO_DATA | undefined = undefined;
+  for (const [grace, datum] of memo.get(targetLevel)!.entries()) {
+    if (finishDatum && datum.cost >= finishDatum?.cost) continue; // Not cheaper
+    finishGrace = grace;
+    finishDatum = datum;
+  }
+
+  // Construct the path to get to that node
+  const path: {
+    level: number;
+    grace: number;
+    scroll?: ItemKey;
+    offering?: ItemKey;
+    cost: number;
+    chance: number;
+  }[] = [];
+
+  let datum: MEMO_DATA | undefined = finishDatum;
+  let grace = finishGrace;
+  let level = targetLevel;
+
+  while (datum) {
+    let scroll: ItemKey | undefined;
+    let offering: ItemKey | undefined;
+    if (typeof datum.method === "object") {
+      scroll = datum.method.scroll;
+      offering = datum.method.offering;
+    } else if (datum.method === "stack") {
+      offering = "offeringp";
+    }
+
+    path.push({
+      level,
+      grace,
+      scroll,
+      offering,
+      cost: datum.cost,
+      chance: datum.chance,
+    });
+
+    if (!datum.previous) break;
+
+    level = datum.previous.level;
+    grace = datum.previous.grace;
+    datum = memo.get(level)?.get(grace);
+  }
+
+  // Return the path
+  return path.reverse();
+}
+
 function calculateUpgradeChance(
   item: ItemInfo,
   grace: number,
@@ -282,5 +437,5 @@ function calculateUpgradeChance(
   } else {
     chance = Math.min(chance, Math.min(baseUpgradeChance + 0.24, baseUpgradeChance * 2));
   }
-  return { chance: Math.min(chance, 1), newGrace };
+  return { chance: Math.min(chance, 1), newGrace: Math.round(newGrace * 10) / 10 };
 }
