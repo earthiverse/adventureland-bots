@@ -998,6 +998,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     vitring: {
         upgradeUntilLevel: 2,
+        sellExcess: 20,
     },
     vorb: {
         buy: true,
