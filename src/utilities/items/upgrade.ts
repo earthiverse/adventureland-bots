@@ -4,7 +4,6 @@ import type { GData, ItemInfo, ItemKey } from "typed-adventureland";
 import type { ItemsConfig } from "../../../config/items.js";
 import { getItemDescription } from "../items.js";
 
-// TODO: Move to compound.ts
 /**
  * BASE_COMPOUND_CHANCE[grade][level] -> chance
  */
@@ -437,5 +436,77 @@ function calculateUpgradeChance(
   } else {
     chance = Math.min(chance, Math.min(baseUpgradeChance + 0.24, baseUpgradeChance * 2));
   }
+  return { chance: Math.min(chance, 1), newGrace: Math.round(newGrace * 10) / 10 };
+}
+
+function calculateCompoundChance(
+  item: ItemInfo,
+  grace: number,
+  scroll: ItemKey,
+  g: GData,
+  offering: ItemKey | undefined = undefined,
+): { chance: number; newGrace: number } {
+  if (!scroll.startsWith("cscroll")) return { chance: 0, newGrace: 0 };
+
+  const currentGrade = Utilities.getItemGrade(item, g);
+  if (currentGrade === undefined) throw new Error(`Unable to determine grade for ${getItemDescription(item)}`);
+
+  const scrollGrade = g.items[scroll].grade;
+  if (scrollGrade === undefined || currentGrade > scrollGrade) return { chance: 0, newGrace: 0 };
+
+  const levelZeroGrade = item.level === 0 ? currentGrade : Utilities.getItemGrade({ name: item.name, level: 0 }, g)!;
+  const nextLevel = (item.level ?? 0) + 1;
+  const compoundGrade =
+    (item.level ?? 0) < 3
+      ? levelZeroGrade
+      : Utilities.getItemGrade({ name: item.name, level: (item.level ?? 0) - 2 }, g)!;
+  const baseCompoundChance = BASE_COMPOUND_CHANCE[compoundGrade]![nextLevel]!;
+
+  let newGrace = grace;
+  let chance = baseCompoundChance;
+  let high = 0;
+  let graceBonus = 0;
+  if (scrollGrade > currentGrade) {
+    chance = chance * 1.1 + 0.001;
+    newGrace += 0.4;
+    high = scrollGrade - currentGrade;
+  }
+  if (offering !== undefined) {
+    const offeringGrade = g.items[offering].grade;
+    if (offeringGrade === undefined) throw new Error(`${offering} is not a valid offering`);
+    const chanceFromGrace = 0.027 * (grace * 3 + 0.5);
+
+    if (offeringGrade > currentGrade + 1) {
+      chance = chance * 1.64 + chanceFromGrace * 2;
+      high = 1;
+      graceBonus = 3;
+    } else if (offeringGrade > currentGrade) {
+      chance = chance * 1.48 + chanceFromGrace;
+      high = 1;
+      graceBonus = 1;
+    } else if (offeringGrade == currentGrade) {
+      chance = chance * 1.36 + Math.min(30 * 0.027, chanceFromGrace);
+      graceBonus = 0.5;
+    } else if (offeringGrade == currentGrade - 1) {
+      chance = chance * 1.15 + Math.min(25 * 0.019, chanceFromGrace) / Math.max(nextLevel - 3, 1);
+      graceBonus = 0.2;
+    } else {
+      chance = chance * 1.08 + Math.min(15 * 0.015, chanceFromGrace) / Math.max(nextLevel - 2, 1);
+      graceBonus = 0.1;
+    }
+
+    newGrace = grace * 3;
+  } else {
+    const chanceFromGrace = 0.007 * grace;
+    chance += Math.min(25 * 0.007, chanceFromGrace) / Math.max(nextLevel - 2, 1);
+  }
+  newGrace = newGrace / 6.4 + graceBonus;
+  chance = Math.min(
+    chance,
+    Math.min(
+      baseCompoundChance * (3 + ((high && high * 0.6) || 0)),
+      baseCompoundChance + 0.2 + ((high && high * 0.05) || 0),
+    ),
+  );
   return { chance: Math.min(chance, 1), newGrace: Math.round(newGrace * 10) / 10 };
 }
