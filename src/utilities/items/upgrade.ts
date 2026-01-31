@@ -213,7 +213,6 @@ export function calculateUpgrade(item: ItemInfo, grace: number, startingCost: nu
 
 export function calculateOptimalUpgradePath(
   item: ItemInfo,
-  initialGrace: number,
   initialValue: number,
   g: GData,
   targetLevel: number | undefined = undefined,
@@ -222,7 +221,6 @@ export function calculateOptimalUpgradePath(
   if (targetLevel === undefined || targetLevel > maxLevel) targetLevel = maxLevel; // Limit to its max
   if ((item.level ?? 0) >= targetLevel) return undefined; // Already reached
 
-  const initialLevel = 0;
   const levelZeroGrade = Utilities.getItemGrade({ name: item.name, level: 0 }, g);
   const igrace = levelZeroGrade === 0 ? 1 : levelZeroGrade === 1 ? -1 : -2;
 
@@ -256,8 +254,8 @@ export function calculateOptimalUpgradePath(
     cost: number;
     level: number;
     grace: number;
-  }>([{ cost: initialValue, level: initialLevel, grace: initialGrace }], (a, b) => a.cost - b.cost);
-  setMemo(initialLevel, initialGrace, initialValue, undefined, "initial", 1);
+  }>([{ cost: initialValue, level: 0, grace: 0 }], (a, b) => a.cost - b.cost);
+  setMemo(0, 0, initialValue, undefined, "initial", 1);
 
   while (queue.length > 0) {
     const current = queue.pop()!;
@@ -365,6 +363,147 @@ export function calculateOptimalUpgradePath(
   return path.reverse();
 }
 
+export function calculateOptimalCompoundPath(
+  item: ItemInfo,
+  initialValue: number,
+  g: GData,
+  targetLevel: number | undefined = undefined,
+) {
+  const maxLevel = g.items[item.name].grades![3];
+  if (targetLevel === undefined || targetLevel > maxLevel) targetLevel = maxLevel; // Limit to its max
+  if ((item.level ?? 0) >= targetLevel) return undefined; // Already reached
+
+  type MEMO_DATA = {
+    cost: number;
+    method: { scroll: ItemKey; offering?: ItemKey } | "initial";
+    previous: { level: number; grace: number } | undefined;
+    chance: number;
+  };
+
+  /** level -> max grace */
+  const maxGrace = new Map<number, number>();
+  /** level -> grace -> cost */
+  const memo = new Map<number, Map<number, MEMO_DATA>>();
+  const getMemo = (level: number, grace: number) => {
+    return memo.get(level)?.get(grace);
+  };
+  const setMemo = (
+    level: number,
+    grace: number,
+    cost: number,
+    previous: { level: number; grace: number } | undefined,
+    method: { scroll: ItemKey; offering?: ItemKey } | "initial",
+    chance: number,
+  ) => {
+    if (!memo.has(level)) memo.set(level, new Map());
+    memo.get(level)!.set(grace, { cost, method, previous, chance });
+  };
+
+  const queue = new TinyQueue<{
+    cost: number;
+    level: number;
+    grace: number;
+  }>([{ cost: initialValue, level: 0, grace: 0 }], (a, b) => a.cost - b.cost);
+  setMemo(0, 0, initialValue, undefined, "initial", 1);
+
+  while (queue.length > 0) {
+    const current = queue.pop()!;
+    if (current.level >= targetLevel) continue; // We're done
+
+    const previous = getMemo(current.level, current.grace)!;
+    if (previous.cost < current.cost) continue; // Not cheaper than our current path
+
+    const previousMaxGrace = maxGrace.get(current.level) ?? -1;
+    if (current.grace < previousMaxGrace) continue; // We had a lower cost with a higher grace (NOTE: because we visit lowest cost nodes first)
+    maxGrace.set(current.level, current.grace);
+
+    const currentItem = { name: item.name, level: current.level };
+    const currentGrade = Utilities.getItemGrade(currentItem, g)!;
+    for (let grade = currentGrade; grade <= Math.min(currentGrade + 1, 4); grade++) {
+      const scroll = `cscroll${grade}`;
+      const scrollCost = COMPOUND_SCROLLS[scroll as keyof typeof COMPOUND_SCROLLS];
+      if (scrollCost === undefined) continue; // We don't have a price for this scroll set
+      for (const offering of [...Object.keys(OFFERINGS), undefined] as (ItemKey | undefined)[]) {
+        const { chance, newGrace } = calculateCompoundChance(
+          currentItem,
+          current.grace,
+          scroll as ItemKey,
+          g,
+          offering,
+        );
+        if (!chance) continue; // Incompatible
+
+        const offeringCost = offering === undefined ? 0 : OFFERINGS[offering]!;
+        const newCost = (current.cost * 3 + scrollCost + offeringCost) / chance;
+        const newLevel = current.level + 1;
+
+        const oldMemo = getMemo(newLevel, newGrace);
+        if (!oldMemo || newCost < oldMemo.cost) {
+          setMemo(
+            newLevel,
+            newGrace,
+            newCost,
+            { level: current.level, grace: current.grace },
+            { scroll: scroll as ItemKey, offering },
+            chance,
+          );
+          queue.push({ cost: newCost, level: newLevel, grace: newGrace });
+        }
+      }
+    }
+  }
+
+  // Find the cheapest node for the target level
+  let finishGrace = Number.NEGATIVE_INFINITY;
+  let finishDatum: MEMO_DATA | undefined = undefined;
+  for (const [grace, datum] of memo.get(targetLevel)!.entries()) {
+    if (finishDatum && datum.cost >= finishDatum?.cost) continue; // Not cheaper
+    finishGrace = grace;
+    finishDatum = datum;
+  }
+
+  // Construct the path to get to that node
+  const path: {
+    level: number;
+    grace: number;
+    scroll?: ItemKey;
+    offering?: ItemKey;
+    cost: number;
+    chance: number;
+  }[] = [];
+
+  let datum: MEMO_DATA | undefined = finishDatum;
+  let grace = finishGrace;
+  let level = targetLevel;
+
+  while (datum) {
+    let scroll: ItemKey | undefined;
+    let offering: ItemKey | undefined;
+    if (typeof datum.method === "object") {
+      scroll = datum.method.scroll;
+      offering = datum.method.offering;
+    }
+
+    path.push({
+      level,
+      grace,
+      scroll,
+      offering,
+      cost: datum.cost,
+      chance: datum.chance,
+    });
+
+    if (!datum.previous) break;
+
+    level = datum.previous.level;
+    grace = datum.previous.grace;
+    datum = memo.get(level)?.get(grace);
+  }
+
+  // Return the path
+  return path.reverse();
+}
+
 function calculateUpgradeChance(
   item: ItemInfo,
   grace: number,
@@ -439,6 +578,15 @@ function calculateUpgradeChance(
   return { chance: Math.min(chance, 1), newGrace: Math.round(newGrace * 10) / 10 };
 }
 
+/**
+ *
+ * @param item
+ * @param grace Average of the 3 item's graces
+ * @param scroll
+ * @param g
+ * @param offering
+ * @returns
+ */
 function calculateCompoundChance(
   item: ItemInfo,
   grace: number,
@@ -468,7 +616,7 @@ function calculateCompoundChance(
   let graceBonus = 0;
   if (scrollGrade > currentGrade) {
     chance = chance * 1.1 + 0.001;
-    newGrace += 0.4;
+    graceBonus += 0.4;
     high = scrollGrade - currentGrade;
   }
   if (offering !== undefined) {
@@ -479,20 +627,20 @@ function calculateCompoundChance(
     if (offeringGrade > currentGrade + 1) {
       chance = chance * 1.64 + chanceFromGrace * 2;
       high = 1;
-      graceBonus = 3;
+      graceBonus += 3;
     } else if (offeringGrade > currentGrade) {
       chance = chance * 1.48 + chanceFromGrace;
       high = 1;
-      graceBonus = 1;
+      graceBonus += 1;
     } else if (offeringGrade == currentGrade) {
       chance = chance * 1.36 + Math.min(30 * 0.027, chanceFromGrace);
-      graceBonus = 0.5;
+      graceBonus += 0.5;
     } else if (offeringGrade == currentGrade - 1) {
       chance = chance * 1.15 + Math.min(25 * 0.019, chanceFromGrace) / Math.max(nextLevel - 3, 1);
-      graceBonus = 0.2;
+      graceBonus += 0.2;
     } else {
       chance = chance * 1.08 + Math.min(15 * 0.015, chanceFromGrace) / Math.max(nextLevel - 2, 1);
-      graceBonus = 0.1;
+      graceBonus += 0.1;
     }
 
     newGrace = grace * 3;
@@ -502,11 +650,10 @@ function calculateCompoundChance(
   }
   newGrace = newGrace / 6.4 + graceBonus;
   chance = Math.min(
+    1,
     chance,
-    Math.min(
-      baseCompoundChance * (3 + ((high && high * 0.6) || 0)),
-      baseCompoundChance + 0.2 + ((high && high * 0.05) || 0),
-    ),
+    baseCompoundChance * (3 + ((high && high * 0.6) || 0)),
+    baseCompoundChance + 0.2 + ((high && high * 0.05) || 0),
   );
-  return { chance: Math.min(chance, 1), newGrace: Math.round(newGrace * 10) / 10 };
+  return { chance, newGrace: Math.round(newGrace * 10) / 10 };
 }

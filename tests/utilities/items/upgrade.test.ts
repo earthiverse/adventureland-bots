@@ -2,6 +2,7 @@ import { Game } from "alclient";
 import type { GData } from "typed-adventureland";
 import { getGFromCache } from "../../../src/plugins/g_cache.js";
 import {
+  calculateOptimalCompoundPath,
   calculateOptimalUpgradePath,
   calculateUpgrade,
   getScrollAndOfferingPricesFromG,
@@ -32,7 +33,7 @@ test("calculateNextUpgrade() works", () => {
 });
 
 test("calculateOptimalUpgradePath() works", () => {
-  const path = calculateOptimalUpgradePath({ name: "bataxe", level: 0 }, 0, 6_000_000, g, 12);
+  const path = calculateOptimalUpgradePath({ name: "bataxe", level: 0 }, 6_000_000, g, 12);
   expect(path).toBeDefined(); // Path should be valid
   expect(path!.at(-1)?.level).toBe(12); // Path should have been found
 
@@ -46,4 +47,17 @@ test("calculateOptimalUpgradePath() works", () => {
       expect(path![i].offering).toBe("offeringp");
     }
   }
+  console.log(path);
+});
+
+test("calculateOptimalCompoundPath() works", () => {
+  const path = calculateOptimalCompoundPath({ name: "ringsj", level: 0 }, g.items.ringsj.g, g, 7);
+  expect(path).toBeDefined(); // Path should be valid
+  expect(path!.at(-1)?.level).toBe(7); // Path should have been found
+
+  for (let i = 1; i < path!.length; i++) {
+    expect(path![i].cost).toBeGreaterThan(path![i - 1].cost); // Cost should have increased
+    expect(path![i].level).toBeGreaterThan(path![i - 1].level); // Level should have increased
+  }
+  console.log(path);
 });
