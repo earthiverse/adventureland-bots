@@ -1,6 +1,6 @@
 import { Utilities } from "alclient";
 import TinyQueue from "tinyqueue";
-import type { GData, ItemInfo, ItemKey } from "typed-adventureland";
+import type { CompoundScrollKey, GData, ItemInfo, ItemKey, OfferingKey, UpgradeScrollKey } from "typed-adventureland";
 import type { ItemsConfig } from "../../../config/items.js";
 import { getItemDescription } from "../items.js";
 
@@ -103,13 +103,13 @@ const BASE_UPGRADE_CHANCE: {
 };
 
 /** scroll -> price */
-const UPGRADE_SCROLLS: { [T in `scroll${number}`]?: number } = {};
+const UPGRADE_SCROLLS: { [T in UpgradeScrollKey]?: number } = {};
 
 /** cscroll -> price */
-const COMPOUND_SCROLLS: { [T in `cscroll${number}`]?: number } = {};
+const COMPOUND_SCROLLS: { [T in CompoundScrollKey]?: number } = {};
 
 /** offering -> price */
-const OFFERINGS: { [T in ItemKey]?: number } = {
+const OFFERINGS: { [T in OfferingKey]?: number } = {
   offeringp: 2_500_000,
   offeringx: 1_000_000_000,
 };
@@ -128,7 +128,7 @@ export function getScrollAndOfferingPricesFromG(g: GData) {
   OFFERINGS.offering = g.items.offering.g;
 }
 
-const UPGRADE_ITEMS: ItemKey[] = [
+const UPGRADE_ITEMS: (UpgradeScrollKey | CompoundScrollKey | OfferingKey)[] = [
   "scroll0",
   "scroll1",
   "scroll2",
@@ -147,11 +147,11 @@ export function getScrollAndOfferingPricesFromItemsConfig(config: ItemsConfig) {
     if (typeof config[item].buy.buyPrice !== "number") continue; // TODO: Improve handling of complicated prices
 
     if (item.startsWith("scroll")) {
-      UPGRADE_SCROLLS[item as `scroll${number}`] = config[item].buy.buyPrice;
+      UPGRADE_SCROLLS[item as UpgradeScrollKey] = config[item].buy.buyPrice;
     } else if (item.startsWith("cscroll")) {
-      COMPOUND_SCROLLS[item as `cscroll${number}`] = config[item].buy.buyPrice;
+      COMPOUND_SCROLLS[item as CompoundScrollKey] = config[item].buy.buyPrice;
     } else {
-      OFFERINGS[item] = config[item].buy.buyPrice;
+      OFFERINGS[item as OfferingKey] = config[item].buy.buyPrice;
     }
   }
 }
@@ -173,10 +173,10 @@ export function calculateUpgrade(item: ItemInfo, grace: number, startingCost: nu
     numStacks: 0,
   };
 
-  for (const scroll of Object.keys(UPGRADE_SCROLLS) as `scroll${number}`[]) {
+  for (const scroll of Object.keys(UPGRADE_SCROLLS) as UpgradeScrollKey[]) {
     const scrollPrice = UPGRADE_SCROLLS[scroll]!;
 
-    for (const offering of [...Object.keys(OFFERINGS), undefined] as (ItemKey | undefined)[]) {
+    for (const offering of [...Object.keys(OFFERINGS), undefined] as (OfferingKey | undefined)[]) {
       const offeringPrice = offering === undefined ? 0 : OFFERINGS[offering]!;
 
       for (
@@ -226,7 +226,7 @@ export function calculateOptimalUpgradePath(
 
   type MEMO_DATA = {
     cost: number;
-    method: { scroll: ItemKey; offering?: ItemKey } | "stack" | "initial";
+    method: { scroll: UpgradeScrollKey; offering?: OfferingKey } | "stack" | "initial";
     previous: { level: number; grace: number } | undefined;
     chance: number;
   };
@@ -243,7 +243,7 @@ export function calculateOptimalUpgradePath(
     grace: number,
     cost: number,
     previous: { level: number; grace: number } | undefined,
-    method: { scroll: ItemKey; offering?: ItemKey } | "stack" | "initial",
+    method: { scroll: UpgradeScrollKey; offering?: OfferingKey } | "stack" | "initial",
     chance: number,
   ) => {
     if (!memo.has(level)) memo.set(level, new Map());
@@ -283,11 +283,11 @@ export function calculateOptimalUpgradePath(
 
     const currentGrade = Utilities.getItemGrade(currentItem, g)!;
     for (let grade = currentGrade; grade <= Math.min(currentGrade + 1, 4); grade++) {
-      const scroll = `scroll${grade}`;
-      const scrollCost = UPGRADE_SCROLLS[scroll as keyof typeof UPGRADE_SCROLLS];
+      const scroll = `scroll${grade}` as UpgradeScrollKey;
+      const scrollCost = UPGRADE_SCROLLS[scroll];
       if (scrollCost === undefined) continue; // We don't have a price for this scroll set
-      for (const offering of [...Object.keys(OFFERINGS), undefined] as (ItemKey | undefined)[]) {
-        const { chance, newGrace } = calculateUpgradeChance(currentItem, current.grace, scroll as ItemKey, g, offering);
+      for (const offering of [...Object.keys(OFFERINGS), undefined] as (OfferingKey | undefined)[]) {
+        const { chance, newGrace } = calculateUpgradeChance(currentItem, current.grace, scroll, g, offering);
         if (!chance) continue; // Incompatible
 
         const offeringCost = offering === undefined ? 0 : OFFERINGS[offering]!;
@@ -301,7 +301,7 @@ export function calculateOptimalUpgradePath(
             newGrace,
             newCost,
             { level: current.level, grace: current.grace },
-            { scroll: scroll as ItemKey, offering },
+            { scroll: scroll, offering },
             chance,
           );
           queue.push({ cost: newCost, level: newLevel, grace: newGrace });
@@ -323,8 +323,8 @@ export function calculateOptimalUpgradePath(
   const path: {
     level: number;
     grace: number;
-    scroll?: ItemKey;
-    offering?: ItemKey;
+    scroll?: UpgradeScrollKey;
+    offering?: OfferingKey;
     cost: number;
     chance: number;
   }[] = [];
@@ -334,8 +334,8 @@ export function calculateOptimalUpgradePath(
   let level = targetLevel;
 
   while (datum) {
-    let scroll: ItemKey | undefined;
-    let offering: ItemKey | undefined;
+    let scroll: UpgradeScrollKey | undefined;
+    let offering: OfferingKey | undefined;
     if (typeof datum.method === "object") {
       scroll = datum.method.scroll;
       offering = datum.method.offering;
@@ -375,7 +375,7 @@ export function calculateOptimalCompoundPath(
 
   type MEMO_DATA = {
     cost: number;
-    method: { scroll: ItemKey; offering?: ItemKey } | "initial";
+    method: { scroll: CompoundScrollKey; offering?: OfferingKey } | "initial";
     previous: { level: number; grace: number } | undefined;
     chance: number;
   };
@@ -392,7 +392,7 @@ export function calculateOptimalCompoundPath(
     grace: number,
     cost: number,
     previous: { level: number; grace: number } | undefined,
-    method: { scroll: ItemKey; offering?: ItemKey } | "initial",
+    method: { scroll: CompoundScrollKey; offering?: OfferingKey } | "initial",
     chance: number,
   ) => {
     if (!memo.has(level)) memo.set(level, new Map());
@@ -420,14 +420,14 @@ export function calculateOptimalCompoundPath(
     const currentItem = { name: item.name, level: current.level };
     const currentGrade = Utilities.getItemGrade(currentItem, g)!;
     for (let grade = currentGrade; grade <= Math.min(currentGrade + 1, 4); grade++) {
-      const scroll = `cscroll${grade}`;
-      const scrollCost = COMPOUND_SCROLLS[scroll as keyof typeof COMPOUND_SCROLLS];
+      const scroll = `cscroll${grade}` as CompoundScrollKey;
+      const scrollCost = COMPOUND_SCROLLS[scroll];
       if (scrollCost === undefined) continue; // We don't have a price for this scroll set
-      for (const offering of [...Object.keys(OFFERINGS), undefined] as (ItemKey | undefined)[]) {
+      for (const offering of [...Object.keys(OFFERINGS), undefined] as (OfferingKey | undefined)[]) {
         const { chance, newGrace } = calculateCompoundChance(
           currentItem,
           current.grace,
-          scroll as ItemKey,
+          scroll,
           g,
           offering,
         );
@@ -444,7 +444,7 @@ export function calculateOptimalCompoundPath(
             newGrace,
             newCost,
             { level: current.level, grace: current.grace },
-            { scroll: scroll as ItemKey, offering },
+            { scroll, offering },
             chance,
           );
           queue.push({ cost: newCost, level: newLevel, grace: newGrace });
@@ -466,8 +466,8 @@ export function calculateOptimalCompoundPath(
   const path: {
     level: number;
     grace: number;
-    scroll?: ItemKey;
-    offering?: ItemKey;
+    scroll?: CompoundScrollKey;
+    offering?: OfferingKey;
     cost: number;
     chance: number;
   }[] = [];
@@ -477,8 +477,8 @@ export function calculateOptimalCompoundPath(
   let level = targetLevel;
 
   while (datum) {
-    let scroll: ItemKey | undefined;
-    let offering: ItemKey | undefined;
+    let scroll: CompoundScrollKey | undefined;
+    let offering: OfferingKey | undefined;
     if (typeof datum.method === "object") {
       scroll = datum.method.scroll;
       offering = datum.method.offering;
@@ -578,8 +578,10 @@ function calculateUpgradeChance(
   return { chance: Math.min(chance, 1), newGrace: Math.round(newGrace * 10) / 10 };
 }
 
+// TODO: I think boosters have a higher chance of being compounded, add that logic
+// TODO: lostearrings are strange, they have a different `compoundGrade` (`igrade` in game code)
+//       Add logic for those, and check if there are any different items like that
 /**
- *
  * @param item
  * @param grace Average of the 3 item's graces
  * @param scroll

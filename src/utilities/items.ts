@@ -1,5 +1,5 @@
 import { Utilities, type Character } from "alclient";
-import type { DismantleKey, GData, ItemInfo, ItemKey } from "typed-adventureland";
+import type { DismantleKey, GData, ItemInfo, ItemKey, OfferingKey, UpgradeScrollKey } from "typed-adventureland";
 import Config, { type ItemsConfig, type Price } from "../../config/items.js";
 import {
   buyForProfit,
@@ -17,7 +17,7 @@ import {
 } from "./items/adjust.js";
 import { getTotalItemCount } from "./items/counts.js";
 import { isPurchasableFromNpc } from "./items/npc.js";
-import { calculateUpgrade } from "./items/upgrade.js";
+import { calculateOptimalUpgradePath } from "./items/upgrade.js";
 import { logError } from "./logging.js";
 
 export function calculateItemValue(item: ItemInfo, g: GData, multiplier = 1): number {
@@ -214,8 +214,8 @@ export async function getNextUpgradeParams(
   config: ItemsConfig = Config,
 ): Promise<
   | {
-      scroll?: ItemKey;
-      offering?: ItemKey;
+      scroll?: UpgradeScrollKey;
+      offering?: OfferingKey;
     }
   | undefined
 > {
@@ -223,7 +223,7 @@ export async function getNextUpgradeParams(
   if (!item) throw new Error(`No items in position ${itemPos}`);
 
   const grade = Utilities.getItemGrade(item, g);
-  const scroll = `scroll${grade}` as ItemKey;
+  const scroll = `scroll${grade}` as UpgradeScrollKey;
   const scrollPos = character.locateItem({ name: scroll });
   if (scrollPos === undefined) return undefined; // We don't have scroll
 
@@ -231,33 +231,24 @@ export async function getNextUpgradeParams(
   const graceData = await character.upgrade(itemPos, undefined, undefined, { calculate: true });
   const grace = graceData.grace;
 
-  // Calculate best path
+  // Calculate item value
   const initialValue =
     config[item.name]?.upgrade?.upgradeValue ??
     (config[item.name]?.buy?.buyPrice as number) ??
     (config[item.name]?.sell?.sellPrice as number) ??
     g.items[item.name].g;
 
-  const results: { [T in number]: ReturnType<typeof calculateUpgrade> } = {
-    1: calculateUpgrade({ name: item.name, level: 0 }, 0, initialValue, g),
-  };
-  for (let level = 1; level < (item.level ?? 0) + 1; level++) {
-    const lastResults = results[level]!;
-    const nextUpgrade = calculateUpgrade(
-      { name: item.name, level },
-      item.level === level - 1 ? grace : lastResults.grace,
-      lastResults.cost,
-      g,
-    );
-
-    results[level + 1] = nextUpgrade;
+  // Calculate best path
+  const upgradePath = calculateOptimalUpgradePath(item, initialValue, g);
+  if (upgradePath === undefined) return undefined; // TODO: Log (No path found!?)
+  for (let i = 0; i < upgradePath.length; i++) {
+    const node = upgradePath[i]!;
+    if (node.level < (item.level ?? 0)) continue; // Our item is a higher level than this node
+    if (node.grace < grace) continue; // Our item is a higher grace than this node
+    return { scroll: node.scroll, offering: node.offering };
   }
 
-  const result = results[(item.level ?? 0) + 1];
-  if (result === undefined) return undefined;
-  if (result.numStacks > 0) return { offering: "offeringp" }; // Want to increase grace
-
-  return { scroll: result.scroll, offering: result.offering };
+  return undefined; // TODO: Log (No node found!?)
 }
 
 export function wantToBuy(item: ItemInfo, canBuyForPrice: number, g: GData, config = Config): boolean {
@@ -495,4 +486,6 @@ export function adjustItemConfig(
   removeNonUpgradable(config, g);
   removeUncraftable(config, g);
   removeUnexchangable(config, g);
+
+  // TODO: Ensure only one of replenish / destroy / list / mail / sell is set
 }
