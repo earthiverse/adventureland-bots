@@ -1,5 +1,13 @@
 import { Utilities, type Character } from "alclient";
-import type { DismantleKey, GData, ItemInfo, ItemKey, OfferingKey, UpgradeScrollKey } from "typed-adventureland";
+import type {
+  CompoundScrollKey,
+  DismantleKey,
+  GData,
+  ItemInfo,
+  ItemKey,
+  OfferingKey,
+  UpgradeScrollKey,
+} from "typed-adventureland";
 import Config, { type ItemsConfig, type Price } from "../../config/items.js";
 import {
   buyForProfit,
@@ -17,7 +25,7 @@ import {
 } from "./items/adjust.js";
 import { getTotalItemCount } from "./items/counts.js";
 import { isPurchasableFromNpc } from "./items/npc.js";
-import { calculateOptimalUpgradePath } from "./items/upgrade.js";
+import { calculateOptimalCompoundPath, calculateOptimalUpgradePath } from "./items/upgrade.js";
 import { logError } from "./logging.js";
 
 export function calculateItemValue(item: ItemInfo, g: GData, multiplier = 1): number {
@@ -222,15 +230,6 @@ export async function getNextUpgradeParams(
   const item = character.items[itemPos];
   if (!item) throw new Error(`No items in position ${itemPos}`);
 
-  const grade = Utilities.getItemGrade(item, g);
-  const scroll = `scroll${grade}` as UpgradeScrollKey;
-  const scrollPos = character.locateItem({ name: scroll });
-  if (scrollPos === undefined) return undefined; // We don't have scroll
-
-  // Calculate grace
-  const graceData = await character.upgrade(itemPos, undefined, undefined, { calculate: true });
-  const grace = graceData.grace;
-
   // Calculate item value
   const initialValue =
     config[item.name]?.upgrade?.upgradeValue ??
@@ -241,10 +240,90 @@ export async function getNextUpgradeParams(
   // Calculate best path
   const upgradePath = calculateOptimalUpgradePath(item, initialValue, g);
   if (upgradePath === undefined) return undefined; // TODO: Log (No path found!?)
+
+  const grade = Utilities.getItemGrade(item, g);
+  if (grade === undefined) return undefined; // TODO: Log (no grade found?)
+
+  // Calculate grace
+  let graceScrollPos: number | undefined = undefined;
+  for (let i = grade; i <= 4; i++) {
+    const scrollPos = character.locateItem({ name: `scroll${i}` as UpgradeScrollKey });
+    if (scrollPos === undefined) continue;
+    graceScrollPos = scrollPos;
+    break;
+  }
+  if (graceScrollPos === undefined) return undefined;
+  const { grace, chance } = await character.upgrade(itemPos, graceScrollPos, undefined, { calculate: true });
+
+  // Find the next upgrade
   for (let i = 0; i < upgradePath.length; i++) {
     const node = upgradePath[i]!;
     if (node.level < (item.level ?? 0)) continue; // Our item is a higher level than this node
     if (node.grace < grace) continue; // Our item is a higher grace than this node
+    if (chance < node.chance) {
+      logError(
+        `Calculated upgrade chance is lower than expected for ${getItemDescription(item)}! (${chance} < ${node.chance})`,
+      );
+      return undefined;
+    }
+    return { scroll: node.scroll, offering: node.offering };
+  }
+
+  return undefined; // TODO: Log (No node found!?)
+}
+
+export async function getNextCompoundParams(
+  character: Character,
+  itemPositions: [number, number, number],
+  g: GData,
+  config: ItemsConfig = Config,
+) {
+  const item1 = character.items[itemPositions[0]];
+  if (!item1) throw new Error(`No item in positions ${itemPositions[0]}`);
+  const item2 = character.items[itemPositions[1]];
+  if (!item2) throw new Error(`No item in positions ${itemPositions[1]}`);
+  const item3 = character.items[itemPositions[2]];
+  if (!item3) throw new Error(`No item in positions ${itemPositions[2]}`);
+  if ((item1.level ?? 0) !== (item2.level ?? 0))
+    throw new Error(`Items in positions ${itemPositions[0]} and ${itemPositions[1]} are not the same level`);
+  if ((item1.level ?? 0) !== (item3.level ?? 0))
+    throw new Error(`Items in positions ${itemPositions[0]} and ${itemPositions[2]} are not the same level`);
+
+  // Calculate item value
+  const initialValue =
+    config[item1.name]?.upgrade?.upgradeValue ??
+    (config[item1.name]?.buy?.buyPrice as number) ??
+    (config[item1.name]?.sell?.sellPrice as number) ??
+    g.items[item1.name].g;
+
+  // Calculate best path
+  const compoundPath = calculateOptimalCompoundPath(item1, initialValue, g);
+  if (compoundPath === undefined) return undefined; // TODO: Log (No path found!?)
+
+  const grade = Utilities.getItemGrade(item1, g);
+  if (grade === undefined) return undefined; // TODO: Log (no grade found?)
+
+  // Calculate grace
+  let graceScrollPos: number | undefined = undefined;
+  for (let i = grade; i <= 3; i++) {
+    const scrollPos = character.locateItem({ name: `cscroll${i}` as CompoundScrollKey });
+    if (scrollPos === undefined) continue;
+    graceScrollPos = scrollPos;
+    break;
+  }
+  if (graceScrollPos === undefined) return undefined;
+  const { grace, chance } = await character.compound(itemPositions, graceScrollPos, undefined, { calculate: true });
+
+  // Find the next compound
+  for (let i = 0; i < compoundPath.length; i++) {
+    const node = compoundPath[i]!;
+    if (node.level < (item1.level ?? 0)) continue; // Our item is a higher level than this node
+    if (grace >= node.grace && chance < node.chance) {
+      logError(
+        `Calculated compound chance is lower than expected for ${getItemDescription(item1)}! (${chance} < ${node.chance})`,
+      );
+      return undefined;
+    }
     return { scroll: node.scroll, offering: node.offering };
   }
 

@@ -4,6 +4,7 @@ import Config from "../../../config/items.js";
 import {
   getCraftableItems,
   getItemDescription,
+  getNextCompoundParams,
   getNextUpgradeParams,
   wantToDestroy,
   wantToExchange,
@@ -59,7 +60,7 @@ export const setup = (character: Character) => {
 
         try {
           const numToReplenish = wantToReplenish(character, item);
-          if (numToReplenish !== false) {
+          if (numToReplenish !== false && numToReplenish > 0) {
             // TODO: Buy as many as we can if we can't buy all
             if (!character.canBuy(item.name, { quantity: numToReplenish })) continue; // Too far away
             await character.buy(item.name, numToReplenish);
@@ -208,23 +209,23 @@ export const setup = (character: Character) => {
 
         if (!wantToUpgrade(item, character.game.G)) continue; // Don't want to / can't upgrade
 
-        // TODO: Lucky slot logic
-
         // Calculate best upgrade
         const nextUpgrade = await getNextUpgradeParams(character, itemPos, character.game.G);
         if (nextUpgrade === undefined) continue;
         const scrollPos =
           nextUpgrade.scroll !== undefined ? (character.locateItem({ name: nextUpgrade.scroll }) ?? false) : undefined;
+        if (scrollPos === false) continue; // We don't have the scroll we want to use
         const offeringPos =
           nextUpgrade.offering !== undefined
             ? (character.locateItem({ name: nextUpgrade.offering }) ?? false)
             : undefined;
+        if (offeringPos === false) continue; // We don't have the offering we want to use
 
-        if (scrollPos === false || offeringPos === false) continue; // We don't have what we want to upgrade
+        // TODO: Lucky slot logic
 
         // TODO: Log wether it succeeded or failed
         await character.upgrade(itemPos, scrollPos, offeringPos);
-        log(`${character.id} upgraded ${getItemDescription(item)}`, EXCHANGE_LOG_LEVEL);
+        log(`${character.id} upgraded ${getItemDescription(item)}`, UPGRADE_LOG_LEVEL);
         return;
       }
 
@@ -238,6 +239,75 @@ export const setup = (character: Character) => {
   void upgradeLoop();
 
   // TODO: compoundLoop
+  const compoundLoop = async () => {
+    if (activeData.cancelled) return;
+    let checkMs = CHECK_EVERY_MS;
+
+    try {
+      if (character.socket.disconnected) return;
+      if (character.q.compound) {
+        checkMs = character.q.compound.ms;
+        return; // Already compounding
+      }
+      if (!character.canUpgrade()) return; // Can't upgrade
+
+      // Get counts of compoundable items in inventory
+      const compoundables = new Map<ItemKey, Map<number, number[]>>();
+      for (let itemPos = 0; itemPos < character.items.length; itemPos++) {
+        const item = character.items[itemPos];
+        if (!item) continue; // No item in this slot
+        if (!wantToUpgrade(item, character.game.G)) continue; // Don't want to / can't compound
+
+        let itemCompoundables = compoundables.get(item.name);
+        if (itemCompoundables === undefined) {
+          itemCompoundables = new Map<number, number[]>();
+          compoundables.set(item.name, itemCompoundables);
+        }
+
+        let levelCompoundables = itemCompoundables.get(item.level ?? 0);
+        if (levelCompoundables === undefined) {
+          levelCompoundables = [];
+          itemCompoundables.set(item.level ?? 0, levelCompoundables);
+        }
+
+        levelCompoundables.push(itemPos);
+      }
+
+      for (const [itemName, itemCompoundables] of compoundables.entries()) {
+        for (const [level, itemPositions] of itemCompoundables.entries()) {
+          if (itemPositions.length < 3) continue;
+
+          const nextCompound = await getNextCompoundParams(
+            character,
+            [itemPositions[0]!, itemPositions[1]!, itemPositions[2]!],
+            character.game.G,
+          );
+          if (nextCompound === undefined) continue;
+          const scrollPos = character.locateItem({ name: nextCompound.scroll }) ?? false;
+          if (scrollPos === false) continue; // We don't have the scroll we want to use
+          const offeringPos =
+            nextCompound.offering !== undefined
+              ? (character.locateItem({ name: nextCompound.offering }) ?? false)
+              : undefined;
+          if (offeringPos === false) continue; // We don't have the offering we want to use
+
+          // NOTE: Lucky slot is not applicable for compounds
+
+          // TODO: Log whether it succeeded or failed
+          await character.compound([itemPositions[0]!, itemPositions[1]!, itemPositions[2]!], scrollPos, offeringPos);
+          log(`${character.id} compounded ${getItemDescription({ name: itemName, level })}`, UPGRADE_LOG_LEVEL);
+          return;
+        }
+      }
+
+      checkMs = 10_000; // Didn't find anything to compound
+    } catch (e) {
+      if (e instanceof Error || typeof e === "string") logDebug(`compoundLoop: ${e}`);
+    } finally {
+      setTimeout(() => void compoundLoop(), checkMs);
+    }
+  };
+  void compoundLoop();
 };
 
 /**
