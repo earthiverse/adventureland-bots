@@ -16,18 +16,20 @@ const partyLoop = async () => {
     const requests = [];
     let leader = configLeader;
     for (const character of characters) {
+      if (character.socket.disconnected) continue; // Ignore disconnected characters
+
       if (leader === undefined) {
         // Use the first character as the leader
         leader = character.id;
         continue;
       }
-      if (character.socket.disconnected) continue;
 
       if (character.id === leader) continue; // The leader only accepts requests
       if (character.party === leader) continue; // Already in the correct party
 
       requests.push(character.sendPartyRequest(leader));
     }
+
     await Promise.allSettled(requests);
   } catch (e) {
     if (e instanceof Error || typeof e === "string") logDebug(`partyLoop: ${e}`);
