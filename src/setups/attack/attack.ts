@@ -1,4 +1,4 @@
-import { Utilities, type Character, type Ranger } from "alclient";
+import { Utilities, type Character, type Ranger, type Rogue } from "alclient";
 import type { MonsterKey } from "typed-adventureland";
 import { logDebug } from "../../utilities/logging.js";
 import { getBestTarget, getBestTargets, ignoreMonster, unignoreMonster } from "../../utilities/monster.js";
@@ -27,16 +27,8 @@ export const setup = (character: Character, options: AttackOptions = { monsters:
   const attackLoop = async () => {
     if (activeData.cancelled) return;
 
-    let entity;
-
     try {
       if (character.socket.disconnected) return;
-
-      const entity = getBestTarget(character, {
-        monsters: options.monsters,
-        withinRange: character.range,
-      });
-      if (!entity) return;
 
       switch (character.ctype) {
         case "ranger": {
@@ -64,8 +56,7 @@ export const setup = (character: Character, options: AttackOptions = { monsters:
           break;
         }
         case "rogue": {
-          // TODO: Rogue Logic
-          await defaultLogic(character, options);
+          await rogueLogic(character as Rogue, options);
           break;
         }
         case "warrior": {
@@ -79,7 +70,6 @@ export const setup = (character: Character, options: AttackOptions = { monsters:
         }
       }
     } catch (e) {
-      if (entity !== undefined) unignoreMonster(entity);
       if (e instanceof Error || typeof e === "string") logDebug(`attackLoop: ${e}`);
     } finally {
       // TODO: When skills get added, add timeouts for skills
@@ -111,7 +101,10 @@ const defaultLogic = async (character: Character, options: AttackOptions) => {
   const damageRange = Utilities.damageRange(character, entity, character.game.G);
   if (entity.hp <= damageRange.min) ignoreMonster(entity);
 
-  return character.basicAttack(entity);
+  return character.basicAttack(entity).catch((e) => {
+    unignoreMonster(entity);
+    if (e instanceof Error || typeof e === "string") logDebug(`basicAttack: ${e}`);
+  });
 };
 
 const rangerLogic = async (character: Ranger, options: AttackOptions) => {
@@ -131,7 +124,14 @@ const rangerLogic = async (character: Ranger, options: AttackOptions) => {
       const damageRange = Utilities.damageRange(character, entity, character.game.G, { skill: "5shot" });
       if (entity.hp <= damageRange.min) ignoreMonster(entity);
     }
-    return character.fiveShot(entities[0]!, entities[1]!, entities[2]!, entities[3]!, entities[4]!);
+    return character.fiveShot(entities[0]!, entities[1]!, entities[2]!, entities[3]!, entities[4]!).catch((e) => {
+      unignoreMonster(entities[0]!);
+      unignoreMonster(entities[1]!);
+      unignoreMonster(entities[2]!);
+      unignoreMonster(entities[3]!);
+      unignoreMonster(entities[4]!);
+      if (e instanceof Error || typeof e === "string") logDebug(`fiveShot: ${e}`);
+    });
   }
 
   // 3shot
@@ -143,8 +143,15 @@ const rangerLogic = async (character: Ranger, options: AttackOptions) => {
       const damageRange = Utilities.damageRange(character, entity, character.game.G, { skill: "3shot" });
       if (entity.hp <= damageRange.min) ignoreMonster(entity);
     }
-    return character.threeShot(entities[0]!, entities[1]!, entities[2]!);
+    return character.threeShot(entities[0]!, entities[1]!, entities[2]!).catch((e) => {
+      unignoreMonster(entities[0]!);
+      unignoreMonster(entities[1]!);
+      unignoreMonster(entities[2]!);
+      if (e instanceof Error || typeof e === "string") logDebug(`threeShot: ${e}`);
+    });
   }
+
+  if (!character.canUse("attack")) return; // Can't attack
 
   // Normal attack
   const entity = entities[0]!;
@@ -154,4 +161,35 @@ const rangerLogic = async (character: Ranger, options: AttackOptions) => {
   if (entity.hp <= damageRange.min) ignoreMonster(entity);
 
   return character.basicAttack(entity);
+};
+
+const rogueLogic = async (character: Rogue, options: AttackOptions) => {
+  const entity = getBestTarget(character, {
+    monsters: options.monsters,
+    withinRange: character.range,
+  });
+  if (!entity) return; // No target
+
+  if (character.canUse("quickpunch")) {
+    // Ignore the monster if we're going to kill it
+    const damageRange = Utilities.damageRange(character, entity, character.game.G, { skill: "quickpunch" });
+    if (entity.hp <= damageRange.min) ignoreMonster(entity);
+
+    character.quickPunch(entity).catch((e) => {
+      unignoreMonster(entity);
+      if (e instanceof Error || typeof e === "string") logDebug(`quickPunch: ${e}`);
+    });
+  } else if (character.canUse("quickstab")) {
+    // Ignore the monster if we're going to kill it
+    const damageRange = Utilities.damageRange(character, entity, character.game.G, { skill: "quickstab" });
+    if (entity.hp <= damageRange.min) ignoreMonster(entity);
+
+    character.quickStab(entity).catch((e) => {
+      unignoreMonster(entity);
+      if (e instanceof Error || typeof e === "string") logDebug(`quickStab: ${e}`);
+    });
+  }
+
+  // Use the basic attack
+  return defaultLogic(character, options);
 };
