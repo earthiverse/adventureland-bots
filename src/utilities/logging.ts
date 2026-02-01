@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import type { TextChannel } from "discord.js";
 import { Client, EmbedBuilder, IntentsBitField, type HexColorString } from "discord.js";
 import fs from "fs";
@@ -144,18 +145,18 @@ export function log(message: string | Error, level: Level): void {
     case "console":
       switch (level) {
         case Level.Debug:
-          return console.debug(message);
+          return console.debug(chalk.hex(COLOR_LEVEL_MAP[level])(message));
         default:
         case Level.Informational:
         case Level.Notice:
-          return console.log(message);
+          return console.log(chalk.hex(COLOR_LEVEL_MAP[level])(message));
         case Level.Warning:
-          return console.warn(message);
+          return console.warn(chalk.hex(COLOR_LEVEL_MAP[level])(message));
         case Level.Error:
         case Level.Critical:
         case Level.Alert:
         case Level.Emergency:
-          return console.error(message);
+          return console.error(chalk.hex(COLOR_LEVEL_MAP[level])(message));
       }
     case "data":
       return writeLogToData(message, level);
