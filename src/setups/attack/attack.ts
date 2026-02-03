@@ -1,10 +1,15 @@
-import { Utilities, type Character, type Ranger, type Rogue } from "alclient";
+import { Utilities, type Character, type Priest, type Ranger, type Rogue } from "alclient";
 import type { MonsterKey } from "typed-adventureland";
+import { wantToHeal } from "../../utilities/character.js";
 import { logDebug } from "../../utilities/logging.js";
 import { getBestTarget, getBestTargets, ignoreMonster, unignoreMonster } from "../../utilities/monster.js";
 
 export type AttackOptions = {
   monsters?: MonsterKey[];
+};
+
+export type PriestAttackOptions = {
+  healStrangers?: true;
 };
 
 type ActiveData = {
@@ -32,40 +37,40 @@ export const setup = (character: Character, options: AttackOptions = { monsters:
 
       switch (character.ctype) {
         case "ranger": {
-          await rangerLogic(character as Ranger, options);
+          await rangerAttackLogic(character as Ranger, options);
           break;
         }
         case "merchant": {
           // TODO: Merchant Logic
-          await defaultLogic(character, options);
+          await defaultAttackLogic(character, options);
           break;
         }
         case "mage": {
           // TODO: Mage Logic
-          await defaultLogic(character, options);
+          await defaultAttackLogic(character, options);
           break;
         }
         case "paladin": {
           // TODO: Paladin Logic
-          await defaultLogic(character, options);
+          await defaultAttackLogic(character, options);
           break;
         }
         case "priest": {
           // TODO: Priest Logic
-          await defaultLogic(character, options);
+          await defaultAttackLogic(character, options);
           break;
         }
         case "rogue": {
-          await rogueLogic(character as Rogue, options);
+          await rogueAttackLogic(character as Rogue, options);
           break;
         }
         case "warrior": {
           // TODO: Warrior Logic
-          await defaultLogic(character, options);
+          await defaultAttackLogic(character, options);
           break;
         }
         default: {
-          await defaultLogic(character, options);
+          await defaultAttackLogic(character, options);
           break;
         }
       }
@@ -73,7 +78,15 @@ export const setup = (character: Character, options: AttackOptions = { monsters:
       if (e instanceof Error || typeof e === "string") logDebug(`attackLoop: ${e}`);
     } finally {
       // TODO: When skills get added, add timeouts for skills
-      setTimeout(() => void attackLoop(), Math.max(100, character.getTimeout("attack")));
+      const timeoutMs = Math.max(
+        100, // TODO: Config
+        Math.min(
+          character.getTimeout("attack"),
+          ...(character.ctype === "rogue" ? [character.getTimeout("quickpunch")] : []),
+        ),
+      );
+
+      setTimeout(() => void attackLoop(), timeoutMs);
     }
   };
   void attackLoop();
@@ -88,7 +101,7 @@ export const teardown = (character: Character) => {
   active.delete(character);
 };
 
-const defaultLogic = async (character: Character, options: AttackOptions) => {
+const defaultAttackLogic = async (character: Character, options: AttackOptions) => {
   if (!character.canUse("attack")) return; // Can't attack
 
   const entity = getBestTarget(character, {
@@ -107,7 +120,14 @@ const defaultLogic = async (character: Character, options: AttackOptions) => {
   });
 };
 
-const rangerLogic = async (character: Ranger, options: AttackOptions) => {
+const priestAttackLogic = async (character: Priest, options: PriestAttackOptions) => {
+  // Look for other characters to heal
+  for (const other of character.characters.values()) {
+    if (!wantToHeal(character, other)) continue;
+  }
+};
+
+const rangerAttackLogic = async (character: Ranger, options: AttackOptions) => {
   const entities = getBestTargets(character, {
     monsters: options.monsters,
     withinRange: character.range,
@@ -163,7 +183,7 @@ const rangerLogic = async (character: Ranger, options: AttackOptions) => {
   return character.basicAttack(entity);
 };
 
-const rogueLogic = async (character: Rogue, options: AttackOptions) => {
+const rogueAttackLogic = async (character: Rogue, options: AttackOptions) => {
   const entity = getBestTarget(character, {
     monsters: options.monsters,
     withinRange: character.range,
@@ -191,5 +211,5 @@ const rogueLogic = async (character: Rogue, options: AttackOptions) => {
   }
 
   // Use the basic attack
-  return defaultLogic(character, options);
+  return defaultAttackLogic(character, options);
 };
