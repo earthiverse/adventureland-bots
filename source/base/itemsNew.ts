@@ -298,6 +298,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: ["merchant"],
         holdSlot: 30,
     },
+    cupid: {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 7,
+        useOfferingFromLevel: 8,
+        upgradeUntilLevel: 8,
+    },
     dagger: {
         ...SELL_TO_NPC,
     },
@@ -358,6 +365,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     elixirvit2: {
         craft: true,
+    },
+    emptyheart: {
+        buy: true,
+        buyPrice: "ponty",
     },
     epyjamas: {
         ...SELL_TO_NPC,
@@ -557,6 +568,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     // },
     leather: {
         exchange: true,
+    },
+    lmace: {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 3,
+        useOfferingFromLevel: 6,
+        upgradeUntilLevel: 6, // TODO: We need to stack a bunch of primlings at 6
     },
     lostearring: {
         exchange: true,
