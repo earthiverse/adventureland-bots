@@ -1,11 +1,11 @@
 import { MonsterName, PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
-import { MageAttackStrategy } from "../strategies/attack_mage.js"
+import { MageAttackStrategy, MageAttackWithAttributesStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
-import { PriestAttackStrategy } from "../strategies/attack_priest.js"
+import { PriestAttackStrategy, PriestAttackWithAttributesStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
-import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
+import { WarriorAttackStrategy, WarriorAttackWithAttributesStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import { MAGE_FAST, PRIEST_FAST, RETURN_HIGHEST, UNEQUIP } from "./equipment.js"
@@ -23,12 +23,21 @@ export function constructPinkGooSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "mage",
-                        attack: new MageAttackStrategy({
+                        attack: new MageAttackWithAttributesStrategy({
                             contexts: contexts,
                             generateEnsureEquipped: {
                                 prefer: { ...MAGE_FAST },
                             },
                             typeList: [...typeList, ...IDLE_ATTACK_MONSTERS],
+                            switchConfig: [
+                                [
+                                    "pinkgoo",
+                                    5,
+                                    {
+                                        attributes: ["luck"],
+                                    },
+                                ],
+                            ],
                         }),
                         move: pinkgooMoveStrategy,
                     },
@@ -52,13 +61,22 @@ export function constructPinkGooSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({
+                        attack: new PriestAttackWithAttributesStrategy({
                             contexts: contexts,
                             enableAbsorbToTank: true,
                             generateEnsureEquipped: {
                                 prefer: { ...PRIEST_FAST },
                             },
                             typeList: [...typeList, ...IDLE_ATTACK_MONSTERS],
+                            switchConfig: [
+                                [
+                                    "pinkgoo",
+                                    5,
+                                    {
+                                        attributes: ["luck"],
+                                    },
+                                ],
+                            ],
                         }),
                         move: pinkgooMoveStrategy,
                     },
@@ -95,7 +113,7 @@ export function constructPinkGooSetup(contexts: Strategist<PingCompensatedCharac
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({
+                        attack: new WarriorAttackWithAttributesStrategy({
                             contexts: contexts,
                             enableEquipForCleave: true,
                             generateEnsureEquipped: {
@@ -106,6 +124,19 @@ export function constructPinkGooSetup(contexts: Strategist<PingCompensatedCharac
                                 },
                             },
                             typeList: [...typeList, ...IDLE_ATTACK_MONSTERS],
+                            switchConfig: [
+                                [
+                                    "pinkgoo",
+                                    5,
+                                    {
+                                        attributes: ["luck"],
+                                        prefer: {
+                                            mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
+                                            offhand: { name: "mshield", filters: RETURN_HIGHEST },
+                                        },
+                                    },
+                                ],
+                            ],
                         }),
                         move: pinkgooMoveStrategy,
                     },

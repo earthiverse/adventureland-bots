@@ -1,17 +1,17 @@
 import { Mage, MonsterName, PingCompensatedCharacter, Warrior } from "alclient"
 import { Strategist } from "../context.js"
-import { MageAttackStrategy } from "../strategies/attack_mage.js"
+import { MageAttackStrategy, MageAttackWithAttributesStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
-import { PriestAttackStrategy } from "../strategies/attack_priest.js"
+import { PriestAttackStrategy, PriestAttackWithAttributesStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
-import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
+import { WarriorAttackStrategy, WarriorAttackWithAttributesStrategy } from "../strategies/attack_warrior.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
 import { RETURN_HIGHEST } from "./equipment.js"
 
 // TODO: Better PVP setup
-class WarriorDragoldAttackStrategy extends WarriorAttackStrategy {
+class WarriorDragoldAttackStrategy extends WarriorAttackWithAttributesStrategy {
     public onApply(bot: Warrior): void {
         if (bot.isPVP()) {
             // No Splash Damage
@@ -36,7 +36,7 @@ class WarriorDragoldAttackStrategy extends WarriorAttackStrategy {
     }
 }
 
-class MageDragoldAttackStrategy extends MageAttackStrategy {
+class MageDragoldAttackStrategy extends MageAttackWithAttributesStrategy {
     public onApply(bot: Mage): void {
         if (bot.isPVP()) {
             // No Splash Damage
@@ -74,12 +74,21 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                 },
             },
             typeList: types,
+            switchConfig: [
+                [
+                    "dragold",
+                    500_000,
+                    {
+                        attributes: ["luck"],
+                    },
+                ],
+            ],
         }),
         move: moveStrategy,
     }
     const priestConfig: CharacterConfig = {
         ctype: "priest",
-        attack: new PriestAttackStrategy({
+        attack: new PriestAttackWithAttributesStrategy({
             contexts: contexts,
             disableEnergize: true,
             enableHealStrangers: true,
@@ -90,6 +99,15 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                 },
             },
             typeList: types,
+            switchConfig: [
+                [
+                    "dragold",
+                    500_000,
+                    {
+                        attributes: ["luck"],
+                    },
+                ],
+            ],
         }),
         move: moveStrategy,
     }
@@ -107,6 +125,19 @@ export function constructDragoldSetup(contexts: Strategist<PingCompensatedCharac
                 },
             },
             typeList: types,
+            switchConfig: [
+                [
+                    "dragold",
+                    500_000,
+                    {
+                        attributes: ["luck"],
+                        prefer: {
+                            mainhand: { name: "vhammer", filters: RETURN_HIGHEST },
+                            offhand: { name: "mshield", filters: RETURN_HIGHEST },
+                        },
+                    },
+                ],
+            ],
         }),
         move: moveStrategy,
     }

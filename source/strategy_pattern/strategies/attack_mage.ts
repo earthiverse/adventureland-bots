@@ -1,7 +1,24 @@
-import AL, { ActionData, ActionDataRay, Entity, Mage, SlotType, TradeItemInfo, TradeSlotType } from "alclient"
+import AL, {
+    ActionData,
+    ActionDataRay,
+    Entity,
+    Mage,
+    MonsterName,
+    SlotType,
+    TradeItemInfo,
+    TradeSlotType,
+} from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
 import { suppress_errors } from "../logging.js"
-import { AGGROED_MONSTERS, BaseAttackStrategy, BaseAttackStrategyOptions, KILL_STEAL_AVOID_MONSTERS } from "./attack.js"
+import {
+    AGGROED_MONSTERS,
+    BaseAttackStrategy,
+    BaseAttackStrategyOptions,
+    EnsureEquipped,
+    KILL_STEAL_AVOID_MONSTERS,
+} from "./attack.js"
+import { checkOnlyEveryMS } from "../../base/general.js"
+import { GenerateEnsureEquipped, generateEnsureEquipped } from "../setups/equipment.js"
 
 export type MageAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableCburst?: boolean
@@ -190,5 +207,47 @@ export class MageAttackStrategy extends BaseAttackStrategy<Mage> {
 
         // cburst everything in our list
         return await bot.cburst([...toCburst.entries()])
+    }
+}
+
+export type MageAttackWithLuckStrategyOptions = MageAttackStrategyOptions & {
+    /** For the given monster name, if less than hp, switch to attributes */
+    switchConfig: [MonsterName, hp: number, generate: GenerateEnsureEquipped][]
+}
+
+/**
+ * Can be used to change equipment if we see certain monsters
+ */
+export class MageAttackWithAttributesStrategy extends MageAttackStrategy {
+    declare public options: MageAttackWithLuckStrategyOptions
+    public originalEnsureEquipped = new Map<string, EnsureEquipped>()
+
+    public constructor(options?: MageAttackWithLuckStrategyOptions) {
+        super(options)
+    }
+
+    public onApply(bot: Mage): void {
+        super.onApply(bot)
+        this.originalEnsureEquipped.set(bot.id, this.options.ensureEquipped)
+    }
+
+    protected async ensureEquipped(bot: Mage): Promise<void> {
+        if (checkOnlyEveryMS(`equip_${bot.id}`, 2_000)) {
+            let switched = false
+            for (const [type, hpLessThan, generate] of this.options.switchConfig) {
+                const monster = bot.getEntity({ type, hpLessThan })
+                if (!monster) continue // No monster, or not low enough HP
+
+                // Equip with our attributes
+                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, generate))
+                switched = true
+                break
+            }
+
+            // Use our original equipment
+            if (!switched) this.botEnsureEquipped.set(bot.id, this.originalEnsureEquipped.get(bot.id))
+        }
+
+        return super.ensureEquipped(bot)
     }
 }

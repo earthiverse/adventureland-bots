@@ -244,7 +244,6 @@ export class PriestAttackWithAttributesStrategy extends PriestAttackStrategy {
                 if (!monster) continue // No monster, or not low enough HP
 
                 // Equip with our attributes
-                console.debug("DEBUG: SWITCHING TO LUCK ON", bot.id, "FOR", type)
                 this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, generate))
                 switched = true
                 break
