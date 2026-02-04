@@ -88,7 +88,7 @@ let ENABLE_EVENTS = true
 let ENABLE_SERVER_HOPS = true
 let ENABLE_SPECIAL_MONSTERS = true
 let ENABLE_MONSTERHUNTS = false
-const DEFAULT_MONSTERS: MonsterName[] = ["stompy"]
+const DEFAULT_MONSTERS: MonsterName[] = ["stompy", "stompy", "stompy", "bat"]
 const SPECIAL_MONSTERS: MonsterName[] = [
     "crabxx",
     "cutebee",
@@ -332,11 +332,14 @@ class AdminCommandStrategy implements Strategy<PingCompensatedCharacter> {
     }
 
     protected saveAndExit() {
-        const publicData = filterContexts(PUBLIC_CONTEXTS).reduce((acc: string, c) => {
-            c.bot.characterID
-            const row = PUBLIC_FIELDS.map((field) => c.bot[field]).join("🔥")
-            return acc + row + "🔥" + JSON.stringify(SETTINGS_CACHE[c.bot.id] ?? {}) + "\n"
-        }, PUBLIC_FIELDS.join(",") + "\n")
+        const publicData = filterContexts(PUBLIC_CONTEXTS).reduce(
+            (acc: string, c) => {
+                c.bot.characterID
+                const row = PUBLIC_FIELDS.map((field) => c.bot[field]).join("🔥")
+                return acc + row + "🔥" + JSON.stringify(SETTINGS_CACHE[c.bot.id] ?? {}) + "\n"
+            },
+            PUBLIC_FIELDS.join(",") + "\n",
+        )
         fs.writeFileSync(PUBLIC_CSV, publicData)
 
         // Stop the script
