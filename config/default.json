@@ -14,6 +14,7 @@
       "7": "ignore"
     }
   },
+  "banking": {},
   "party": {
     "allowed": true,
     "checkEveryMs": 10000

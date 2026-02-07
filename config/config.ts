@@ -27,6 +27,10 @@ interface Config {
     };
     map: Record<Level, Method>;
   };
+  banking: {
+    useBasement?: true;
+    useUnderground?: true;
+  }
   party: {
     /**
      * If true, we will accept anyone who sends a party request.
@@ -44,6 +48,7 @@ interface Config {
 }
 
 const config: Config = {
+  banking: nodeConfig.get("banking"),
   credentials: nodeConfig.get("credentials"),
   logging: nodeConfig.get("logging"),
   party: nodeConfig.get("party"),

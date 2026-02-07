@@ -1,5 +1,5 @@
 import { Game, type Character } from "alclient";
-import type { MonsterKey } from "typed-adventureland";
+import type { MapKey, MonsterKey } from "typed-adventureland";
 import config from "../config/config.js";
 import { setup as avoidStackingSetup } from "./setups/move/avoid_stacking.js";
 import { setup } from "./setups/simple.js";
@@ -15,6 +15,7 @@ import { logDebug, logInformational } from "./utilities/logging.js";
 
 // Config
 const { server, email, password } = config.credentials;
+const { useBasement, useUnderground } = config.banking;
 const MONSTERS: MonsterKey[] = ["snake", "osnake"];
 
 logDebug("Getting G from Cache...");
@@ -25,7 +26,24 @@ logDebug("Getting Servers...");
 const promises: Promise<unknown>[] = [game.updateServers()];
 if (!g) promises.push(game.updateG());
 await Promise.all(promises);
-game.preparePathfinder();
+
+const ignoreMaps: MapKey[] = [
+  "abtesting",
+  "cgallery",
+  "d2",
+  "d_e",
+  "shellsisland",
+  "ship0",
+  "test",
+  "old_bank",
+  "old_main",
+  "original_main",
+  "resort",
+  "resort_e",
+];
+if (!useBasement) ignoreMaps.push("bank_b");
+if (!useUnderground) ignoreMaps.push("bank_u");
+game.preparePathfinder(ignoreMaps);
 
 logDebug("Logging in...");
 const player = await game.login(email, password);
