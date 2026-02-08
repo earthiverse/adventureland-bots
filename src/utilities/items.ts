@@ -5,10 +5,12 @@ import type {
   GData,
   ItemInfo,
   ItemKey,
+  MapKey,
   OfferingKey,
   UpgradeScrollKey,
 } from "typed-adventureland";
 import Config, { type ItemsConfig, type Price } from "../../config/items.js";
+import { itemData } from "../plugins/data_tracker.js";
 import {
   buyForProfit,
   buyKeys,
@@ -23,7 +25,6 @@ import {
   removeUncraftable,
   removeUnexchangable,
 } from "./items/adjust.js";
-import { getTotalItemCount } from "./items/counts.js";
 import { isPurchasableFromNpc } from "./items/npc.js";
 import { calculateOptimalCompoundPath, calculateOptimalUpgradePath } from "./items/upgrade.js";
 import { logError } from "./logging.js";
@@ -210,6 +211,20 @@ export function getCraftableItems(
   }
 
   return craftableItems;
+}
+
+export function getItemsToStoreInBank(character: Character, config: ItemsConfig = Config): number[] {
+  const items: number[] = [];
+  for (let i = 0; i < character.items.length; i++) {
+    const item = character.items[i];
+    if (!item) continue; // No item
+    if (wantToHold(character, item, config)) continue;
+
+    // TODO: More logic
+
+    items.push(i);
+  }
+  return items;
 }
 
 /**
@@ -421,14 +436,14 @@ export function wantToExchange(item: ItemInfo, emptyInventorySlots: number, g: G
  * @returns true if we want to hold the item on the character
  */
 export function wantToHold(character: Character, item: ItemInfo, config = Config): boolean {
-  if (item.l !== undefined) return true;
+  if (item.l !== undefined) return true; // Our convention is to hold locked items
 
   const itemConfig = config[item.name]?.hold;
   if (!itemConfig) return false; // We have no hold config for this item
   if (itemConfig.characterTypes === "all") return true; // We want all classes to hold this item
   if (!itemConfig.characterTypes.includes(character.ctype)) return false; // We don't want this class to hold this item
 
-  return true;
+  return false;
 }
 
 /**
@@ -567,4 +582,57 @@ export function adjustItemConfig(
   removeUnexchangable(config, g);
 
   // TODO: Ensure only one of replenish / destroy / list / mail / sell is set
+}
+
+/**
+ * Returns the total number of this item we have
+ * @param name
+ * @returns
+ */
+export function getTotalItemCount(name: ItemKey): number {
+  let count = 0;
+  for (const items of itemData.values()) {
+    for (const item of items) {
+      if (!item) continue; // Empty slot
+      if (item.name !== name) continue; // Different item
+      count += item.q ?? 1;
+    }
+  }
+  return count;
+}
+
+/**
+ * Returns the number of empty bank slots.
+ * If a map is specified, then it returns the number of empty bank slots for the tellers on that specific map
+ * @param map
+ * @returns
+ */
+export function getEmptyBankSlotsCount(map?: Extract<MapKey, "bank" | "bank_b" | "bank_u">): number {
+  let count = 0;
+
+  let packFrom = 0;
+  let packTo = 47;
+  if (map == "bank") {
+    packFrom = 0;
+    packTo = 7;
+  } else if (map == "bank_b") {
+    packFrom = 8;
+    packTo = 23;
+  } else if (map == "bank_u") {
+    packFrom = 24;
+    packTo = 47;
+  }
+
+  for (const [pack, items] of itemData.entries()) {
+    if (!pack.startsWith("items")) continue;
+    if (map !== undefined) {
+      const bankPackNum = Number.parseInt(pack.substring(5, 7));
+      if (bankPackNum < packFrom || bankPackNum > packTo) continue; // Pack is not on this map
+    }
+    for (const item of items) {
+      if (item) continue; // Filled slot
+      count += 1;
+    }
+  }
+  return count;
 }
