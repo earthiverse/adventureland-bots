@@ -1,7 +1,9 @@
-import AL, { Entity, Paladin } from "alclient"
+import AL, { Entity, MonsterName, Paladin } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
-import { AGGROED_MONSTERS, BaseAttackStrategy, BaseAttackStrategyOptions } from "./attack.js"
+import { AGGROED_MONSTERS, BaseAttackStrategy, BaseAttackStrategyOptions, EnsureEquipped } from "./attack.js"
 import { suppress_errors } from "../logging.js"
+import { checkOnlyEveryMS } from "../../base/general.js"
+import { GenerateEnsureEquipped, generateEnsureEquipped } from "../setups/equipment.js"
 
 export type PaladinAttackStrategyOptions = BaseAttackStrategyOptions & {
     disablePurify?: boolean
@@ -190,5 +192,47 @@ export class PaladinAttackStrategy extends BaseAttackStrategy<Paladin> {
                 this.getEnergizeFromOther(bot).catch(suppress_errors)
             return bot.smash(target.id)
         }
+    }
+}
+
+export type PaladinAttackWithLuckStrategyOptions = PaladinAttackStrategyOptions & {
+    /** For the given monster name, if less than hp, switch to attributes */
+    switchConfig: [MonsterName, hp: number, generate: GenerateEnsureEquipped][]
+}
+
+/**
+ * Can be used to change equipment if we see certain monsters
+ */
+export class PaladinAttackWithAttributesStrategy extends PaladinAttackStrategy {
+    declare public options: PaladinAttackWithLuckStrategyOptions
+    public originalEnsureEquipped = new Map<string, EnsureEquipped>()
+
+    public constructor(options?: PaladinAttackWithLuckStrategyOptions) {
+        super(options)
+    }
+
+    public onApply(bot: Paladin): void {
+        super.onApply(bot)
+        this.originalEnsureEquipped.set(bot.id, this.options.ensureEquipped)
+    }
+
+    protected async ensureEquipped(bot: Paladin): Promise<void> {
+        if (checkOnlyEveryMS(`equip_${bot.id}`, 2_000)) {
+            let switched = false
+            for (const [type, hpLessThan, generate] of this.options.switchConfig) {
+                const monster = bot.getEntity({ type, hpLessThan })
+                if (!monster) continue // No monster, or not low enough HP
+
+                // Equip with our attributes
+                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, generate))
+                switched = true
+                break
+            }
+
+            // Use our original equipment
+            if (!switched) this.botEnsureEquipped.set(bot.id, this.originalEnsureEquipped.get(bot.id))
+        }
+
+        return super.ensureEquipped(bot)
     }
 }

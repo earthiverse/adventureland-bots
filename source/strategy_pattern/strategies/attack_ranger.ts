@@ -1,7 +1,9 @@
-import AL, { Entity, Ranger } from "alclient"
+import AL, { Entity, MonsterName, Ranger } from "alclient"
 import FastPriorityQueue from "fastpriorityqueue"
-import { BaseAttackStrategy, BaseAttackStrategyOptions, IDLE_ATTACK_MONSTERS } from "./attack.js"
+import { BaseAttackStrategy, BaseAttackStrategyOptions, EnsureEquipped, IDLE_ATTACK_MONSTERS } from "./attack.js"
 import { suppress_errors } from "../logging.js"
+import { checkOnlyEveryMS } from "../../base/general.js"
+import { GenerateEnsureEquipped, generateEnsureEquipped } from "../setups/equipment.js"
 
 export type RangerAttackStrategyOptions = BaseAttackStrategyOptions & {
     disableHuntersMark?: boolean
@@ -10,7 +12,7 @@ export type RangerAttackStrategyOptions = BaseAttackStrategyOptions & {
 }
 
 export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
-    public declare options: RangerAttackStrategyOptions
+    declare public options: RangerAttackStrategyOptions
 
     public constructor(options?: RangerAttackStrategyOptions) {
         super(options)
@@ -386,5 +388,47 @@ export class RangerAttackStrategy extends BaseAttackStrategy<Ranger> {
             return // Would be a waste to use if we can kill it right away
 
         return bot.huntersMark(entity.id)
+    }
+}
+
+export type RangerAttackWithLuckStrategyOptions = RangerAttackStrategyOptions & {
+    /** For the given monster name, if less than hp, switch to attributes */
+    switchConfig: [MonsterName, hp: number, generate: GenerateEnsureEquipped][]
+}
+
+/**
+ * Can be used to change equipment if we see certain monsters
+ */
+export class RangerAttackWithAttributesStrategy extends RangerAttackStrategy {
+    declare public options: RangerAttackWithLuckStrategyOptions
+    public originalEnsureEquipped = new Map<string, EnsureEquipped>()
+
+    public constructor(options?: RangerAttackWithLuckStrategyOptions) {
+        super(options)
+    }
+
+    public onApply(bot: Ranger): void {
+        super.onApply(bot)
+        this.originalEnsureEquipped.set(bot.id, this.options.ensureEquipped)
+    }
+
+    protected async ensureEquipped(bot: Ranger): Promise<void> {
+        if (checkOnlyEveryMS(`equip_${bot.id}`, 2_000)) {
+            let switched = false
+            for (const [type, hpLessThan, generate] of this.options.switchConfig) {
+                const monster = bot.getEntity({ type, hpLessThan })
+                if (!monster) continue // No monster, or not low enough HP
+
+                // Equip with our attributes
+                this.botEnsureEquipped.set(bot.id, generateEnsureEquipped(bot, generate))
+                switched = true
+                break
+            }
+
+            // Use our original equipment
+            if (!switched) this.botEnsureEquipped.set(bot.id, this.originalEnsureEquipped.get(bot.id))
+        }
+
+        return super.ensureEquipped(bot)
     }
 }
