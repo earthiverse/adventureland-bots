@@ -111,12 +111,16 @@ async function checkDeals() {
             { "slots.trade29.giveaway": true, "slots.trade29.list": { $ne: MERCHANT_NAME } },
             { "slots.trade30.giveaway": true, "slots.trade30.list": { $ne: MERCHANT_NAME } },
         ],
-        $nor: avoidServers
-    }).lean().exec()
+        $nor: avoidServers,
+    })
+        .lean()
+        .exec()
 
     if (giveawayMerchants.length > 0) {
         const target = giveawayMerchants[0]
-        console.log(`Going to ${target.serverRegion}${target.serverIdentifier} to look for a giveaway on ${target.name}!`)
+        console.log(
+            `Going to ${target.serverRegion}${target.serverIdentifier} to look for a giveaway on ${target.name}!`,
+        )
         start(target.serverRegion, target.serverIdentifier)
         return
     }
@@ -124,18 +128,20 @@ async function checkDeals() {
     // Look for Ponty deals
     const itemsToCheckPonty = [...DEFAULT_ITEMS_TO_BUY.entries()]
         // Only include items we want to buy at Ponty prices
-        .filter(([name, price]) => (
-            (price >= AL.Game.G.items[name].g * AL.Constants.PONTY_MARKUP)
-            || (price <= -AL.Constants.PONTY_MARKUP)
-        ))
+        .filter(
+            ([name, price]) =>
+                price >= AL.Game.G.items[name].g * AL.Constants.PONTY_MARKUP || price <= -AL.Constants.PONTY_MARKUP,
+        )
         // Only return item names
         .map((v) => v[0])
 
     const ponty = await AL.NPCModel.findOne({
         lastSeen: { $gt: Date.now() - 120000 },
         items: { $elemMatch: { name: { $in: itemsToCheckPonty } } },
-        $nor: avoidServers
-    }).lean().exec()
+        $nor: avoidServers,
+    })
+        .lean()
+        .exec()
 
     if (ponty) {
         console.log(`Going to ${ponty.serverRegion}${ponty.serverIdentifier} to look at Ponty!`)
@@ -177,24 +183,27 @@ async function checkDeals() {
             { "slots.trade29": { $ne: undefined } },
             { "slots.trade30": { $ne: undefined } },
         ],
-        $nor: avoidServers
-    }).lean().exec()
-    const merchantsToCheck = buyMerchants
-        .filter((v) => {
-            for (const slotName in v.slots) {
-                const slotData = v.slots[slotName as TradeSlotType]
-                if (!slotData) continue // No data
-                if (!slotData.price) continue // Not a trade slot
-                if (slotData.b) continue // Buying, not selling
-                let priceToPay = DEFAULT_ITEMS_TO_BUY.get(slotData.name)
-                if (priceToPay < 0) priceToPay = (AL.Game.G.items[slotData.name].g / AL.Game.G.items[slotData.name].markup ?? 1) * -priceToPay
-                if (!priceToPay || slotData.price > priceToPay) continue // Not on our wishlist, or more than we want to pay
+        $nor: avoidServers,
+    })
+        .lean()
+        .exec()
+    const merchantsToCheck = buyMerchants.filter((v) => {
+        for (const slotName in v.slots) {
+            const slotData = v.slots[slotName as TradeSlotType]
+            if (!slotData) continue // No data
+            if (!slotData.price) continue // Not a trade slot
+            if (slotData.b) continue // Buying, not selling
+            let priceToPay = DEFAULT_ITEMS_TO_BUY.get(slotData.name)
+            if (priceToPay < 0)
+                priceToPay =
+                    (AL.Game.G.items[slotData.name].g / (AL.Game.G.items[slotData.name].markup ?? 1)) * -priceToPay
+            if (!priceToPay || slotData.price > priceToPay) continue // Not on our wishlist, or more than we want to pay
 
-                // There's something we want from this merchant
-                console.log(`${v.name} has a deal! ${slotData.name} for ${slotData.price}`)
-                return true
-            }
-        })
+            // There's something we want from this merchant
+            console.log(`${v.name} has a deal! ${slotData.name} for ${slotData.price}`)
+            return true
+        }
+    })
 
     if (merchantsToCheck.length > 0) {
         const target = merchantsToCheck[0]
@@ -205,7 +214,11 @@ async function checkDeals() {
 
     for (let i = 0; i < 5; i++) {
         const nextServer = getNextDefaultServer()
-        if (avoidServers.some((v) => v.serverRegion == nextServer.serverRegion && v.serverIdentifier == nextServer.serverIdentifier)) {
+        if (
+            avoidServers.some(
+                (v) => v.serverRegion == nextServer.serverRegion && v.serverIdentifier == nextServer.serverIdentifier,
+            )
+        ) {
             // We want to avoid this server
             continue
         }
