@@ -504,6 +504,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         useOfferingFromLevel: 6,
         upgradeUntilLevel: 6, // TODO: We need to stack a bunch of primlings at 6
     },
+    horsecapeg: {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 1,
+        useOfferingFromLevel: 5,
+        upgradeUntilLevel: 5, // TODO: We need to stack a bunch of primlings at 5
+    },
     hotchocolate: {
         sellExcess: 9999 * 3,
     },
