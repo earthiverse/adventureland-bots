@@ -1,8 +1,6 @@
 import AL, { ActionData, Character, HitData, Mage } from "alclient"
 import { Loop, LoopName, Strategy } from "../context.js"
 
-// TODO: Add things to do if we will burn to death
-
 export class AvoidDeathStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
     private onAction: (data: HitData) => Promise<void>
@@ -48,9 +46,12 @@ export class AvoidDeathStrategy<Type extends Character> implements Strategy<Type
 
         if (bot.s.burned) {
             // Check if we're going to burn to death
-            const numIntervals = Math.floor(bot.s.burned.ms / AL.Game.G.conditions.burned.interval) - 1
+            const numIntervals = Math.min(
+                Math.floor(bot.s.burned.ms / AL.Game.G.conditions.burned.interval) - 1, // Number of intervals for burn
+                Math.ceil((bot.ping * 6) / AL.Game.G.conditions.burned.interval) + 1, // We could receive healing
+            )
             const burnDamage = numIntervals * (bot.s.burned.intensity / 5)
-            if (burnDamage > bot.hp) {
+            if (burnDamage >= bot.hp) {
                 console.info(`Harakiri-ing ${bot.id} to avoid burning to death (checkIncomingDamage)!`)
                 bot.socket.emit("harakiri")
                 return
@@ -61,7 +62,7 @@ export class AvoidDeathStrategy<Type extends Character> implements Strategy<Type
 
         // If we could die due to attacks from incoming monsters
         let potentialIncomingDamage = 0
-        let multiplier = bot.calculateTargets()
+        const multiplier = bot.calculateTargets()
         multiplier["magical"] -= bot.mcourage
         multiplier["physical"] -= bot.courage
         multiplier["pure"] -= bot.pcourage
