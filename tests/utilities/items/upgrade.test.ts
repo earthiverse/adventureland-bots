@@ -4,7 +4,6 @@ import { getGFromCache } from "../../../src/plugins/g_cache.js";
 import {
   calculateOptimalCompoundPath,
   calculateOptimalUpgradePath,
-  calculateUpgrade,
   getScrollAndOfferingPricesFromG,
 } from "../../../src/utilities/items/upgrade.js";
 
@@ -16,21 +15,6 @@ beforeAll(async () => {
 
 // TODO: Need more tests to make sure values are reasonable
 
-test("calculateNextUpgrade() works", () => {
-  const results: { [T in number]: ReturnType<typeof calculateUpgrade> } = {
-    1: calculateUpgrade({ name: "bow", level: 0 }, 0, g.items.bow.g, g),
-  };
-  for (let level = 1; level < 12; level++) {
-    const lastResults = results[level]!;
-    const nextUpgrade = calculateUpgrade({ name: "bow", level }, lastResults.grace, lastResults.cost, g);
-
-    expect(nextUpgrade.cost).toBeGreaterThan(lastResults.cost); // Cost should have increased
-    expect(nextUpgrade.grace).toBeGreaterThanOrEqual(lastResults.grace); // Grace may have increased
-    expect(nextUpgrade.scroll).toBeDefined(); // Every upgrade here should be doable
-
-    results[level + 1] = nextUpgrade;
-  }
-});
 
 test("calculateOptimalUpgradePath() works", () => {
   const path = calculateOptimalUpgradePath({ name: "bataxe", level: 0 }, 6_000_000, g, 12);
@@ -47,7 +31,6 @@ test("calculateOptimalUpgradePath() works", () => {
       expect(path![i].offering).toBe("offeringp");
     }
   }
-  console.log(path);
 });
 
 test("calculateOptimalCompoundPath() works", () => {
@@ -59,5 +42,4 @@ test("calculateOptimalCompoundPath() works", () => {
     expect(path![i].cost).toBeGreaterThan(path![i - 1].cost); // Cost should have increased
     expect(path![i].level).toBeGreaterThan(path![i - 1].level); // Level should have increased
   }
-  console.log(path);
 });

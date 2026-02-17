@@ -156,61 +156,6 @@ export function getScrollAndOfferingPricesFromItemsConfig(config: ItemsConfig) {
   }
 }
 
-export function calculateUpgrade(item: ItemInfo, grace: number, startingCost: number, g: GData) {
-  const bestConfig: {
-    cost: number;
-    chance: number;
-    grace: number;
-    scroll?: ItemKey;
-    offering?: ItemKey;
-    numStacks: number;
-  } = {
-    cost: Infinity,
-    chance: 0,
-    grace,
-    scroll: undefined,
-    offering: undefined,
-    numStacks: 0,
-  };
-
-  for (const scroll of Object.keys(UPGRADE_SCROLLS) as UpgradeScrollKey[]) {
-    const scrollPrice = UPGRADE_SCROLLS[scroll]!;
-
-    for (const offering of [...Object.keys(OFFERINGS), undefined] as (OfferingKey | undefined)[]) {
-      const offeringPrice = offering === undefined ? 0 : OFFERINGS[offering]!;
-
-      for (
-        let numStacks = 0;
-        numStacks <= Math.max(0, Math.ceil(((item.level ?? 0) + 2 - grace) / 0.5)) + 1;
-        numStacks++
-      ) {
-        const stackPrice = OFFERINGS["offeringp"]! * numStacks;
-        const cost = startingCost + scrollPrice + offeringPrice + stackPrice;
-
-        const { chance, newGrace } = calculateUpgradeChance(
-          item,
-          grace + numStacks * 0.5,
-          scroll as ItemKey,
-          g,
-          offering,
-        );
-        if (cost / chance >= bestConfig.cost) continue; // Not better
-
-        Object.assign(bestConfig, {
-          cost: cost / chance,
-          chance,
-          grace: newGrace,
-          scroll: scroll as ItemKey,
-          offering: offering ?? null,
-          numStacks,
-        });
-      }
-    }
-  }
-
-  return bestConfig;
-}
-
 export function calculateOptimalUpgradePath(
   item: ItemInfo,
   initialValue: number,
@@ -424,13 +369,7 @@ export function calculateOptimalCompoundPath(
       const scrollCost = COMPOUND_SCROLLS[scroll];
       if (scrollCost === undefined) continue; // We don't have a price for this scroll set
       for (const offering of [...Object.keys(OFFERINGS), undefined] as (OfferingKey | undefined)[]) {
-        const { chance, newGrace } = calculateCompoundChance(
-          currentItem,
-          current.grace,
-          scroll,
-          g,
-          offering,
-        );
+        const { chance, newGrace } = calculateCompoundChance(currentItem, current.grace, scroll, g, offering);
         if (!chance) continue; // Incompatible
 
         const offeringCost = offering === undefined ? 0 : OFFERINGS[offering]!;
