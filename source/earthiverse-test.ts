@@ -80,7 +80,8 @@ import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.js"
 import { TemporalSurgeBossesStrategy } from "./strategy_pattern/strategies/temporal.js"
 
-await Promise.all([AL.Game.loginJSONFile("../credentials-test.json", false), AL.Game.getGData(true)])
+AL.Game.setServer("https://test.adventure.land")
+await Promise.all([AL.Game.loginJSONFile("../credentials-test.json", true), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true, remove_abtesting: true, remove_test: true })
 
 // Toggles
@@ -139,7 +140,7 @@ const PUBLIC_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const ALL_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const SETTINGS_CACHE: Record<string, PublicSettings> = {}
 
-const guiStrategy = new GuiStrategy({ port: 8080 })
+const guiStrategy = new GuiStrategy({ port: 8088 })
 const baseStrategy = new BaseStrategy(ALL_CONTEXTS)
 const privateBuyStrategy = new BuyStrategy({
     contexts: PRIVATE_CONTEXTS,
@@ -1297,7 +1298,7 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }))
-const port = 80
+const port = 8099
 
 app.get("/", (_req, res) => {
     res.sendFile(path.join(path.resolve(), "/earthiverse.html"))
