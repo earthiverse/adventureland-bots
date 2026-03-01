@@ -76,7 +76,7 @@ test("wantToSell works as expected", () => {
         }
     }
 
-    const bot = new Priest("", "", "", AL.Game.G, { region: "ASIA", name: "I", addr: "test", port: 0, players: 0, key: "ASIAI" })
+    const bot = new Priest("", "", "", AL.Game.G, { region: "ASIA", name: "I", address: "test", path: "/test", players: 0, key: "ASIAI" })
 
     const vhammerInventory = new Item({ name: "vhammer", level: 0 }, AL.Game.G)
     // We shouldn't want to sell it to an NPC

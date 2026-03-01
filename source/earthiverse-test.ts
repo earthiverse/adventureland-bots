@@ -54,7 +54,6 @@ import { body, validationResult } from "express-validator"
 import fs from "fs"
 import path from "path"
 import { CRYPT_MONSTERS } from "./base/crypt.js"
-import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "./base/defaults.js"
 import {
     adjustItemConfig,
     DEFAULT_ITEM_CONFIG,
@@ -79,6 +78,9 @@ import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
 import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.js"
 import { TemporalSurgeBossesStrategy } from "./strategy_pattern/strategies/temporal.js"
+
+const DEFAULT_REGION: ServerRegion = "EU"
+const DEFAULT_IDENTIFIER: ServerIdentifier = "I"
 
 AL.Game.setServer("https://test.adventure.land")
 await Promise.all([AL.Game.loginJSONFile("../credentials-test.json", true), AL.Game.getGData(true)])
