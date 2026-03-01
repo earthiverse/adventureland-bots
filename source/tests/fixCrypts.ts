@@ -17,7 +17,7 @@ const serverIdentifier: ServerIdentifier = "III"
 
 async function run() {
     console.log("Connecting...")
-    await Promise.all([AL.Game.loginJSONFile(credentials, false), AL.Game.getGData(true)])
+    await Promise.all([AL.Game.loginJSONFile(credentials, true), AL.Game.getGData(true)])
 
     await AL.Pathfinder.prepare(AL.Game.G, { cheat: false })
     const rogue = await AL.Game.startRogue(rogueName, serverRegion, serverIdentifier)

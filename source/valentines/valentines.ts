@@ -43,7 +43,7 @@ import { mainFrogs } from "../base/locations.js"
 import { BoosterStrategy } from "../strategy_pattern/strategies/booster.js"
 import { FixStuffStrategy } from "../strategy_pattern/strategies/fixes.js"
 
-await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile("../../credentials.json", true), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
 void adjustItemConfig(DEFAULT_ITEM_CONFIG)
 

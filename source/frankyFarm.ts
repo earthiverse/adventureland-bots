@@ -43,7 +43,7 @@ const PARTY_LEADER = "earthPri"
 
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 
-await Promise.all([AL.Game.loginJSONFile(CREDENTIALS, false), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile(CREDENTIALS, true), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
 
 // Strategies

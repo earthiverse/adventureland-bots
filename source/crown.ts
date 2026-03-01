@@ -19,7 +19,7 @@ import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { RETURN_HIGHEST } from "./strategy_pattern/setups/equipment.js"
 import { halloweenGreenJr } from "./base/locations.js"
 
-await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile("../credentials.json", true), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
 
 const PARTY_LEADER = "CrownsAnal"

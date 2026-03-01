@@ -62,7 +62,7 @@ import { FixStuffStrategy } from "../strategy_pattern/strategies/fixes.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
 import FastPriorityQueue from "fastpriorityqueue"
 
-await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile("../../credentials.json", true), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
 void adjustItemConfig(DEFAULT_ITEM_CONFIG)
 

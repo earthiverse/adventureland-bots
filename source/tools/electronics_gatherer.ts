@@ -10,7 +10,7 @@ import { DestroyStrategy } from "../strategy_pattern/strategies/destroy.js"
 import { HoldPositionMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { SellStrategy } from "../strategy_pattern/strategies/sell.js"
 
-await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile("../../credentials.json", true), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
 
 const BUFFER = 27_500

@@ -80,7 +80,7 @@ import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.js"
 import { TemporalSurgeBossesStrategy } from "./strategy_pattern/strategies/temporal.js"
 
-await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile("../credentials.json", true), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true, remove_abtesting: true, remove_test: true })
 
 // Toggles

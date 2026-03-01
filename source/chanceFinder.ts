@@ -7,7 +7,7 @@ import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.j
 
 const CREDENTIALS = "../credentials.json"
 
-await Promise.all([AL.Game.loginJSONFile(CREDENTIALS, false), AL.Game.getGData(false)])
+await Promise.all([AL.Game.loginJSONFile(CREDENTIALS, true), AL.Game.getGData(false)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: false })
 
 

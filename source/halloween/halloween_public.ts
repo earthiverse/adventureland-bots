@@ -46,7 +46,7 @@ import { SellStrategy } from "../strategy_pattern/strategies/sell.js"
 import { NewMerchantStrategy } from "../merchant/strategy.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 
-await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile("../../credentials.json", true), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { remove_abtesting: true, remove_test: true })
 
 /** What monster to farm while waiting */

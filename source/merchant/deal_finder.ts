@@ -5,7 +5,7 @@ import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { defaultNewMerchantStrategyOptions, startMerchant } from "./strategy.js"
 import { DEFAULT_ITEMS_TO_BUY } from "../base/defaults.js"
 
-await Promise.all([AL.Game.loginJSONFile("../../credentials.json", false), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile("../../credentials.json", true), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
 
 const BUFFER = 10_000

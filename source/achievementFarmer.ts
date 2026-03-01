@@ -27,7 +27,7 @@ import { MagiportOthersSmartMovingToUsStrategy } from "./strategy_pattern/strate
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
 
-await Promise.all([AL.Game.loginJSONFile("../credentials.json", false), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile("../credentials.json", true), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G)
 
 // Tweakable
