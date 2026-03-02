@@ -510,8 +510,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         usePrimlingFromLevel: 1,
         useOfferingFromLevel: 6,
         upgradeUntilLevel: 6, // TODO: We need to stack a bunch of primlings at 6
-        sell: true,
-        sellPrice: 35_000_000,
+        // sell: true,
+        // sellPrice: 35_000_000,
     },
     hotchocolate: {
         sellExcess: 9999 * 3,
