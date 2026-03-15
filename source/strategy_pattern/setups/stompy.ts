@@ -50,7 +50,7 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                                     orb: { name: "orboftemporal", filters: RETURN_HIGHEST },
                                 },
                             },
-                            enableGreedyAggro: ["wolf"],
+                            enableGreedyAggro: ["mechagnome", "wolf"],
                             typeList,
                         }),
                         move: new ImprovedMoveStrategy("stompy"),
