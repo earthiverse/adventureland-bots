@@ -180,6 +180,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         craft: true,
         exchange: true,
     },
+    bataxe: {
+        buy: true,
+        buyPrice: "ponty",
+        usePrimlingFromLevel: 6,
+        useOfferingFromLevel: 8,
+        useScroll3FromLevel: 9,
+        upgradeUntilLevel: 8, // TODO: We need to stack a bunch of primlings at 8
+    },
     bcape: {
         // We can craft other capes at level 7
         upgradeUntilLevel: 7,
@@ -721,6 +729,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     pinkie: {
         buy: true,
         buyPrice: "ponty",
+        usePrimlingFromLevel: 6,
+        useOfferingFromLevel: 8,
+        useScroll3FromLevel: 9,
+        upgradeUntilLevel: 8, // We need to stack a bunch of primlings at 8
     },
     // pouchbow: {
     //     craft: true,
