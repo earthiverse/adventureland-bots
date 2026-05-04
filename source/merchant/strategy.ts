@@ -57,6 +57,7 @@ import {
     UpgradeConfig,
     getItemCounts,
     reduceCount,
+    wantToBuyFromPlayer,
     wantToDestroy,
     wantToExchange,
     wantToHold,
@@ -1504,10 +1505,10 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await this.goMining(bot).catch(console.error)
                 await this.goCraft(bot).catch(console.error)
                 await this.goExchange(bot).catch(console.error)
-                // TODO: Deal finder
-                await this.goCheckInstances(bot).catch(console.error)
+                await this.goBuyItems(bot).catch(console.error)
                 await this.goSellItems(bot).catch(console.error)
                 await this.listForSale(bot).catch(console.error)
+                await this.goCheckInstances(bot).catch(console.error)
 
                 await bot.smartMove(this.options.defaultPosition)
             },
@@ -2607,6 +2608,48 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
 
         setLastCheck(key)
+    }
+
+    protected async goBuyItems(bot: Merchant): Promise<void> {
+        if (!Database.connection) return
+
+        const key = `goBuyItems_${bot.serverData.region}${bot.serverData.name}`
+        if (!checkOnlyEveryMS(key, 60_000)) return // We've already checked recently
+
+        const sellingMerchants = await AL.PlayerModel.find({
+            lastSeen: { $gt: Date.now() - 120_000 },
+            serverIdentifier: bot.serverData.name,
+            serverRegion: bot.serverData.region,
+            $or: Array.from({ length: 30 }, (_, i) => ({
+                $and: [
+                    { [`slots.trade${i + 1}`]: { $exists: true } },
+                    { [`slots.trade${i + 1}.b`]: { $exists: false } },
+                ],
+            })),
+        })
+            .lean()
+            .exec()
+
+        // Check if there's anything we want to buy
+        merchantSearch: for (const sellingMerchant of sellingMerchants) {
+            for (const sN in sellingMerchant.slots) {
+                if (!sN.startsWith("trade")) continue // Not a trade slot
+                const slotName = sN as TradeSlotType
+                const slotData = sellingMerchant.slots[slotName]
+                if (!slotData) continue // No slot data
+                if (slotData.b) continue // Buying, not selling
+
+                const tradeItem = new TradeItem(slotData, AL.Game.G)
+                if (!wantToBuyFromPlayer(this.options.itemConfig, tradeItem)) continue // We don't want to buy
+                if (bot.gold < tradeItem.price) continue // We don't have enough gold
+
+                // Move to the merchant
+                // NOTE: Requires `ItemStrategy` to be active to buy it
+                await bot.smartMove(sellingMerchant, { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE - 50 })
+                await sleep(1000)
+                break merchantSearch
+            }
+        }
     }
 
     protected async goSellItems(bot: Merchant): Promise<void> {

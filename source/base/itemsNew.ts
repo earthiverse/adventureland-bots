@@ -1183,6 +1183,21 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
 } as ItemConfig // TODO: Add new items to ALClient
 
+export function wantToBuyFromPlayer(itemConfig: ItemConfig, item: TradeItem): boolean {
+    const config = itemConfig[item.name]
+
+    if (!config) return false // No config
+    if (!config.buy) return false // We don't want to buy
+
+    if (typeof config.buyPrice === "number") {
+        if ((item.level ?? 0) > 0) return false // We're not buying this item if leveled
+        if (config.buyPrice < item.price + (item.l ? 250_000 : 0)) return false // They want too much for it
+        return true
+    }
+
+    return false
+}
+
 export function wantToDestroy(itemConfig: ItemConfig, item: ItemData): boolean {
     if (item.l) return false // Locked
     if (item.level === undefined) return false // Item has no level, there's no point destroying it

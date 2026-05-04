@@ -63,11 +63,12 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
                 if (!config) continue // Not in config
                 if (bot.gold < forSaleItem.price) continue // We don't have enough gold
 
+                // TODO: Merge this logic with wantToBuyFromPlayer
                 let wantToBuy = false
 
                 if (
                     this.options.enableBuyForProfit
-                    && forSaleItem.price < (forSaleItem.calculateNpcValue() + forSaleItem.l ? 250_000 : 0)
+                    && forSaleItem.price < (forSaleItem.calculateNpcValue() + (forSaleItem.l ? 250_000 : 0))
                 ) {
                     // We want to buy it to resell it for a profit
                     wantToBuy = true
@@ -77,7 +78,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
                     !wantToBuy
                     && config.replenish
                     && bot.countItem(forSaleItem.name) < config.replenish
-                    && forSaleItem.price <= (forSaleItem.calculateValue() + forSaleItem.l ? 250_000 : 0)
+                    && forSaleItem.price <= (forSaleItem.calculateValue() + (forSaleItem.l ? 250_000 : 0))
                 ) {
                     // We want to buy them to replenish
                     wantToBuy = true
@@ -88,8 +89,8 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
                     !wantToBuy
                     && config.buy
                     && (
-                        (typeof config.buyPrice === "number" && forSaleItem.price <= (config.buyPrice + forSaleItem.l ? 250_000 : 0))
-                        || (config.buyPrice === "ponty" && forSaleItem.price <= ((forSaleItem.calculateValue() * AL.Game.G.multipliers.secondhands_mult) + forSaleItem.l ? 250_000 : 0))
+                        (typeof config.buyPrice === "number" && forSaleItem.price <= (config.buyPrice + (forSaleItem.l ? 250_000 : 0)))
+                        || (config.buyPrice === "ponty" && forSaleItem.price <= ((forSaleItem.calculateValue() * AL.Game.G.multipliers.secondhands_mult) + (forSaleItem.l ? 250_000 : 0)))
                     )
                 ) {
                     wantToBuy = true
