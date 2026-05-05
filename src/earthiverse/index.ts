@@ -39,7 +39,7 @@ await Promise.all(promises);
 const player = await game.login(email, password);
 
 /** Servers we want to check for monsters on */
-const checkServers = ["USI", "USII", "USIII", "EUI", "EUII", "ASIAI"] as const satisfies ServerKey[];
+const checkServers = ["SR_USI", "SR_USII", "SR_USIII", "SR_EUI", "SR_EUII", "SR_ASIAI"] as const satisfies ServerKey[];
 
 /** Character objects for all of our  */
 export const characters = Object.freeze({
@@ -73,7 +73,7 @@ export const characters = Object.freeze({
 /** A list of our active characters */
 const activeAttackingCharacters = new Set<Character>();
 
-const currentTarget: [StrategyMonsterKey, ServerKey] = ["goo", "USIII"];
+const currentTarget: [StrategyMonsterKey, ServerKey] = ["goo", "SR_USIII"];
 
 /**
  * Main logic loop that says what characters should be farming what

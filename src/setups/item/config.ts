@@ -238,7 +238,6 @@ export const setup = (character: Character) => {
   };
   void upgradeLoop();
 
-  // TODO: compoundLoop
   const compoundLoop = async () => {
     if (activeData.cancelled) return;
     let checkMs = CHECK_EVERY_MS;

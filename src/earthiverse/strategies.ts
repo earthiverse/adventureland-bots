@@ -6,7 +6,7 @@ import type { characters } from "./index.js";
 export type CharacterKey = keyof typeof characters;
 type OneToThreeCharacters = [CharacterKey] | [CharacterKey, CharacterKey] | [CharacterKey, CharacterKey, CharacterKey];
 
-export const defaultServer = "USIII" as const satisfies ServerKey;
+export const defaultServer = "SR_USIII" as const satisfies ServerKey;
 export const defaultMonster = "goo" as const satisfies MonsterKey;
 
 /** Monsters we want to be on the lookout for (NOTE: Should be sorted highest priority first) */
