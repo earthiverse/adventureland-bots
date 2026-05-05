@@ -183,6 +183,18 @@ const itemsConfig: ItemsConfig = {
     // Used to craft cclaw
     ...BUY_AT_PONTY_PRICE,
   },
+  cscroll0: {
+    hold: {
+      characterTypes: ["merchant"],
+      replenish: 10,
+    },
+  },
+  cscroll1: {
+    hold: {
+      characterTypes: ["merchant"],
+      replenish: 10,
+    },
+  },
   hpamulet: {
     ...SELL_TO_NPC,
   },
@@ -229,6 +241,21 @@ const itemsConfig: ItemsConfig = {
   orbofresolve: {
     // Used to craft orba
     ...BUY_AT_GOBLIN_PRICE,
+  },
+  ringsj: {
+    ...COMPOUND_TWO_SLOTS,
+  },
+  scroll0: {
+    hold: {
+      characterTypes: ["merchant"],
+      replenish: 10,
+    },
+  },
+  scroll1: {
+    hold: {
+      characterTypes: ["merchant"],
+      replenish: 10,
+    },
   },
   slimestaff: {
     ...SELL_TO_NPC,
