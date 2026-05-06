@@ -92,11 +92,11 @@ export const setup = (character: Character) => {
             continue;
           }
         } catch (e) {
-          if (e instanceof Error || typeof e === "string") logDebug(`itemLoop: ${e}`);
+          if (e instanceof Error || typeof e === "string") logDebug(`itemLoop (${character.id}): ${e}`);
         }
       }
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(`itemLoop: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`itemLoop (${character.id}): ${e}`);
     } finally {
       setTimeout(() => void itemLoop(), CHECK_EVERY_MS);
     }
@@ -119,7 +119,7 @@ export const setup = (character: Character) => {
         log(`${character.id} crafted ${itemName}`, CRAFT_LOG_LEVEL);
       }
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(`craftLoop: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`craftLoop (${character.id}): ${e}`);
     } finally {
       setTimeout(() => void craftLoop(), CHECK_EVERY_MS);
     }
@@ -147,7 +147,7 @@ export const setup = (character: Character) => {
         return;
       }
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(`exchangeLoop: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`exchangeLoop (${character.id}): ${e}`);
     } finally {
       setTimeout(() => void exchangeLoop(), checkMs);
     }
@@ -231,7 +231,7 @@ export const setup = (character: Character) => {
 
       checkMs = 10_000; // Didn't find anything to upgrade
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(`upgradeLoop: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`upgradeLoop (${character.id}): ${e}`);
     } finally {
       setTimeout(() => void upgradeLoop(), checkMs);
     }
@@ -301,7 +301,7 @@ export const setup = (character: Character) => {
 
       checkMs = 10_000; // Didn't find anything to compound
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(`compoundLoop: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`compoundLoop (${character.id}): ${e}`);
     } finally {
       setTimeout(() => void compoundLoop(), checkMs);
     }

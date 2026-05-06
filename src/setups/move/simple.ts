@@ -43,13 +43,13 @@ export const setup = (character: Character, monsters: MonsterKey[] = ["goo"]) =>
 
         character
           .move(character.x + (dx / distance) * moveDistance, character.y + (dy / distance) * moveDistance)
-          .catch((e) => logDebug(`moveLoop: ${e}`));
+          .catch((e) => logDebug(`moveLoop (${character.id}): ${e}`));
         character
           .move((entity.x + character.x) / 2, (entity.y + character.y) / 2)
-          .catch((e) => logDebug(`moveLoop: ${e}`));
+          .catch((e) => logDebug(`moveLoop (${character.id}): ${e}`));
       }
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(`moveLoop: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`moveLoop (${character.id}): ${e}`);
     } finally {
       setTimeout(() => void moveLoop(), 100);
     }

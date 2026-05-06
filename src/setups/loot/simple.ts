@@ -29,7 +29,7 @@ export const setup = (character: Character) => {
       recentlyLooted.set(data.id, data);
       await character.openChest(data.id);
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(`dropHandler: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`dropHandler (${character.id}): ${e}`);
     }
   };
   character.socket.on("drop", dropHandler);
@@ -50,7 +50,7 @@ export const setup = (character: Character) => {
         break; // Only loot one chest per loop
       }
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(`lootLoop: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`lootLoop (${character.id}): ${e}`);
     } finally {
       setTimeout(() => void lootLoop(), 100);
     }
@@ -68,6 +68,8 @@ export function teardown(character: Character) {
 }
 
 function isBestLooter(character: Character, chest: ServerToClient_drop) {
+  if (character.map.startsWith("bank") || character.map === "woffice" || character.s.invis) return false; // Unable to loot
+
   let bestGoldM = Number.NEGATIVE_INFINITY;
   let bestLooters: Character[] = [];
 

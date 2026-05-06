@@ -11,7 +11,7 @@ EventBus.on("character_started", (character) => {
       // Reconnect
       setTimeout(() => character.socket.connect(), Configuration.SOCKET_RECONNECT_DELAY_MS);
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(`auto_reconnect: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`auto_reconnect (${character.id}): ${e}`);
     }
   });
 });

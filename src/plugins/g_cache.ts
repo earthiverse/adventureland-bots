@@ -33,7 +33,7 @@ fs.mkdirSync(G_CACHE_FOLDER, { recursive: true });
 
 // Update G if we have a version mismatch
 EventBus.on("version_mismatch", (observer, newestVersion) => {
-  logDebug(`Version mismatch! Local: ${observer.game.version}, Server: ${newestVersion}`);
+  logDebug(`Version mismatch! Local: ${observer.game.version}, Server (${observer.server.key}): ${newestVersion}`);
   logDebug("Updating G...");
   observer.game
     .updateG()

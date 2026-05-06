@@ -424,13 +424,7 @@ export function calculateOptimalCompoundPath(
       const scrollCost = COMPOUND_SCROLLS[scroll];
       if (scrollCost === undefined) continue; // We don't have a price for this scroll set
       for (const offering of [...Object.keys(OFFERINGS), undefined] as (OfferingKey | undefined)[]) {
-        const { chance, newGrace } = calculateCompoundChance(
-          currentItem,
-          current.grace,
-          scroll,
-          g,
-          offering,
-        );
+        const { chance, newGrace } = calculateCompoundChance(currentItem, current.grace, scroll, g, offering);
         if (!chance) continue; // Incompatible
 
         const offeringCost = offering === undefined ? 0 : OFFERINGS[offering]!;

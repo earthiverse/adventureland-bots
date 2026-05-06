@@ -14,7 +14,7 @@ EventBus.on("received_stacked_damage", (character) => {
   const d = Math.min(25, character.range);
   const x = -d + Math.round(2 * d * Math.random());
   const y = -d + Math.round(2 * d * Math.random());
-  character.move(character.x + x, character.y + y).catch((e) => logDebug(`received_stacked_damage: ${e}`));
+  character.move(character.x + x, character.y + y).catch((e) => logDebug(`received_stacked_damage (${character.id}): ${e}`));
 });
 
 /**

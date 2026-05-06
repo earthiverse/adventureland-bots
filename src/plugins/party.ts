@@ -32,7 +32,7 @@ const partyLoop = async () => {
 
     await Promise.allSettled(requests);
   } catch (e) {
-    if (e instanceof Error || typeof e === "string") logDebug(`partyLoop: ${e}`);
+    if (e instanceof Error || typeof e === "string") logDebug(`partyLoop (${character.id}): ${e}`);
   } finally {
     setTimeout(() => void partyLoop(), checkEveryMs);
   }

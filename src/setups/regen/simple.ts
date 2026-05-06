@@ -139,7 +139,7 @@ export const setup = (character: Character) => {
         await character.consumeItem(character.locateItem({ name: bestAction }) as number);
       }
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(`regenLoop: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`regenLoop (${character.id}): ${e}`);
     } finally {
       setTimeout(
         () => void regenLoop(),

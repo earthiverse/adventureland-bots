@@ -219,8 +219,8 @@ export function getItemsToStoreInBank(character: Character, config: ItemsConfig 
     const item = character.items[i];
     if (!item) continue; // No item
     if (wantToHold(character, item, config)) continue;
-
-    // TODO: More logic
+    if (wantToSell(item, character.game.G, "npc", config)) continue; // Want to sell for NPC price
+    if (wantToMail(item, config) !== false) continue;
 
     items.push(i);
   }
@@ -441,9 +441,7 @@ export function wantToHold(character: Character, item: ItemInfo, config = Config
   const itemConfig = config[item.name]?.hold;
   if (!itemConfig) return false; // We have no hold config for this item
   if (itemConfig.characterTypes === "all") return true; // We want all classes to hold this item
-  if (!itemConfig.characterTypes.includes(character.ctype)) return false; // We don't want this class to hold this item
-
-  return false;
+  return itemConfig.characterTypes.includes(character.ctype);
 }
 
 /**
@@ -470,9 +468,9 @@ export function wantToList(item: ItemInfo, g: GData, config = Config): false | n
 
 /**
  * @param item
- * @returns true if we want to mail the item
+ * @returns the person we want to mail the item to, or `false` if we don't want to mail it
  */
-export function wantToMail(item: ItemInfo, config = Config): boolean {
+export function wantToMail(item: ItemInfo, config = Config): false | string {
   if (item.l !== undefined) return false; // We can't mail locked items
 
   const itemConfig = config[item.name]?.mail;
@@ -480,7 +478,7 @@ export function wantToMail(item: ItemInfo, config = Config): boolean {
   if (item.p && !itemConfig.mailSpecial) return false; // We don't want to mail special items
   if (item.level !== undefined && item.level > itemConfig.mailUntilLevel) return false; // We only want to mail items up to a certain level
 
-  return true;
+  return itemConfig.recipient;
 }
 
 export function wantToReplenish(character: Character, item: ItemInfo, config = Config): number | false {
@@ -554,6 +552,7 @@ export function wantToUpgrade(item: ItemInfo, g: GData, config = Config): boolea
   if (!itemConfig) return false; // We have no upgrade config for this item
   if (wantToMakeShiny(item, config)) return false; // We want to make it shiny first
   if (itemConfig.upgradeUntilLevel !== undefined && (item.level ?? 0) >= itemConfig.upgradeUntilLevel) return false; // Don't upgrade anymore
+  // TODO: We want to count the number of items at a higher level
   if (itemConfig.minTotalQuantity !== undefined && getTotalItemCount(item.name) <= itemConfig.minTotalQuantity)
     return false; // We don't have enough
 

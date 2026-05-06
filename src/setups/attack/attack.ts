@@ -75,7 +75,7 @@ export const setup = (character: Character, options: AttackOptions = { monsters:
         }
       }
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(`attackLoop: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`attackLoop (${character.id}): ${e}`);
     } finally {
       // TODO: When skills get added, add timeouts for skills
       const timeoutMs = Math.max(
@@ -116,7 +116,7 @@ const defaultAttackLogic = async (character: Character, options: AttackOptions) 
 
   return character.basicAttack(entity).catch((e) => {
     unignoreMonster(entity);
-    if (e instanceof Error || typeof e === "string") logDebug(`basicAttack: ${e}`);
+    if (e instanceof Error || typeof e === "string") logDebug(`basicAttack (${character.id}): ${e}`);
   });
 };
 
@@ -150,7 +150,7 @@ const rangerAttackLogic = async (character: Ranger, options: AttackOptions) => {
       unignoreMonster(entities[2]!);
       unignoreMonster(entities[3]!);
       unignoreMonster(entities[4]!);
-      if (e instanceof Error || typeof e === "string") logDebug(`fiveShot: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`fiveShot (${character.id}): ${e}`);
     });
   }
 
@@ -167,7 +167,7 @@ const rangerAttackLogic = async (character: Ranger, options: AttackOptions) => {
       unignoreMonster(entities[0]!);
       unignoreMonster(entities[1]!);
       unignoreMonster(entities[2]!);
-      if (e instanceof Error || typeof e === "string") logDebug(`threeShot: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`threeShot (${character.id}): ${e}`);
     });
   }
 
@@ -197,7 +197,7 @@ const rogueAttackLogic = async (character: Rogue, options: AttackOptions) => {
 
     character.quickPunch(entity).catch((e) => {
       unignoreMonster(entity);
-      if (e instanceof Error || typeof e === "string") logDebug(`quickPunch: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`quickPunch (${character.id}): ${e}`);
     });
   } else if (character.canUse("quickstab")) {
     // Ignore the monster if we're going to kill it
@@ -206,7 +206,7 @@ const rogueAttackLogic = async (character: Rogue, options: AttackOptions) => {
 
     character.quickStab(entity).catch((e) => {
       unignoreMonster(entity);
-      if (e instanceof Error || typeof e === "string") logDebug(`quickStab: ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`quickStab (${character.id}): ${e}`);
     });
   }
 
