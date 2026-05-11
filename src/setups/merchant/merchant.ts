@@ -1,4 +1,4 @@
-import { type Character } from "alclient";
+import { type Character, type Location } from "alclient";
 import type { BankPackTypeItemsOnly, MapKey } from "typed-adventureland";
 import config from "../../../config/config.js";
 import { itemData } from "../../plugins/data_tracker.js";
@@ -32,6 +32,7 @@ const active = new Map<Character, ActiveData>();
 type MerchantOptions = {
   /** List of characters that the Merchant will perform actions on */
   characters: Character[];
+  defaultPosition: Location;
   /** If enabled, we will go transfer gold to/from these characters */
   enableGoldTransfer?: {
     /** How much gold each player should have */
@@ -66,9 +67,13 @@ export const setup = (character: Character, options: MerchantOptions) => {
 
       await doGoldAndItemTransfer(character, options);
       await doBanking(character, options);
+      // TODO: Deliver replenishables
+      // TODO: Fishing
+      // TODO: Mining
 
-      // TODO: Hold position
-      await character.smartMove({ map: "main", in: "main", x: 0, y: -100 });
+      // Move to default position
+      if (character.getDistanceTo(options.defaultPosition) > 1)
+        await character.smartMove({ map: "main", in: "main", x: -100, y: -100 });
     } catch (e) {
       if (e instanceof Error || typeof e === "string") logDebug(`moveLoop (${character.id}): ${e}`);
     } finally {
@@ -156,7 +161,7 @@ async function doBanking(character: Character, options: MerchantOptions) {
     }
   }
 
-  // TODO: Withdraw items
+  // Withdraw items
   for (const map of BANK_MAPS) {
     let packFrom: number;
     let packTo: number;
@@ -174,11 +179,11 @@ async function doBanking(character: Character, options: MerchantOptions) {
       const pack = `items${packNum}` as BankPackTypeItemsOnly;
       if (!itemData.has(pack)) continue; // No pack data
 
-      // TODO: Check for items we want
       const packItems = itemData.get(pack)!;
       for (let packSlot = 0; packSlot < packItems.length; packSlot++) {
         const item = packItems[packSlot];
         if (!item) continue; // No item in slot
+
         if (
           wantToDestroy(character, item) ||
           wantToDismantle(item, character.esize, character.gold, character.game.G) ||
@@ -187,18 +192,21 @@ async function doBanking(character: Character, options: MerchantOptions) {
           await character.withdrawItem(pack, packSlot);
           continue;
         }
+
         if (wantToExchange(item, character.esize, character.game.G)) {
           await character.withdrawItem(pack, packSlot);
           if (character.esize <= 1) break; // No more space
           continue;
         }
+
         const list = wantToList(item, character.game.G);
         if (list !== false) {
           await character.withdrawItem(pack, packSlot);
           // TODO: List item
           continue;
         }
-        const recipient = wantToMail(item);
+
+        const recipient = wantToMail(item, character.gold);
         if (recipient !== false) {
           await character.withdrawItem(pack, packSlot);
           // TODO: Mail item

@@ -71,7 +71,8 @@ export const setup = (character: Character) => {
             continue;
           }
 
-          if (wantToMail(item)) {
+          const recipient = wantToMail(item, character.gold);
+          if (recipient !== false) {
             // TODO: Mail
             continue;
           }

@@ -220,7 +220,7 @@ export function getItemsToStoreInBank(character: Character, config: ItemsConfig 
     if (!item) continue; // No item
     if (wantToHold(character, item, config)) continue;
     if (wantToSell(item, character.game.G, "npc", config)) continue; // Want to sell for NPC price
-    if (wantToMail(item, config) !== false) continue;
+    if (wantToMail(item, character.gold, config) !== false) continue;
 
     items.push(i);
   }
@@ -470,8 +470,10 @@ export function wantToList(item: ItemInfo, g: GData, config = Config): false | n
  * @param item
  * @returns the person we want to mail the item to, or `false` if we don't want to mail it
  */
-export function wantToMail(item: ItemInfo, config = Config): false | string {
+export function wantToMail(item: ItemInfo, gold: number, config = Config): false | string {
   if (item.l !== undefined) return false; // We can't mail locked items
+
+  // TODO: Check if we have enough gold to mail
 
   const itemConfig = config[item.name]?.mail;
   if (!itemConfig) return false; // We have no mail config for this item

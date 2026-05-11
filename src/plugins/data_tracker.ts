@@ -269,9 +269,9 @@ const loop = () => {
 
     for (const [serverKey, serverDatum] of serverData.entries()) {
       // Ensure the base directories exist
-      const monsterServerFolder = path.join(MONSTER_DATA_FOLDER, serverKey as string);
-      const characterServerFolder = path.join(CHARACTER_DATA_FOLDER, serverKey as string);
-      const respawnServerFolder = path.join(SPAWN_DATA_FOLDER, serverKey as string);
+      const monsterServerFolder = path.join(MONSTER_DATA_FOLDER, serverKey);
+      const characterServerFolder = path.join(CHARACTER_DATA_FOLDER, serverKey);
+      const respawnServerFolder = path.join(SPAWN_DATA_FOLDER, serverKey);
       fs.mkdirSync(monsterServerFolder, { recursive: true });
       fs.mkdirSync(characterServerFolder, { recursive: true });
       fs.mkdirSync(respawnServerFolder, { recursive: true });
