@@ -59,15 +59,6 @@ export const setup = (character: Character) => {
         if (!item) continue;
 
         try {
-          const numToReplenish = wantToReplenish(character, item);
-          if (numToReplenish !== false && numToReplenish > 0) {
-            // TODO: Buy as many as we can if we can't buy all
-            if (!character.canBuy(item.name, { quantity: numToReplenish })) continue; // Too far away
-            await character.buy(item.name, numToReplenish);
-            log(`${character.id} bought ${numToReplenish} ${getItemDescription(item)}`, BUY_LOG_LEVEL);
-            continue;
-          }
-
           if (wantToDestroy(character, item)) {
             await character.destroy(index);
             log(`${character.id} destroyed ${getItemDescription(item)}`, DESTROY_LOG_LEVEL);
@@ -93,6 +84,17 @@ export const setup = (character: Character) => {
           }
         } catch (e) {
           if (e instanceof Error || typeof e === "string") logDebug(`itemLoop (${character.id}): ${e}`);
+        }
+      }
+
+      for (const name of Object.keys(Config) as ItemKey[]) {
+        const numToReplenish = wantToReplenish(character, { name });
+        if (numToReplenish !== false && numToReplenish > 0) {
+          // TODO: Buy as many as we can if we can't buy all
+          if (!character.canBuy(name, { quantity: numToReplenish })) continue; // Too far away
+          await character.buy(name, numToReplenish);
+          log(`${character.id} bought ${numToReplenish} ${name}`, BUY_LOG_LEVEL);
+          continue;
         }
       }
     } catch (e) {
