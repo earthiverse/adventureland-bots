@@ -2,8 +2,8 @@ const lastCheck = new Map<string, number>();
 
 /**
  * Throttles logic to have a function only run once every interval
- * @param key 
- * @param intervalMs 
+ * @param key
+ * @param intervalMs
  * @param update if we should update the last check to the current time if returning true
  * @returns false if we should throttle, true otherwise
  */

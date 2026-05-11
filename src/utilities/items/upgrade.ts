@@ -187,20 +187,14 @@ export function calculateUpgrade(item: ItemInfo, grace: number, startingCost: nu
         const stackPrice = OFFERINGS["offeringp"]! * numStacks;
         const cost = startingCost + scrollPrice + offeringPrice + stackPrice;
 
-        const { chance, newGrace } = calculateUpgradeChance(
-          item,
-          grace + numStacks * 0.5,
-          scroll as ItemKey,
-          g,
-          offering,
-        );
+        const { chance, newGrace } = calculateUpgradeChance(item, grace + numStacks * 0.5, scroll, g, offering);
         if (cost / chance >= bestConfig.cost) continue; // Not better
 
         Object.assign(bestConfig, {
           cost: cost / chance,
           chance,
           grace: newGrace,
-          scroll: scroll as ItemKey,
+          scroll,
           offering: offering ?? null,
           numStacks,
         });

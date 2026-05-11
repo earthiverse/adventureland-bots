@@ -30,7 +30,7 @@ interface Config {
   banking: {
     useBasement?: true;
     useUnderground?: true;
-  }
+  };
   party: {
     /**
      * If true, we will accept anyone who sends a party request.

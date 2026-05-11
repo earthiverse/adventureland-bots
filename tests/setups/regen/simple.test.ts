@@ -1,4 +1,5 @@
 import { type Character, Game } from "alclient";
+import { beforeAll, expect, test } from "bun:test";
 import { getGFromCache } from "../../../src/plugins/g_cache.js";
 import { calculateItemScore, calculateSkillScore } from "../../../src/setups/regen/simple.js";
 
