@@ -138,8 +138,12 @@ export function log(message: string | Error, level: Level): void {
   const method: Method = map[level] ?? "ignore";
   if (method === "ignore") return; // Ignoring
 
-  // Change to string
-  message = message instanceof Error ? message.message : message;
+  if (message instanceof Error) {
+    // Log the error message, and the stack trace
+    log(message.message, level);
+    if (message.stack !== undefined) log(message.stack, level);
+    return;
+  }
 
   switch (method) {
     case "console":
