@@ -4,6 +4,7 @@ import config from "../../../config/config.js";
 import { itemData } from "../../plugins/data_tracker.js";
 import {
   getEmptyBankSlotsCount,
+  getItemDescription,
   getItemsToStoreInBank,
   wantToDestroy,
   wantToDismantle,
@@ -11,9 +12,10 @@ import {
   wantToHold,
   wantToList,
   wantToMail,
+  wantToReplenish,
   wantToSell,
 } from "../../utilities/items.js";
-import { logDebug } from "../../utilities/logging.js";
+import { logDebug, logNotice } from "../../utilities/logging.js";
 import { moveUntilDestination } from "../../utilities/move.js";
 import { BANK_BASEMENT_CENTER, BANK_CENTER, BANK_UNDERGROUND_CENTER } from "../../utilities/positions.js";
 import { throttle } from "../../utilities/throttle.js";
@@ -122,10 +124,12 @@ async function doBanking(character: Character, options: MerchantOptions) {
           const amount = character.gold - goldConfig.amountToHold;
           logDebug(`${character.id} is depositing ${amount} gold in the bank`);
           await character.depositGold(amount);
+          logNotice(`${character.id} deposited ${amount} gold in the bank`);
         } else if ((character.bank?.gold ?? 0) > 0) {
           const amount = Math.min(character.bank!.gold, goldConfig.amountToHold - character.gold);
           logDebug(`${character.id} is withdrawing ${amount} gold from the bank`);
           await character.withdrawGold(amount);
+          logNotice(`${character.id} withdrew ${amount} gold from the bank`);
         }
       }
     }
@@ -236,7 +240,10 @@ async function doGoldAndItemTransfer(character: Character, options: MerchantOpti
       logDebug(`${character.id} is moving to ${other.id} to take gold`);
       await character.smartMove(other); // TODO: Get within
       const amount = other.gold - options.enableGoldTransfer.amountToHold;
-      if (amount > 0) await other.sendGold(character.id, amount);
+      if (amount > 0) {
+        await other.sendGold(character.id, amount);
+        logNotice(`${character.id} took ${amount} gold from ${other.id}`);
+      }
     } else if (
       options.enableGoldTransfer &&
       options.enableGoldTransfer.whenGoldIsUnderAmount !== undefined &&
@@ -249,24 +256,46 @@ async function doGoldAndItemTransfer(character: Character, options: MerchantOpti
           character.gold - options.enableGoldTransfer.amountToHold, // How much extra gold we have
           options.enableGoldTransfer.amountToHold - other.gold, // How much gold they need
         );
-        if (amount > 0) await character.sendGold(other.id, amount);
+        if (amount > 0) {
+          await character.sendGold(other.id, amount);
+          logNotice(`${character.id} sent ${amount} gold to ${other.id}`);
+        }
       }
     }
 
     // Transfer items
-    if (
-      options.enableItemTransfer &&
-      options.enableItemTransfer.whenNumEmptySlotsUnderAmount > other.esize && // They don't have very many empty inventory slots
-      character.esize > 1 // We have space
-    ) {
-      logDebug(`${character.id} is moving to ${other.id} to take items`);
-      if (await moveUntilDestination(character, other)) {
-        for (let i = 0; i < other.items.length; i++) {
-          const item = other.items[i];
+    if (options.enableItemTransfer) {
+      if (
+        options.enableItemTransfer.whenNumEmptySlotsUnderAmount > other.esize && // They don't have very many empty inventory slots
+        character.esize > 1 // We have space
+      ) {
+        logDebug(`${character.id} is moving to ${other.id} to take items`);
+        if (await moveUntilDestination(character, other)) {
+          for (let i = 0; i < other.items.length; i++) {
+            const item = other.items[i];
+            if (!item) continue; // No item
+            if (wantToHold(other, item)) continue;
+            if (character.esize <= 1) break; // We have no more space
+            await other.sendItem(character.id, i, item.q ?? 1);
+            logNotice(`${character.id} took ${getItemDescription(item)} from ${other.id}`);
+          }
+        }
+      }
+
+      // Deliver replenishables if we have some
+      if (throttle(`banking_deliver_replenishables_from_${character.id}_to_${other.id}`, 300_000)) {
+        for (let i = 0; i < character.items.length; i++) {
+          let item = character.items[i];
           if (!item) continue; // No item
-          if (wantToHold(other, item)) continue;
-          if (character.esize <= 1) break; // We have no more space
-          await other.sendItem(character.id, i, item.q ?? 1);
+          const numToReplenish = wantToReplenish(other, item);
+          if (numToReplenish === false || numToReplenish === 0) continue; // Don't want to replenish
+
+          await moveUntilDestination(character, other);
+          item = character.items[i];
+          if (!item || wantToReplenish(other, item) === 0) continue; // No item anymore, or they don't need it anymore
+          const numToSend = Math.min(item.q ?? 1, numToReplenish);
+          await character.sendItem(other.id, i, numToSend);
+          logNotice(`${character.id} sent ${numToSend} ${getItemDescription(item)} to ${other.id}`);
         }
       }
     }
