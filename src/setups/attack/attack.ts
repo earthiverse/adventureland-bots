@@ -8,7 +8,7 @@ export type AttackOptions = {
   monsters?: MonsterKey[];
 };
 
-export type PriestAttackOptions = {
+export type PriestAttackOptions = AttackOptions & {
   healStrangers?: true;
 };
 
@@ -57,7 +57,7 @@ export const setup = (character: Character, options: AttackOptions = { monsters:
         }
         case "priest": {
           // TODO: Priest Logic
-          await defaultAttackLogic(character, options);
+          await priestAttackLogic(character as Priest, options);
           break;
         }
         case "rogue": {
@@ -82,6 +82,7 @@ export const setup = (character: Character, options: AttackOptions = { monsters:
         100, // TODO: Config
         Math.min(
           character.getTimeout("attack"),
+          ...(character.ctype === "ranger" ? [character.getTimeout("supershot")] : []),
           ...(character.ctype === "rogue" ? [character.getTimeout("quickpunch")] : []),
         ),
       );
@@ -121,10 +122,17 @@ const defaultAttackLogic = async (character: Character, options: AttackOptions) 
 };
 
 const priestAttackLogic = async (character: Priest, options: PriestAttackOptions) => {
-  // Look for other characters to heal
-  for (const other of character.characters.values()) {
+  // TODO: Priest attack logic
+
+  // Check if we want to heal ourself, or other characters nearby
+  for (const other of [character, ...character.characters.values()]) {
     if (!wantToHeal(character, other)) continue;
+    await character.heal(other);
+    break;
   }
+
+  // Use the basic attack
+  return defaultAttackLogic(character, options);
 };
 
 const rangerAttackLogic = async (character: Ranger, options: AttackOptions) => {

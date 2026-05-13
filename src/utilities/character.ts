@@ -6,7 +6,7 @@ const healIfHpRatioBelow: number = 0.8;
 
 export function wantToHeal(
   character: Character,
-  target: EntityCharacter,
+  target: EntityCharacter | Character,
   options: {
     healStrangers?: boolean;
     healIfHpRatioBelow?: number;
@@ -21,6 +21,8 @@ export function wantToHeal(
     if (stranger && character.owner === target.owner) stranger = false; // Same Player
     if (stranger) return false;
   }
+
+  if (character.getDistanceTo(target) > character.range) return false; // TODO: We might want to heal, but we need to move?
 
   if (target.hp >= target.max_hp * healIfHpRatioBelow) return false;
 
