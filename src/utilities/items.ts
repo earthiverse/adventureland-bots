@@ -486,10 +486,13 @@ export function wantToMail(item: ItemInfo, gold: number, config = Config): false
 export function wantToReplenish(character: Character, item: ItemInfo, config = Config): number | false {
   if (!wantToHold(character, item)) return false;
 
-  const itemConfig = config[item.name]!.hold;
-  if (itemConfig?.replenish === undefined) return false; // We don't want to replenish this item
+  const itemConfig = config[item.name]!.hold!;
+  if (itemConfig.replenish === undefined) return false; // We don't want to replenish this item
 
-  return Math.max(0, itemConfig.replenish - character.countItems({ name: item.name }));
+  const numHave = character.countItems({ name: item.name });
+  if (numHave === 0 && character.esize === 0) return false; // We don't have room for the item
+
+  return Math.max(0, itemConfig.replenish - numHave);
 }
 
 /**
