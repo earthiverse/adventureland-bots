@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p tsconfig.build.json && npx copyfiles -u 1 config/**/*.json dist/config",
-    "clean": "rm -rf dist && rm -f ./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "clean": "rm -rf dist && rm -f ./node_modules/.tmp/*",
     "format": "prettier --write .",
     "lint": "eslint",
     "test": "bun test --coverage"
