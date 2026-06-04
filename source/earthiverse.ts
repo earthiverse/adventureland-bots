@@ -887,7 +887,6 @@ const startMerchantContext = async () => {
     startMerchant(CONTEXT, PRIVATE_CONTEXTS, {
         ...defaultNewMerchantStrategyOptions,
         goldToHold: 4_000_000_000,
-        defaultPosition: { map: "winterland", x: 600, y: -2725 },
         enableInstanceProvider: {
             // crypt: {
             //     maxInstances: 10,
