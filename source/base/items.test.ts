@@ -1,6 +1,13 @@
 import { jest } from "@jest/globals"
 import AL, { Item, Priest } from "alclient"
-import { DEFAULT_ITEM_CONFIG, ItemConfig, adjustItemConfig, runSanityCheckOnItemConfig, wantToSellToNpc, wantToSellToPlayer } from "./itemsNew.js"
+import {
+    DEFAULT_ITEM_CONFIG,
+    ItemConfig,
+    adjustItemConfig,
+    runSanityCheckOnItemConfig,
+    wantToSellToNpc,
+    wantToSellToPlayer,
+} from "./itemsNew.js"
 import { TradeItem } from "alclient/build/TradeItem.js"
 
 beforeAll(async () => {
@@ -37,19 +44,19 @@ test("Warning when buyPrice > sellPrice (buyPrice and sellPrice are numbers)", a
     console.warn = warnMock
 
     const itemConfig: ItemConfig = {
-        "brownegg": {
+        brownegg: {
             buy: true,
             buyPrice: 5_000_000,
             sell: true,
-            sellPrice: 1_000_000
+            sellPrice: 1_000_000,
         },
         // Ponty is more than NPC
-        "platinumnugget": {
+        platinumnugget: {
             buy: true,
             buyPrice: "ponty",
             sell: true,
-            sellPrice: "npc"
-        }
+            sellPrice: "npc",
+        },
     }
 
     // Run the sanity check on the default config
@@ -65,18 +72,25 @@ test("Warning when buyPrice > sellPrice (buyPrice and sellPrice are numbers)", a
 test("wantToSell works as expected", () => {
     const itemConfig: ItemConfig = {
         // Not stackable
-        "vhammer": {
+        vhammer: {
             sell: true,
-            sellPrice: 100_000_000
+            sellPrice: 100_000_000,
         },
         // Stackable
-        "monstertoken": {
+        monstertoken: {
             sell: true,
-            sellPrice: 250_000
-        }
+            sellPrice: 250_000,
+        },
     }
 
-    const bot = new Priest("", "", "", AL.Game.G, { region: "ASIA", name: "I", address: "test", path: "/test", players: 0, key: "ASIAI" })
+    const bot = new Priest("", "", "", AL.Game.G, {
+        region: "ASIA",
+        name: "I",
+        address: "test",
+        path: "/test",
+        players: 0,
+        key: "ASIAI",
+    })
 
     const vhammerInventory = new Item({ name: "vhammer", level: 0 }, AL.Game.G)
     // We shouldn't want to sell it to an NPC
