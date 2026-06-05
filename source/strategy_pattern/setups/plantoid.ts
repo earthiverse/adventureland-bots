@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy, KiteMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Requirements, Setup } from "./base"
-import { MAGE_SPLASH_WEAPONS, MAGE_SPLASH, ZAPPER_CRING, ZAPPER_STRRING, WARRIOR_SPLASH_WEAPONS } from "./equipment.js"
+import { MAGE_SPLASH_WEAPONS, ZAPPER_STRRING, WARRIOR_SPLASH_WEAPONS } from "./equipment.js"
 
 export function constructPlantoidSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const requirements: Requirements = {
@@ -36,7 +36,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                                 prefer: MAGE_SPLASH_WEAPONS,
                             },
                             targetingPartyMember: true,
-                            type: "plantoid",
+                            typeList: ["plantoid", "mechagnome"],
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } }),
                     },
@@ -48,7 +48,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             generateEnsureEquipped: {
                                 attributes: ["armor", "attack"],
                             },
-                            type: "plantoid",
+                            typeList: ["plantoid", "mechagnome"],
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } }),
                     },
@@ -68,7 +68,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                                 },
                             },
                             targetingPartyMember: true,
-                            type: "plantoid",
+                            typeList: ["plantoid", "mechagnome"],
                         }),
                         move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 }),
                     },
