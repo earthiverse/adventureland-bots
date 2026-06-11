@@ -36,7 +36,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                                 prefer: MAGE_SPLASH_WEAPONS,
                             },
                             targetingPartyMember: true,
-                            typeList: ["plantoid", "mechagnome"],
+                            typeList: ["porcupine", "plantoid", "mechagnome"], // Target porcupines first, to kill them so the warrior doesn't take damage
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } }),
                     },
@@ -48,7 +48,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             generateEnsureEquipped: {
                                 attributes: ["armor", "attack"],
                             },
-                            typeList: ["plantoid", "mechagnome"],
+                            typeList: ["porcupine", "plantoid", "mechagnome"], // Target porcupines first, to kill them so the warrior doesn't take damage
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } }),
                     },
