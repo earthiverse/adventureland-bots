@@ -417,6 +417,24 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
     }
 
     if (generate.prefer) {
+        // Keep track of how many of the item we have
+        const itemTotals = new Map<string, number>()
+        for (const slotName in generate.prefer) {
+            const prefer = generate.prefer[slotName as SlotType]
+            if (prefer.unequip || !prefer.name) continue // Unequipping, don't count
+            if (itemTotals.has(prefer.name)) continue // Already counted
+
+            // Count how many we have
+            let count = 0
+            for (const slot in bot.slots) {
+                if (bot.slots[slot as SlotType]?.name === prefer.name) count++
+            }
+            for (const item of bot.items) {
+                if (item?.name === prefer.name) count++
+            }
+            itemTotals.set(prefer.name, count)
+        }
+
         // Add / override what was specified
         for (const slotName in generate.prefer) {
             const slotType = slotName as SlotType
@@ -428,14 +446,11 @@ export function generateEnsureEquipped(bot: Character, generate: GenerateEnsureE
                 continue
             }
 
-            if (
-                !bot.isEquipped(ensureEquippedSlot.name) &&
-                !bot.hasItem(ensureEquippedSlot.name, bot.items, ensureEquippedSlot.filters)
-            ) {
-                // We don't have the item
-                continue
-            }
+            const name = ensureEquippedSlot.name
+            const count = itemTotals.get(name) ?? 0
+            if (count <= 0) continue // Don't have enough
 
+            itemTotals.set(name, count - 1)
             toEquip[slotType] = ensureEquippedSlot
         }
     }

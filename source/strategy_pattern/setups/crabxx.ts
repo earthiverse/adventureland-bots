@@ -50,13 +50,18 @@ class MageGigaCrabAttackStrategy extends MageAttackStrategy {
 
 class PriestGigaCrabAttackStrategy extends PriestAttackStrategy {
     public onApply(bot: Priest): void {
-        super.onApply(bot)
+        if (!this.options.generateEnsureEquipped) this.options.generateEnsureEquipped = {}
+        if (!this.options.generateEnsureEquipped.prefer) this.options.generateEnsureEquipped.prefer = {}
+
         if (bot.server.name === "PVP") {
-            this.options.ensureEquipped.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "cring", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring2 = { name: "cring", filters: { returnHighestLevel: true } }
         } else {
-            // Additional monsters
-            this.options.ensureEquipped.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring1 = { name: "zapper", filters: { returnHighestLevel: true } }
+            this.options.generateEnsureEquipped.prefer.ring2 = { name: "cring", filters: { returnHighestLevel: true } }
         }
+
+        super.onApply(bot)
     }
 
     protected async zapperAttack(bot: Priest, priority: (a: Entity, b: Entity) => boolean): Promise<unknown> {
