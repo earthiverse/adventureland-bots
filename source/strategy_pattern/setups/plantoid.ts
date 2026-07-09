@@ -1,4 +1,4 @@
-import AL, { PingCompensatedCharacter } from "alclient"
+import AL, { IPosition, PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
@@ -18,7 +18,12 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
         disableCheckDB: true,
         typeList: ["plantoid"],
     })
-    const spawn = AL.Pathfinder.locateMonster("plantoid")[0]
+    const spawns = AL.Pathfinder.locateMonster("plantoid").filter((spawn) => spawn.map === "desertland")
+    const spawn: IPosition = {
+        map: "desertland",
+        x: spawns.reduce((sum, s) => sum + s.x, 0) / spawns.length,
+        y: spawns.reduce((sum, s) => sum + s.y, 0) / spawns.length,
+    }
 
     return {
         configs: [
@@ -36,7 +41,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                                 prefer: MAGE_SPLASH_WEAPONS,
                             },
                             targetingPartyMember: true,
-                            typeList: ["porcupine", "plantoid", "mechagnome"], // Target porcupines first, to kill them so the warrior doesn't take damage
+                            typeList: ["porcupine", "plantoid", "mechagnome", "ent"], // Target porcupines first, to kill them so the warrior doesn't take damage
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } }),
                     },
@@ -48,7 +53,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             generateEnsureEquipped: {
                                 attributes: ["armor", "attack"],
                             },
-                            typeList: ["porcupine", "plantoid", "mechagnome"], // Target porcupines first, to kill them so the warrior doesn't take damage
+                            typeList: ["porcupine", "plantoid", "mechagnome", "ent"], // Target porcupines first, to kill them so the warrior doesn't take damage
                         }),
                         move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } }),
                     },
@@ -59,7 +64,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             // Porcupines are too close
                             disableAgitate: true,
                             enableEquipForCleave: true,
-                            enableGreedyAggro: true,
+                            enableGreedyAggro: ["plantoid", "mechagnome", "ent"],
                             generateEnsureEquipped: {
                                 attributes: ["armor", "str", "explosion", "blast"],
                                 prefer: {
@@ -68,7 +73,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                                 },
                             },
                             targetingPartyMember: true,
-                            typeList: ["plantoid", "mechagnome"],
+                            typeList: ["plantoid", "mechagnome", "ent"],
                         }),
                         move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 }),
                     },
