@@ -50,6 +50,8 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
+                            enableAbsorbToTank: true,
+                            enableGreedyAggro: ["plantoid", "mechagnome", "ent"],
                             generateEnsureEquipped: {
                                 attributes: ["armor", "attack"],
                             },
@@ -64,7 +66,6 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             // Porcupines are too close
                             disableAgitate: true,
                             enableEquipForCleave: true,
-                            enableGreedyAggro: ["plantoid", "mechagnome", "ent"],
                             generateEnsureEquipped: {
                                 attributes: ["armor", "str", "explosion", "blast"],
                                 prefer: {
