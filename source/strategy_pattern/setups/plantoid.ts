@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy, KiteMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Requirements, Setup } from "./base"
-import { MAGE_SPLASH_WEAPONS, ZAPPER_STRRING, WARRIOR_SPLASH_WEAPONS } from "./equipment.js"
+import { MAGE_SPLASH_WEAPONS, ZAPPER_STRRING, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING } from "./equipment.js"
 
 export function constructPlantoidSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const requirements: Requirements = {
@@ -54,6 +54,9 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             enableGreedyAggro: ["plantoid", "mechagnome", "ent"],
                             generateEnsureEquipped: {
                                 attributes: ["armor", "attack"],
+                                prefer: {
+                                    ...ZAPPER_CRING
+                                }
                             },
                             typeList: ["porcupine", "plantoid", "mechagnome", "ent"], // Target porcupines first, to kill them so the warrior doesn't take damage
                         }),
@@ -69,7 +72,6 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             generateEnsureEquipped: {
                                 attributes: ["armor", "str", "explosion", "blast"],
                                 prefer: {
-                                    ...ZAPPER_STRRING,
                                     ...WARRIOR_SPLASH_WEAPONS,
                                 },
                             },
