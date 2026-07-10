@@ -50,7 +50,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
                             disableEnergize: true,
-                            enableGreedyAggro: ["mechagnome", "ent"],
+                            enableGreedyAggro: ["mechagnome"],
                             generateEnsureEquipped: {
                                 attributes: ["armor", "attack"],
                                 prefer: {
