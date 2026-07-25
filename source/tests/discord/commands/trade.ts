@@ -91,7 +91,7 @@ function formatBankSideLines(owner: string, sideLabel: "WTS" | "WTB", listing: T
 // TODO: How do I type this for autocomplete?
 export const Trade: Command & { autocomplete: (client: Client, interaction: AutocompleteInteraction) => void } = {
     name: "trade",
-    description: "Returns details about trades for an item (Data from ALData)",
+    description: "Returns details about trades for an item (Data from https://aldata.earthiverse.ca)",
     options: [
         {
             autocomplete: true,
