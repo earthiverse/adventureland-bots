@@ -122,14 +122,15 @@ const TITLE_BORDER: Record<string, string> = {
     superfast: "#c681dc",
 }
 
-function stripQuery(file: string): string {
-    const q = file.indexOf("?")
-    return q === -1 ? file : file.slice(0, q)
+/** Absolute sheet URL, preserving `?v=` so cache busts when G bumps the pack version. */
+function absoluteSheetUrl(file: string): string {
+    if (file.startsWith("http")) return file
+    return `${AL_ORIGIN}${file.startsWith("/") ? file : `/${file}`}`
 }
 
 async function fetchSheet(file: string): Promise<Buffer> {
-    const path = stripQuery(file)
-    const url = path.startsWith("http") ? path : `${AL_ORIGIN}${path}`
+    // Key + fetch include `?v=` — AL bumps that when the pack PNG changes at the same path.
+    const url = absoluteSheetUrl(file)
     let pending = sheetCache.get(url)
     if (!pending) {
         pending = (async () => {
@@ -168,7 +169,7 @@ export function resolveSkinCrop(G: GLike, skin: string): {
         col: pos[1],
         row: pos[2],
         size: pack.size,
-        sheetUrl: `${AL_ORIGIN}${stripQuery(pack.file)}`,
+        sheetUrl: absoluteSheetUrl(pack.file),
     }
 }
 
