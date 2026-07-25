@@ -1,11 +1,97 @@
-import AL, { ItemDataTrade, ItemName } from "alclient"
+import AL, { ItemName } from "alclient"
 import { Client, ApplicationCommandType, ApplicationCommandOptionType, AutocompleteInteraction, ChatInputCommandInteraction } from "discord.js"
 import { Command } from "../command.js"
+import {
+    collectMerchantOffers,
+    formatMerchantLine,
+    mergeMerchantOffers,
+    sortMerchantOffers,
+} from "./tradeMessage.js"
+
+type ItemRef = { name: string; level?: number; p?: string }
+type TradeOffer = { item: ItemRef; give: number; receive: number; negotiable?: boolean }
+type TradeSide = {
+    price?: number
+    priceNegotiable?: boolean
+    note?: string
+    quantity?: number
+    trades?: TradeOffer[]
+}
+type TradeListing = ItemRef & { note?: string; wts?: TradeSide; wtb?: TradeSide }
+type OwnerTrades = {
+    owner: string
+    listings: TradeListing[]
+    lastUpdated?: number
+    label?: string
+    characters?: string[]
+    discordName?: string
+    discordId?: string
+}
+
+const DISCORD_CONTENT_LIMIT = 2000
+const ALDATA_BASE_URL = (process.env.ALDATA_URL ?? "https://aldata.earthiverse.ca").replace(/\/$/, "")
+
+function ownerDisplayName(ownerTrades: OwnerTrades): string {
+    if (ownerTrades.label) return ownerTrades.label
+    return ownerTrades.owner
+}
+
+/**
+ * Plain-text owner prefix for bank lines.
+ * Never emit `<@id>` / mention syntax — the /trade bot must not ping listing owners.
+ * Only append Discord when it differs from the display label (avoids "earthiverse (Discord: earthiverse)").
+ */
+function ownerBankPrefix(ownerTrades: OwnerTrades): string {
+    const name = ownerDisplayName(ownerTrades)
+    const discord = ownerTrades.discordName?.trim()
+    if (discord && discord.toLowerCase() !== name.toLowerCase()) {
+        return `${name} (@${discord})`
+    }
+    return name
+}
+
+function truncateDiscordContent(content: string): string {
+    if (content.length <= DISCORD_CONTENT_LIMIT) return content
+    const suffix = "\n… (truncated)"
+    return content.slice(0, DISCORD_CONTENT_LIMIT - suffix.length) + suffix
+}
+
+function formatListingMeta(listing: ItemRef): string {
+    const parts: string[] = []
+    if (listing.level !== undefined) parts.push(`level ${listing.level}`)
+    if (listing.p) parts.push(listing.p)
+    return parts.join(" ")
+}
+
+function formatBankSideLines(owner: string, sideLabel: "WTS" | "WTB", listing: TradeListing, side: TradeSide): string[] {
+    const lines: string[] = []
+    const quantity = side.quantity === undefined ? "" : `${side.quantity} `
+    const meta = formatListingMeta(listing)
+    const metaPart = meta ? `${meta} ` : ""
+    const note = side.note ?? listing.note
+
+    if (side.price !== undefined) {
+        const negotiable = side.priceNegotiable ? " (negotiable)" : ""
+        const notePart = note ? ` — ${note}` : ""
+        lines.push(`${owner} ${sideLabel} ${quantity}${metaPart}@ ${side.price.toLocaleString()}${negotiable}${notePart}`)
+    }
+
+    if (side.trades) {
+        for (const offer of side.trades) {
+            const negotiable = offer.negotiable ? " (negotiable)" : ""
+            const offerMeta = formatListingMeta(offer.item)
+            const forItem = offerMeta ? `${offerMeta} ${offer.item.name}` : offer.item.name
+            lines.push(`${owner} ${sideLabel} ${quantity}${offer.give}:${offer.receive} for ${forItem}${negotiable}`)
+        }
+    }
+
+    return lines
+}
 
 // TODO: How do I type this for autocomplete?
 export const Trade: Command & { autocomplete: (client: Client, interaction: AutocompleteInteraction) => void } = {
     name: "trade",
-    description: "Returns details about trades for an item (Data from https://aldata.earthiverse.ca)",
+    description: "Returns details about trades for an item (Data from ALData)",
     options: [
         {
             autocomplete: true,
@@ -50,111 +136,96 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
         }
 
         try {
-            const getData = await fetch("https://aldata.earthiverse.ca/merchants/")
+            const [merchantsResponse, tradesResponse] = await Promise.all([
+                fetch(`${ALDATA_BASE_URL}/merchants/`),
+                fetch(`${ALDATA_BASE_URL}/trades`)
+            ])
 
-            if (getData.status === 200) {
-                const data = await getData.json()
-                const buyingData = []
-                const sellingData = []
-                for (const player of data) {
-                    if (Date.now() - Date.parse(player.lastSeen) > 8.64e+7) continue // Haven't seen in a day
-                    for (const slotName in player.slots) {
-                        const slot = player.slots[slotName] as ItemDataTrade
-                        if (slot.name !== item) continue
-                        if (slot.giveaway) continue
+            const merchantsOk = merchantsResponse.status === 200
+            const tradesOk = tradesResponse.status === 200
 
-                        if (slot.b) {
-                            buyingData.push({
-                                id: player.id,
-                                level: slot.level,
-                                price: slot.price,
-                                q: slot.q,
-                                serverIdentifier: player.serverIdentifier,
-                                serverRegion: player.serverRegion,
-                            })
-                        } else {
-                            sellingData.push({
-                                id: player.id,
-                                level: slot.level,
-                                p: slot.p,
-                                price: slot.price,
-                                q: slot.q,
-                                serverIdentifier: player.serverIdentifier,
-                                serverRegion: player.serverRegion,
-                            })
-                        }
-                    }
-                }
-
-                if (buyingData.length === 0 && sellingData.length === 0) {
-                    return await interaction.followUp({
-                        ephemeral: true,
-                        content: `I couldn't find anyone trading \`${item}\` 🥲`
-                    })
-                }
-
-                let content = `The base price, according to \`G\`, is \`${gItem.g}\`.`
-
-                if (sellingData.length) {
-                    // Sort selling data
-                    sellingData.sort((a, b) => {
-                        // Sort lowest level first
-                        if (a.level && b.level) {
-                            return b.level - a.level
-                        }
-
-                        // Sort titled items first
-                        if (a.p && !b.p) return -1
-                        if (!a.p && b.p) return 1
-                        if (a.p && b.p) return (b.p as string).localeCompare(a.p)
-
-                        // Sort cheapest first
-                        return b.price - a.price
-                    })
-
-                    content += `\nI found the following players selling \`${item}\` 🙂\n\`\`\``
-                    for (const d of sellingData) {
-                        const quantity = d.q === undefined ? "" : `${d.q} `
-                        const title = d.p ? `${d.p} ` : ""
-                        const level = d.level === undefined ? "" : `level ${d.level} `
-                        const price = `${d.price.toLocaleString()}`
-                        content += `\n${d.id} (${d.serverRegion} ${d.serverIdentifier}) is selling ${quantity}${title}${level}@ ${price}`
-                    }
-                    content += "```"
-                }
-
-                if (buyingData.length) {
-                    // Sort buying data
-                    buyingData.sort((a, b) => {
-                        // Sort lowest level first
-                        if (a.level && b.level) {
-                            return b.level - a.level
-                        }
-
-                        // Sort titled items first
-                        if (a.p && !b.p) return -1
-                        if (!a.p && b.p) return 1
-                        if (a.p && b.p) return (b.p as string).localeCompare(a.p)
-
-                        // Sort cheapest first
-                        return b.price - a.price
-                    })
-
-                    content += `\nI found the following players buying \`${item}\` 🙂\n\`\`\``
-                    for (const d of buyingData) {
-                        const quantity = `${d.q} `
-                        const level = d.level === undefined ? "" : `level ${d.level} `
-                        const price = `${d.price.toLocaleString()}`
-                        content += `\n${d.id} (${d.serverRegion} ${d.serverIdentifier}) is buying ${quantity}${level}@ ${price}`
-                    }
-                    content += "```"
-                }
-
+            if (!merchantsOk && !tradesOk) {
                 return await interaction.followUp({
                     ephemeral: true,
-                    content: content
+                    content: `Sorry, I had an error finding data for \`${item}\`. 😥`
                 })
             }
+
+            const bankWtsLines: string[] = []
+            const bankWtbLines: string[] = []
+            let buyingData = sortMerchantOffers([], "buy")
+            let sellingData = sortMerchantOffers([], "sell")
+
+            if (merchantsOk) {
+                const data = await merchantsResponse.json()
+                const collected = collectMerchantOffers(data, String(item))
+                buyingData = sortMerchantOffers(mergeMerchantOffers(collected.buying), "buy")
+                sellingData = sortMerchantOffers(mergeMerchantOffers(collected.selling), "sell")
+            }
+
+            if (tradesOk) {
+                const owners = await tradesResponse.json() as OwnerTrades[]
+                for (const ownerTrades of owners) {
+                    for (const listing of ownerTrades.listings ?? []) {
+                        if (listing.name !== item) continue
+                        if (listing.wts) {
+                            bankWtsLines.push(...formatBankSideLines(ownerBankPrefix(ownerTrades), "WTS", listing, listing.wts))
+                        }
+                        if (listing.wtb) {
+                            bankWtbLines.push(...formatBankSideLines(ownerBankPrefix(ownerTrades), "WTB", listing, listing.wtb))
+                        }
+                    }
+                }
+            }
+
+            const hasMerchants = buyingData.length > 0 || sellingData.length > 0
+            const hasBank = bankWtsLines.length > 0 || bankWtbLines.length > 0
+
+            if (!hasMerchants && !hasBank) {
+                return await interaction.followUp({
+                    ephemeral: true,
+                    content: `I couldn't find anyone trading \`${item}\` 🥲`
+                })
+            }
+
+            let content = `The base price, according to \`G\`, is \`${gItem.g}\`.`
+
+            if (sellingData.length) {
+                content += `\nI found the following players selling \`${item}\` 🙂\n\`\`\``
+                for (const d of sellingData) {
+                    content += `\n${formatMerchantLine(d, "selling")}`
+                }
+                content += "```"
+            }
+
+            if (buyingData.length) {
+                content += `\nI found the following players buying \`${item}\` 🙂\n\`\`\``
+                for (const d of buyingData) {
+                    content += `\n${formatMerchantLine(d, "buying")}`
+                }
+                content += "```"
+            }
+
+            if (bankWtsLines.length) {
+                content += `\nBank WTS for \`${item}\`:\n\`\`\``
+                for (const line of bankWtsLines) {
+                    content += `\n${line}`
+                }
+                content += "```"
+            }
+
+            if (bankWtbLines.length) {
+                content += `\nBank WTB for \`${item}\`:\n\`\`\``
+                for (const line of bankWtbLines) {
+                    content += `\n${line}`
+                }
+                content += "```"
+            }
+
+            return await interaction.followUp({
+                ephemeral: true,
+                content: truncateDiscordContent(content)
+            })
         } catch (e) {
             console.error(e)
         }
