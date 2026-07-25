@@ -1,5 +1,11 @@
 import AL, { ItemName } from "alclient"
-import { Client, ApplicationCommandType, ApplicationCommandOptionType, AutocompleteInteraction, ChatInputCommandInteraction } from "discord.js"
+import {
+    Client,
+    ApplicationCommandType,
+    ApplicationCommandOptionType,
+    AutocompleteInteraction,
+    ChatInputCommandInteraction,
+} from "discord.js"
 import { Command } from "../command.js"
 import {
     formatBankSideLines,
@@ -8,11 +14,11 @@ import {
 } from "./tradeBank.js"
 import {
     collectMerchantOffers,
-    formatMerchantLine,
     mergeMerchantOffers,
     sortMerchantOffers,
     truncateDiscordContent,
 } from "./tradeMessage.js"
+import { buildTradeReply, collectDealRows, pickTradeIconOverlays, type OwnerTrades } from "./tradeReply.js"
 
 const ALDATA_BASE_URL = (process.env.ALDATA_URL ?? "https://aldata.earthiverse.ca").replace(/\/$/, "")
 
@@ -26,8 +32,8 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
             description: "Item Name",
             name: "item",
             required: true,
-            type: ApplicationCommandOptionType.String
-        }
+            type: ApplicationCommandOptionType.String,
+        },
     ],
     type: ApplicationCommandType.ChatInput,
     autocomplete: async (client: Client, interaction: AutocompleteInteraction) => {
@@ -40,13 +46,11 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
             })
             .sort()
             .splice(0, 25)
-            .map(choice => {
+            .map((choice) => {
                 const gName = AL.Game.G.items[choice].name
                 return { name: `${choice} (${gName})`, value: choice }
             })
-        await interaction.respond(
-            filtered,
-        )
+        await interaction.respond(filtered)
     },
     run: async (client: Client, interaction: ChatInputCommandInteraction) => {
         const G = await AL.Game.getGData()
@@ -56,17 +60,16 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
 
         const gItem = G.items[item as ItemName]
         if (!gItem) {
-            const content = `I couldn't find \`${item}\` in G (v${G.version}) 🤔`
             return interaction.followUp({
                 ephemeral: true,
-                content: content
+                content: `I couldn't find \`${item}\` in G (v${G.version}) 🤔`,
             })
         }
 
         try {
             const [merchantsResponse, tradesResponse] = await Promise.all([
                 fetch(`${ALDATA_BASE_URL}/merchants/`),
-                fetch(`${ALDATA_BASE_URL}/trades`)
+                fetch(`${ALDATA_BASE_URL}/trades`),
             ])
 
             const merchantsOk = merchantsResponse.status === 200
@@ -75,14 +78,14 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
             if (!merchantsOk && !tradesOk) {
                 return await interaction.followUp({
                     ephemeral: true,
-                    content: `Sorry, I had an error finding data for \`${item}\`. 😥`
+                    content: `Sorry, I had an error finding data for \`${item}\`. 😥`,
                 })
             }
 
-            const bankWtsLines: string[] = []
-            const bankWtbLines: string[] = []
             let buyingData = sortMerchantOffers([], "buy")
             let sellingData = sortMerchantOffers([], "sell")
+            let dealWts = collectDealRows([], String(item)).wts
+            let dealWtb = collectDealRows([], String(item)).wtb
 
             if (merchantsOk) {
                 const data = await merchantsResponse.json()
@@ -92,74 +95,53 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
             }
 
             if (tradesOk) {
-                const owners = await tradesResponse.json() as OwnerTrades[]
-                for (const ownerTrades of owners) {
-                    for (const listing of ownerTrades.listings ?? []) {
-                        if (listing.name !== item) continue
-                        if (listing.wts) {
-                            bankWtsLines.push(...formatBankSideLines(ownerBankPrefix(ownerTrades), "WTS", listing, listing.wts))
-                        }
-                        if (listing.wtb) {
-                            bankWtbLines.push(...formatBankSideLines(ownerBankPrefix(ownerTrades), "WTB", listing, listing.wtb))
-                        }
-                    }
-                }
+                const owners = (await tradesResponse.json()) as OwnerTrades[]
+                const deals = collectDealRows(owners, String(item))
+                dealWts = deals.wts
+                dealWtb = deals.wtb
             }
 
             const hasMerchants = buyingData.length > 0 || sellingData.length > 0
-            const hasBank = bankWtsLines.length > 0 || bankWtbLines.length > 0
+            const hasDeals = dealWts.length > 0 || dealWtb.length > 0
 
-            if (!hasMerchants && !hasBank) {
+            if (!hasMerchants && !hasDeals) {
                 return await interaction.followUp({
                     ephemeral: true,
-                    content: `I couldn't find anyone trading \`${item}\` 🥲`
+                    content: `I couldn't find anyone trading \`${item}\` 🥲`,
                 })
             }
 
-            let content = `The base price, according to \`G\`, is \`${gItem.g}\`.`
-
-            if (sellingData.length) {
-                content += `\nI found the following players selling \`${item}\` 🙂\n\`\`\``
-                for (const d of sellingData) {
-                    content += `\n${formatMerchantLine(d, "selling")}`
-                }
-                content += "```"
-            }
-
-            if (buyingData.length) {
-                content += `\nI found the following players buying \`${item}\` 🙂\n\`\`\``
-                for (const d of buyingData) {
-                    content += `\n${formatMerchantLine(d, "buying")}`
-                }
-                content += "```"
-            }
-
-            if (bankWtsLines.length) {
-                content += `\nBank WTS for \`${item}\`:\n\`\`\``
-                for (const line of bankWtsLines) {
-                    content += `\n${line}`
-                }
-                content += "```"
-            }
-
-            if (bankWtbLines.length) {
-                content += `\nBank WTB for \`${item}\`:\n\`\`\``
-                for (const line of bankWtbLines) {
-                    content += `\n${line}`
-                }
-                content += "```"
-            }
-
-            return await interaction.followUp({
-                ephemeral: true,
-                content: truncateDiscordContent(content)
+            const overlays = pickTradeIconOverlays({
+                selling: sellingData,
+                buying: buyingData,
+                dealWts,
+                dealWtb,
             })
+            const messages = await buildTradeReply({
+                item: String(item),
+                gPrice: gItem.g,
+                selling: sellingData,
+                buying: buyingData,
+                dealWts,
+                dealWtb,
+                icon: { G: G as never, ...overlays },
+            })
+
+            for (const message of messages) {
+                await interaction.followUp({
+                    ephemeral: true,
+                    content: message.content,
+                    embeds: message.embeds,
+                    files: message.files,
+                })
+            }
+            return
         } catch (e) {
             console.error(e)
         }
         return await interaction.followUp({
             ephemeral: true,
-            content: `Sorry, I had an error finding data for \`${item}\`. 😥`
+            content: `Sorry, I had an error finding data for \`${item}\`. 😥`,
         })
-    }
+    },
 }
