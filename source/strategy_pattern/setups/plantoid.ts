@@ -5,7 +5,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy, KiteMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Requirements, Setup } from "./base"
-import { MAGE_SPLASH_WEAPONS, ZAPPER_STRRING, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING, RANGER_SPLASH_WEAPONS } from "./equipment.js"
+import { MAGE_SPLASH_WEAPONS, ZAPPER_STRRING, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING, RANGER_SPLASH_WEAPONS, MP_RECOVERY } from "./equipment.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export function constructPlantoidSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
@@ -74,6 +74,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                                 attributes: ["armor", "str", "explosion", "blast"],
                                 prefer: {
                                     ...WARRIOR_SPLASH_WEAPONS,
+                                    ...ZAPPER_STRRING
                                 },
                             },
                             targetingPartyMember: true,
@@ -92,7 +93,10 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "explosion", "blast"],
-                                prefer: RANGER_SPLASH_WEAPONS,
+                                prefer: {
+                                    ...RANGER_SPLASH_WEAPONS,
+                                    ...MP_RECOVERY
+                                },
                             },
                             targetingPartyMember: true,
                             typeList: ["porcupine", "plantoid", "mechagnome", "ent"], // Target porcupines first, to kill them so the warrior doesn't take damage
@@ -127,6 +131,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                                 attributes: ["armor", "str", "explosion", "blast"],
                                 prefer: {
                                     ...WARRIOR_SPLASH_WEAPONS,
+                                    ...ZAPPER_STRRING
                                 },
                             },
                             targetingPartyMember: true,
