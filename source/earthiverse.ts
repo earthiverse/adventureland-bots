@@ -110,9 +110,9 @@ const MAX_PUBLIC_CHARACTERS = 6
 
 const MERCHANT: string = "earthMer" // earthMer, earthMer2, earthMer3
 const WARRIORS: string[] = ["earthWar"] // earthWar, earthWar2, earthWar3
-const MAGES: string[] = ["earthMag"] // earthMag, earthMag2, earthMag3
+const MAGES: string[] = [] // earthMag, earthMag2, earthMag3
 const PRIESTS: string[] = ["earthPri"] // earthPri, earthPri2
-const RANGERS: string[] = [] // earthiverse, earthRan2, earthRan3
+const RANGERS: string[] = ["earthiverse"] // earthiverse, earthRan2, earthRan3
 const PALADINS: string[] = [] // earthPal
 const ROGUES: string[] = [] // earthRog, earthRog2, earthRog3
 

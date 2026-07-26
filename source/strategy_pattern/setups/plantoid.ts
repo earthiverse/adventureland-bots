@@ -5,7 +5,8 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { HoldPositionMoveStrategy, KiteMoveStrategy, MoveInCircleMoveStrategy } from "../strategies/move.js"
 import { Requirements, Setup } from "./base"
-import { MAGE_SPLASH_WEAPONS, ZAPPER_STRRING, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING } from "./equipment.js"
+import { MAGE_SPLASH_WEAPONS, ZAPPER_STRRING, WARRIOR_SPLASH_WEAPONS, ZAPPER_CRING, RANGER_SPLASH_WEAPONS } from "./equipment.js"
+import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export function constructPlantoidSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const requirements: Requirements = {
@@ -39,6 +40,59 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "explosion", "blast"],
                                 prefer: MAGE_SPLASH_WEAPONS,
+                            },
+                            targetingPartyMember: true,
+                            typeList: ["porcupine", "plantoid", "mechagnome", "ent"], // Target porcupines first, to kill them so the warrior doesn't take damage
+                        }),
+                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: 5 } }),
+                    },
+                    {
+                        ctype: "priest",
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableEnergize: true,
+                            enableGreedyAggro: ["mechagnome"],
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "attack"],
+                                prefer: {
+                                    ...ZAPPER_CRING
+                                }
+                            },
+                            typeList: ["porcupine", "plantoid", "mechagnome", "ent"], // Target porcupines first, to kill them so the warrior doesn't take damage
+                        }),
+                        move: new HoldPositionMoveStrategy(spawn, { offset: { x: -5 } }),
+                    },
+                    {
+                        ctype: "warrior",
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            // Porcupines are too close
+                            disableAgitate: true,
+                            enableEquipForCleave: true,
+                            enableGreedyAggro: ["plantoid", "mechagnome", "ent"],
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "str", "explosion", "blast"],
+                                prefer: {
+                                    ...WARRIOR_SPLASH_WEAPONS,
+                                },
+                            },
+                            targetingPartyMember: true,
+                            typeList: ["plantoid", "mechagnome", "ent"],
+                        }),
+                        move: new MoveInCircleMoveStrategy({ center: spawn, radius: 20, sides: 8 }),
+                    },
+                ],
+            },
+            {
+                id: "greedy_plantoid_ranger,priest,warrior",
+                characters: [
+                    {
+                        ctype: "ranger",
+                        attack: new RangerAttackStrategy({
+                            contexts: contexts,
+                            generateEnsureEquipped: {
+                                attributes: ["armor", "int", "explosion", "blast"],
+                                prefer: RANGER_SPLASH_WEAPONS,
                             },
                             targetingPartyMember: true,
                             typeList: ["porcupine", "plantoid", "mechagnome", "ent"], // Target porcupines first, to kill them so the warrior doesn't take damage
