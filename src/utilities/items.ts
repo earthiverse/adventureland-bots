@@ -10,7 +10,8 @@ import type {
   UpgradeScrollKey,
 } from "typed-adventureland";
 import Config, { type ItemsConfig, type Price } from "../../config/items.js";
-import { itemData } from "../plugins/data_tracker.js";
+import { db } from "../db/index.js";
+import { items as dbItems } from "../db/schema.js";
 import {
   buyForProfit,
   buyKeys,
@@ -590,19 +591,20 @@ export function adjustItemConfig(
 
 /**
  * Returns the total number of this item we have across all characters and bank
- * 
+ *
  * NOTE: Does not include bank items until the bank is visited
  * NOTE: Does not include items on characters until they are started
- * 
+ *
  * TODO: Improve with support for filters
- * 
+ *
  * @param name
  * @returns
  */
 export function getTotalItemCount(name: ItemKey): number {
   let count = 0;
-  for (const items of itemData.values()) {
-    for (const item of items) {
+  const allRows = db.select().from(dbItems).all();
+  for (const row of allRows) {
+    for (const item of row.items) {
       if (!item) continue; // Empty slot
       if (item.name !== name) continue; // Different item
       count += item.q ?? 1;
@@ -633,13 +635,15 @@ export function getEmptyBankSlotsCount(map?: Extract<MapKey, "bank" | "bank_b" |
     packTo = 47;
   }
 
-  for (const [pack, items] of itemData.entries()) {
+  const allRows = db.select().from(dbItems).all();
+  for (const row of allRows) {
+    const pack = row.key;
     if (!pack.startsWith("items")) continue;
     if (map !== undefined) {
       const bankPackNum = Number.parseInt(pack.substring(5, 7));
       if (bankPackNum < packFrom || bankPackNum > packTo) continue; // Pack is not on this map
     }
-    for (const item of items) {
+    for (const item of row.items) {
       if (item) continue; // Filled slot
       count += 1;
     }

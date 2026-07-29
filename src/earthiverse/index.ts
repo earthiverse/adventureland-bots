@@ -8,9 +8,12 @@ import { setup as moveSetup } from "../setups/move/spread_out.js";
 import { setup as regenSetup } from "../setups/regen/simple.js";
 
 // Plugins
+import { and, inArray, isNull } from "drizzle-orm";
 import type { ServerKey } from "typed-adventureland";
+import { db } from "../db/index.js";
+import { monsters as dbMonsters } from "../db/schema.js";
 import "../plugins/auto_reconnect.js";
-import { serverData as SERVER_DATA } from "../plugins/data_tracker.js";
+import "../plugins/data_tracker.js";
 import "../plugins/g_cache.js";
 import { getGFromCache } from "../plugins/g_cache.js";
 import "../plugins/party.js";
@@ -84,18 +87,29 @@ const logicLoop = async () => {
     const potentialTargets: [StrategyMonsterKey, ServerKey][] = [];
 
     // Add monsters we're checking for
-    for (const serverKey of checkServers) {
-      const serverData = SERVER_DATA.get(serverKey);
-      if (serverData === undefined) continue; // No data for this server
+    const untargetedMonsters = db
+      .select({
+        type: dbMonsters.type,
+        serverKey: dbMonsters.serverKey,
+      })
+      .from(dbMonsters)
+      .where(
+        and(
+          inArray(dbMonsters.serverKey, [...checkServers]),
+          inArray(dbMonsters.type, [...checkMonsters]),
+          isNull(dbMonsters.target),
+        ),
+      )
+      .all();
 
-      for (const monsterKey of checkMonsters) {
-        const monsterData = serverData.monsters[monsterKey];
-        if (monsterData === undefined || monsterData.length === 0) continue;
-
-        for (const monsterDatum of monsterData) {
-          if (monsterDatum.target !== undefined) continue;
-          potentialTargets.push([monsterKey, serverKey]);
-        }
+    for (const monster of untargetedMonsters) {
+      if (
+        monster.type !== null &&
+        monster.type !== undefined &&
+        monster.serverKey !== null &&
+        monster.serverKey !== undefined
+      ) {
+        potentialTargets.push([monster.type as StrategyMonsterKey, monster.serverKey as ServerKey]);
       }
     }
 

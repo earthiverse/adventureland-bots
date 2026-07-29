@@ -1,11 +1,14 @@
 import { type Character, type Location } from "alclient";
+import { eq } from "drizzle-orm";
 import type { BankPackTypeItemsOnly, MapKey } from "typed-adventureland";
 import config from "../../../config/config.js";
-import { itemData } from "../../plugins/data_tracker.js";
+import { db } from "../../db/index.js";
+import { items as dbItems } from "../../db/schema.js";
 import {
   getEmptyBankSlotsCount,
   getItemDescription,
   getItemsToStoreInBank,
+getTotalItemCount,
   wantToDestroy,
   wantToDismantle,
   wantToExchange,
@@ -180,9 +183,10 @@ async function doBanking(character: Character, options: MerchantOptions) {
     }
     for (let packNum = packFrom!; packNum <= packTo!; packNum++) {
       const pack = `items${packNum}` as BankPackTypeItemsOnly;
-      if (!itemData.has(pack)) continue; // No pack data
+      const row = db.select().from(dbItems).where(eq(dbItems.key, pack)).get();
+      if (!row) continue; // No pack data
 
-      const packItems = itemData.get(pack)!;
+      const packItems = row.items;
       for (let packSlot = 0; packSlot < packItems.length; packSlot++) {
         const item = packItems[packSlot];
         if (!item) continue; // No item in slot
