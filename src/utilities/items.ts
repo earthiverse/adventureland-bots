@@ -589,7 +589,13 @@ export function adjustItemConfig(
 }
 
 /**
- * Returns the total number of this item we have
+ * Returns the total number of this item we have across all characters and bank
+ * 
+ * NOTE: Does not include bank items until the bank is visited
+ * NOTE: Does not include items on characters until they are started
+ * 
+ * TODO: Improve with support for filters
+ * 
  * @param name
  * @returns
  */

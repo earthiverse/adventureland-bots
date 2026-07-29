@@ -69,7 +69,6 @@ export const setup = (character: Character, options: MerchantOptions) => {
 
       await doGoldAndItemTransfer(character, options);
       await doBanking(character, options);
-      // TODO: Deliver replenishables
       // TODO: Fishing
       // TODO: Mining
 

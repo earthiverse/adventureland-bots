@@ -122,8 +122,6 @@ const defaultAttackLogic = async (character: Character, options: AttackOptions) 
 };
 
 const priestAttackLogic = async (character: Priest, options: PriestAttackOptions) => {
-  // TODO: Priest attack logic
-
   // Check if we want to heal ourself, or other characters nearby
   for (const other of [character, ...character.characters.values()]) {
     if (!wantToHeal(character, other)) continue;

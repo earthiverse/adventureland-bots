@@ -15,10 +15,15 @@ export function wantToHeal(
     healIfHpRatioBelow,
   },
 ): boolean {
+  if (target.rip) return false; // Target is already dead
+
   if (options.healStrangers !== true) {
     let stranger = true;
-    if (stranger && character.party === target.party) stranger = false; // Same party
-    if (stranger && character.owner === target.owner) stranger = false; // Same Player
+    if (
+      character.party === target.party || // Same party
+      character.owner === target.owner // Same Player
+    )
+      stranger = false;
     if (stranger) return false;
   }
 

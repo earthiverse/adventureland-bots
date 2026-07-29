@@ -9,7 +9,7 @@ export async function moveUntilDestination(
   // TODO: Improve so if the destination moves we adjust
 
   for (let i = 0; i < options.numTries; i++) {
-    if (character.getDistanceTo(destination) < options.getWithin) return true;
+    if (character.getDistanceTo(destination) <= options.getWithin) return true;
     try {
       await character.smartMove(destination.map, destination.x, destination.y);
     } catch (e) {
