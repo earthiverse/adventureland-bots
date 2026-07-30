@@ -33,7 +33,8 @@ type GItemLike = {
     name?: string
 }
 
-type GLike = {
+/** Minimal G subset for icon crop/name helpers (alclient GData is compatible). */
+export type GLike = {
     items: Record<string, GItemLike | undefined>
     positions: Record<string, [string, number, number] | undefined>
     imagesets: Record<string, Imageset | undefined>
@@ -352,6 +353,6 @@ function escapeXml(value: string): string {
 
 /** Convenience: load G via alclient then render. */
 export async function renderItemIconByName(itemName: ItemName | string, opts?: ItemInstanceOpts) {
-    const G = (await AL.Game.getGData()) as unknown as GLike
+    const G = (await AL.Game.getGData()) as GLike
     return renderItemIcon(G, itemName, opts)
 }
