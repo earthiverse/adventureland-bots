@@ -2,91 +2,19 @@ import AL, { ItemName } from "alclient"
 import { Client, ApplicationCommandType, ApplicationCommandOptionType, AutocompleteInteraction, ChatInputCommandInteraction } from "discord.js"
 import { Command } from "../command.js"
 import {
+    formatBankSideLines,
+    ownerBankPrefix,
+    type OwnerTrades,
+} from "./tradeBank.js"
+import {
     collectMerchantOffers,
     formatMerchantLine,
     mergeMerchantOffers,
     sortMerchantOffers,
+    truncateDiscordContent,
 } from "./tradeMessage.js"
 
-type ItemRef = { name: string; level?: number; p?: string }
-type TradeOffer = { item: ItemRef; give: number; receive: number; negotiable?: boolean }
-type TradeSide = {
-    price?: number
-    priceNegotiable?: boolean
-    note?: string
-    quantity?: number
-    trades?: TradeOffer[]
-}
-type TradeListing = ItemRef & { note?: string; wts?: TradeSide; wtb?: TradeSide }
-type OwnerTrades = {
-    owner: string
-    listings: TradeListing[]
-    lastUpdated?: number
-    label?: string
-    characters?: string[]
-    discordName?: string
-    discordId?: string
-}
-
-const DISCORD_CONTENT_LIMIT = 2000
 const ALDATA_BASE_URL = (process.env.ALDATA_URL ?? "https://aldata.earthiverse.ca").replace(/\/$/, "")
-
-function ownerDisplayName(ownerTrades: OwnerTrades): string {
-    if (ownerTrades.label) return ownerTrades.label
-    return ownerTrades.owner
-}
-
-/**
- * Plain-text owner prefix for bank lines.
- * Never emit `<@id>` / mention syntax — the /trade bot must not ping listing owners.
- * Only append Discord when it differs from the display label (avoids "earthiverse (Discord: earthiverse)").
- */
-function ownerBankPrefix(ownerTrades: OwnerTrades): string {
-    const name = ownerDisplayName(ownerTrades)
-    const discord = ownerTrades.discordName?.trim()
-    if (discord && discord.toLowerCase() !== name.toLowerCase()) {
-        return `${name} (@${discord})`
-    }
-    return name
-}
-
-function truncateDiscordContent(content: string): string {
-    if (content.length <= DISCORD_CONTENT_LIMIT) return content
-    const suffix = "\n… (truncated)"
-    return content.slice(0, DISCORD_CONTENT_LIMIT - suffix.length) + suffix
-}
-
-function formatListingMeta(listing: ItemRef): string {
-    const parts: string[] = []
-    if (listing.level !== undefined) parts.push(`level ${listing.level}`)
-    if (listing.p) parts.push(listing.p)
-    return parts.join(" ")
-}
-
-function formatBankSideLines(owner: string, sideLabel: "WTS" | "WTB", listing: TradeListing, side: TradeSide): string[] {
-    const lines: string[] = []
-    const quantity = side.quantity === undefined ? "" : `${side.quantity} `
-    const meta = formatListingMeta(listing)
-    const metaPart = meta ? `${meta} ` : ""
-    const note = side.note ?? listing.note
-
-    if (side.price !== undefined) {
-        const negotiable = side.priceNegotiable ? " (negotiable)" : ""
-        const notePart = note ? ` — ${note}` : ""
-        lines.push(`${owner} ${sideLabel} ${quantity}${metaPart}@ ${side.price.toLocaleString()}${negotiable}${notePart}`)
-    }
-
-    if (side.trades) {
-        for (const offer of side.trades) {
-            const negotiable = offer.negotiable ? " (negotiable)" : ""
-            const offerMeta = formatListingMeta(offer.item)
-            const forItem = offerMeta ? `${offerMeta} ${offer.item.name}` : offer.item.name
-            lines.push(`${owner} ${sideLabel} ${quantity}${offer.give}:${offer.receive} for ${forItem}${negotiable}`)
-        }
-    }
-
-    return lines
-}
 
 // TODO: How do I type this for autocomplete?
 export const Trade: Command & { autocomplete: (client: Client, interaction: AutocompleteInteraction) => void } = {

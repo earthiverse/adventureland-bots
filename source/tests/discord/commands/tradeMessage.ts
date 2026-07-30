@@ -1,5 +1,13 @@
 import type { ItemDataTrade } from "alclient"
 
+const DISCORD_CONTENT_LIMIT = 2000
+
+export function truncateDiscordContent(content: string): string {
+    if (content.length <= DISCORD_CONTENT_LIMIT) return content
+    const suffix = "\n… (truncated)"
+    return content.slice(0, DISCORD_CONTENT_LIMIT - suffix.length) + suffix
+}
+
 export type MerchantOffer = {
     id: string
     level?: number
