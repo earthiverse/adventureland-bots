@@ -18,7 +18,13 @@ import {
     sortMerchantOffers,
     truncateDiscordContent,
 } from "./tradeMessage.js"
+import type { GLike } from "./itemIcon.js"
 import { buildTradeReply, collectDealRows, pickTradeIconOverlays, type OwnerTrades } from "./tradeReply.js"
+
+/** Adapt alclient GData to the icon/name helper surface used by /trade. */
+function asTradeIconG(G: Awaited<ReturnType<typeof AL.Game.getGData>>): GLike {
+    return G as GLike
+}
 
 const ALDATA_BASE_URL = (process.env.ALDATA_URL ?? "https://aldata.earthiverse.ca").replace(/\/$/, "")
 
@@ -124,7 +130,7 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
                 buying: buyingData,
                 dealWts,
                 dealWtb,
-                icon: { G: G as never, ...overlays },
+                icon: { G: asTradeIconG(G), ...overlays },
             })
 
             for (const message of messages) {
