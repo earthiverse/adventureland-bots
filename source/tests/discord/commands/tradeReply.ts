@@ -322,7 +322,7 @@ export async function buildTradeReply(args: {
     })
 }
 
-// Re-exports for existing imports (trade.ts / simulate scripts)
+// Re-exports for existing imports (trade.ts and related callers)
 export {
     collectDealRows,
     formatRatioTerms,
