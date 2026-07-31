@@ -594,19 +594,25 @@ export function adjustItemConfig(
  *
  * NOTE: Does not include bank items until the bank is visited
  * NOTE: Does not include items on characters until they are started
- *
- * TODO: Improve with support for filters
- *
+  *
  * @param name
+* @param filters
  * @returns
  */
-export function getTotalItemCount(name: ItemKey): number {
+export function getTotalItemCount(
+name: ItemKey,
+  filters?: { minLevel?: number; maxLevel?: number; level?: number },
+): number {
   let count = 0;
   const allRows = db.select().from(dbItems).all();
   for (const row of allRows) {
     for (const item of row.items) {
       if (!item) continue; // Empty slot
       if (item.name !== name) continue; // Different item
+const itemLevel = item.level ?? 0;
+      if (filters?.minLevel !== undefined && itemLevel < filters.minLevel) continue;
+      if (filters?.maxLevel !== undefined && itemLevel > filters.maxLevel) continue;
+      if (filters?.level !== undefined && itemLevel !== filters.level) continue;
       count += item.q ?? 1;
     }
   }
