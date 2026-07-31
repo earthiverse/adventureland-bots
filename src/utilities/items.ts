@@ -558,9 +558,14 @@ export function wantToUpgrade(item: ItemInfo, g: GData, config = Config): boolea
   if (!itemConfig) return false; // We have no upgrade config for this item
   if (wantToMakeShiny(item, config)) return false; // We want to make it shiny first
   if (itemConfig.upgradeUntilLevel !== undefined && (item.level ?? 0) >= itemConfig.upgradeUntilLevel) return false; // Don't upgrade anymore
-  // TODO: We want to count the number of items at a higher level
-  if (itemConfig.minTotalQuantity !== undefined && getTotalItemCount(item.name) <= itemConfig.minTotalQuantity)
-    return false; // We don't have enough
+
+  if (itemConfig.minTotalQuantity !== undefined) {
+    const itemLevel = item.level ?? 0;
+    const isCompoundable = g.items[item.name]?.compound !== undefined;
+    const numRequired = isCompoundable ? 3 : 1;
+    const countAtLeastLevel = getTotalItemCount(item.name, { minLevel: itemLevel });
+    if (countAtLeastLevel < itemConfig.minTotalQuantity + numRequired) return false; // We don't have enough
+  }
 
   const grade = Utilities.getItemGrade(item, g);
   if (grade === undefined || grade >= 4) return false; // Not upgradable
@@ -594,13 +599,13 @@ export function adjustItemConfig(
  *
  * NOTE: Does not include bank items until the bank is visited
  * NOTE: Does not include items on characters until they are started
-  *
+ *
  * @param name
-* @param filters
+ * @param filters
  * @returns
  */
 export function getTotalItemCount(
-name: ItemKey,
+  name: ItemKey,
   filters?: { minLevel?: number; maxLevel?: number; level?: number },
 ): number {
   let count = 0;
@@ -609,7 +614,7 @@ name: ItemKey,
     for (const item of row.items) {
       if (!item) continue; // Empty slot
       if (item.name !== name) continue; // Different item
-const itemLevel = item.level ?? 0;
+      const itemLevel = item.level ?? 0;
       if (filters?.minLevel !== undefined && itemLevel < filters.minLevel) continue;
       if (filters?.maxLevel !== undefined && itemLevel > filters.maxLevel) continue;
       if (filters?.level !== undefined && itemLevel !== filters.level) continue;
