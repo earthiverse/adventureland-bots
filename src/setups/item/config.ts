@@ -284,14 +284,23 @@ export const setup = (character: Character) => {
             [itemPositions[0]!, itemPositions[1]!, itemPositions[2]!],
             character.game.G,
           );
-          if (nextCompound === undefined) continue;
+          if (nextCompound === undefined) {
+            logDebug(`compoundLoop (${character.id}): nextCompound is undefined for ${itemName}`);
+            continue;
+          }
           const scrollPos = character.locateItem({ name: nextCompound.scroll }) ?? false;
-          if (scrollPos === false) continue; // We don't have the scroll we want to use
+          if (scrollPos === false) {
+            logDebug(`compoundLoop (${character.id}): missing scroll ${nextCompound.scroll} for ${itemName}`);
+            continue;
+          }
           const offeringPos =
             nextCompound.offering !== undefined
               ? (character.locateItem({ name: nextCompound.offering }) ?? false)
               : undefined;
-          if (offeringPos === false) continue; // We don't have the offering we want to use
+          if (offeringPos === false) {
+            logDebug(`compoundLoop (${character.id}): missing offering ${nextCompound.offering} for ${itemName}`);
+            continue;
+          }
 
           // NOTE: Lucky slot is not applicable for compounds
 

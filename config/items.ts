@@ -175,6 +175,9 @@ const itemsConfig: ItemsConfig = {
     ...BUY_AT_GOBLIN_PRICE,
     ...EXCHANGE,
   },
+  cape: {
+    ...UPGRADE_ONE_SLOT,
+  },
   cclaw: {
     ...BUY_AT_PONTY_PRICE,
     ...CRAFT,
@@ -182,6 +185,9 @@ const itemsConfig: ItemsConfig = {
   crabclaw: {
     // Used to craft cclaw
     ...BUY_AT_PONTY_PRICE,
+  },
+  cring: {
+    ...COMPOUND_TWO_SLOTS,
   },
   cscroll0: {
     hold: {
@@ -273,6 +279,21 @@ const itemsConfig: ItemsConfig = {
       upgradeUntilLevel: 2,
       upgradeSpecial: true,
     },
+  },
+  wattire: {
+    ...UPGRADE_ONE_SLOT,
+  },
+  wbreeches: {
+    ...UPGRADE_ONE_SLOT,
+  },
+  wcap: {
+    ...UPGRADE_ONE_SLOT,
+  },
+  wgloves: {
+    ...UPGRADE_ONE_SLOT,
+  },
+  wshoes: {
+    ...UPGRADE_ONE_SLOT,
   },
 };
 

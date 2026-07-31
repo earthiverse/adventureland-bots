@@ -28,7 +28,7 @@ import {
 } from "./items/adjust.js";
 import { isPurchasableFromNpc } from "./items/npc.js";
 import { calculateOptimalCompoundPath, calculateOptimalUpgradePath } from "./items/upgrade.js";
-import { logError } from "./logging.js";
+import { logDebug, logError } from "./logging.js";
 
 export function calculateItemValue(item: ItemInfo, g: GData, multiplier = 1): number {
   if (item.gift) return 1;
@@ -258,7 +258,10 @@ export async function getNextUpgradeParams(
   if (upgradePath === undefined) return undefined; // TODO: Log (No path found!?)
 
   const grade = Utilities.getItemGrade(item, g);
-  if (grade === undefined) return undefined; // TODO: Log (no grade found?)
+  if (grade === undefined) {
+    logError(`Unable to determine grade for ${getItemDescription(item)}`);
+    return undefined;
+  }
 
   // Calculate grace
   let graceScrollPos: number | undefined = undefined;
@@ -274,7 +277,7 @@ export async function getNextUpgradeParams(
   // Find the next upgrade
   for (let i = 0; i < upgradePath.length; i++) {
     const node = upgradePath[i]!;
-    if (node.level < (item.level ?? 0)) continue; // Our item is a higher level than this node
+    if (node.level <= (item.level ?? 0)) continue; // Our item is a higher level than this node
     if (node.grace < grace) continue; // Our item is a higher grace than this node
     if (chance < node.chance) {
       logError(
@@ -314,10 +317,16 @@ export async function getNextCompoundParams(
 
   // Calculate best path
   const compoundPath = calculateOptimalCompoundPath(item1, initialValue, g);
-  if (compoundPath === undefined) return undefined; // TODO: Log (No path found!?)
+  if (compoundPath === undefined) {
+    logError(`No compound path found for ${getItemDescription(item1)}`);
+    return undefined;
+  }
 
   const grade = Utilities.getItemGrade(item1, g);
-  if (grade === undefined) return undefined; // TODO: Log (no grade found?)
+  if (grade === undefined) {
+    logError(`Unable to determine grade for ${getItemDescription(item1)}`);
+    return undefined;
+  }
 
   // Calculate grace
   let graceScrollPos: number | undefined = undefined;
@@ -327,13 +336,17 @@ export async function getNextCompoundParams(
     graceScrollPos = scrollPos;
     break;
   }
-  if (graceScrollPos === undefined) return undefined;
+  if (graceScrollPos === undefined) {
+    logDebug(`No compound scroll found to calculate grace`);
+    return undefined;
+  }
+
   const { grace, chance } = await character.compound(itemPositions, graceScrollPos, undefined, { calculate: true });
 
   // Find the next compound
   for (let i = 0; i < compoundPath.length; i++) {
     const node = compoundPath[i]!;
-    if (node.level < (item1.level ?? 0)) continue; // Our item is a higher level than this node
+    if (node.level <= (item1.level ?? 0)) continue; // Our item is the same or higher level than this node
     if (grace >= node.grace && chance < node.chance) {
       logError(
         `Calculated compound chance is lower than expected for ${getItemDescription(item1)}! (${chance} < ${node.chance})`,
@@ -343,7 +356,8 @@ export async function getNextCompoundParams(
     return { scroll: node.scroll, offering: node.offering };
   }
 
-  return undefined; // TODO: Log (No node found!?)
+  logError(`No compound node found for ${getItemDescription(item1)}`);
+  return undefined;
 }
 
 export function wantToBuy(item: ItemInfo, canBuyForPrice: number, g: GData, config = Config): boolean {
@@ -568,7 +582,10 @@ export function wantToUpgrade(item: ItemInfo, g: GData, config = Config): boolea
   }
 
   const grade = Utilities.getItemGrade(item, g);
-  if (grade === undefined || grade >= 4) return false; // Not upgradable
+  if (grade === undefined || grade >= 4) {
+    logError(`Unable to determine grade for ${getItemDescription(item)}`);
+    return false;
+  }
 
   return true;
 }
