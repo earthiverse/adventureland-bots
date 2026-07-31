@@ -258,6 +258,7 @@ export const setup = (character: Character) => {
       for (let itemPos = 0; itemPos < character.items.length; itemPos++) {
         const item = character.items[itemPos];
         if (!item) continue; // No item in this slot
+        if (character.game.G.items[item.name]?.compound === undefined) continue; // Not compoundable
         if (!wantToUpgrade(item, character.game.G)) continue; // Don't want to / can't compound
 
         let itemCompoundables = compoundables.get(item.name);

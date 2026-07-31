@@ -211,7 +211,8 @@ export function calculateOptimalUpgradePath(
   g: GData,
   targetLevel: number | undefined = undefined,
 ) {
-  const maxLevel = g.items[item.name].grades![3];
+  const maxLevel = g.items[item.name].grades?.at(-1);
+  if (maxLevel === undefined) return undefined; // Unknown max level
   if (targetLevel === undefined || targetLevel > maxLevel) targetLevel = maxLevel; // Limit to its max
   if ((item.level ?? 0) >= targetLevel) return undefined; // Already reached
 
@@ -363,7 +364,8 @@ export function calculateOptimalCompoundPath(
   g: GData,
   targetLevel: number | undefined = undefined,
 ) {
-  const maxLevel = g.items[item.name].grades![3];
+  const maxLevel = g.items[item.name].grades?.at(-1);
+  if (maxLevel === undefined) return undefined; // Unknown max level
   if (targetLevel === undefined || targetLevel > maxLevel) targetLevel = maxLevel; // Limit to its max
   if ((item.level ?? 0) >= targetLevel) return undefined; // Already reached
 
