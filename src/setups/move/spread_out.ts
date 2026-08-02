@@ -45,6 +45,12 @@ function getComparator(character: Character): Comparator<EntityMonster> {
       if (!aCanGiveCredit && bCanGiveCredit) return 1;
     }
 
+    // Prioritize monsters we can move to
+    const aCanMoveTo = character.canMoveTo(a);
+    const bCanMoveTo = character.canMoveTo(b);
+    if (!aCanMoveTo && bCanMoveTo) return 1;
+    if (aCanMoveTo && !bCanMoveTo) return -1;
+
     const aDistance = character.getDistanceTo(a);
     const bDistance = character.getDistanceTo(b);
 
@@ -85,6 +91,7 @@ function getComparator(character: Character): Comparator<EntityMonster> {
  * @param monster
  */
 export const setup = (character: Character, monsters: MonsterKey[] = ["goo"]) => {
+  if (monsters.length === 0) throw new Error("No monsters provided");
   // Cancel any existing move logic for this character
   if (active.has(character)) active.get(character)!.cancelled = true;
 
@@ -92,7 +99,7 @@ export const setup = (character: Character, monsters: MonsterKey[] = ["goo"]) =>
   active.set(character, activeData);
 
   const comparator = getComparator(character);
-  const moveLoop = () => {
+  const moveLoop = async () => {
     if (activeData.cancelled) return;
 
     try {
@@ -100,7 +107,12 @@ export const setup = (character: Character, monsters: MonsterKey[] = ["goo"]) =>
       if (!character.canMove()) return;
 
       const entity = getBestTarget(character, { comparator, monsters });
-      if (!entity) return;
+      if (!entity) {
+        return await character.smartMove(monsters[0] as MonsterKey);
+      }
+      if (!character.canMoveTo(entity)) {
+        return await character.smartMove(entity);
+      }
 
       // Move if far away
       if (character.getDistanceTo(entity) > character.range) {
@@ -109,10 +121,10 @@ export const setup = (character: Character, monsters: MonsterKey[] = ["goo"]) =>
     } catch (e) {
       if (e instanceof Error || typeof e === "string") logDebug(`moveLoop (${character.id}): ${e}`);
     } finally {
-      setTimeout(moveLoop, 100);
+      setTimeout(() => void moveLoop(), 100);
     }
   };
-  moveLoop();
+  void moveLoop();
 };
 
 /**
