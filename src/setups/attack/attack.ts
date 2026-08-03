@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import { Utilities, type Character, type Priest, type Ranger, type Rogue } from "alclient";
 import type { MonsterKey } from "typed-adventureland";
 import { wantToHeal } from "../../utilities/character.js";
@@ -14,6 +15,7 @@ export type PriestAttackOptions = AttackOptions & {
 
 type ActiveData = {
   cancelled: boolean;
+  monsters?: MonsterKey[];
 };
 const active = new Map<Character, ActiveData>();
 
@@ -23,10 +25,16 @@ const active = new Map<Character, ActiveData>();
  * @param monster
  */
 export const setup = (character: Character, options: AttackOptions = { monsters: ["goo"] }) => {
-  // Cancel any existing attack logic for this character
-  if (active.has(character)) active.get(character)!.cancelled = true;
+  const monsters = options.monsters ?? ["goo"];
 
-  const activeData: ActiveData = { cancelled: false };
+  // Cancel any existing attack logic for this character
+  if (active.has(character)) {
+    const current = active.get(character)!;
+    if (!current.cancelled && isDeepStrictEqual(current.monsters, monsters)) return;
+    current.cancelled = true;
+  }
+
+  const activeData: ActiveData = { cancelled: false, monsters };
   active.set(character, activeData);
 
   const attackLoop = async () => {

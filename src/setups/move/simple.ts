@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import type { Character } from "alclient";
 import type { MonsterKey } from "typed-adventureland";
 import { logDebug } from "../../utilities/logging.js";
@@ -5,6 +6,7 @@ import { getBestTarget } from "../../utilities/monster.js";
 
 type ActiveData = {
   cancelled: boolean;
+  monsters?: MonsterKey[];
 };
 const active = new Map<Character, ActiveData>();
 
@@ -16,9 +18,13 @@ const active = new Map<Character, ActiveData>();
 export const setup = (character: Character, monsters: MonsterKey[] = ["goo"]) => {
   // Cancel any existing move logic for this character
   if (monsters.length === 0) throw new Error("No monsters provided");
-  if (active.has(character)) active.get(character)!.cancelled = true;
+  if (active.has(character)) {
+    const current = active.get(character)!;
+    if (!current.cancelled && isDeepStrictEqual(current.monsters, monsters)) return;
+    current.cancelled = true;
+  }
 
-  const activeData: ActiveData = { cancelled: false };
+  const activeData: ActiveData = { cancelled: false, monsters };
   active.set(character, activeData);
 
   const moveLoop = async () => {

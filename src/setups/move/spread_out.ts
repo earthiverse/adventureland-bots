@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import type { Character, EntityMonster } from "alclient";
 import type { Comparator } from "tinyqueue";
 import type { MonsterKey } from "typed-adventureland";
@@ -6,6 +7,7 @@ import { getBestTarget, IGNORED_MONSTERS } from "../../utilities/monster.js";
 
 type ActiveData = {
   cancelled: boolean;
+  monsters?: MonsterKey[];
 };
 const active = new Map<Character, ActiveData>();
 
@@ -93,9 +95,13 @@ function getComparator(character: Character): Comparator<EntityMonster> {
 export const setup = (character: Character, monsters: MonsterKey[] = ["goo"]) => {
   if (monsters.length === 0) throw new Error("No monsters provided");
   // Cancel any existing move logic for this character
-  if (active.has(character)) active.get(character)!.cancelled = true;
+  if (active.has(character)) {
+    const current = active.get(character)!;
+    if (!current.cancelled && isDeepStrictEqual(current.monsters, monsters)) return;
+    current.cancelled = true;
+  }
 
-  const activeData: ActiveData = { cancelled: false };
+  const activeData: ActiveData = { cancelled: false, monsters };
   active.set(character, activeData);
 
   const comparator = getComparator(character);
