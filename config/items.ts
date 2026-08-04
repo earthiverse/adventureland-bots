@@ -219,8 +219,16 @@ const itemsConfig: ItemsConfig = {
       upgradeSpecial: true,
     },
   },
+  monstertoken: {
+    list: {
+      listPrice: 500_000,
+    },
+  },
   mpot1: {
     ...HOLD_FULL_STACK,
+  },
+  mushroomstaff: {
+    ...SELL_TO_NPC,
   },
   offeringp: {
     buy: {
@@ -266,6 +274,9 @@ const itemsConfig: ItemsConfig = {
   slimestaff: {
     ...SELL_TO_NPC,
   },
+  stinger: {
+    ...SELL_TO_NPC,
+  },
   vitring: {
     // We craft from level 2, higher level vitrings are not needed
     buy: {
@@ -279,6 +290,9 @@ const itemsConfig: ItemsConfig = {
       upgradeUntilLevel: 2,
       upgradeSpecial: true,
     },
+  },
+  vitscroll: {
+    ...SELL_TO_NPC,
   },
   wattire: {
     ...UPGRADE_ONE_SLOT,
