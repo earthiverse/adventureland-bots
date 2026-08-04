@@ -10,14 +10,12 @@ export function wantToHeal(
   options: {
     healStrangers?: boolean;
     healIfHpRatioBelow?: number;
-  } = {
-    healStrangers,
-    healIfHpRatioBelow,
-  },
+    ignoreDistance?: boolean;
+  } = {},
 ): boolean {
   if (target.rip) return false; // Target is already dead
 
-  if (options.healStrangers !== true) {
+  if ((options.healStrangers ?? healStrangers) !== true) {
     let stranger = true;
     if (
       character.party === target.party || // Same party
@@ -27,9 +25,9 @@ export function wantToHeal(
     if (stranger) return false;
   }
 
-  if (character.getDistanceTo(target) > character.range) return false; // TODO: We might want to heal, but we need to move?
+  if (options.ignoreDistance !== true && character.getDistanceTo(target) > character.range) return false;
 
-  if (target.hp >= target.max_hp * healIfHpRatioBelow) return false;
+  if (target.hp >= target.max_hp * (options.healIfHpRatioBelow ?? healIfHpRatioBelow)) return false;
 
   return true;
 }

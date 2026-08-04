@@ -1,3 +1,4 @@
+import type { Priest } from "alclient";
 import { Game, type Character } from "alclient";
 import type { MapKey, MonsterKey } from "typed-adventureland";
 import config from "../config/config.js";
@@ -7,6 +8,7 @@ import { setup as lootSetup } from "./setups/loot/simple.js";
 import { setup as merchantSetup } from "./setups/merchant/merchant.js";
 import { setup as avoidStackingSetup } from "./setups/move/avoid_stacking.js";
 import { setup as moveSetup, teardown as moveTeardown } from "./setups/move/spread_out.js";
+import { setup as partyHealSetup } from "./setups/priest/partyheal.js";
 import { setup as regenSetup } from "./setups/regen/simple.js";
 
 // Plugins
@@ -24,11 +26,15 @@ import { logDebug, logInformational } from "./utilities/logging.js";
 const { server, email, password } = config.credentials;
 const { useBasement, useUnderground } = config.banking;
 const MONSTERS: MonsterKey[] = [
-  "armadillo",
+// Priority
   "bee",
+  // Others
+  "armadillo",
+  "bat",
   "croc",
   "crab",
   "frog",
+"goldenbat",
   "goo",
   "minimush",
   "osnake",
@@ -134,6 +140,10 @@ for (const characterInfo of playerCharacters) {
       itemSetup(character);
       lootSetup(character);
       regenSetup(character);
+
+      if (character.ctype === "priest") {
+        partyHealSetup(character as Priest, characters);
+      }
       break;
   }
 
@@ -143,6 +153,14 @@ for (const characterInfo of playerCharacters) {
 
 const logicLoop = async () => {
   try {
+// Respawn TODO: Move logic somewhere else
+    for (const character of characters) {
+      if (character.rip) {
+        logInformational(`${character.id} is dead, respawning`);
+        await character.respawn();
+      }
+    }
+
     // Build the list of monsters we're hunting for quests (prioritized by least time left)
     const activeQuests: { monster: MonsterKey; ms: number }[] = [];
     for (const character of characters) {
