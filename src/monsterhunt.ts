@@ -26,7 +26,7 @@ import { logDebug, logInformational } from "./utilities/logging.js";
 const { server, email, password } = config.credentials;
 const { useBasement, useUnderground } = config.banking;
 const MONSTERS: MonsterKey[] = [
-// Priority
+  // Priority
   "bee",
   // Others
   "armadillo",
@@ -34,7 +34,7 @@ const MONSTERS: MonsterKey[] = [
   "croc",
   "crab",
   "frog",
-"goldenbat",
+  "goldenbat",
   "goo",
   "minimush",
   "osnake",
@@ -153,7 +153,7 @@ for (const characterInfo of playerCharacters) {
 
 const logicLoop = async () => {
   try {
-// Respawn TODO: Move logic somewhere else
+    // Respawn TODO: Move logic somewhere else
     for (const character of characters) {
       if (character.rip) {
         logInformational(`${character.id} is dead, respawning`);

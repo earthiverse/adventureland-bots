@@ -112,19 +112,22 @@ export const setup = (character: Character) => {
       const missingMp = character.max_mp - character.mp;
       if (missingHp <= 0 && missingMp <= 0) return; // We are full
 
-      const bestActions = new TinyQueue<ItemKey | SkillKey>(
-        [
-          ...(character.canUse("use_mp")
-            ? ([
-                "regen_hp",
-                "regen_mp",
-                ...REGEN_ITEMS.filter((name) => character.items.some((item) => item?.name === name)),
-              ] as (SkillKey | ItemKey)[])
-            : []),
-          ...(character.ctype === "paladin" && character.canUse("selfheal") ? (["selfheal"] as SkillKey[]) : []),
-        ],
-        comparator,
-      );
+      const actions: (ItemKey | SkillKey)[] = [];
+      if (character.canUse("use_mp")) {
+        actions.push("regen_hp", "regen_mp");
+        if (character.c.town === undefined) {
+          for (const name of REGEN_ITEMS) {
+            if (character.items.some((item) => item?.name === name)) {
+              actions.push(name);
+            }
+          }
+        }
+      }
+      if (character.ctype === "paladin" && character.canUse("selfheal")) {
+        actions.push("selfheal");
+      }
+
+      const bestActions = new TinyQueue<ItemKey | SkillKey>(actions, comparator);
 
       const bestAction = bestActions.pop();
       if (bestAction === undefined) {
