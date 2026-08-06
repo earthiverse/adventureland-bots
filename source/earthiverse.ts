@@ -73,12 +73,15 @@ import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
 import { DestroyStrategy, MerchantDestroyStrategy } from "./strategy_pattern/strategies/destroy.js"
-import { GuiStrategy } from "./strategy_pattern/strategies/gui.js"
 import { HomeServerStrategy } from "./strategy_pattern/strategies/home_server.js"
 import { ItemStrategy } from "./strategy_pattern/strategies/item.js"
 import { GiveRogueSpeedStrategy } from "./strategy_pattern/strategies/rspeed.js"
 import { TrackUpgradeStrategy } from "./strategy_pattern/strategies/statistics.js"
 import { TemporalSurgeBossesStrategy } from "./strategy_pattern/strategies/temporal.js"
+
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("Unhandled promise rejection:", reason)
+})
 
 await Promise.all([AL.Game.loginJSONFile("../credentials.json", true), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true, remove_abtesting: true, remove_test: true })
@@ -139,7 +142,6 @@ const PUBLIC_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const ALL_CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 const SETTINGS_CACHE: Record<string, PublicSettings> = {}
 
-const guiStrategy = new GuiStrategy({ port: 8080 })
 const baseStrategy = new BaseStrategy(ALL_CONTEXTS)
 const privateBuyStrategy = new BuyStrategy({
     contexts: PRIVATE_CONTEXTS,
@@ -813,7 +815,6 @@ contextsLogic(PUBLIC_CONTEXTS, publicSetups)
 // Shared setup
 async function startShared(context: Strategist<PingCompensatedCharacter>, privateContext = false) {
     context.applyStrategy(debugStrategy)
-    context.applyStrategy(guiStrategy)
     context.applyStrategy(partyAcceptStrategy)
     if (context.bot.id !== PARTY_LEADER) {
         context.applyStrategy(partyRequestStrategy)
@@ -900,7 +901,6 @@ const startMerchantContext = async () => {
         },
     })
     CONTEXT.applyStrategy(adminCommandStrategy)
-    CONTEXT.applyStrategy(guiStrategy)
     CONTEXT.applyStrategy(privateSellStrategy)
     CONTEXT.applyStrategy(privateItemStrategy)
     CONTEXT.applyStrategy(merchantDestroyStrategy)
@@ -1208,7 +1208,6 @@ const startPublicContext = async (
                 }
             }
             startMerchant(context as Strategist<Merchant>, PUBLIC_CONTEXTS, merchantOptions)
-            context.applyStrategy(guiStrategy)
             break
         }
         case "paladin": {
