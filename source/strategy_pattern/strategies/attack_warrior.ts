@@ -153,6 +153,7 @@ export class WarriorAttackStrategy extends BaseAttackStrategy<Warrior> {
             !(bot.isEquipped("bataxe") || bot.isEquipped("scythe") || bot.hasItem(["bataxe", "scythe"]))
         )
             return // We don't have a cleave item
+        if (((bot.nextSkill.get("attack")?.getTime() ?? 0) - Date.now()) < 360) return // Don't cleave if attack is almost (or is) ready (360 is the equip penalty in ms)
 
         if (bot.isPVP()) {
             const nearby = bot.getPlayers({
