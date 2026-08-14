@@ -1,9 +1,9 @@
-import { isDeepStrictEqual } from "node:util";
 import type { Character, EntityMonster } from "alclient";
+import { isDeepStrictEqual } from "node:util";
 import type { Comparator } from "tinyqueue";
 import type { MonsterKey } from "typed-adventureland";
 import { logDebug } from "../../utilities/logging.js";
-import { getBestTarget, IGNORED_MONSTERS } from "../../utilities/monster.js";
+import { canGiveCredit, getBestTarget, IGNORED_MONSTERS } from "../../utilities/monster.js";
 
 type ActiveData = {
   cancelled: boolean;
@@ -25,27 +25,11 @@ function getComparator(character: Character): Comparator<EntityMonster> {
     if (aTargetingUs && !bTargetingUs) return -1;
     if (bTargetingUs && !aTargetingUs) return 1;
 
-    const nearbyPartyMembers = [];
-    if (character.party !== undefined) {
-      for (const nearbyCharacter of character.characters.values()) {
-        if (nearbyCharacter.party !== character.party) continue; // Different party
-        nearbyPartyMembers.push(nearbyCharacter);
-      }
-    }
-
     // Prioritize targets that we can get credit for
-    if (character.party !== undefined) {
-      const aCanGiveCredit =
-        a.target === undefined ||
-        a.target === character.id ||
-        nearbyPartyMembers.some((partyMember) => partyMember.id === a.target);
-      const bCanGiveCredit =
-        b.target === undefined ||
-        b.target === character.id ||
-        nearbyPartyMembers.some((partyMember) => partyMember.id === b.target);
-      if (aCanGiveCredit && !bCanGiveCredit) return -1;
-      if (!aCanGiveCredit && bCanGiveCredit) return 1;
-    }
+    const aCanGiveCredit = canGiveCredit(character, a);
+    const bCanGiveCredit = canGiveCredit(character, b);
+    if (aCanGiveCredit && !bCanGiveCredit) return -1;
+    if (!aCanGiveCredit && bCanGiveCredit) return 1;
 
     // Prioritize monsters we can move to
     const aCanMoveTo = character.canMoveTo(a);
@@ -55,6 +39,14 @@ function getComparator(character: Character): Comparator<EntityMonster> {
 
     const aDistance = character.getDistanceTo(a);
     const bDistance = character.getDistanceTo(b);
+
+    const nearbyPartyMembers = [];
+    if (character.party !== undefined) {
+      for (const nearbyCharacter of character.characters.values()) {
+        if (nearbyCharacter.party !== character.party) continue; // Different party
+        nearbyPartyMembers.push(nearbyCharacter);
+      }
+    }
 
     // Prioritize monsters further away from party members
     let minDistanceToA = aDistance;

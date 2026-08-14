@@ -74,6 +74,7 @@ function isBestLooter(character: Character, chest: ServerToClient_drop) {
   let bestLooters: Character[] = [];
 
   for (const looter of active.keys()) {
+    if (looter.socket.disconnected) continue; // Not connected
     const distanceToChest = character.getDistanceTo({ map: chest.map, in: character.in, x: chest.x, y: chest.y });
     const goldM = distanceToChest > 400 ? 1 : looter.goldm;
 

@@ -1,5 +1,5 @@
-import { isDeepStrictEqual } from "node:util";
 import { Utilities, type Character, type Priest, type Ranger, type Rogue } from "alclient";
+import { isDeepStrictEqual } from "node:util";
 import type { MonsterKey } from "typed-adventureland";
 import { wantToHeal } from "../../utilities/character.js";
 import { logDebug } from "../../utilities/logging.js";
@@ -114,6 +114,7 @@ const defaultAttackLogic = async (character: Character, options: AttackOptions) 
   if (!character.canUse("attack")) return; // Can't attack
 
   const entity = getBestTarget(character, {
+    attackSkill: "attack",
     monsters: options.monsters,
     withinRange: character.range,
   });
@@ -142,12 +143,12 @@ const priestAttackLogic = async (character: Priest, options: PriestAttackOptions
 };
 
 const rangerAttackLogic = async (character: Ranger, options: AttackOptions) => {
-  const entities = getBestTargets(character, {
+  let entities = getBestTargets(character, {
     monsters: options.monsters,
     withinRange: character.range,
     numTargets: 5,
+    attackSkill: "5shot",
   });
-  if (entities.length === 0) return; // No targets
 
   // 5shot
   if (entities.length >= 5 && character.canUse("5shot")) {
@@ -167,6 +168,13 @@ const rangerAttackLogic = async (character: Ranger, options: AttackOptions) => {
       if (e instanceof Error || typeof e === "string") logDebug(`fiveShot (${character.id}): ${e}`);
     });
   }
+
+  entities = getBestTargets(character, {
+    monsters: options.monsters,
+    withinRange: character.range,
+    numTargets: 3,
+    attackSkill: "3shot",
+  });
 
   // 3shot
   if (entities.length >= 3 && character.canUse("3shot")) {
@@ -188,7 +196,11 @@ const rangerAttackLogic = async (character: Ranger, options: AttackOptions) => {
   if (!character.canUse("attack")) return; // Can't attack
 
   // Normal attack
-  const entity = entities[0]!;
+  const entity = getBestTarget(character, {
+    monsters: options.monsters,
+    withinRange: character.range,
+  });
+  if (!entity) return; // No target
 
   // Ignore the monster if we're going to kill it
   const damageRange = Utilities.damageRange(character, entity, character.game.G);
