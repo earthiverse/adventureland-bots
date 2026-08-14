@@ -5,5 +5,8 @@
   },
   "party": {
     "leader": "AL_PARTY_LEADER"
+  },
+  "db": {
+    "path": "DB_PATH"
   }
 }

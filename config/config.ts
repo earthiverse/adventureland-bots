@@ -45,11 +45,15 @@ interface Config {
     maxPings: number;
     pingEveryMs: number;
   };
+  db: {
+    path: string;
+  };
 }
 
 const config: Config = {
   banking: nodeConfig.get("banking"),
   credentials: nodeConfig.get("credentials"),
+  db: nodeConfig.get("db"),
   logging: nodeConfig.get("logging"),
   party: nodeConfig.get("party"),
   pingCompensation: nodeConfig.get("pingCompensation"),

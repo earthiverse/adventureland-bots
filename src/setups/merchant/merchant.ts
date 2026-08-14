@@ -8,7 +8,7 @@ import {
   getEmptyBankSlotsCount,
   getItemDescription,
   getItemsToStoreInBank,
-getTotalItemCount,
+  getTotalItemCount,
   wantToDestroy,
   wantToDismantle,
   wantToExchange,
