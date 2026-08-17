@@ -8,15 +8,9 @@ import {
 } from "discord.js"
 import { Command } from "../command.js"
 import {
-    formatBankSideLines,
-    ownerBankPrefix,
-    type OwnerTrades,
-} from "./tradeBank.js"
-import {
     collectMerchantOffers,
     mergeMerchantOffers,
     sortMerchantOffers,
-    truncateDiscordContent,
 } from "./tradeMessage.js"
 import type { GLike } from "./itemIcon.js"
 import { buildTradeReply, collectDealRows, pickTradeIconOverlays, type OwnerTrades } from "./tradeReply.js"
