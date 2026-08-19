@@ -1,5 +1,7 @@
 import { Utilities, type Character } from "alclient";
+import { and, gte, like, lte, sql } from "drizzle-orm";
 import type {
+  CharacterEntitySlotsInfos,
   CompoundScrollKey,
   DismantleKey,
   GData,
@@ -7,6 +9,7 @@ import type {
   ItemKey,
   MapKey,
   OfferingKey,
+  TradeSlotType,
   UpgradeScrollKey,
 } from "typed-adventureland";
 import Config, { type ItemsConfig, type Price } from "../../config/items.js";
@@ -463,7 +466,12 @@ export function wantToHold(character: Character, item: ItemInfo, config = Config
  * @param item
  * @returns the amount we want to list the item for on our stand, or `false` if we don't want to list it
  */
-export function wantToList(item: ItemInfo, g: GData, config = Config): false | number {
+export function wantToList(
+  item: ItemInfo,
+  g: GData,
+  slots: Partial<CharacterEntitySlotsInfos> = {},
+  config = Config,
+): false | number {
   if (item.l !== undefined) return false; // We can't list locked items
 
   const itemConfig = config[item.name]?.list;
@@ -477,6 +485,23 @@ export function wantToList(item: ItemInfo, g: GData, config = Config): false | n
     wantToListForPrice = itemConfig.listPrice;
   }
   if (wantToListForPrice === undefined) return false; // We don't want to list this item at this level
+
+  if (slots !== undefined) {
+    // Check if there's a slot to list the trade
+    let hasEmptySlot = false;
+    for (const slotName in slots) {
+      if (!Object.hasOwn(slots, slotName)) continue;
+      if (!slotName.startsWith("trade")) continue; // Not a trade slot
+      const slot = slots[slotName as TradeSlotType];
+      if (slot === undefined) {
+        hasEmptySlot = true;
+        break;
+      }
+
+      // TODO: Check if the trade could be stacked in an existing slot
+    }
+    if (!hasEmptySlot) return false; // We don't have an empty slot to list the trade
+  }
 
   return calculatePrice(item, g, wantToListForPrice); // We want to list this item for this price
 }
@@ -663,14 +688,13 @@ export function getEmptyBankSlotsCount(map?: Extract<MapKey, "bank" | "bank_b" |
     packTo = 47;
   }
 
-  const allRows = db.select().from(dbItems).all();
+  const packNum = sql<number>`CAST(SUBSTR(${dbItems.key}, 6) AS INTEGER)`;
+  const allRows = db
+    .select()
+    .from(dbItems)
+    .where(and(like(dbItems.key, "items%"), gte(packNum, packFrom), lte(packNum, packTo)))
+    .all();
   for (const row of allRows) {
-    const pack = row.key;
-    if (!pack.startsWith("items")) continue;
-    if (map !== undefined) {
-      const bankPackNum = Number.parseInt(pack.substring(5, 7));
-      if (bankPackNum < packFrom || bankPackNum > packTo) continue; // Pack is not on this map
-    }
     for (const item of row.items) {
       if (item) continue; // Filled slot
       count += 1;

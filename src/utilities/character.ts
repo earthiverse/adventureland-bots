@@ -14,6 +14,7 @@ export function wantToHeal(
   } = {},
 ): boolean {
   if (target.rip) return false; // Target is already dead
+  if (typeof (target as EntityCharacter).npc === "string") return false; // Target is an NPC
 
   if ((options.healStrangers ?? healStrangers) !== true) {
     let stranger = true;

@@ -65,7 +65,7 @@ export const setup = (character: Character) => {
             continue;
           }
 
-          const listPrice = wantToList(item, character.game.G);
+          const listPrice = wantToList(item, character.game.G, character.slots);
           if (listPrice !== false) {
             // TODO: List
             continue;
@@ -144,6 +144,7 @@ export const setup = (character: Character) => {
         const item = character.items[index];
         if (!item) continue;
         if (!wantToExchange(item, character.esize, character.game.G)) continue;
+        if (!character.canExchange()) continue; // Too far away
 
         await character.exchange(index);
         log(`${character.id} exchanged ${getItemDescription(item)}`, EXCHANGE_LOG_LEVEL);

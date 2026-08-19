@@ -283,7 +283,10 @@ export function removeUncraftable(config: ItemsConfig, g: GData) {
             `Item ${needName} is needed to craft ${name}, but has a sell config that sells it at NPC price at level ${level}`,
           );
         }
-        if (typeof wantToList({ name: needName, level: level === 0 ? undefined : level }, g, config) === "number") {
+        if (
+          typeof wantToList({ name: needName, level: level === 0 ? undefined : level }, g, undefined, config) ===
+          "number"
+        ) {
           logError(`Item ${needName} is needed to craft ${name}, but has a list config at level ${level}.`);
         }
       }

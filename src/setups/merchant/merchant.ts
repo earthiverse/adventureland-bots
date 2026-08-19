@@ -159,7 +159,10 @@ async function doBanking(character: Character, options: MerchantOptions) {
 
       // Deposit items
       for (const itemPos of getItemsToStoreInBank(character)) {
-        if (getEmptyBankSlotsCount(map) === 0) break; // Bank is full, we can't do anything
+        if (getEmptyBankSlotsCount(map) === 0) {
+          // TODO: Check if we can stack it in the bank
+          break; // Bank is full, we can't do anything
+        }
         await character.depositItem(itemPos);
       }
     } catch (e) {
@@ -196,18 +199,22 @@ async function doBanking(character: Character, options: MerchantOptions) {
           wantToDismantle(item, character.esize, character.gold, character.game.G) ||
           wantToSell(item, character.game.G, "npc")
         ) {
+          logDebug(`Withdrawing ${getItemDescription(item)} to destroy, dismantle, or sell it`);
           await character.withdrawItem(pack, packSlot);
           continue;
         }
 
         if (wantToExchange(item, character.esize, character.game.G)) {
+          logDebug(`Withdrawing ${getItemDescription(item)} to exchange it`);
           await character.withdrawItem(pack, packSlot);
           if (character.esize <= 1) break; // No more space
           continue;
         }
 
-        const list = wantToList(item, character.game.G);
+        // TODO: Does this list all of our slots, or do we need to equip a trade stand?
+        const list = wantToList(item, character.game.G, character.slots);
         if (list !== false) {
+          logDebug(`Withdrawing ${getItemDescription(item)} to list it`);
           await character.withdrawItem(pack, packSlot);
           // TODO: List item
           continue;
@@ -215,6 +222,7 @@ async function doBanking(character: Character, options: MerchantOptions) {
 
         const recipient = wantToMail(item, character.gold);
         if (recipient !== false) {
+          logDebug(`Withdrawing ${getItemDescription(item)} to mail it`);
           await character.withdrawItem(pack, packSlot);
           // TODO: Mail item
           continue;
@@ -241,6 +249,7 @@ async function doGoldAndItemTransfer(character: Character, options: MerchantOpti
       other.gold >= options.enableGoldTransfer.whenGoldIsOverAmount
     ) {
       logDebug(`${character.id} is moving to ${other.id} to take gold`);
+      if (!(await moveUntilDestination(character, other))) continue;
       await character.smartMove(other); // TODO: Get within
       const amount = other.gold - options.enableGoldTransfer.amountToHold;
       if (amount > 0) {
@@ -253,16 +262,15 @@ async function doGoldAndItemTransfer(character: Character, options: MerchantOpti
       other.gold <= options.enableGoldTransfer.whenGoldIsUnderAmount && // They don't have enough gold
       character.gold >= options.enableGoldTransfer.amountToHold // We have enough gold
     ) {
-      if (await moveUntilDestination(character, other)) {
-        logDebug(`${character.id} is moving to ${other.id} to give gold`);
-        const amount = Math.min(
-          character.gold - options.enableGoldTransfer.amountToHold, // How much extra gold we have
-          options.enableGoldTransfer.amountToHold - other.gold, // How much gold they need
-        );
-        if (amount > 0) {
-          await character.sendGold(other.id, amount);
-          logNotice(`${character.id} sent ${amount} gold to ${other.id}`);
-        }
+      logDebug(`${character.id} is moving to ${other.id} to give gold`);
+      if (!(await moveUntilDestination(character, other))) continue;
+      const amount = Math.min(
+        character.gold - options.enableGoldTransfer.amountToHold, // How much extra gold we have
+        options.enableGoldTransfer.amountToHold - other.gold, // How much gold they need
+      );
+      if (amount > 0) {
+        await character.sendGold(other.id, amount);
+        logNotice(`${character.id} sent ${amount} gold to ${other.id}`);
       }
     }
 
@@ -273,15 +281,14 @@ async function doGoldAndItemTransfer(character: Character, options: MerchantOpti
         character.esize > 1 // We have space
       ) {
         logDebug(`${character.id} is moving to ${other.id} to take items`);
-        if (await moveUntilDestination(character, other)) {
-          for (let i = 0; i < other.items.length; i++) {
-            const item = other.items[i];
-            if (!item) continue; // No item
-            if (wantToHold(other, item)) continue;
-            if (character.esize <= 1) break; // We have no more space
-            await other.sendItem(character.id, i, item.q ?? 1);
-            logNotice(`${character.id} took ${getItemDescription(item)} from ${other.id}`);
-          }
+        if (!(await moveUntilDestination(character, other))) continue;
+        for (let i = 0; i < other.items.length; i++) {
+          const item = other.items[i];
+          if (!item) continue; // No item
+          if (wantToHold(other, item)) continue;
+          if (character.esize <= 1) break; // We have no more space
+          await other.sendItem(character.id, i, item.q ?? 1);
+          logNotice(`${character.id} took ${getItemDescription(item)} from ${other.id}`);
         }
       }
 
@@ -293,7 +300,7 @@ async function doGoldAndItemTransfer(character: Character, options: MerchantOpti
           const numToReplenish = wantToReplenish(other, item);
           if (numToReplenish === false || numToReplenish === 0) continue; // Don't want to replenish
 
-          await moveUntilDestination(character, other);
+          if (!(await moveUntilDestination(character, other))) continue;
           item = character.items[i];
           if (!item || wantToReplenish(other, item) === 0) continue; // No item anymore, or they don't need it anymore
           const numToSend = Math.min(item.q ?? 1, numToReplenish);
@@ -301,6 +308,21 @@ async function doGoldAndItemTransfer(character: Character, options: MerchantOpti
           logNotice(`${character.id} sent ${numToSend} ${getItemDescription(item)} to ${other.id}`);
         }
       }
+
+      // TODO: If we have space, and they have items we want to sell to NPC, take them
     }
   }
+}
+
+export async function doFishing(character: Character, _options?: MerchantOptions) {
+  if (character.c.fishing) return; // Already fishing
+  if (!character.isOnCooldown("fishing")) return; // Can't fish
+  if (!character.hasItem({ name: "rod" }) && character.slots.mainhand?.name !== "rod") {
+    if (getTotalItemCount("rod")) {
+      // TODO: Get rod
+    }
+    // TODO: Redo doFishing
+    return;
+  }
+  await Promise.resolve();
 }

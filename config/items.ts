@@ -201,6 +201,9 @@ const itemsConfig: ItemsConfig = {
       replenish: 10,
     },
   },
+  gem0: {
+    ...EXCHANGE,
+  },
   hpamulet: {
     ...SELL_TO_NPC,
   },
@@ -277,19 +280,23 @@ const itemsConfig: ItemsConfig = {
   stinger: {
     ...SELL_TO_NPC,
   },
+  vitearring: {
+    ...SELL_TO_NPC,
+  },
   vitring: {
-    // We craft from level 2, higher level vitrings are not needed
-    buy: {
-      buyPrice: {
-        0: "ponty",
-        1: "ponty",
-        2: "ponty",
-      },
-    },
-    upgrade: {
-      upgradeUntilLevel: 2,
-      upgradeSpecial: true,
-    },
+    // // We craft from level 2, higher level vitrings are not needed
+    // buy: {
+    //   buyPrice: {
+    //     0: "ponty",
+    //     1: "ponty",
+    //     2: "ponty",
+    //   },
+    // },
+    // upgrade: {
+    //   upgradeUntilLevel: 2,
+    //   upgradeSpecial: true,
+    // },
+    ...SELL_TO_NPC,
   },
   vitscroll: {
     ...SELL_TO_NPC,
@@ -302,6 +309,9 @@ const itemsConfig: ItemsConfig = {
   },
   wcap: {
     ...UPGRADE_ONE_SLOT,
+  },
+  weaponbox: {
+    ...EXCHANGE,
   },
   wgloves: {
     ...UPGRADE_ONE_SLOT,
