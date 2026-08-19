@@ -1,3 +1,4 @@
+import type { Priest } from "alclient";
 import { Game, type Character } from "alclient";
 import type { MapKey, MonsterKey, ServerIdentifier, ServerRegion } from "typed-adventureland";
 import config from "../config/config.js";
@@ -5,6 +6,7 @@ import { setup as itemSetup } from "./setups/item/config.js";
 import { setup as lootSetup } from "./setups/loot/simple.js";
 import { setup as merchantSetup } from "./setups/merchant/merchant.js";
 import { setup as avoidStackingSetup } from "./setups/move/avoid_stacking.js";
+import { setup as partyHealSetup } from "./setups/priest/partyheal.js";
 import { setup as regenSetup } from "./setups/regen/simple.js";
 import { setup as simpleSetup } from "./setups/simple.js";
 
@@ -22,7 +24,7 @@ import { logDebug, logInformational } from "./utilities/logging.js";
 // Config
 const { server, email, password } = config.credentials;
 const { useBasement, useUnderground } = config.banking;
-const MONSTERS: MonsterKey[] = ["croc"];
+const MONSTERS: MonsterKey[] = ["tortoise", "phoenix"];
 const SERVER_REGION: ServerRegion = "ASIA";
 const SERVER_IDENTIFIER: ServerIdentifier = "I";
 
@@ -119,6 +121,10 @@ for (const characterInfo of playerCharacters) {
       );
       await character.start(SERVER_REGION, SERVER_IDENTIFIER);
       simpleSetup(character, MONSTERS);
+
+      if (character.ctype === "priest") {
+        partyHealSetup(character as Priest, characters);
+      }
       break;
   }
 

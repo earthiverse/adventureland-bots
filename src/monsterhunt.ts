@@ -1,13 +1,15 @@
 import type { Priest } from "alclient";
 import { Game, type Character } from "alclient";
-import type { MapKey, MonsterKey } from "typed-adventureland";
+import type { MapKey, MonsterKey, ServerIdentifier, ServerRegion } from "typed-adventureland";
 import config from "../config/config.js";
 import { setup as attackSetup, teardown as attackTeardown } from "./setups/attack/attack.js";
 import { setup as itemSetup } from "./setups/item/config.js";
 import { setup as lootSetup } from "./setups/loot/simple.js";
 import { setup as merchantSetup } from "./setups/merchant/merchant.js";
 import { setup as avoidStackingSetup } from "./setups/move/avoid_stacking.js";
-import { setup as moveSetup, teardown as moveTeardown } from "./setups/move/spread_out.js";
+import { setup as kiteMoveSetup, teardown as kiteMoveTeardown } from "./setups/move/kite.js";
+import { setup as simpleMoveSetup, teardown as simpleMoveTeardown } from "./setups/move/simple.js";
+import { setup as spreadOutMoveSetup, teardown as spreadOutMoveTeardown } from "./setups/move/spread_out.js";
 import { setup as partyHealSetup } from "./setups/priest/partyheal.js";
 import { setup as regenSetup } from "./setups/regen/simple.js";
 
@@ -29,15 +31,23 @@ const MONSTERS: MonsterKey[] = [
   // Priority
   "bee",
   // Others
+  "arcticbee",
   "armadillo",
   "bat",
+  "bbpompom",
+  "crabx",
   "croc",
   "crab",
   "frog",
+  "ghost",
   "goldenbat",
   "goo",
+  "greenjr",
+  "iceroamer",
+  "jr",
   "minimush",
   "osnake",
+  "phoenix",
   "poisio",
   "porcupine",
   "snake",
@@ -48,6 +58,63 @@ const MONSTERS: MonsterKey[] = [
   "squigtoad",
   "tortoise",
 ];
+const SERVER_REGION: ServerRegion = "US";
+const SERVER_IDENTIFIER: ServerIdentifier = "PVP";
+
+type MoveStrategy = "simple" | "spread_out" | "kite";
+
+interface MonsterStrategy {
+  move: MoveStrategy;
+  attackMonsters?: MonsterKey[];
+  moveMonsters?: MonsterKey[];
+}
+
+const MONSTER_STRATEGIES: Partial<Record<MonsterKey, MonsterStrategy>> = {
+  bbpompom: {
+    move: "simple",
+    attackMonsters: ["bbpompom"],
+  },
+  iceroamer: {
+    move: "simple",
+    attackMonsters: ["iceroamer"],
+  },
+};
+
+const DEFAULT_STRATEGY: MonsterStrategy = {
+  move: "spread_out",
+  attackMonsters: MONSTERS,
+};
+
+const teardownAllStrategies = (character: Character) => {
+  simpleMoveTeardown(character);
+  spreadOutMoveTeardown(character);
+  kiteMoveTeardown(character);
+  attackTeardown(character);
+};
+
+const applyMonsterStrategy = (character: Character, targetMonster: MonsterKey) => {
+  const strategy = MONSTER_STRATEGIES[targetMonster] ?? DEFAULT_STRATEGY;
+  const moveMonsters = strategy.moveMonsters ?? [targetMonster];
+  const attackMonsters = strategy.attackMonsters ?? [targetMonster];
+
+  if (strategy.move !== "simple") simpleMoveTeardown(character);
+  if (strategy.move !== "spread_out") spreadOutMoveTeardown(character);
+  if (strategy.move !== "kite") kiteMoveTeardown(character);
+
+  attackSetup(character, { monsters: attackMonsters });
+
+  switch (strategy.move) {
+    case "simple":
+      simpleMoveSetup(character, moveMonsters);
+      break;
+    case "spread_out":
+      spreadOutMoveSetup(character, moveMonsters);
+      break;
+    case "kite":
+      kiteMoveSetup(character, moveMonsters);
+      break;
+  }
+};
 
 logDebug("Getting G from Cache...");
 const g = getGFromCache();
@@ -106,8 +173,10 @@ for (const characterInfo of playerCharacters) {
       if (merchantStarted) continue; // Already have a merchant
       logDebug(`Creating ${characterInfo.name} (merchant)`);
       character = player.createCharacter(characterInfo.name);
-      logInformational(`Starting ${characterInfo.name} (${characterInfo.type}) on ASIA I`);
-      await character.start("ASIA", "I");
+      logInformational(
+        `Starting ${characterInfo.name} (${characterInfo.type}) on ${SERVER_REGION} ${SERVER_IDENTIFIER}`,
+      );
+      await character.start(SERVER_REGION, SERVER_IDENTIFIER);
       merchantSetup(character, {
         characters,
         defaultPosition: { map: "main", in: "main", x: -100, y: -100 },
@@ -135,8 +204,10 @@ for (const characterInfo of playerCharacters) {
       if (characters.length >= (merchantStarted ? 4 : 3)) continue; // Already started 3 characters
       logDebug(`Creating ${characterInfo.name} (${characterInfo.type})`);
       character = player.createCharacter(characterInfo.name);
-      logInformational(`Starting ${characterInfo.name} (${characterInfo.type}) on ASIA I`);
-      await character.start("ASIA", "I");
+      logInformational(
+        `Starting ${characterInfo.name} (${characterInfo.type}) on ${SERVER_REGION} ${SERVER_IDENTIFIER}`,
+      );
+      await character.start(SERVER_REGION, SERVER_IDENTIFIER);
       itemSetup(character);
       lootSetup(character);
       regenSetup(character);
@@ -189,8 +260,7 @@ const logicLoop = async () => {
       const finishedHunt = !needNewHunt && character.s.monsterhunt!.c <= 0;
       if (needNewHunt || finishedHunt) {
         logInformational(`${character.id}: getting new monster hunt quest`);
-        moveTeardown(character);
-        attackTeardown(character);
+        teardownAllStrategies(character);
         await character.smartMove("monsterhunter");
         if (finishedHunt && character.s.monsterhunt) {
           // TODO: Add time it took
@@ -201,8 +271,7 @@ const logicLoop = async () => {
         logInformational(`${character.id}: got new monster hunt quest for ${quest.c} ${quest.id}`);
       }
 
-      attackSetup(character, { monsters: MONSTERS });
-      moveSetup(character, [monsters[0]!]);
+      applyMonsterStrategy(character, monsters[0]!);
     }
   } catch (e) {
     if (e instanceof Error || typeof e === "string") logDebug(`logicLoop: ${e}`);
