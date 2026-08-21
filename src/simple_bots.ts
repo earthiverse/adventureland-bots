@@ -21,6 +21,10 @@ import "./plugins/party.js";
 import "./plugins/ping_compensation.js";
 import { logDebug, logInformational } from "./utilities/logging.js";
 
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled promise rejection:", reason);
+});
+
 // Config
 const { server, email, password } = config.credentials;
 const { useBasement, useUnderground } = config.banking;
