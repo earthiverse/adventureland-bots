@@ -219,8 +219,9 @@ const loop = () => {
     /** If we haven't seen the monster since this timestamp, it's stale */
     const staleCutoff = new Date(Date.now() - STALE_MS);
 
+    // Don't delete stale characters, only monsters
+
     db.delete(dbMonsters).where(lt(dbMonsters.lastSeen, staleCutoff)).run();
-    db.delete(dbCharacters).where(lt(dbCharacters.lastSeen, staleCutoff)).run();
     db.delete(dbSpawns).where(lt(dbSpawns.nextSpawn, staleCutoff)).run();
   } catch (e) {
     if (e instanceof Error || typeof e === "string") logWarning(e);

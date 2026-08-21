@@ -274,6 +274,9 @@ const itemsConfig: ItemsConfig = {
       replenish: 10,
     },
   },
+  shield: {
+    ...SELL_TO_NPC,
+  },
   slimestaff: {
     ...SELL_TO_NPC,
   },

@@ -79,7 +79,8 @@ export const setup = (character: Character, options: MerchantOptions) => {
       if (character.getDistanceTo(options.defaultPosition) > 1)
         await character.smartMove({ map: "main", in: "main", x: -100, y: -100 });
     } catch (e) {
-      if (e instanceof Error || typeof e === "string") logDebug(`moveLoop (${character.id}): ${e}`);
+      if (e instanceof Error || typeof e === "string") logDebug(`moveLoop (${character.id}):`);
+      if (e instanceof Error && e.stack !== undefined) logDebug(e.stack);
     } finally {
       setTimeout(() => void moveLoop(), 100);
     }
@@ -288,7 +289,9 @@ async function doGoldAndItemTransfer(character: Character, options: MerchantOpti
           if (wantToHold(other, item)) continue;
           if (character.esize <= 1) break; // We have no more space
           await other.sendItem(character.id, i, item.q ?? 1);
-          logNotice(`${character.id} took ${getItemDescription(item)} from ${other.id}`);
+          logNotice(
+            `${character.id} took ${getItemDescription(item)} from ${other.id} (because their inventory is full)`,
+          );
         }
       }
 
@@ -300,16 +303,29 @@ async function doGoldAndItemTransfer(character: Character, options: MerchantOpti
           const numToReplenish = wantToReplenish(other, item);
           if (numToReplenish === false || numToReplenish === 0) continue; // Don't want to replenish
 
+          logDebug(
+            `${character.id} is moving to ${other.id} to deliver ${numToReplenish}x ${getItemDescription(item)}`,
+          );
           if (!(await moveUntilDestination(character, other))) continue;
           item = character.items[i];
           if (!item || wantToReplenish(other, item) === 0) continue; // No item anymore, or they don't need it anymore
           const numToSend = Math.min(item.q ?? 1, numToReplenish);
           await character.sendItem(other.id, i, numToSend);
-          logNotice(`${character.id} sent ${numToSend} ${getItemDescription(item)} to ${other.id}`);
+          logNotice(`${character.id} sent ${numToSend} ${getItemDescription(item)} to ${other.id} (replenishing)`);
         }
       }
 
-      // TODO: If we have space, and they have items we want to sell to NPC, take them
+      // Take items we want to sell to NPC if we are near and have space
+      if (character.getDistanceTo(other) < 400 && character.esize > 1) {
+        for (let i = 0; i < other.items.length; i++) {
+          const item = other.items[i];
+          if (!item) continue; // No item
+          if (!wantToSell(item, character.game.G, "npc")) continue;
+          if (character.esize <= 1) break; // We have no more space
+          await other.sendItem(character.id, i, item.q ?? 1);
+          logNotice(`${character.id} took ${getItemDescription(item)} from ${other.id} (to sell to NPC)`);
+        }
+      }
     }
   }
 }

@@ -1,7 +1,7 @@
 import { EventBus } from "alclient";
 import type { GData, TradeItemInfo } from "typed-adventureland";
 import Config from "../../config/items.js";
-import { adjustItemConfig, getItemDescription } from "../utilities/items.js";
+import { adjustItemConfig, calculatePrice, getItemDescription } from "../utilities/items.js";
 import { getScrollAndOfferingPricesFromItemsConfig } from "../utilities/items/upgrade.js";
 import { logDebug, logError, logInformational } from "../utilities/logging.js";
 
@@ -39,6 +39,8 @@ EventBus.on("g_updated", (_game, g) => adjust(g));
 // Adjust our item config based on what prices players are selling/buying for
 EventBus.on("entities_updated", (_observer, _monsters, characters) => {
   for (const character of characters) {
+    if (typeof character.npc === "string") continue; // NPC
+
     for (const key in character.slots) {
       if (!key.startsWith("trade")) continue;
       const item = character.slots[key as keyof typeof character.slots] as TradeItemInfo;
@@ -49,49 +51,51 @@ EventBus.on("entities_updated", (_observer, _monsters, characters) => {
       if (configItem === undefined) continue; // We don't have this item in our config
 
       if (configItem.sell !== undefined && item.b === true) {
-        // TODO: Check for unrealistic prices (too high, they would never have the money)
         // They are buying, and we are selling, check if we can increase our prices
 
+        // TODO: Check for unrealistic prices (too high, they would never have the money)
         // TODO: Consider adding a blacklist of players we won't deal with
-        if (
-          typeof configItem.sell.sellPrice === "number" &&
-          item.level === 0 &&
-          item.price > configItem.sell.sellPrice
-        ) {
-          logInformational(
-            `${character.id} is buying ${getItemDescription(item)} at ${item.price}. Increasing our sell price from ${configItem.sell.sellPrice}.`,
-          );
-          configItem.sell.sellPrice = item.price;
-        }
-        if (
+
+        if (typeof configItem.sell.sellPrice !== "object" && (item.level ?? 0) === 0) {
+          const ourSellPrice = calculatePrice(item, character.game.G, configItem.sell.sellPrice);
+          if (item.price > ourSellPrice) {
+            logInformational(
+              `${character.id} is buying ${getItemDescription(item)} at ${item.price}. Increasing our sell price from ${configItem.sell.sellPrice}.`,
+            );
+            configItem.sell.sellPrice = item.price;
+          }
+        } else if (
           typeof configItem.sell.sellPrice === "object" &&
-          typeof configItem.sell.sellPrice[item.level] === "number" &&
-          item.price > (configItem.sell.sellPrice[item.level] as number)
+          configItem.sell.sellPrice[item.level ?? 0] !== undefined
         ) {
-          logInformational(
-            `${character.id} is buying ${getItemDescription(item)} at ${item.price}. Increasing our sell price from ${configItem.sell.sellPrice[item.level]}.`,
-          );
-          configItem.sell.sellPrice[item.level] = item.price;
+          const ourSellPrice = calculatePrice(item, character.game.G, configItem.sell.sellPrice[item.level]!);
+          if (item.price > ourSellPrice) {
+            logInformational(
+              `${character.id} is buying ${getItemDescription(item)} at ${item.price}. Increasing our sell price from ${configItem.sell.sellPrice[item.level]}.`,
+            );
+            configItem.sell.sellPrice[item.level] = item.price;
+          }
         }
       }
 
       if (configItem.buy !== undefined && item.b !== true) {
         // They are selling, and we are buying, check if we can lower our prices
-        if (typeof configItem.buy.buyPrice === "number" && item.level === 0 && item.price < configItem.buy.buyPrice) {
-          logInformational(
-            `${character.id} is selling ${getItemDescription(item)} at ${item.price}. Decreasing our buy price from ${configItem.buy.buyPrice}.`,
-          );
-          configItem.buy.buyPrice = item.price;
-        }
-        if (
-          typeof configItem.buy.buyPrice === "object" &&
-          typeof configItem.buy.buyPrice[item.level] === "number" &&
-          item.price < (configItem.buy.buyPrice[item.level] as number)
-        ) {
-          logInformational(
-            `${character.id} is selling ${getItemDescription(item)} at ${item.price}. Decreasing our buy price from ${configItem.buy.buyPrice[item.level]}.`,
-          );
-          configItem.buy.buyPrice[item.level] = item.price;
+        if (typeof configItem.buy.buyPrice !== "object" && item.level === 0) {
+          const ourBuyPrice = calculatePrice(item, character.game.G, configItem.buy.buyPrice);
+          if (item.price < ourBuyPrice) {
+            logInformational(
+              `${character.id} is selling ${getItemDescription(item)} at ${item.price}. Decreasing our buy price from ${configItem.buy.buyPrice}.`,
+            );
+            configItem.buy.buyPrice = item.price;
+          }
+        } else if (typeof configItem.buy.buyPrice === "object" && configItem.buy.buyPrice[item.level] !== undefined) {
+          const ourBuyPrice = calculatePrice(item, character.game.G, configItem.buy.buyPrice[item.level] as number);
+          if (item.price < ourBuyPrice) {
+            logInformational(
+              `${character.id} is selling ${getItemDescription(item)} at ${item.price}. Decreasing our buy price from ${configItem.buy.buyPrice[item.level]}.`,
+            );
+            configItem.buy.buyPrice[item.level] = item.price;
+          }
         }
       }
     }

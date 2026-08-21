@@ -1,11 +1,12 @@
-import { Utilities, type Character } from "alclient";
-import type { ItemKey } from "typed-adventureland";
+import { isTradeSellItem, isTradeWishlistItem, Utilities, type Character } from "alclient";
+import type { ItemKey, TradeSlotType } from "typed-adventureland";
 import Config from "../../../config/items.js";
 import {
   getCraftableItems,
   getItemDescription,
   getNextCompoundParams,
   getNextUpgradeParams,
+  wantToBuy,
   wantToDestroy,
   wantToExchange,
   wantToList,
@@ -25,6 +26,7 @@ const DESTROY_LOG_LEVEL = Level.Notice;
 const EXCHANGE_LOG_LEVEL = Level.Informational;
 const SELL_LOG_LEVEL = Level.Notice;
 const UPGRADE_LOG_LEVEL = Level.Notice;
+const LIST_LOG_LEVEL = Level.Notice;
 
 type ActiveData = {
   cancelled: boolean;
@@ -44,6 +46,67 @@ export const setup = (character: Character) => {
 
   // TODO: merchantLoop
   // for buying, selling, & joining giveaways
+  const merchantLoop = async () => {
+    if (activeData.cancelled) return;
+
+    try {
+      if (character.socket.disconnected) return;
+
+      for (let index = 0; index < character.items.length; index++) {
+        const item = character.items[index];
+        if (!item) continue;
+
+        try {
+          // List items for sale
+          const listPrice = wantToList(item, character.game.G, character.slots);
+          if (listPrice !== false) {
+            await character.listForSale(index, listPrice);
+            log(`${character.id} listed ${getItemDescription(item)} for ${listPrice}`, LIST_LOG_LEVEL);
+            continue;
+          }
+        } catch (e) {
+          if (e instanceof Error || typeof e === "string") logDebug(`merchantLoop (${character.id}): ${e}`);
+        }
+      }
+
+      for (const other of character.characters.values()) {
+        if (typeof other.npc === "string") continue; // NPC
+        if (character.owner === other.owner) continue; // Own character
+        if (character.getDistanceTo(other) > 400) continue; // Too far
+
+        for (const [slotType, slot] of Object.entries(other.slots ?? {})) {
+          if (!slot || !slotType.startsWith("trade")) continue; // Nothing in this slot or not a trade slot
+          if (isTradeSellItem(slot)) {
+            const quantity = wantToBuy(slot, slot.price, character.game.G, character.gold);
+            if (quantity === false) continue;
+            await character.buyFromMerchant(other.id, slotType as TradeSlotType, slot.rid, quantity);
+            log(
+              `${character.id} bought ${quantity}x ${getItemDescription(slot)} from ${other.id} for ${slot.price * quantity}`,
+              BUY_LOG_LEVEL,
+            );
+            continue;
+          }
+          if (isTradeWishlistItem(slot)) {
+            if (!wantToSell(slot, character.game.G, slot.price)) continue; // We don't want to sell the item
+            const itemIndex = character.locateItem({ name: slot.name, level: slot.level });
+            if (itemIndex === undefined) continue; // We don't have the item
+            const item = character.items[itemIndex]!;
+            await character.sellToMerchant(other.id, slotType as TradeSlotType, slot.rid, item.q ?? 1);
+            log(
+              `${character.id} sold ${getItemDescription(item)} to ${other.id} for ${slot.price * (item.q ?? 1)}`,
+              SELL_LOG_LEVEL,
+            );
+            continue;
+          }
+        }
+      }
+    } catch (e) {
+      if (e instanceof Error || typeof e === "string") logDebug(`merchantLoop (${character.id}): ${e}`);
+    } finally {
+      setTimeout(() => void merchantLoop(), CHECK_EVERY_MS);
+    }
+  };
+  void merchantLoop();
 
   /**
    * For buying (NPC), selling (NPC), destroying, listing, mailing items
@@ -65,12 +128,6 @@ export const setup = (character: Character) => {
             continue;
           }
 
-          const listPrice = wantToList(item, character.game.G, character.slots);
-          if (listPrice !== false) {
-            // TODO: List
-            continue;
-          }
-
           const recipient = wantToMail(item, character.gold);
           if (recipient !== false) {
             // TODO: Mail
@@ -89,9 +146,8 @@ export const setup = (character: Character) => {
       }
 
       for (const name of Object.keys(Config) as ItemKey[]) {
-        const numToReplenish = wantToReplenish(character, { name });
+        const numToReplenish = wantToReplenish(character, { name }, character.gold);
         if (numToReplenish !== false && numToReplenish > 0) {
-          // TODO: Buy as many as we can if we can't buy all
           if (!character.canBuy(name, { quantity: numToReplenish })) continue; // Too far away
           await character.buy(name, numToReplenish);
           log(`${character.id} bought ${numToReplenish} ${name}`, BUY_LOG_LEVEL);

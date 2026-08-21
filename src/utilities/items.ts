@@ -275,19 +275,13 @@ export async function getNextUpgradeParams(
     break;
   }
   if (graceScrollPos === undefined) return undefined;
-  const { grace, chance } = await character.upgrade(itemPos, graceScrollPos, undefined, { calculate: true });
+  const { grace } = await character.upgrade(itemPos, graceScrollPos, undefined, { calculate: true });
 
   // Find the next upgrade
   for (let i = 0; i < upgradePath.length; i++) {
     const node = upgradePath[i]!;
     if (node.level <= (item.level ?? 0)) continue; // Our item is a higher level than this node
     if (node.grace < grace) continue; // Our item is a higher grace than this node
-    if (chance < node.chance) {
-      logError(
-        `Calculated upgrade chance is lower than expected for ${getItemDescription(item)}! (${chance} < ${node.chance})`,
-      );
-      return undefined;
-    }
     return { scroll: node.scroll, offering: node.offering };
   }
 
@@ -363,13 +357,15 @@ export async function getNextCompoundParams(
   return undefined;
 }
 
-export function wantToBuy(item: ItemInfo, canBuyForPrice: number, g: GData, config = Config): boolean {
+export function wantToBuy(
+  item: ItemInfo,
+  canBuyForPrice: number,
+  g: GData,
+  gold?: number,
+  config = Config,
+): number | false {
   const itemConfig = config[item.name]?.buy;
   if (!itemConfig) return false; // No buy config
-
-  if (itemConfig.maxTotalQuantity !== undefined) {
-    if (getTotalItemCount(item.name) >= itemConfig.maxTotalQuantity) return false; // We have enough
-  }
 
   if (typeof itemConfig.buyPrice === "object") {
     const buyPrice = itemConfig.buyPrice[item.level ?? 0];
@@ -379,7 +375,22 @@ export function wantToBuy(item: ItemInfo, canBuyForPrice: number, g: GData, conf
     if (canBuyForPrice > calculatePrice(item, g, itemConfig.buyPrice)) return false;
   }
 
-  return true;
+  let quantity = item.q ?? 1;
+
+  if (itemConfig.maxTotalQuantity !== undefined) {
+    const current = getTotalItemCount(item.name);
+    const amountWanted = itemConfig.maxTotalQuantity - current;
+    if (amountWanted <= 0) return false;
+    quantity = Math.min(quantity, amountWanted);
+  }
+
+  if (gold !== undefined && canBuyForPrice > 0) {
+    const numCanBuy = Math.floor(gold / canBuyForPrice);
+    if (numCanBuy <= 0) return false;
+    quantity = Math.min(quantity, numCanBuy);
+  }
+
+  return quantity;
 }
 
 export function wantToDestroy(character: Character, item: ItemInfo, config = Config): boolean {
@@ -523,16 +534,28 @@ export function wantToMail(item: ItemInfo, gold: number, config = Config): false
   return itemConfig.recipient;
 }
 
-export function wantToReplenish(character: Character, item: ItemInfo, config = Config): number | false {
-  if (!wantToHold(character, item)) return false;
+export function wantToReplenish(character: Character, item: ItemInfo, gold?: number, config = Config): number | false {
+  if (!wantToHold(character, item, config)) return false;
 
-  const itemConfig = config[item.name]!.hold!;
-  if (itemConfig.replenish === undefined) return false; // We don't want to replenish this item
+  const itemConfig = config[item.name]?.hold;
+  if (itemConfig?.replenish === undefined) return false; // We don't want to replenish this item
 
   const numHave = character.countItems({ name: item.name });
   if (numHave === 0 && character.esize === 0) return false; // We don't have room for the item
 
-  return Math.max(0, itemConfig.replenish - numHave);
+  let quantity = Math.max(0, itemConfig.replenish - numHave);
+  if (quantity === 0) return false;
+
+  if (gold !== undefined) {
+    const cost = character.game.G.items[item.name]?.g;
+    if (cost !== undefined && cost > 0) {
+      const numCanBuy = Math.floor(gold / cost);
+      if (numCanBuy <= 0) return false;
+      quantity = Math.min(quantity, numCanBuy);
+    }
+  }
+
+  return quantity;
 }
 
 /**
