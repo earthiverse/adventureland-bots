@@ -504,7 +504,7 @@ export function wantToList(
       if (!Object.hasOwn(slots, slotName)) continue;
       if (!slotName.startsWith("trade")) continue; // Not a trade slot
       const slot = slots[slotName as TradeSlotType];
-      if (slot === undefined) {
+      if (!slot) {
         hasEmptySlot = true;
         break;
       }
