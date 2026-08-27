@@ -68,25 +68,33 @@ EventBus.on("entities_updated", (observer, monsters, characters) => {
 
   // Update the server data with characters we see
   for (const character of characters) {
+    const insertValues: typeof dbCharacters.$inferInsert = {
+      id: character.id,
+      serverKey,
+      lastSeen,
+      x: character.x,
+      y: character.y,
+      map: character.map,
+      in: character.in,
+    };
+    if (character.owner !== undefined) insertValues.owner = character.owner;
+    if (character.slots !== undefined) insertValues.slots = character.slots;
+
+    const setValues: Partial<typeof dbCharacters.$inferInsert> = {
+      lastSeen,
+      x: character.x,
+      y: character.y,
+      map: character.map,
+      in: character.in,
+    };
+    if (character.owner !== undefined) setValues.owner = character.owner;
+    if (character.slots !== undefined) setValues.slots = character.slots;
+
     db.insert(dbCharacters)
-      .values({
-        id: character.id,
-        serverKey,
-        lastSeen,
-        x: character.x,
-        y: character.y,
-        map: character.map,
-        in: character.in,
-      })
+      .values(insertValues)
       .onConflictDoUpdate({
         target: [dbCharacters.id, dbCharacters.serverKey],
-        set: {
-          lastSeen,
-          x: character.x,
-          y: character.y,
-          map: character.map,
-          in: character.in,
-        },
+        set: setValues,
       })
       .run();
   }

@@ -1,5 +1,5 @@
 import { integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import type { ItemInfo } from "typed-adventureland";
+import type { CharacterEntitySlotsInfos, ItemInfo } from "typed-adventureland";
 
 export const characters = sqliteTable(
   "characters",
@@ -11,6 +11,8 @@ export const characters = sqliteTable(
     y: real(),
     map: text(),
     in: text(),
+    owner: text(),
+    slots: text({ mode: "json" }).$type<CharacterEntitySlotsInfos | undefined>(),
   },
   (table) => [primaryKey({ columns: [table.id, table.serverKey] })],
 );
