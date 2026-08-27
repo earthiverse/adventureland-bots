@@ -8,6 +8,7 @@ const active = new Map<Character, ActiveData>();
 
 EventBus.on("received_stacked_damage", (character) => {
   if (!active.has(character)) return; // Not avoiding stacking for this character
+  if (character.moving) return; // Character is already moving somewhere
 
   // Move character in a random direction
   logDebug(`Moving ${character.id} to avoid stacking damage`);
