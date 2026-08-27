@@ -117,45 +117,83 @@ export type ItemConfig = {
 
 export type ItemsConfig = Partial<Record<ItemKey, ItemConfig>>;
 
-export const BUY_AT_GOBLIN_PRICE: ItemConfig = Object.freeze({ buy: Object.freeze({ buyPrice: "goblin" }) });
-export const BUY_AT_PONTY_PRICE: ItemConfig = Object.freeze({ buy: Object.freeze({ buyPrice: "ponty" }) });
-export const CRAFT: ItemConfig = Object.freeze({ craft: Object.freeze({ craftWithSpecial: true }) });
-export const DESTROY: ItemConfig = Object.freeze({ destroy: Object.freeze({ destroySpecial: true }) });
-export const DISMANTLE: ItemConfig = Object.freeze({ dismantle: Object.freeze({ dismantleSpecial: true }) });
-export const EXCHANGE: ItemConfig = Object.freeze({ exchange: Object.freeze({}) });
-export const HOLD_FULL_STACK: ItemConfig = Object.freeze({
-  hold: Object.freeze({ characterTypes: "all", replenish: 9999 }),
-});
-export const SELL_TO_NPC: ItemConfig = Object.freeze({ sell: Object.freeze({ sellPrice: "npc" }) });
+export const BUY_AT_GOBLIN_PRICE: ItemConfig = {
+  get buy(): BuyConfigBase {
+    return { buyPrice: "goblin" };
+  },
+};
+export const BUY_AT_PONTY_PRICE: ItemConfig = {
+  get buy(): BuyConfigBase {
+    return { buyPrice: "ponty" };
+  },
+};
+export const CRAFT: ItemConfig = {
+  get craft(): CraftConfigBase {
+    return { craftWithSpecial: true };
+  },
+};
+export const DESTROY: ItemConfig = {
+  get destroy(): DestroyConfigBase {
+    return { destroySpecial: true };
+  },
+};
+export const DISMANTLE: ItemConfig = {
+  get dismantle(): DismantleConfigBase {
+    return { dismantleSpecial: true };
+  },
+};
+export const EXCHANGE: ItemConfig = {
+  get exchange(): ExchangeConfigBase {
+    return {};
+  },
+};
+export const HOLD_FULL_STACK: ItemConfig = {
+  get hold(): HoldConfigBase {
+    return { characterTypes: "all", replenish: 9999 };
+  },
+};
+export const SELL_TO_NPC: ItemConfig = {
+  get sell(): SellConfigBase {
+    return { sellPrice: "npc" };
+  },
+};
 
-export const COMPOUND_ONE_SLOT: ItemConfig = Object.freeze({
-  upgrade: Object.freeze({
-    upgradeUntilLevel: 5,
-    upgradeSpecial: true,
-    minTotalQuantity: 3, // Enough for 3 characters
-  }),
-});
-export const COMPOUND_TWO_SLOTS: ItemConfig = Object.freeze({
-  upgrade: Object.freeze({
-    upgradeUntilLevel: 5,
-    upgradeSpecial: true,
-    minTotalQuantity: 6, // Enough for 3 characters
-  }),
-});
-export const UPGRADE_ONE_SLOT: ItemConfig = Object.freeze({
-  upgrade: Object.freeze({
-    upgradeUntilLevel: 10,
-    upgradeSpecial: true,
-    minTotalQuantity: 3, // Enough for 3 characters
-  }),
-});
-export const UPGRADE_TWO_SLOTS: ItemConfig = Object.freeze({
-  upgrade: Object.freeze({
-    upgradeUntilLevel: 10,
-    upgradeSpecial: true,
-    minTotalQuantity: 6, // Enough for 3 characters
-  }),
-});
+export const COMPOUND_ONE_SLOT: ItemConfig = {
+  get upgrade(): UpgradeConfigBase {
+    return {
+      upgradeUntilLevel: 5,
+      upgradeSpecial: true,
+      minTotalQuantity: 3, // Enough for 3 characters
+    };
+  },
+};
+export const COMPOUND_TWO_SLOTS: ItemConfig = {
+  get upgrade(): UpgradeConfigBase {
+    return {
+      upgradeUntilLevel: 5,
+      upgradeSpecial: true,
+      minTotalQuantity: 6, // Enough for 3 characters
+    };
+  },
+};
+export const UPGRADE_ONE_SLOT: ItemConfig = {
+  get upgrade(): UpgradeConfigBase {
+    return {
+      upgradeUntilLevel: 10,
+      upgradeSpecial: true,
+      minTotalQuantity: 3, // Enough for 3 characters
+    };
+  },
+};
+export const UPGRADE_TWO_SLOTS: ItemConfig = {
+  get upgrade(): UpgradeConfigBase {
+    return {
+      upgradeUntilLevel: 10,
+      upgradeSpecial: true,
+      minTotalQuantity: 6, // Enough for 3 characters
+    };
+  },
+};
 
 const itemsConfig: ItemsConfig = {
   "5bucks": {
