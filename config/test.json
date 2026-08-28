@@ -1,5 +1,17 @@
 {
   "db": {
     "path": ":memory:"
+  },
+  "logging": {
+    "map": {
+      "0": "console",
+      "1": "console",
+      "2": "console",
+      "3": "console",
+      "4": "console",
+      "5": "console",
+      "6": "console",
+      "7": "console"
+    }
   }
 }
