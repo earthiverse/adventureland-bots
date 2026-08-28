@@ -202,3 +202,5 @@ export function logInformational(message: string | Error): void {
 export function logDebug(message: string | Error): void {
   return log(message, Level.Debug);
 }
+
+export const logNothing = () => {};
