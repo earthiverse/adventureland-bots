@@ -5,6 +5,7 @@ import config from "../../../config/config.js";
 import { db } from "../../db/index.js";
 import { items as dbItems } from "../../db/schema.js";
 import {
+  getBankItemCount,
   getEmptyBankSlotsCount,
   getItemDescription,
   getItemsToStoreInBank,
@@ -17,6 +18,7 @@ import {
   wantToMail,
   wantToReplenish,
   wantToSell,
+  wantToUpgrade,
 } from "../../utilities/items.js";
 import { logDebug, logNotice } from "../../utilities/logging.js";
 import { moveUntilDestination } from "../../utilities/move.js";
@@ -232,8 +234,25 @@ async function doBanking(character: Character, options: MerchantOptions) {
         // TODO: Want to make shiny logic
         //       We need to check if we have materials
 
-        // TODO: Want to upgrade logic
-        //       We need to check if we have scrolls
+        if (wantToUpgrade(item, character.game.G)) {
+          const isCompoundable = character.game.G.items[item.name].compound !== undefined;
+          if (isCompoundable) {
+            const itemLevel = item.level ?? 0;
+            const inInventory = character.items.filter(
+              (i) => i !== null && i.name === item.name && (i.level ?? 0) === itemLevel,
+            ).length;
+            const inBank = getBankItemCount(item.name, { level: itemLevel });
+            if (inInventory + inBank < 3) continue;
+
+            const neededFromBank = Math.max(0, 3 - inInventory);
+            if (character.esize < neededFromBank + 1) break; // Need space for 3 items + 1 scroll
+          }
+
+          logDebug(`Withdrawing ${getItemDescription(item)} to upgrade it`);
+          await character.withdrawItem(pack, packSlot);
+          if (character.esize <= 1) break; // No more space
+          continue;
+        }
       }
     }
   }

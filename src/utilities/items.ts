@@ -690,6 +690,33 @@ export function getTotalItemCount(
 }
 
 /**
+ * Returns the total number of this item stored in the bank
+ *
+ * @param name
+ * @param filters
+ * @returns
+ */
+export function getBankItemCount(
+  name: ItemKey,
+  filters?: { minLevel?: number; maxLevel?: number; level?: number },
+): number {
+  let count = 0;
+  const allRows = db.select().from(dbItems).where(like(dbItems.key, "items%")).all();
+  for (const row of allRows) {
+    for (const item of row.items) {
+      if (!item) continue; // Empty slot
+      if (item.name !== name) continue; // Different item
+      const itemLevel = item.level ?? 0;
+      if (filters?.minLevel !== undefined && itemLevel < filters.minLevel) continue;
+      if (filters?.maxLevel !== undefined && itemLevel > filters.maxLevel) continue;
+      if (filters?.level !== undefined && itemLevel !== filters.level) continue;
+      count += item.q ?? 1;
+    }
+  }
+  return count;
+}
+
+/**
  * Returns the number of empty bank slots.
  * If a map is specified, then it returns the number of empty bank slots for the tellers on that specific map
  * @param map
