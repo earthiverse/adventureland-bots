@@ -12,6 +12,7 @@ import {
     wantToSellToNpc,
     wantToUpgrade,
 } from "../../base/itemsNew.js"
+import { getNextCompoundAction, getNextUpgradeAction } from "../../base/upgrade.js"
 import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 
 /**
@@ -272,21 +273,16 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
             const items = bot.locateItems(item.name, bot.items, { level: item.level, locked: false })
             if (items.length < 3) continue // Not enough to compound
 
-            let offering: ItemName
-            let cscroll = `cscroll${item.calculateGrade()}` as ItemName
-            if (itemConfig) {
-                if (item.level >= itemConfig.useOfferingFromLevel) offering = "offering"
-                else if (item.level >= itemConfig.usePrimlingFromLevel) offering = "offeringp"
+            const nextAction = getNextCompoundAction(bot, [items[0], items[1], items[2]], itemConfig)
+            if (!nextAction) continue
 
-                if (offering && !bot.hasItem(offering)) {
-                    // We don't have the offering needed
-                    if (bot.canBuy(offering)) await bot.buy(offering)
-                    else continue // We can't buy it
-                }
+            const cscroll = nextAction.scroll as ItemName
+            const offering = nextAction.offering as ItemName | undefined
 
-                if (item.level >= itemConfig.useScroll3FromLevel) cscroll = "cscroll3"
-                else if (item.level >= itemConfig.useScroll2FromLevel) cscroll = "cscroll2"
-                else if (item.level >= itemConfig.useScroll1FromLevel) cscroll = "cscroll1"
+            if (offering && !bot.hasItem(offering)) {
+                // We don't have the offering needed
+                if (bot.canBuy(offering)) await bot.buy(offering)
+                else continue // We can't buy it
             }
 
             let cscrollSlot = bot.locateItem(cscroll)
@@ -352,11 +348,36 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
         for (let [slot, item] of itemsToUpgrade) {
             const itemConfig: UpgradeConfig = this.options.itemConfig[item.name]
 
-            let offering: ItemName = undefined
-            let scroll = `scroll${item.calculateGrade()}` as ItemName
-            if (itemConfig) {
-                if (item.level >= itemConfig.useOfferingFromLevel) offering = "offering"
-                else if (item.level >= itemConfig.usePrimlingFromLevel) offering = "offeringp"
+            const nextAction = await getNextUpgradeAction(bot, slot, itemConfig)
+            if (!nextAction) continue
+
+            if (nextAction.action === "stack") {
+                const offering = nextAction.offering as ItemName
+                let offeringSlot = bot.locateItem(offering)
+                if (offeringSlot === undefined) {
+                    if (bot.canBuy(offering)) offeringSlot = await bot.buy(offering)
+                    else continue
+                }
+
+                if (bot.canUse("massproduction")) await (bot as unknown as Merchant).massProduction()
+
+                if (LUCKY_SLOTS.has(bot.id)) {
+                    // Swap for improved upgrade chance
+                    const luckySlot = LUCKY_SLOTS.get(bot.id)
+                    if (luckySlot !== slot) {
+                        await bot.swapItems(luckySlot, slot)
+                        slot = luckySlot
+
+                        if (offeringSlot === luckySlot) {
+                            offeringSlot = slot
+                        }
+                    }
+                }
+
+                return bot.upgrade(slot, undefined, offeringSlot)
+            } else if (nextAction.action === "upgrade") {
+                const scroll = nextAction.scroll as ItemName
+                const offering = nextAction.offering as ItemName | undefined
 
                 if (offering && !bot.hasItem(offering)) {
                     // We don't have the offering needed
@@ -364,40 +385,39 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
                     else continue // We can't buy it
                 }
 
-                if (item.level >= itemConfig.useScroll3FromLevel) scroll = "scroll3"
-                else if (item.level >= itemConfig.useScroll2FromLevel) scroll = "scroll2"
-                else if (item.level >= itemConfig.useScroll1FromLevel) scroll = "scroll1"
-            }
+                let scrollSlot = bot.locateItem(scroll)
+                if (scrollSlot === undefined) {
+                    // We don't have the scroll needed
+                    if (bot.canBuy(scroll)) scrollSlot = await bot.buy(scroll)
+                    else continue // We can't buy the scroll needed
+                }
 
-            let scrollSlot = bot.locateItem(scroll)
-            if (scrollSlot === undefined) {
-                // We don't have the scroll needed
-                if (bot.canBuy(scroll)) scrollSlot = await bot.buy(scroll)
-                else continue // We can't buy the scroll needed
-            }
+                let offeringSlot = offering ? bot.locateItem(offering) : undefined
+                if (!bot.canUpgrade(slot, scrollSlot, offeringSlot)) return // Can't compound from where we are
 
-            const offeringSlot = offering ? bot.locateItem(offering) : undefined
-            if (!bot.canUpgrade(slot, scrollSlot, offeringSlot)) return // Can't compound from where we are
+                if (bot.canUse("massproduction")) await (bot as unknown as Merchant).massProduction()
 
-            if (bot.canUse("massproduction")) await (bot as unknown as Merchant).massProduction()
+                if (LUCKY_SLOTS.has(bot.id)) {
+                    // Swap for improved upgrade chance
+                    const luckySlot = LUCKY_SLOTS.get(bot.id)
+                    if (luckySlot !== slot) {
+                        await bot.swapItems(luckySlot, slot)
+                        slot = luckySlot
 
-            if (LUCKY_SLOTS.has(bot.id)) {
-                // Swap for improved upgrade chance
-                const luckySlot = LUCKY_SLOTS.get(bot.id)
-                if (luckySlot !== slot) {
-                    await bot.swapItems(luckySlot, slot)
-                    slot = luckySlot
-
-                    if (scrollSlot === luckySlot) {
-                        scrollSlot = slot
+                        if (scrollSlot === luckySlot) {
+                            scrollSlot = slot
+                        }
+                        if (offeringSlot === luckySlot) {
+                            offeringSlot = slot
+                        }
                     }
                 }
+
+                // Reduce counts just in case we fail
+                reduceCount(bot.owner, item)
+
+                return bot.upgrade(slot, scrollSlot, offeringSlot)
             }
-
-            // Reduce counts just in case we fail
-            reduceCount(bot.owner, item)
-
-            return bot.upgrade(slot, scrollSlot, offeringSlot)
         }
     }
 
