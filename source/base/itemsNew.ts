@@ -581,7 +581,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     pinkie: {
         buy: true,
-        buyPrice: "ponty",
+        buyPrice: 1_000_000,
     },
     // pouchbow: {
     //     craft: true,
