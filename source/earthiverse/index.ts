@@ -1,4 +1,5 @@
 import AL, {
+    Attribute,
     EntityModel,
     IPosition,
     MonsterName,
@@ -7,7 +8,8 @@ import AL, {
     ServerInfoDataLive,
     ServerRegion,
 } from "alclient"
-import { Strategist } from "../strategy_pattern/context"
+import { filterContexts, Strategist, Strategy } from "../strategy_pattern/context"
+import { Config, constructSetups, Setups } from "../strategy_pattern/setups/base"
 import { GiveRogueSpeedStrategy } from "../strategy_pattern/strategies/rspeed"
 import { DEFAULT_ITEM_CONFIG } from "../base/itemsNew"
 import { ItemStrategy } from "../strategy_pattern/strategies/item"
@@ -35,7 +37,7 @@ process.on("unhandledRejection", (reason) => {
     console.error("Unhandled promise rejection:", reason)
 })
 
-await Promise.all([AL.Game.loginJSONFile("../../credentials.json", true), AL.Game.getGData(true)])
+await Promise.all([AL.Game.loginJSONFile("credentials.json", true), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true, remove_abtesting: true, remove_test: true })
 
 const DEFAULT_REGION: ServerRegion = "US"
@@ -54,8 +56,8 @@ const SETUPS: {
     }
 } = {
     US: {
-        I: ["earthMer", "earthPri2", "earthMag2", "earthWar2"],
-        II: ["earthMer", "earthPri", "earthMag", "earthWar"],
+        I: ["earthMer", "earthMag2", "earthPri2", "earthWar2"],
+        II: ["earthMer", "earthMag", "earthPri", "earthWar"],
         // III: ["earthMer", "earthPal", "earthMag3", "earthWar3"],
     },
     EU: {
@@ -68,6 +70,116 @@ const activeStrategists: Strategist<PingCompensatedCharacter>[] = []
 let currentRegion: ServerRegion | undefined = undefined
 let currentIdentifier: ServerIdentifier | undefined = undefined
 let currentMonster: MonsterName | undefined = undefined
+
+const MONSTER_SETUPS = constructSetups(activeStrategists)
+const currentSetups = new Map<
+    Strategist<PingCompensatedCharacter>,
+    { attack: Strategy<PingCompensatedCharacter>; move: Strategy<PingCompensatedCharacter> }
+>()
+
+const removeSetup = (context: Strategist<PingCompensatedCharacter>) => {
+    const current = currentSetups.get(context)
+
+    if (current) {
+        context.removeStrategy(current.attack)
+        context.removeStrategy(current.move)
+        currentSetups.delete(context)
+    }
+}
+
+const applySetups = (
+    contexts: Strategist<PingCompensatedCharacter>[],
+    setups: Setups,
+    priority: MonsterName[] = [],
+) => {
+    // Setup a list of ready contexts
+    const setupContexts = filterContexts(contexts).filter((c) => c.bot.ctype !== "merchant")
+    if (setupContexts.length === 0) return
+
+    const isDoable = (config: Config): Strategist<PingCompensatedCharacter>[] | false => {
+        const tempContexts = [...setupContexts]
+        const doableWith: Strategist<PingCompensatedCharacter>[] = []
+        nextConfigCharacter: for (const characterConfig of config.characters) {
+            nextContext: for (let i = 0; i < tempContexts.length; i++) {
+                const context = tempContexts[i]
+                if (context.bot.ctype !== characterConfig.ctype) continue // Wrong character type
+                if (characterConfig.require) {
+                    // Check level
+                    if (characterConfig.require.level && context.bot.level < characterConfig.require.level)
+                        continue nextContext // Not high enough level
+
+                    // Check attributes
+                    for (const a in characterConfig.require) {
+                        if (a === "items" || a === "level") continue
+                        const attribute = a as Attribute
+                        if (context.bot[attribute] < characterConfig.require[attribute]) continue nextContext // Character doesn't meet requirement
+                    }
+
+                    // Check items
+                    for (const itemName of characterConfig.require.items ?? []) {
+                        if (!(context.bot.isEquipped(itemName) || context.bot.hasItem(itemName))) continue nextContext // Character doesn't have required item
+                    }
+                }
+
+                doableWith.push(context)
+                tempContexts.splice(i, 1)
+                continue nextConfigCharacter // We found a character that works with this setup
+            }
+            return false // Not doable
+        }
+        return doableWith
+    }
+
+    const applyConfig = (config: Config): boolean => {
+        const doableWith = isDoable(config)
+        if (!doableWith) return false // Not doable
+        nextConfig: for (const characterConfig of config.characters) {
+            for (const context of doableWith) {
+                if (context.bot.ctype === characterConfig.ctype) {
+                    const current = currentSetups.get(context)
+
+                    if (current) {
+                        // Swap the strategies
+                        if (current.attack !== characterConfig.attack) {
+                            context.removeStrategy(current.attack)
+                            context.applyStrategy(characterConfig.attack)
+                        }
+                        if (current.move !== characterConfig.move) {
+                            context.removeStrategy(current.move)
+
+                            // Stop smart moving if we are, so we can do the new strategy movement quicker
+                            if (context.bot.smartMoving) context.bot.stopSmartMove().catch(console.error)
+
+                            context.applyStrategy(characterConfig.move)
+                        }
+                    } else {
+                        // Apply the strategy
+                        context.applyStrategy(characterConfig.attack)
+                        context.applyStrategy(characterConfig.move)
+                    }
+
+                    currentSetups.set(context, { attack: characterConfig.attack, move: characterConfig.move })
+                    doableWith.splice(doableWith.indexOf(context), 1)
+                    setupContexts.splice(setupContexts.indexOf(context), 1)
+                    continue nextConfig
+                }
+            }
+        }
+        return true
+    }
+
+    for (const id of priority) {
+        if (setupContexts.length === 0) break // All set up
+        const setup = setups[id]
+        if (!setup) continue // No setup for current
+
+        for (const config of setup.configs) {
+            if (applyConfig(config)) {
+                break // We found a config that works
+            }
+        }
+    }
+}
 
 const ACCEPT_PARTY_REQUEST_STRATEGY = new AcceptPartyRequestStrategy()
 const AVOID_DEATH_STRATEGY = new AvoidDeathStrategy()
@@ -142,6 +254,7 @@ const getNextTarget = async (): Promise<[ServerRegion, ServerIdentifier, Monster
 
         // Look for monsters nearby our active characters
         for (const strategist of activeStrategists) {
+            if (!strategist.isReady()) continue
             const priorityS = strategist.bot.S?.[priorityType]
             if (priorityS !== undefined && (priorityS as ServerInfoDataLive).live) {
                 return [strategist.bot.server.region, strategist.bot.server.name, priorityType]
@@ -162,88 +275,105 @@ const managerLoop = async () => {
     const timeoutMs = 5_000
     try {
         const [nextRegion, nextIdentifier, nextMonster] = await getNextTarget()
-        if (currentRegion === nextRegion && currentIdentifier === nextIdentifier) return // Already on the desired region
-        const characterNames = SETUPS[nextRegion]?.[nextIdentifier] as [string, string, string, string]
-        if (characterNames === undefined) throw new Error(`No setup found for ${nextRegion} ${nextIdentifier}`)
 
-        const homeServerStrategy = new HomeServerStrategy(nextRegion, nextIdentifier)
+        if (currentRegion !== nextRegion || currentIdentifier !== nextIdentifier) {
+            const characterNames = SETUPS[nextRegion]?.[nextIdentifier] as [string, string, string, string]
+            if (characterNames === undefined) throw new Error(`No setup found for ${nextRegion} ${nextIdentifier}`)
 
-        // Stop bots
-        for (const strategist of activeStrategists) {
-            for (const [id] of strategist.bot.chests) await strategist.bot.openChest(id).catch(console.error)
-            strategist.stop()
+            const homeServerStrategy = new HomeServerStrategy(nextRegion, nextIdentifier)
+
+            // Stop bots
+            for (const strategist of activeStrategists) {
+                removeSetup(strategist)
+                for (const [id] of strategist.bot.chests) await strategist.bot.openChest(id).catch(console.error)
+                strategist.stop()
+            }
+            activeStrategists.splice(0, activeStrategists.length)
+            currentSetups.clear()
+
+            // Start bots
+            for (const characterName of characterNames) {
+                const character = AL.Game.characters[characterName]
+                if (!character) throw new Error(`Could not find character ${characterName}`)
+
+                let strategist: Strategist<PingCompensatedCharacter>
+                switch (character.type) {
+                    case "merchant":
+                        strategist = new Strategist(
+                            await AL.Game.startMerchant(characterName, nextRegion, nextIdentifier),
+                        )
+                        break
+                    case "priest":
+                        strategist = new Strategist(
+                            await AL.Game.startPriest(characterName, nextRegion, nextIdentifier),
+                        )
+                        strategist.applyStrategy(PARTY_HEAL_STRATEGY)
+                        break
+                    case "warrior":
+                        strategist = new Strategist(
+                            await AL.Game.startWarrior(characterName, nextRegion, nextIdentifier),
+                        )
+                        strategist.applyStrategy(CHARGE_STRATEGY)
+                        break
+                    case "mage":
+                        strategist = new Strategist(await AL.Game.startMage(characterName, nextRegion, nextIdentifier))
+                        strategist.applyStrategy(MAGIPORT_STRATEGY)
+                        break
+                    case "ranger":
+                        strategist = new Strategist(
+                            await AL.Game.startRanger(characterName, nextRegion, nextIdentifier),
+                        )
+                        break
+                    case "rogue":
+                        strategist = new Strategist(await AL.Game.startRogue(characterName, nextRegion, nextIdentifier))
+                        strategist.applyStrategy(GIVE_ROGUE_SPEED_STRATEGY)
+                        break
+                    case "paladin":
+                        strategist = new Strategist(
+                            await AL.Game.startPaladin(characterName, nextRegion, nextIdentifier),
+                        )
+                        break
+                }
+
+                // TODO: Holiday spirit strategy
+                // TODO: Monster hunt strategy
+
+                if (character.type === "merchant") {
+                    strategist.applyStrategies([MERCHANT_DESTROY_STRATEGY, MERCHANT_STRATEGY, TOGGLE_STAND_STRATEGY])
+                } else {
+                    strategist.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, ELIXIR_STRATEGY])
+                }
+                strategist.applyStrategies([
+                    homeServerStrategy,
+                    ACCEPT_PARTY_REQUEST_STRATEGY,
+                    AVOID_DEATH_STRATEGY,
+                    AVOID_STACKING_STRATEGY,
+                    BASE_STRATEGY,
+                    BUY_STRATEGY,
+                    FIX_STUFF_STRATEGY,
+                    ITEM_STRATEGY,
+                    RESPAWN_STRATEGY,
+                    SELL_STRATEGY,
+                    TEMPORAL_STRATEGY,
+                    TRACKER_STRATEGY,
+                ])
+
+                activeStrategists.push(strategist)
+
+                // First character to start becomes party leader
+                if (activeStrategists.length > 0 && strategist.bot.ctype !== "merchant") {
+                    strategist.applyStrategy(new RequestPartyStrategy(activeStrategists[0].bot.name))
+                }
+            }
+
+            currentRegion = nextRegion
+            currentIdentifier = nextIdentifier
         }
-        activeStrategists.splice(0, activeStrategists.length)
 
-        // Start bots
-        for (const characterName of characterNames) {
-            const character = AL.Game.characters[characterName]
-            if (!character) throw new Error(`Could not find character ${characterName}`)
-
-            let strategist: Strategist<PingCompensatedCharacter>
-            switch (character.type) {
-                case "merchant":
-                    strategist = new Strategist(await AL.Game.startMerchant(characterName, nextRegion, nextIdentifier))
-                    break
-                case "priest":
-                    strategist = new Strategist(await AL.Game.startPriest(characterName, nextRegion, nextIdentifier))
-                    strategist.applyStrategy(PARTY_HEAL_STRATEGY)
-                    break
-                case "warrior":
-                    strategist = new Strategist(await AL.Game.startWarrior(characterName, nextRegion, nextIdentifier))
-                    strategist.applyStrategy(CHARGE_STRATEGY)
-                    break
-                case "mage":
-                    strategist = new Strategist(await AL.Game.startMage(characterName, nextRegion, nextIdentifier))
-                    strategist.applyStrategy(MAGIPORT_STRATEGY)
-                    break
-                case "ranger":
-                    strategist = new Strategist(await AL.Game.startRanger(characterName, nextRegion, nextIdentifier))
-                    break
-                case "rogue":
-                    strategist = new Strategist(await AL.Game.startRogue(characterName, nextRegion, nextIdentifier))
-                    strategist.applyStrategy(GIVE_ROGUE_SPEED_STRATEGY)
-                    break
-                case "paladin":
-                    strategist = new Strategist(await AL.Game.startPaladin(characterName, nextRegion, nextIdentifier))
-                    break
-            }
-
-            // TODO: Holiday spirit strategy
-            // TODO: Monster hunt strategy
-
-            if (character.type === "merchant") {
-                strategist.applyStrategies([MERCHANT_DESTROY_STRATEGY, MERCHANT_STRATEGY, TOGGLE_STAND_STRATEGY])
-            } else {
-                // TODO: Get attack strategy
-
-                strategist.applyStrategies([BOOSTER_STRATEGY, DESTROY_STRATEGY, ELIXIR_STRATEGY])
-            }
-            strategist.applyStrategies([
-                homeServerStrategy,
-                ACCEPT_PARTY_REQUEST_STRATEGY,
-                AVOID_DEATH_STRATEGY,
-                AVOID_STACKING_STRATEGY,
-                BASE_STRATEGY,
-                BUY_STRATEGY,
-                FIX_STUFF_STRATEGY,
-                ITEM_STRATEGY,
-                RESPAWN_STRATEGY,
-                SELL_STRATEGY,
-                TEMPORAL_STRATEGY,
-                TRACKER_STRATEGY,
-            ])
-
-            activeStrategists.push(strategist)
-
-            // First character to start becomes party leader
-            if (activeStrategists.length > 0 && strategist.bot.ctype !== "merchant") {
-                strategist.applyStrategy(new RequestPartyStrategy(activeStrategists[0].bot.name))
-            }
-        }
-
-        currentRegion = nextRegion
-        currentIdentifier = nextIdentifier
+        // Apply monster attack and move strategies
+        const priority: MonsterName[] = [nextMonster]
+        if (nextMonster !== DEFAULT_MONSTER) priority.push(DEFAULT_MONSTER)
+        await applySetups(activeStrategists, MONSTER_SETUPS, priority)
         currentMonster = nextMonster
     } catch (e) {
         console.error(e)
