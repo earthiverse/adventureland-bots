@@ -42,8 +42,30 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true, remove_abtesting: true, re
 
 const DEFAULT_REGION: ServerRegion = "US"
 const DEFAULT_IDENTIFIER: ServerIdentifier = "II"
-const DEFAULT_MONSTER: MonsterName = "plantoid"
-const MONSTER_PRIORITY: MonsterName[] = ["crabxx", "franky", "icegolem"]
+const DEFAULT_MONSTERS: MonsterName[] = ["plantoid", "crab", "crab"]
+const MONSTER_PRIORITY: MonsterName[] = [
+    // Main bosses
+    "crabxx",
+    "franky",
+    "icegolem",
+    // Event bosses
+    "dragold",
+    "grinch",
+    "mrgreen",
+    "mrpumpkin",
+    "wabbit",
+    // Mini bosses
+    "goldenbat",
+    "cutebee",
+    "stompy",
+    "skeletor",
+    "fvampire",
+    "mvampire",
+    "rharpy",
+    "greenjr",
+    "jr",
+    "snowman",
+]
 const MERCHANT_HOLD_POSITION: IPosition = { map: "main", x: 0, y: 0 }
 
 // TODO: Make strategies for event bosses for these character compositions
@@ -268,7 +290,7 @@ const getNextTarget = async (): Promise<[ServerRegion, ServerIdentifier, Monster
     }
 
     // Return the default, we don't have anything specific to do
-    return [DEFAULT_REGION, DEFAULT_IDENTIFIER, DEFAULT_MONSTER]
+    return [DEFAULT_REGION, DEFAULT_IDENTIFIER, DEFAULT_MONSTERS[0]]
 }
 
 const managerLoop = async () => {
@@ -372,8 +394,10 @@ const managerLoop = async () => {
 
         // Apply monster attack and move strategies
         const priority: MonsterName[] = [nextMonster]
-        if (nextMonster !== DEFAULT_MONSTER) priority.push(DEFAULT_MONSTER)
-        await applySetups(activeStrategists, MONSTER_SETUPS, priority)
+        for (const _context of activeStrategists) {
+            priority.push(...DEFAULT_MONSTERS)
+        }
+        applySetups(activeStrategists, MONSTER_SETUPS, priority)
         currentMonster = nextMonster
     } catch (e) {
         console.error(e)
