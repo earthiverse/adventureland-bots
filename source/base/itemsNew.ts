@@ -252,6 +252,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: ["merchant"],
         holdSlot: 30,
     },
+    cscroll3: {
+        buy: true,
+        buyPrice: 384_000_000,
+    },
     cupid: {
         buy: true,
         buyPrice: "ponty",
@@ -483,6 +487,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     lmace: {
         buy: true,
         buyPrice: 10_000_000,
+        upgradeUntilLevel: 8, // TODO: Temporary until we get some scroll3
     },
     lostearring: {
         exchange: true,
@@ -646,6 +651,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     scroll2: {
         hold: ["merchant"],
         holdSlot: 37,
+    },
+    scroll3: {
+        buy: true,
+        buyPrice: 64_000_000,
     },
     seashell: {
         exchange: true,
