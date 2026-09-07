@@ -257,10 +257,10 @@ const getNextTarget = async (): Promise<[ServerRegion, ServerIdentifier, Monster
         const bPriority = MONSTER_PRIORITY.indexOf(b.type)
         if (aPriority !== bPriority) return aPriority - bPriority
 
-        // HP
-        if (a.hp !== undefined && b.hp !== undefined) return b.hp - a.hp
+        // HP (lower first)
+        if (a.hp !== undefined && b.hp !== undefined) return a.hp - b.hp
 
-        // Last seen
+        // Last seen (more recently seen first)
         return b.lastSeen - a.lastSeen
     })
 
