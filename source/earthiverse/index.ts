@@ -91,7 +91,6 @@ const SETUPS: {
 const activeStrategists: Strategist<PingCompensatedCharacter>[] = []
 let currentRegion: ServerRegion | undefined = undefined
 let currentIdentifier: ServerIdentifier | undefined = undefined
-let currentMonster: MonsterName | undefined = undefined
 
 const MONSTER_SETUPS = constructSetups(activeStrategists)
 const currentSetups = new Map<
@@ -269,8 +268,20 @@ const getNextTarget = async (): Promise<[ServerRegion, ServerIdentifier, Monster
     for (const priorityType of MONSTER_PRIORITY) {
         // Look for monsters from the DB
         for (const liveMonster of liveMonsters) {
-            if (!SETUPS[liveMonster.serverRegion]?.[liveMonster.serverIdentifier]) continue // No setup for this server
+            const ourCharacters = SETUPS[liveMonster.serverRegion]?.[liveMonster.serverIdentifier] as
+                | [string, string, string, string]
+                | undefined
+            if (!ourCharacters) continue // No setup for this server
             if (liveMonster.type !== priorityType) continue
+
+            // If someone else is targeting a non-cooperative monster, we won't get credit
+            const isCoop = AL.Game.G.monsters[priorityType]?.cooperative
+            const isTargetingUs = liveMonster.target && ourCharacters.includes(liveMonster.target)
+            if (liveMonster.target && !isCoop && !isTargetingUs) continue
+
+            // Filter out invulnerable monsters
+            if (liveMonster.s?.fullguard?.ms > 30_000 || liveMonster.s?.fullguardx?.ms > 30_000) continue
+
             return [liveMonster.serverRegion, liveMonster.serverIdentifier, priorityType]
         }
 
@@ -282,8 +293,7 @@ const getNextTarget = async (): Promise<[ServerRegion, ServerIdentifier, Monster
                 return [strategist.bot.server.region, strategist.bot.server.name, priorityType]
             }
 
-            for (const entity of strategist.bot.entities.values()) {
-                if (entity.type !== priorityType) continue
+            if (strategist.bot.getEntity({ couldGiveCredit: true, type: priorityType })) {
                 return [strategist.bot.server.region, strategist.bot.server.name, priorityType]
             }
         }
@@ -398,7 +408,6 @@ const managerLoop = async () => {
             priority.push(...DEFAULT_MONSTERS)
         }
         applySetups(activeStrategists, MONSTER_SETUPS, priority)
-        currentMonster = nextMonster
     } catch (e) {
         console.error(e)
     } finally {
