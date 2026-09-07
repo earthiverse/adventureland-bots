@@ -162,7 +162,6 @@ export const DEFAULT_ITEMS_TO_BUY = new Map<ItemName, number>([
     ["egg6", -AL.Constants.PONTY_MARKUP],
     ["egg7", -AL.Constants.PONTY_MARKUP],
     ["egg8", -AL.Constants.PONTY_MARKUP],
-    ["emotionjar", 1_000_000],
     ["essenceoffire", -AL.Constants.PONTY_MARKUP],
     ["essenceoffrost", -AL.Constants.PONTY_MARKUP],
     ["essenceofgreed", 25_000_000],

@@ -1,4 +1,27 @@
-import AL, { Character, Entity, GameResponseData, GMap, HitData, IEntity, InviteData, IPosition, ItemData, ItemName, MapName, Merchant, MonsterName, NPCName, Pathfinder, Player, ServerIdentifier, ServerInfoDataLive, ServerRegion, SlotType, Tools, TradeSlotType } from "alclient"
+import AL, {
+    Character,
+    Entity,
+    GameResponseData,
+    GMap,
+    HitData,
+    IEntity,
+    InviteData,
+    IPosition,
+    ItemData,
+    ItemName,
+    MapName,
+    Merchant,
+    MonsterName,
+    NPCName,
+    Pathfinder,
+    Player,
+    ServerIdentifier,
+    ServerInfoDataLive,
+    ServerRegion,
+    SlotType,
+    Tools,
+    TradeSlotType,
+} from "alclient"
 import { PathfinderOptions } from "alclient/build/definitions/pathfinder"
 import fs from "fs"
 import { ItemLevelInfo } from "../../definitions/bot.js"
@@ -14,19 +37,105 @@ export const GOLD_TO_HOLD = 5_000_000
 
 export const FRIENDLY_ROGUES = ["copper", "Bjarna", "RisingVanir", "DripDrop", "earthRog"]
 
-export const MY_CHARACTERS = ["earthiverse", "earthMag", "earthMag2", "earthMag3", "earthMer", "earthMer2", "earthMer3", "earthPal", "earthPri", "earthPri2", "earthRan2", "earthRan3", "earthRog", "earthRog2", "earthRog3", "earthWar", "earthWar2", "earthWar3"]
-export const ANNOUNCEMENT_CHARACTERS = ["announcement", "battleworthy", "charmingness", "decisiveness", "enlightening", "facilitating", "gratuitously", "hypothesized", "illumination", "journalistic", "kaleidoscope", "logistically", "mythological", "nanoparticle"]
-export const KOUIN_CHARACTERS = ["bataxedude", "cclair", "fathergreen", "kakaka", "kekeke", "kouin", "kukuku", "mule0", "mule1", "mule2", "mule3", "mule5", "mule6", "mule7", "mule8", "mule9", "mule10", "piredude"]
-export const LOLWUTPEAR_CHARACTERS = ["fgsfds", "fsjal", "funny", "gaben", "lolwutpear", "longcat", "morbintime", "orlyowl", "over9000", "prettysus", "rickroll", "rule34", "shoopdawhoop", "wombocombo", "ytmnd"]
-export const MAIN_CHARACTERS = ["WarriorMain", "MageMain", "MerchantMain", "PriestMain", "RangerMain", "PaladinMain", "RogueMain", "RogueSub"]
+export const MY_CHARACTERS = [
+    "earthiverse",
+    "earthMag",
+    "earthMag2",
+    "earthMag3",
+    "earthMer",
+    "earthMer2",
+    "earthMer3",
+    "earthPal",
+    "earthPri",
+    "earthPri2",
+    "earthRan2",
+    "earthRan3",
+    "earthRog",
+    "earthRog2",
+    "earthRog3",
+    "earthWar",
+    "earthWar2",
+    "earthWar3",
+]
+export const ANNOUNCEMENT_CHARACTERS = [
+    "announcement",
+    "battleworthy",
+    "charmingness",
+    "decisiveness",
+    "enlightening",
+    "facilitating",
+    "gratuitously",
+    "hypothesized",
+    "illumination",
+    "journalistic",
+    "kaleidoscope",
+    "logistically",
+    "mythological",
+    "nanoparticle",
+]
+export const KOUIN_CHARACTERS = [
+    "bataxedude",
+    "cclair",
+    "fathergreen",
+    "kakaka",
+    "kekeke",
+    "kouin",
+    "kukuku",
+    "mule0",
+    "mule1",
+    "mule2",
+    "mule3",
+    "mule5",
+    "mule6",
+    "mule7",
+    "mule8",
+    "mule9",
+    "mule10",
+    "piredude",
+]
+export const LOLWUTPEAR_CHARACTERS = [
+    "fgsfds",
+    "fsjal",
+    "funny",
+    "gaben",
+    "lolwutpear",
+    "longcat",
+    "morbintime",
+    "orlyowl",
+    "over9000",
+    "prettysus",
+    "rickroll",
+    "rule34",
+    "shoopdawhoop",
+    "wombocombo",
+    "ytmnd",
+]
+export const MAIN_CHARACTERS = [
+    "WarriorMain",
+    "MageMain",
+    "MerchantMain",
+    "PriestMain",
+    "RangerMain",
+    "PaladinMain",
+    "RogueMain",
+    "RogueSub",
+]
 
 export const ITEMS_TO_HOLD: Set<ItemName> = new Set([
     // Things we keep on ourselves
-    "computer", "supercomputer", "tracker", "xptome",
+    "computer",
+    "supercomputer",
+    "tracker",
+    "xptome",
     // Boosters
-    "luckbooster", "goldbooster", "xpbooster",
+    "luckbooster",
+    "goldbooster",
+    "xpbooster",
     // Potions
-    "hpot0", "hpot1", "mpot0", "mpot1"
+    "hpot0",
+    "hpot1",
+    "mpot0",
+    "mpot1",
 ])
 
 // NOTE: Level 2 lostearrings will also be exchanged in exchangeLoop
@@ -54,80 +163,231 @@ export const ITEMS_TO_EXCHANGE: Set<ItemName> = new Set([
 
 export const ITEMS_TO_CRAFT: Set<ItemName> = new Set([
     // Good items
-    "firestars", "resistancering", "wingedboots", "frostbow",
+    "firestars",
+    "resistancering",
+    "wingedboots",
+    "frostbow",
     // Event items
-    "basketofeggs", "xbox",
+    "basketofeggs",
+    "xbox",
     // Higher level elixirs
-    "elixirdex1", "elixirint1", "elixirstr1", "elixirvit1", "elixirdex2", "elixirint2", "elixirstr2", "elixirvit2",
+    "elixirdex1",
+    "elixirint1",
+    "elixirstr1",
+    "elixirvit1",
+    "elixirdex2",
+    "elixirint2",
+    "elixirstr2",
+    "elixirvit2",
     // Wanderer's items
-    "wattire", "wshoes", "wbreeches", "wcap", "wgloves"
+    "wattire",
+    "wshoes",
+    "wbreeches",
+    "wcap",
+    "wgloves",
 ])
 
 export const ITEMS_TO_BUY: Set<ItemName> = new Set([
     // NOTE: Temporary for Christmas
     // Exchangeables
-    "5bucks", "gem0", "gem1", "gemfragment", "seashell", "leather", "candycane", "mistletoe", "ornament", "candy0", "candy1", "greenenvelope", "redenvelope", "redenvelopev2", "redenvelopev3", "redenvelopev4", "basketofeggs", "armorbox", "bugbountybox", "gift0", "gift1", "mysterybox", "weaponbox", "xbox",
+    "5bucks",
+    "gem0",
+    "gem1",
+    "gemfragment",
+    "seashell",
+    "leather",
+    "candycane",
+    "mistletoe",
+    "ornament",
+    "candy0",
+    "candy1",
+    "greenenvelope",
+    "redenvelope",
+    "redenvelopev2",
+    "redenvelopev3",
+    "redenvelopev4",
+    "basketofeggs",
+    "armorbox",
+    "bugbountybox",
+    "gift0",
+    "gift1",
+    "mysterybox",
+    "weaponbox",
+    "xbox",
     // Belts
-    "dexbelt", "intbelt",
+    "dexbelt",
+    "intbelt",
     // "dexbelt", "intbelt", "sbelt", "strbelt",
     // Rings
-    "cring", "ctristone", "goldring", "ringofluck", "strring", "suckerpunch", "trigger", "tristone", "vring",
+    "cring",
+    "ctristone",
+    "goldring",
+    "ringofluck",
+    "strring",
+    "suckerpunch",
+    "trigger",
+    "tristone",
+    "vring",
     // Earrings
-    "cearring", "dexearring", "lostearring",
+    "cearring",
+    "dexearring",
+    "lostearring",
     // Amulets
-    "amuletofm", "dexamulet", "intamulet", "mpxamulet", "northstar", "skullamulet", "snring", "t2dexamulet", "t2intamulet", "t2stramulet",
+    "amuletofm",
+    "dexamulet",
+    "intamulet",
+    "mpxamulet",
+    "northstar",
+    "skullamulet",
+    "snring",
+    "t2dexamulet",
+    "t2intamulet",
+    "t2stramulet",
     // Orbs
-    "charmer", "ftrinket", "jacko", "orbg", "orbofdex", "orbofint", "orbofsc", "orbofstr", "rabbitsfoot", "talkingskull", "vorb",
+    "charmer",
+    "ftrinket",
+    "jacko",
+    "orbg",
+    "orbofdex",
+    "orbofint",
+    "orbofsc",
+    "orbofstr",
+    "rabbitsfoot",
+    "talkingskull",
+    "vorb",
     // Offhands
-    "exoarm", "wbook1", "wbookhs",
+    "exoarm",
+    "wbook1",
+    "wbookhs",
     // Shields
-    "mshield", "t2quiver", "xshield",
+    "mshield",
+    "t2quiver",
+    "xshield",
     // "t2quiver", "lantern", "mshield", /*"quiver",*/ "sshield", "xshield",
     // Capes
-    "angelwings", "bcape", "cape", "stealthcape", "vcape",
+    "angelwings",
+    "bcape",
+    "cape",
+    "stealthcape",
+    "vcape",
     // "angelwings", "bcape", "cape", "ecape", "fcape", "gcape", "stealthcape", "vcape",
     // Shoes
-    "wingedboots", "wshoes", "xboots",
+    "wingedboots",
+    "wshoes",
+    "xboots",
     // "eslippers", "hboots", "mrnboots", "mwboots", /*"shoes1",*/ "vboots", "wingedboots", "wshoes", "xboots",
     // Pants
-    "wbreeches", "xpants",
+    "wbreeches",
+    "xpants",
     // /*"frankypants",*/ "hpants", "mrnpants", "mwpants", /*"pants1",*/ "starkillers", "wbreeches", "xpants",
     // Armor
-    "luckyt", "tshirt88", "xarmor",
+    "luckyt",
+    "tshirt88",
+    "xarmor",
     // "cdragon", /*"coat1",*/ "harmor", "luckyt", "mcape", "mrnarmor", "mwarmor", "tshirt0", "tshirt1", "tshirt2", "tshirt3", "tshirt4", "tshirt6", "tshirt7", "tshirt8", "tshirt88", "tshirt9", "vattire", "warpvest", "wattire", "xarmor",
     // // Helmets
-    "cyber", "fury", "wcap", "xhelmet",
+    "cyber",
+    "fury",
+    "wcap",
+    "xhelmet",
     // "cyber", "eears", "fury", /*"helmet1",*/ "hhelmet", "mchat", "mmhat", "mphat", "mrnhat", "mwhelmet", "oxhelmet", "partyhat", "rednose", "wcap", "xhelmet",
     // Gloves
-    "wgloves", "xgloves",
+    "wgloves",
+    "xgloves",
     // /*"gloves1",*/ "goldenpowerglove", "handofmidas", "hgloves", "mittens", "mpxgloves", "mrngloves", "mwgloves", "poker", "powerglove", "supermittens", "vgloves", "wgloves", "xgloves",
     // Good weapons
-    "basher", "bataxe", "crossbow", "dartgun", "firebow", "firestars", "frostbow", "firestars", "pinkie", "scythe", "t3bow", "wblade",
+    "basher",
+    "bataxe",
+    "crossbow",
+    "dartgun",
+    "firebow",
+    "firestars",
+    "frostbow",
+    "firestars",
+    "pinkie",
+    "scythe",
+    "t3bow",
+    "wblade",
     // "basher", "bataxe", "bowofthedead", "candycanesword", "carrotsword", "crossbow", "dartgun", "fireblade", "firebow", "firestaff", "firestars", "frostbow", "froststaff", "gbow", "glolipop", "gstaff", "harbringer", "heartwood", "hbow", "hdagger", "merry", "ololipop", "oozingterror", "ornamentstaff", "pinkie", "pmace", "scythe", "snowflakes", "t2bow", "t3bow", /*"throwingstars",*/ "vdagger", "vhammer", "vstaff", "vsword", "wblade",
     // Interesting weapons
     "broom",
     // Things we can exchange / craft with
-    "ascale", "bfur", "crabclaw", "ink", "leather", "lotusf", "goldenegg", "goldingot", "goldnugget", "platinumingot", "platinumnugget", "pleather",
+    "ascale",
+    "bfur",
+    "crabclaw",
+    "ink",
+    "leather",
+    "lotusf",
+    "goldenegg",
+    "goldingot",
+    "goldnugget",
+    "platinumingot",
+    "platinumnugget",
+    "pleather",
     // "ascale", "bfur", "cscale", "cshell", "crabclaw", "electronics", "feather0", "frogt", "goldenegg", "goldingot", "goldnugget", "ink", "leather", "lotusf", "platinumingot", "platinumnugget", "pleather", "snakefang", "spores",
     // Things to make xbox
-    "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8",
+    "x0",
+    "x1",
+    "x2",
+    "x3",
+    "x4",
+    "x5",
+    "x6",
+    "x7",
+    "x8",
     // Things to make easter basket
-    "egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8",
+    "egg0",
+    "egg1",
+    "egg2",
+    "egg3",
+    "egg4",
+    "egg5",
+    "egg6",
+    "egg7",
+    "egg8",
     // Essences
-    "essenceofether", "essenceoffire", "essenceoffrost", "essenceofgreed", "essenceoflife", "essenceofnature", "offering", "offeringp", "offeringx",
+    "essenceofether",
+    "essenceoffire",
+    "essenceoffrost",
+    "essenceofgreed",
+    "essenceoflife",
+    "essenceofnature",
+    "offering",
+    "offeringp",
+    "offeringx",
     // Potions & consumables
-    "bunnyelixir", "candypop", "hotchocolate", "vblood",
+    "bunnyelixir",
+    "candypop",
+    "hotchocolate",
+    "vblood",
     // "bunnyelixir", "candypop", "elixirdex0", "elixirdex1", "elixirdex2", "elixirint0", "elixirint1", "elixirint2", "elixirluck", "elixirstr0", "elixirstr1", "elixirstr2", "greenbomb", "hotchocolate", "vblood",
     // High level scrolls
     "forscroll",
     // "cscroll3", "scroll3", "scroll4", "forscroll", "luckscroll", "manastealscroll",
     // Merchant Tools
-    "pickaxe", "rod",
+    "pickaxe",
+    "rod",
     // Keys
-    "bkey", "cryptkey", "dkey", "frozenkey", "stonekey", "tombkey", "ukey",
+    "bkey",
+    "cryptkey",
+    "dkey",
+    "frozenkey",
+    "stonekey",
+    "tombkey",
+    "ukey",
     // Misc. Things
-    "bottleofxp", "bugbountybox", "computer", "cxjar", "emotionjar", "flute", "monstertoken", "poison", "puppyer", "shadowstone", "snakeoil", "supercomputer"
-    // "bottleofxp", "bugbountybox", "computer", "confetti", "cxjar", "emotionjar", "flute", "frozenstone", "monstertoken", "poison", "puppyer", "shadowstone", "snakeoil"
+    "bottleofxp",
+    "bugbountybox",
+    "computer",
+    "cxjar",
+    "flute",
+    "monstertoken",
+    "poison",
+    "puppyer",
+    "shadowstone",
+    "snakeoil",
+    "supercomputer",
+    // "bottleofxp", "bugbountybox", "computer", "confetti", "cxjar", "flute", "frozenstone", "monstertoken", "poison", "puppyer", "shadowstone", "snakeoil"
 ])
 
 export const ITEMS_TO_LIST: {
@@ -138,44 +398,44 @@ export const ITEMS_TO_LIST: {
     }
 } = {
     // EASTER
-    "basketofeggs": {
-        0: 999_999_999
+    basketofeggs: {
+        0: 999_999_999,
     },
-    "egg0": {
-        0: 999_999_999
+    egg0: {
+        0: 999_999_999,
     },
-    "egg1": {
-        0: 999_999_999
+    egg1: {
+        0: 999_999_999,
     },
-    "egg2": {
-        0: 999_999_999
+    egg2: {
+        0: 999_999_999,
     },
-    "egg3": {
-        0: 999_999_999
+    egg3: {
+        0: 999_999_999,
     },
-    "egg4": {
-        0: 999_999_999
+    egg4: {
+        0: 999_999_999,
     },
-    "egg5": {
-        0: 999_999_999
+    egg5: {
+        0: 999_999_999,
     },
-    "egg6": {
-        0: 999_999_999
+    egg6: {
+        0: 999_999_999,
     },
-    "egg7": {
-        0: 999_999_999
+    egg7: {
+        0: 999_999_999,
     },
-    "egg8": {
-        0: 999_999_999
+    egg8: {
+        0: 999_999_999,
     },
-    "goldenegg": {
-        0: 999_999_999
+    goldenegg: {
+        0: 999_999_999,
     },
-    "cryptkey": {
-        0: 5_000_000
+    cryptkey: {
+        0: 5_000_000,
     },
-    "frozenkey": {
-        0: 7_500_000
+    frozenkey: {
+        0: 7_500_000,
     },
     // "monstertoken": {
     //     0: 400_000
@@ -184,35 +444,54 @@ export const ITEMS_TO_LIST: {
     //     0: 25_000_000,
     //     1: 76_000_000,
     // },
-    "tracker": {
-        0: 1_600_000
+    tracker: {
+        0: 1_600_000,
     },
-    "vitring": {
-        2: 2_000_000
-    }
+    vitring: {
+        2: 2_000_000,
+    },
 }
 
 export const ITEMS_TO_SELL: ItemLevelInfo = {
     // Things that accumulate
-    "cclaw": 2, "frankypants": 2, "hpamulet": 2, "hpbelt": 2, "quiver": 2, "ringsj": 2, "slimestaff": 2, "stinger": 2, "vitearring": 2,
+    cclaw: 2,
+    frankypants: 2,
+    hpamulet: 2,
+    hpbelt: 2,
+    quiver: 2,
+    ringsj: 2,
+    slimestaff: 2,
+    stinger: 2,
+    vitearring: 2,
     // Higher level things that accumulate
-    "mcape": 2,
+    mcape: 2,
     // Default weapons
-    "wshield": 2,
+    wshield: 2,
     // Default clothing
-    "shoes": 2, "pants": 2, "coat": 2, "helmet": 2, "gloves": 2,
+    shoes: 2,
+    pants: 2,
+    coat: 2,
+    helmet: 2,
+    gloves: 2,
     // Things that are now obsolete
-    "dexring": 2, "intring": 2, "intearring": 2, "strearring": 2, "stramulet": 2,
+    dexring: 2,
+    intring: 2,
+    intearring: 2,
+    strearring: 2,
+    stramulet: 2,
     // Things in abundance during halloween
-    "gphelmet": 2, "phelmet": 2,
+    gphelmet: 2,
+    phelmet: 2,
     // Things in abundance during christmas
-    "iceskates": 2, "xmace": 2,
+    iceskates: 2,
+    xmace: 2,
     // Things in abundance during lunar new year
-    "tigerhelmet": 2, "tigershield": 2,
+    tigerhelmet: 2,
+    tigershield: 2,
     // Field generators
-    "fieldgen0": 999,
+    fieldgen0: 999,
     // Snowballs
-    "snowball": 999
+    snowball: 999,
 }
 
 // Sanity check
@@ -225,62 +504,105 @@ for (const itemName in ITEMS_TO_SELL) {
 
 export const ITEMS_TO_PRIMLING: ItemLevelInfo = {
     // Rare & important items
-    "cyber": 1, "exoarm": 1, "fury": 1, "gstaff": 1, "sbelt": 0, "starkillers": 1, "suckerpunch": 1, "supermittens": 1, "t3bow": 1,
+    cyber: 1,
+    exoarm: 1,
+    fury: 1,
+    gstaff: 1,
+    sbelt: 0,
+    starkillers: 1,
+    suckerpunch: 1,
+    supermittens: 1,
+    t3bow: 1,
     // Rings which are slightly harder to get
-    "armorring": 1, "resistancering": 1, "t2quiver": 2, "tristone": 2,
+    armorring: 1,
+    resistancering: 1,
+    t2quiver: 2,
+    tristone: 2,
     // Don't use offeringp on rugged stuff (we get a lot from fishing)
-    "coat1": 8, "gloves1": 8, "helmet1": 8, "pants1": 8, "shoes1": 8,
+    coat1: 8,
+    gloves1: 8,
+    helmet1: 8,
+    pants1: 8,
+    shoes1: 8,
     // Don't use as many offeringp on heavy armor, a lot is available during events
-    "harmor": 6, "hboots": 6, "hgloves": 6, "hhelmet": 6, "hpants": 6,
+    harmor: 6,
+    hboots: 6,
+    hgloves: 6,
+    hhelmet: 6,
+    hpants: 6,
     // Don't use offeringp on vampire attire (we get a lot from bosses)
-    "vattire": 7,
+    vattire: 7,
     // Misc. common stuff
-    "cape": 7, "dagger": 7, "fireblade": 7, "firestaff": 7, "sword": 7, "wbook0": 4,
+    cape: 7,
+    dagger: 7,
+    fireblade: 7,
+    firestaff: 7,
+    sword: 7,
+    wbook0: 4,
     // Don't use as many offeringp on Halloween stuff
-    "bowofthedead": 7, "daggerofthedead": 7, "maceofthedead": 7, "pmaceofthedead": 6, "staffofthedead": 7,
+    bowofthedead: 7,
+    daggerofthedead: 7,
+    maceofthedead: 7,
+    pmaceofthedead: 6,
+    staffofthedead: 7,
     // Don't use as many offeringp on Christmas stuff
-    "candycanesword": 7, "gcape": 7, "merry": 7, "ornamentstaff": 7, "xmace": 7,
+    candycanesword: 7,
+    gcape: 7,
+    merry: 7,
+    ornamentstaff: 7,
+    xmace: 7,
 }
 
 export const UPGRADE_COMPOUND_LIMIT: ItemLevelInfo = {
-    "suckerpunch": 1, // Very valuable, don't destroy
-    "fury": 3, // Very valuable, don't destroy
-    "supermittens": 3, // Very valuable, don't destroy
-    "lostearring": 2, // Level 2 is the best for exchanging
-    "test_orb": 0, // No advantages for leveling this item
-    "throwingstars": 0, // We're going to craft them in to fiery throwing stars
-    "vitring": 2, // Level 2 vitrings are useful for crafting
-    "vorb": 0, // No advantages for leveling this item
-    "tigercape": 7, "bcape": 7 // I need better capes
+    suckerpunch: 1, // Very valuable, don't destroy
+    fury: 3, // Very valuable, don't destroy
+    supermittens: 3, // Very valuable, don't destroy
+    lostearring: 2, // Level 2 is the best for exchanging
+    test_orb: 0, // No advantages for leveling this item
+    throwingstars: 0, // We're going to craft them in to fiery throwing stars
+    vitring: 2, // Level 2 vitrings are useful for crafting
+    vorb: 0, // No advantages for leveling this item
+    tigercape: 7,
+    bcape: 7, // I need better capes
 }
 
 export const REPLENISHABLES_TO_BUY: [ItemName, number][] = [
     ["hpot1", 1000],
     ["mpot1", 1000],
-    ["xptome", 1]
+    ["xptome", 1],
 ]
 
 export function calculateAttackLoopCooldown(bot: Character): number {
     let cooldown = bot.getCooldown("attack")
 
     // Use zapper cooldown, if we have one
-    if ((bot.hasItem("zapper") || bot.isEquipped("zapper")) && bot.canUse("zapperzap", { ignoreCooldown: true, ignoreEquipped: true })) cooldown = Math.min(cooldown, bot.getCooldown("zapperzap"))
+    if (
+        (bot.hasItem("zapper") || bot.isEquipped("zapper")) &&
+        bot.canUse("zapperzap", { ignoreCooldown: true, ignoreEquipped: true })
+    )
+        cooldown = Math.min(cooldown, bot.getCooldown("zapperzap"))
 
     if (bot.ctype == "mage") {
         if (bot.canUse("cburst", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("cburst"))
         // NOTE: We don't currently use burst in the attack logic, so we're not checking it here
     } else if (bot.ctype == "ranger") {
-        if (bot.canUse("supershot", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("supershot"))
+        if (bot.canUse("supershot", { ignoreCooldown: true }))
+            cooldown = Math.min(cooldown, bot.getCooldown("supershot"))
         // NOTE: We don't currently use poison arrow in the attack logic, so we're not checking it here
     } else if (bot.ctype == "rogue") {
-        if (bot.canUse("quickpunch", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("quickpunch"))
-        if (bot.canUse("quickstab", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("quickstab"))
-        if (bot.canUse("mentalburst", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("mentalburst"))
+        if (bot.canUse("quickpunch", { ignoreCooldown: true }))
+            cooldown = Math.min(cooldown, bot.getCooldown("quickpunch"))
+        if (bot.canUse("quickstab", { ignoreCooldown: true }))
+            cooldown = Math.min(cooldown, bot.getCooldown("quickstab"))
+        if (bot.canUse("mentalburst", { ignoreCooldown: true }))
+            cooldown = Math.min(cooldown, bot.getCooldown("mentalburst"))
     } else if (bot.ctype == "warrior") {
         if (bot.canUse("agitate", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("agitate"))
-        if ((bot.hasItem(["bataxe", "scythe"])) && bot.canUse("cleave", { ignoreCooldown: true, ignoreEquipped: true })) cooldown = Math.min(cooldown, bot.getCooldown("cleave"))
+        if (bot.hasItem(["bataxe", "scythe"]) && bot.canUse("cleave", { ignoreCooldown: true, ignoreEquipped: true }))
+            cooldown = Math.min(cooldown, bot.getCooldown("cleave"))
         if (bot.canUse("taunt", { ignoreCooldown: true })) cooldown = Math.min(cooldown, bot.getCooldown("taunt"))
-        if ((bot.hasItem(["basher", "wbasher"])) && bot.canUse("stomp", { ignoreCooldown: true, ignoreEquipped: true })) cooldown = Math.min(cooldown, bot.getCooldown("stomp"))
+        if (bot.hasItem(["basher", "wbasher"]) && bot.canUse("stomp", { ignoreCooldown: true, ignoreEquipped: true }))
+            cooldown = Math.min(cooldown, bot.getCooldown("stomp"))
     }
 
     // NOTE: We want the attack loop to be a lot tighter than the normal LOOP_MS, because it's more important
@@ -299,7 +621,9 @@ export function ensureEquipped(bot: Character, item: ItemName, slot: SlotType): 
     if (bot.slots[slot]?.name != item) {
         const index = bot.locateItem(item)
         if (index !== undefined) {
-            bot.equip(index).catch(() => { /* Suppress Errors */ })
+            bot.equip(index).catch(() => {
+                /* Suppress Errors */
+            })
             return true
         }
         return false
@@ -318,12 +642,18 @@ export async function getPriority1Entities(bot: Character): Promise<Entity[] | I
     // NOTE: This list is ordered higher -> lower priority
     const coop: MonsterName[] = [
         // Event-based
-        "crabxx", "dragold", "grinch", "mrpumpkin", "mrgreen",
+        "crabxx",
+        "dragold",
+        "grinch",
+        "mrpumpkin",
+        "mrgreen",
         // Year-round
-        "franky", "icegolem"]
+        "franky",
+        "icegolem",
+    ]
     const nearby: Entity[] = []
     for (const entity of bot.getEntities({
-        typeList: coop
+        typeList: coop,
     })) {
         if (entity.target == undefined) continue
         nearby.push(entity)
@@ -334,8 +664,7 @@ export async function getPriority1Entities(bot: Character): Promise<Entity[] | I
     for (const key in bot.S) {
         const data = bot.S[key as MonsterName] as ServerInfoDataLive
         if (typeof data == "object" && data.live) {
-            if (!data.target
-                && !["grinch"].includes(key) /** Grinch changes target a lot, keep on him */) continue // No target
+            if (!data.target && !["grinch"].includes(key) /** Grinch changes target a lot, keep on him */) continue // No target
             alive.push({
                 in: data.map,
                 map: data.map,
@@ -362,17 +691,28 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
         // Goo Brawl
         "rgoo",
         // Very Rare Monsters
-        "tinyp", "cutebee",
+        "tinyp",
+        "cutebee",
         // Event Monsters
-        "pinkgoo", "wabbit", "slenderman", "tiger",
+        "pinkgoo",
+        "wabbit",
+        "slenderman",
+        "tiger",
         // Rare Monsters
-        "snowman", "greenjr", "jr", "skeletor", "mvampire", "fvampire", "stompy",
+        "snowman",
+        "greenjr",
+        "jr",
+        "skeletor",
+        "mvampire",
+        "fvampire",
+        "stompy",
         // Crypt Monsters
-        "vbat", "a2"
+        "vbat",
+        "a2",
     ]
     const nearby = bot.getEntities({
         couldGiveCredit: true,
-        typeList: solo
+        typeList: solo,
     })
     if (nearby.length > 0) return nearby
     let partyList = [bot.id]
@@ -391,30 +731,31 @@ export async function getPriority2Entities(bot: Character): Promise<Entity[] | I
                 $or: [
                     { target: undefined },
                     { target: { $in: partyList } },
-                    { type: { $in: ["pinkgoo", "snowman", "wabbit"] } } // Coop monsters will give credit
+                    { type: { $in: ["pinkgoo", "snowman", "wabbit"] } }, // Coop monsters will give credit
                 ],
                 lastSeen: { $gt: Date.now() - 60_000 },
                 serverIdentifier: bot.server.name,
                 serverRegion: bot.server.region,
                 type: { $in: solo },
                 x: { $ne: undefined },
-                y: { $ne: undefined }
-            }
+                y: { $ne: undefined },
+            },
         },
         { $addFields: { __order: { $indexOfArray: [solo, "$type"] } } },
-        { $sort: { "__order": 1 } },
+        { $sort: { __order: 1 } },
         {
             $project: {
                 __order: 0,
                 _id: 0,
                 lastSeen: 0,
                 serverIdentifier: 0,
-                serverRegion: 0
-            }
-        }]).exec()
+                serverRegion: 0,
+            },
+        },
+    ]).exec()
 }
 
-export async function getMonsterHuntTargets(bot: Character, friends: Character[]): Promise<(MonsterName)[]> {
+export async function getMonsterHuntTargets(bot: Character, friends: Character[]): Promise<MonsterName[]> {
     if (!bot.party) {
         // We have no party, we're doing MHs solo
         if (bot.s.monsterhunt && bot.s.monsterhunt.c > 0) return [bot.s.monsterhunt.id] // We have an active MH
@@ -468,33 +809,37 @@ export async function getMonsterHuntTargets(bot: Character, friends: Character[]
                         { "s.monsterhunt.c": { $gt: 0 } },
                         { "s.monsterhunt.sn": `${bot.server.region} ${bot.server.name}` },
                         { serverIdentifier: bot.serverData.name },
-                        { serverRegion: bot.serverData.region }
-                    ]
-                }
-            }, {
+                        { serverRegion: bot.serverData.region },
+                    ],
+                },
+            },
+            {
                 $addFields: {
                     monster: "$s.monsterhunt.id",
-                    timeLeft: { $subtract: ["$s.monsterhunt.ms", { $subtract: [Date.now(), "$lastSeen"] }] }
-                }
-            }, {
+                    timeLeft: { $subtract: ["$s.monsterhunt.ms", { $subtract: [Date.now(), "$lastSeen"] }] },
+                },
+            },
+            {
                 $match: {
-                    timeLeft: { $gt: 0 }
-                }
-            }, {
+                    timeLeft: { $gt: 0 },
+                },
+            },
+            {
                 $sort: {
-                    timeLeft: 1
-                }
-            }, {
+                    timeLeft: 1,
+                },
+            },
+            {
                 $project: {
                     _id: 0,
                     monster: 1,
-                    timeLeft: 1
-                }
-            }]
-        ).exec()) {
+                    timeLeft: 1,
+                },
+            },
+        ]).exec()) {
             data.push({
                 id: player.monster,
-                ms: player.timeLeft
+                ms: player.timeLeft,
             })
         }
     }
@@ -502,7 +847,7 @@ export async function getMonsterHuntTargets(bot: Character, friends: Character[]
     data.sort((a, b) => {
         return a.ms - b.ms
     })
-    const targets: (MonsterName)[] = []
+    const targets: MonsterName[] = []
     for (const datum of data) {
         targets.push(datum.id)
     }
@@ -519,13 +864,15 @@ export async function goGetRspeedBuff(bot: Character, msToWait = 10000): Promise
         name: { $in: FRIENDLY_ROGUES },
         rip: { $ne: true },
         serverIdentifier: bot.server.name,
-        serverRegion: bot.server.region
-    }).lean().exec()
+        serverRegion: bot.server.region,
+    })
+        .lean()
+        .exec()
 
     const options: PathfinderOptions = {}
     options.costs = {
-        town: bot.speed * (4 + (Math.min(bot.ping, 1000) / 500)), // Set it to 4s of movement, because it takes 3s to channel + it could be cancelled.
-        transport: bot.speed * (Math.min(bot.ping, 1000) / 500) // Based on how long it takes to confirm with the server
+        town: bot.speed * (4 + Math.min(bot.ping, 1000) / 500), // Set it to 4s of movement, because it takes 3s to channel + it could be cancelled.
+        transport: bot.speed * (Math.min(bot.ping, 1000) / 500), // Based on how long it takes to confirm with the server
     }
 
     let closestDistance: number = Number.MAX_VALUE
@@ -543,7 +890,11 @@ export async function goGetRspeedBuff(bot: Character, msToWait = 10000): Promise
 
     if (friendlyRogue) {
         if (bot.ctype == "merchant") (bot as Merchant).closeMerchantStand().catch(console.error)
-        await bot.smartMove(friendlyRogue, { getWithin: 20, stopIfTrue: async () => bot.s.rspeed !== undefined, useBlink: true })
+        await bot.smartMove(friendlyRogue, {
+            getWithin: 20,
+            stopIfTrue: async () => bot.s.rspeed !== undefined,
+            useBlink: true,
+        })
         if (["earthRog"].includes(friendlyRogue.id)) return // Don't remove earthRog from the list, they're probably just low MP
 
         // Wait a bit for rspeed
@@ -571,20 +922,31 @@ export async function goToAggroMonster(bot: Character, entity: Entity): Promise<
     if (entity.target) return // It's already aggro'd
 
     if (entity.going_x !== undefined && entity.going_y !== undefined) {
-        const distanceToTravel = AL.Tools.distance({ x: entity.x, y: entity.y }, { x: entity.going_x, y: entity.going_y })
+        const distanceToTravel = AL.Tools.distance(
+            { x: entity.x, y: entity.y },
+            { x: entity.going_x, y: entity.going_y },
+        )
         const lead = 20 + (LOOP_MS / 1000) * entity.speed
         if (distanceToTravel >= lead) {
             const angle = Math.atan2(entity.going_y - entity.y, entity.going_x - entity.x)
-            const destination = { map: entity.map, x: entity.x + Math.cos(angle) * lead, y: entity.y + Math.sin(angle) * lead }
+            const destination = {
+                map: entity.map,
+                x: entity.x + Math.cos(angle) * lead,
+                y: entity.y + Math.sin(angle) * lead,
+            }
             if (AL.Pathfinder.canWalkPath(bot, destination)) {
-                bot.move(destination.x, destination.y, { resolveOnStart: true }).catch(() => { /* Suppress errors */ })
+                bot.move(destination.x, destination.y, { resolveOnStart: true }).catch(() => {
+                    /* Suppress errors */
+                })
             } else {
                 return bot.smartMove(destination)
             }
         } else {
             const destination: IPosition = { map: entity.map, x: entity.going_x, y: entity.going_y }
             if (AL.Pathfinder.canWalkPath(bot, destination)) {
-                bot.move(destination.x, destination.y).catch(() => { /* Suppress errors */ })
+                bot.move(destination.x, destination.y).catch(() => {
+                    /* Suppress errors */
+                })
             } else {
                 return bot.smartMove(destination)
             }
@@ -592,7 +954,11 @@ export async function goToAggroMonster(bot: Character, entity: Entity): Promise<
     }
 }
 
-export async function goToBankIfFull(bot: Character, itemsToHold = ITEMS_TO_HOLD, goldToHold = GOLD_TO_HOLD): Promise<void> {
+export async function goToBankIfFull(
+    bot: Character,
+    itemsToHold = ITEMS_TO_HOLD,
+    goldToHold = GOLD_TO_HOLD,
+): Promise<void> {
     if (!bot.isFull()) return // We aren't full
 
     await bot.smartMove("fancypots", { avoidTownWarps: true }) // Move to potion seller to give the sell loop a chance to sell things
@@ -716,7 +1082,13 @@ export async function goToNPC(bot: Character, name: NPCName) {
     if (npc) return bot.smartMove(offsetPositionParty(npc, bot), { useBlink: true })
 
     // Look for it in our database
-    const special = await AL.NPCModel.findOne({ name: fixedName, serverIdentifier: bot.server.name, serverRegion: bot.server.region }).lean().exec()
+    const special = await AL.NPCModel.findOne({
+        name: fixedName,
+        serverIdentifier: bot.server.name,
+        serverRegion: bot.server.region,
+    })
+        .lean()
+        .exec()
     if (special) return bot.smartMove(offsetPositionParty(special, bot), { useBlink: true })
 }
 
@@ -727,7 +1099,11 @@ export async function goToPriestIfHurt(bot: Character, priest: Character): Promi
     return bot.smartMove(priest, { getWithin: priest.range, stopIfTrue: async () => bot.hp >= bot.max_hp * 0.6 })
 }
 
-export async function goToSpecialMonster(bot: Character, type: MonsterName, options: { requestMagiport?: true } = {}): Promise<unknown> {
+export async function goToSpecialMonster(
+    bot: Character,
+    type: MonsterName,
+    options: { requestMagiport?: true } = {},
+): Promise<unknown> {
     const stopIfTrue = async (): Promise<boolean> => {
         const target = bot.getEntity({ type: type })
         if (!target) return false // No target, don't stop
@@ -742,14 +1118,25 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
     }
 
     // Look for it in the server data
-    if ((bot.S?.[type] as ServerInfoDataLive)?.live && bot.S[type]["x"] !== undefined && bot.S[type]["y"] !== undefined) {
+    if (
+        (bot.S?.[type] as ServerInfoDataLive)?.live &&
+        bot.S[type]["x"] !== undefined &&
+        bot.S[type]["y"] !== undefined
+    ) {
         const destination = bot.S[type] as IPosition
         if (options.requestMagiport) requestMagiportService(bot, destination)
-        if (AL.Tools.distance(bot, destination) > bot.range) return bot.smartMove(destination, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+        if (AL.Tools.distance(bot, destination) > bot.range)
+            return bot.smartMove(destination, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
     }
 
     // Look for it in our database
-    const dbTarget = await AL.EntityModel.findOne({ serverIdentifier: bot.server.name, serverRegion: bot.server.region, type: type }).lean().exec()
+    const dbTarget = await AL.EntityModel.findOne({
+        serverIdentifier: bot.server.name,
+        serverRegion: bot.server.region,
+        type: type,
+    })
+        .lean()
+        .exec()
     if (dbTarget && dbTarget.x !== undefined && dbTarget.y !== undefined) {
         if (options.requestMagiport) requestMagiportService(bot, dbTarget)
         return bot.smartMove(dbTarget, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
@@ -758,15 +1145,22 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
     // Look for if there's a spawn for it
     for (const spawn of Pathfinder.locateMonster(type)) {
         // Move to the next spawn
-        await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: async () => bot.getEntity({ type: type }) !== undefined })
+        await bot.smartMove(spawn, {
+            getWithin: bot.range - 10,
+            stopIfTrue: async () => bot.getEntity({ type: type }) !== undefined,
+        })
 
         target = bot.getEntity({ returnNearest: true, type: type })
         if (target) return bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
     }
 
     // Go through all the spawns on the map to look for it
-    if ((dbTarget && dbTarget.x == undefined && dbTarget.y == undefined && dbTarget.map)
-        || ((bot.S?.[type] as ServerInfoDataLive)?.live && bot.S[type]["x"] !== undefined && bot.S[type]["y"] !== undefined)) {
+    if (
+        (dbTarget && dbTarget.x == undefined && dbTarget.y == undefined && dbTarget.map) ||
+        ((bot.S?.[type] as ServerInfoDataLive)?.live &&
+            bot.S[type]["x"] !== undefined &&
+            bot.S[type]["y"] !== undefined)
+    ) {
         const spawns: IPosition[] = []
 
         const gMap = bot.G.maps[(dbTarget.map ?? bot.S[type]["map"]) as MapName] as GMap
@@ -777,10 +1171,18 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
             const gMonster = bot.G.monsters[spawn.type]
             if (gMonster.aggro >= 100 || gMonster.rage >= 100) continue // Skip aggro spawns
             if (spawn.boundary) {
-                spawns.push({ "map": dbTarget.map, "x": (spawn.boundary[0] + spawn.boundary[2]) / 2, "y": (spawn.boundary[1] + spawn.boundary[3]) / 2 })
+                spawns.push({
+                    map: dbTarget.map,
+                    x: (spawn.boundary[0] + spawn.boundary[2]) / 2,
+                    y: (spawn.boundary[1] + spawn.boundary[3]) / 2,
+                })
             } else if (spawn.boundaries) {
                 for (const boundary of spawn.boundaries) {
-                    spawns.push({ "map": boundary[0], "x": (boundary[1] + boundary[3]) / 2, "y": (boundary[2] + boundary[4]) / 2 })
+                    spawns.push({
+                        map: boundary[0],
+                        x: (boundary[1] + boundary[3]) / 2,
+                        y: (boundary[2] + boundary[4]) / 2,
+                    })
                 }
             }
         }
@@ -790,10 +1192,14 @@ export async function goToSpecialMonster(bot: Character, type: MonsterName, opti
 
         for (const spawn of spawns) {
             // Move to the next spawn
-            await bot.smartMove(spawn, { getWithin: bot.range - 10, stopIfTrue: async () => bot.getEntity({ type: type }) !== undefined })
+            await bot.smartMove(spawn, {
+                getWithin: bot.range - 10,
+                stopIfTrue: async () => bot.getEntity({ type: type }) !== undefined,
+            })
 
             target = bot.getEntity({ returnNearest: true, type: type })
-            if (target) return bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
+            if (target)
+                return bot.smartMove(target, { getWithin: bot.range - 10, stopIfTrue: stopIfTrue, useBlink: true })
         }
     }
 }
@@ -848,39 +1254,61 @@ export async function goToNPCShopIfFull(bot: Character, itemsToSell = ITEMS_TO_S
     await sleep(1000)
 }
 
-export async function goToNearestWalkableToMonster(bot: Character, types: MonsterName[], defaultPosition?: IPosition, getWithin = bot.range): Promise<unknown> {
+export async function goToNearestWalkableToMonster(
+    bot: Character,
+    types: MonsterName[],
+    defaultPosition?: IPosition,
+    getWithin = bot.range,
+): Promise<unknown> {
     const nearest = bot.getEntity({
         canWalkTo: true,
         couldGiveCredit: true,
         returnNearest: true,
         typeList: types,
         willBurnToDeath: false,
-        willDieToProjectiles: false
+        willDieToProjectiles: false,
     })
 
     if (nearest && Tools.distance(bot, nearest) > getWithin) {
         const destination = offsetPositionParty(nearest, bot)
-        bot.move(destination.x, destination.y, { resolveOnStart: true }).catch(() => { /* Suppress errors */ })
+        bot.move(destination.x, destination.y, { resolveOnStart: true }).catch(() => {
+            /* Suppress errors */
+        })
     } else if (!nearest && defaultPosition) {
         const destination = offsetPositionParty(defaultPosition, bot)
         if (AL.Pathfinder.canWalkPath(bot, destination)) {
-            bot.move(destination.x, destination.y, { resolveOnStart: true }).catch(() => { /* Suppress errors */ })
+            bot.move(destination.x, destination.y, { resolveOnStart: true }).catch(() => {
+                /* Suppress errors */
+            })
         } else {
-            return bot.smartMove(destination, { stopIfTrue: async () => bot.getEntity({ canWalkTo: true, typeList: types }) !== undefined, useBlink: true })
+            return bot.smartMove(destination, {
+                stopIfTrue: async () => bot.getEntity({ canWalkTo: true, typeList: types }) !== undefined,
+                useBlink: true,
+            })
         }
     } else if (!nearest) {
-        return bot.smartMove(types[0], { stopIfTrue: async () => bot.getEntity({ canWalkTo: true, typeList: types }) !== undefined, useBlink: true })
+        return bot.smartMove(types[0], {
+            stopIfTrue: async () => bot.getEntity({ canWalkTo: true, typeList: types }) !== undefined,
+            useBlink: true,
+        })
     }
 }
 
 export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName[], defaultPosition?: IPosition): void {
-    const targets = bot.getEntities({ canDamage: true, canWalkTo: true, couldGiveCredit: true, typeList: types, willBurnToDeath: false, willDieToProjectiles: false })
+    const targets = bot.getEntities({
+        canDamage: true,
+        canWalkTo: true,
+        couldGiveCredit: true,
+        typeList: types,
+        willBurnToDeath: false,
+        willDieToProjectiles: false,
+    })
     targets.sort(sortClosestDistance(bot))
 
     const costs = {
         enter: 9999,
         town: 9999,
-        transport: 9999
+        transport: 9999,
     }
 
     let lastD: number
@@ -893,10 +1321,19 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
 
         if (lastD !== undefined) {
             // We're in range of one or more monsters, move as much as we can to the next monster without going outside of the attack range of all existing monsters
-            bot.smartMove(target, { avoidTownWarps: true, costs: costs, getWithin: d - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(target, {
+                avoidTownWarps: true,
+                costs: costs,
+                getWithin: d - (bot.range - lastD),
+                resolveOnFinalMoveStart: true,
+            }).catch(() => {
+                /** Suppress Error */
+            })
         } else {
             // We're out of range of all monsters
-            bot.smartMove(target, { avoidTownWarps: true, costs: costs, resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(target, { avoidTownWarps: true, costs: costs, resolveOnFinalMoveStart: true }).catch(() => {
+                /** Suppress Error */
+            })
         }
         return
     }
@@ -904,7 +1341,14 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
     if (lastD) {
         if (defaultPosition) {
             // Move towards center of default position
-            bot.smartMove(offsetPositionParty(defaultPosition, bot), { avoidTownWarps: true, costs: costs, getWithin: Tools.distance(bot, defaultPosition) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(defaultPosition, bot), {
+                avoidTownWarps: true,
+                costs: costs,
+                getWithin: Tools.distance(bot, defaultPosition) - (bot.range - lastD),
+                resolveOnFinalMoveStart: true,
+            }).catch(() => {
+                /** Suppress Error */
+            })
         } else if (types) {
             // Move towards center of closest spawn
             const locations: IPosition[] = []
@@ -912,36 +1356,68 @@ export function goToNearestWalkableToMonster2(bot: Character, types: MonsterName
                 locations.push(...Pathfinder.locateMonster(type))
             }
             locations.sort(sortClosestDistance(bot))
-            bot.smartMove(offsetPositionParty(locations[0], bot), { avoidTownWarps: true, costs: costs, getWithin: Tools.distance(bot, locations[0]) - (bot.range - lastD), resolveOnFinalMoveStart: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(locations[0], bot), {
+                avoidTownWarps: true,
+                costs: costs,
+                getWithin: Tools.distance(bot, locations[0]) - (bot.range - lastD),
+                resolveOnFinalMoveStart: true,
+            }).catch(() => {
+                /** Suppress Error */
+            })
         }
     } else if (!bot.smartMoving) {
         // No targets nearby, move to spawn
         if (defaultPosition) {
-            bot.smartMove(offsetPositionParty(defaultPosition, bot), { resolveOnFinalMoveStart: true, useBlink: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(defaultPosition, bot), {
+                resolveOnFinalMoveStart: true,
+                useBlink: true,
+            }).catch(() => {
+                /** Suppress Error */
+            })
         } else if (types) {
             const locations: IPosition[] = []
             for (const type of types) {
                 locations.push(...Pathfinder.locateMonster(type))
             }
             locations.sort(sortClosestDistance(bot))
-            bot.smartMove(offsetPositionParty(locations[0], bot), { resolveOnFinalMoveStart: true, useBlink: true }).catch(() => { /** Suppress Error */ })
+            bot.smartMove(offsetPositionParty(locations[0], bot), {
+                resolveOnFinalMoveStart: true,
+                useBlink: true,
+            }).catch(() => {
+                /** Suppress Error */
+            })
         }
     }
 }
 
-export function kiteInCircle(bot: Character, type: MonsterName, center: IPosition, radius = 100, angle = Math.PI / 2.5): Promise<IPosition> {
+export function kiteInCircle(
+    bot: Character,
+    type: MonsterName,
+    center: IPosition,
+    radius = 100,
+    angle = Math.PI / 2.5,
+): Promise<IPosition> {
     if (AL.Pathfinder.canWalkPath(bot, center)) {
         const nearest = bot.getEntity({ returnNearest: true, type: type })
         if (nearest) {
             // There's a monster nearby
             const angleFromCenterToMonsterGoing = Math.atan2(nearest.going_y - center.y, nearest.going_x - center.x)
             const endGoalAngle = angleFromCenterToMonsterGoing + angle
-            const endGoal = offsetPositionParty({ x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }, bot)
+            const endGoal = offsetPositionParty(
+                { x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) },
+                bot,
+            )
             bot.move(endGoal.x, endGoal.y, { resolveOnStart: true }).catch(console.error)
         } else {
             // There isn't a monster nearby
             const angleFromSpawnToBot = Math.atan2(bot.y - center.y, bot.x - center.x)
-            const endGoal = offsetPositionParty({ x: center.x + radius * Math.cos(angleFromSpawnToBot), y: center.y + radius * Math.sin(angleFromSpawnToBot) }, bot)
+            const endGoal = offsetPositionParty(
+                {
+                    x: center.x + radius * Math.cos(angleFromSpawnToBot),
+                    y: center.y + radius * Math.sin(angleFromSpawnToBot),
+                },
+                bot,
+            )
             return bot.move(endGoal.x, endGoal.y, { resolveOnStart: true })
         }
     } else {
@@ -950,12 +1426,19 @@ export function kiteInCircle(bot: Character, type: MonsterName, center: IPositio
     }
 }
 
-export async function moveInCircle(bot: Character, center: IPosition, radius = 125, angle = Math.PI / 2.5): Promise<IPosition> {
+export async function moveInCircle(
+    bot: Character,
+    center: IPosition,
+    radius = 125,
+    angle = Math.PI / 2.5,
+): Promise<IPosition> {
     if (AL.Pathfinder.canWalkPath(bot, center)) {
         const angleFromCenterToCurrent = Math.atan2(bot.y - center.y, bot.x - center.x)
         const endGoalAngle = angleFromCenterToCurrent + angle
         const endGoal = { x: center.x + radius * Math.cos(endGoalAngle), y: center.y + radius * Math.sin(endGoalAngle) }
-        bot.move(endGoal.x, endGoal.y, { resolveOnStart: true }).catch(() => { /** Suppress errors */ })
+        bot.move(endGoal.x, endGoal.y, { resolveOnStart: true }).catch(() => {
+            /** Suppress errors */
+        })
     } else {
         // Move to where we can walk
         return bot.smartMove(center, { getWithin: radius })
@@ -968,29 +1451,52 @@ export function requestMagiportService(bot: Character, targetLocation: IPosition
 
     // Get player locations
     let numRequested = 0
-    AL.PlayerModel.find({
-        lastSeen: { $gt: Date.now() - 30000 },
-        map: targetLocation.map,
-        name: {
-            $in: [
-                "Bjarny", "Clarity", // Public magiport services
-            ] // sesquipedalian's mages
+    AL.PlayerModel.find(
+        {
+            lastSeen: { $gt: Date.now() - 30000 },
+            map: targetLocation.map,
+            name: {
+                $in: [
+                    "Bjarny",
+                    "Clarity", // Public magiport services
+                ], // sesquipedalian's mages
+            },
+            serverIdentifier: bot.server.name,
+            serverRegion: bot.server.region,
         },
-        serverIdentifier: bot.server.name,
-        serverRegion: bot.server.region
-    }, {
-        _id: 0, map: 1, name: 1, x: 1, y: 1
-    }).lean().exec().then((players) => {
-        for (const player of players) {
-            if (AL.Tools.distance(targetLocation, player) > within) continue // They're too far away from the target
+        {
+            _id: 0,
+            map: 1,
+            name: 1,
+            x: 1,
+            y: 1,
+        },
+    )
+        .lean()
+        .exec()
+        .then((players) => {
+            for (const player of players) {
+                if (AL.Tools.distance(targetLocation, player) > within) continue // They're too far away from the target
 
-            if (["Bjarny", "lolwutpear", "shoopdawhoop", "ytmnd", "facilitating", "gratuitously", "hypothesized"].includes(player.name)) bot.sendCM([player.name], "magiport").catch(console.error)
-            else if (player.name == "Clarity") bot.sendCM([player.name], "magiport_please_dad").catch(console.error)
+                if (
+                    [
+                        "Bjarny",
+                        "lolwutpear",
+                        "shoopdawhoop",
+                        "ytmnd",
+                        "facilitating",
+                        "gratuitously",
+                        "hypothesized",
+                    ].includes(player.name)
+                )
+                    bot.sendCM([player.name], "magiport").catch(console.error)
+                else if (player.name == "Clarity") bot.sendCM([player.name], "magiport_please_dad").catch(console.error)
 
-            // Don't request too many because of call code cost
-            if (numRequested++ > 3) break
-        }
-    }).catch(console.error)
+                // Don't request too many because of call code cost
+                if (numRequested++ > 3) break
+            }
+        })
+        .catch(console.error)
 }
 
 export function startAvoidStacking(bot: Character): void {
@@ -1003,11 +1509,17 @@ export function startAvoidStacking(bot: Character): void {
 
         const x = -25 + Math.round(50 * Math.random())
         const y = -25 + Math.round(50 * Math.random())
-        await bot.move(bot.x + x, bot.y + y).catch(() => { /* Suppress errors */ })
+        await bot.move(bot.x + x, bot.y + y).catch(() => {
+            /* Suppress errors */
+        })
     })
 }
 
-export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenishablesToBuy = REPLENISHABLES_TO_BUY): void {
+export function startBuyLoop(
+    bot: Character,
+    itemsToBuy = ITEMS_TO_BUY,
+    replenishablesToBuy = REPLENISHABLES_TO_BUY,
+): void {
     const pontyLocations = Pathfinder.locateNPC("secondhands")
     let lastPonty = 0
     async function buyLoop() {
@@ -1032,8 +1544,8 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
                         if (!item) continue
 
                         if (
-                            item.p // Buy all shiny/glitched/etc. items
-                            || itemsToBuy.has(item.name) // Buy anything in our buy list
+                            item.p || // Buy all shiny/glitched/etc. items
+                            itemsToBuy.has(item.name) // Buy anything in our buy list
                         ) {
                             await bot.buyFromPonty(item)
                             continue
@@ -1069,16 +1581,24 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
                     const q = item.q === undefined ? 1 : item.q
 
                     // Join new giveaways if we're a merchant
-                    if (item.giveaway && bot.ctype == "merchant" && !["attackMer"].includes(player.id) && (!item.list || !item.list.includes(bot.id))) {
+                    if (
+                        item.giveaway &&
+                        bot.ctype == "merchant" &&
+                        !["attackMer"].includes(player.id) &&
+                        (!item.list || !item.list.includes(bot.id))
+                    ) {
                         await (bot as Merchant).joinGiveaway(slot, player.id, item.rid)
                         continue
                     }
 
                     // Buy if we can resell to NPC for more money
                     const cost = bot.calculateItemCost(item)
-                    if (bot.gold >= item.price &&
-                        ((item.price < cost * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
-                            || (itemsToBuy.has(item.name) && !buyableFromNPC && item.price <= cost * AL.Constants.PONTY_MARKUP)) // Item is the same, or lower price than Ponty would sell it for, and we want it.
+                    if (
+                        bot.gold >= item.price &&
+                        (item.price < cost * 0.6 || // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
+                            (itemsToBuy.has(item.name) &&
+                                !buyableFromNPC &&
+                                item.price <= cost * AL.Constants.PONTY_MARKUP)) // Item is the same, or lower price than Ponty would sell it for, and we want it.
                     ) {
                         await bot.buyFromMerchant(player.id, slot, item.rid, q)
                         continue
@@ -1093,7 +1613,11 @@ export function startBuyLoop(bot: Character, itemsToBuy = ITEMS_TO_BUY, replenis
     buyLoop()
 }
 
-export function startBuyFriendsReplenishablesLoop(bot: Character, friends: Character[], replenishablesToBuy = REPLENISHABLES_TO_BUY): void {
+export function startBuyFriendsReplenishablesLoop(
+    bot: Character,
+    friends: Character[],
+    replenishablesToBuy = REPLENISHABLES_TO_BUY,
+): void {
     async function buyFriendsReplenishablesLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -1199,18 +1723,26 @@ export function startCompoundLoop(bot: Character, itemsToSell: ItemLevelInfo = I
                             let cscrollPos = bot.locateItem(cscrollName)
                             const primlingPos = bot.locateItem("offeringp")
                             try {
-                                if (cscrollPos == undefined && !bot.canBuy(cscrollName)) continue // We can't buy a scroll for whatever reason :(
+                                if (cscrollPos == undefined && !bot.canBuy(cscrollName))
+                                    continue // We can't buy a scroll for whatever reason :(
                                 else if (cscrollPos == undefined) cscrollPos = ((await bot.buy(cscrollName)) as any).num
 
-                                if ((ITEMS_TO_PRIMLING[itemName] && dLevel >= ITEMS_TO_PRIMLING[itemName])
-                                    || (!ITEMS_TO_PRIMLING[itemName] && ((level0Grade == 0 && dLevel >= 3) || (level0Grade == 1 && dLevel >= 2) || (level0Grade == 2 && dLevel >= 1)))) {
+                                if (
+                                    (ITEMS_TO_PRIMLING[itemName] && dLevel >= ITEMS_TO_PRIMLING[itemName]) ||
+                                    (!ITEMS_TO_PRIMLING[itemName] &&
+                                        ((level0Grade == 0 && dLevel >= 3) ||
+                                            (level0Grade == 1 && dLevel >= 2) ||
+                                            (level0Grade == 2 && dLevel >= 1)))
+                                ) {
                                     // We want to use an offeringp to upgrade these
                                     if (primlingPos == undefined) continue // We don't have any offeringps
-                                    if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as Merchant).massProduction()
+                                    if (!bot.s.massproduction && bot.canUse("massproduction"))
+                                        (bot as Merchant).massProduction()
                                     await bot.compound(items[0], items[1], items[2], cscrollPos, primlingPos)
                                 } else {
                                     // We don't want to use an offeringp to upgrade these
-                                    if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as Merchant).massProduction()
+                                    if (!bot.s.massproduction && bot.canUse("massproduction"))
+                                        (bot as Merchant).massProduction()
                                     await bot.compound(items[0], items[1], items[2], cscrollPos)
                                 }
                                 i += 2
@@ -1328,8 +1860,12 @@ export function writeLast1000Events(bot: Character, filename: string, extra?: st
 
     try {
         let prepare = extra ? `${extra}\n\n` : ""
-        events.sort((a, b) => { return a?.[0].getTime() - b?.[0].getTime() })
-        for (const [date, event, data] of events) { prepare += `${date.toISOString()}: ${event} - ${data}\n` }
+        events.sort((a, b) => {
+            return a?.[0].getTime() - b?.[0].getTime()
+        })
+        for (const [date, event, data] of events) {
+            prepare += `${date.toISOString()}: ${event} - ${data}\n`
+        }
         fs.writeFileSync(filename, prepare)
     } catch (e) {
         console.error(e)
@@ -1368,8 +1904,10 @@ export function startExchangeLoop(bot: Character, itemsToExchange = ITEMS_TO_EXC
                 return
             }
 
-            if (bot.esize > 10 /** Only exchange if we have plenty of space */
-                && !(bot.G.maps[bot.map] as GMap).mount /** Don't exchange in the bank */) {
+            if (
+                bot.esize > 10 /** Only exchange if we have plenty of space */ &&
+                !(bot.G.maps[bot.map] as GMap).mount /** Don't exchange in the bank */
+            ) {
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
                     if (!item) continue
@@ -1381,8 +1919,10 @@ export function startExchangeLoop(bot: Character, itemsToExchange = ITEMS_TO_EXC
             }
 
             // Exchange level 2 lostearrings
-            if (!(bot.G.maps[bot.map] as GMap).mount /** Don't exchange in the bank */
-                && bot.canExchange("lostearring")) {
+            if (
+                !(bot.G.maps[bot.map] as GMap).mount /** Don't exchange in the bank */ &&
+                bot.canExchange("lostearring")
+            ) {
                 for (let i = 0; i < bot.items.length; i++) {
                     const item = bot.items[i]
                     if (!item) continue
@@ -1584,7 +2124,7 @@ export function startPartyLoop(bot: Character, leader: string, partyMembers?: st
 
             if (!bot.party) {
                 await bot.sendPartyRequest(leader)
-            } else if (!(bot.partyData?.list?.includes(leader))) {
+            } else if (!bot.partyData?.list?.includes(leader)) {
                 // await bot.leaveParty()
                 await bot.sendPartyRequest(leader)
             }
@@ -1602,8 +2142,10 @@ export function startPartyInviteLoop(bot: Character, player: string): void {
         try {
             if (!bot.socket || bot.socket.disconnected) return
 
-            if (!bot.partyData?.list?.includes(player) /** Only invite if they're missing */
-                && bot.partyData.list.length < 9 /** Don't invite if we're at capacity */) {
+            if (
+                !bot.partyData?.list?.includes(player) /** Only invite if they're missing */ &&
+                bot.partyData.list.length < 9 /** Don't invite if we're at capacity */
+            ) {
                 bot.sendPartyInvite(player)
             }
         } catch (e) {
@@ -1636,15 +2178,15 @@ export function startScareLoop(bot: Character): void {
                 }
             }
 
-            if (bot.canUse("scare", { ignoreEquipped: true })
-                && (bot.hasItem("jacko") || bot.isEquipped("jacko"))
-                && (
-                    bot.isScared() // We are scared
-                    || (bot.s.burned && bot.s.burned.intensity > bot.max_hp / 5) // We are burning pretty badly
-                    || (bot.targets > 0 && bot.c.town) // We are teleporting
-                    || (bot.targets > 0 && bot.hp < bot.max_hp * 0.25) // We are low on HP
-                    || (incomingDamage > bot.hp) // We could literally die with the next attack
-                )) {
+            if (
+                bot.canUse("scare", { ignoreEquipped: true }) &&
+                (bot.hasItem("jacko") || bot.isEquipped("jacko")) &&
+                (bot.isScared() || // We are scared
+                    (bot.s.burned && bot.s.burned.intensity > bot.max_hp / 5) || // We are burning pretty badly
+                    (bot.targets > 0 && bot.c.town) || // We are teleporting
+                    (bot.targets > 0 && bot.hp < bot.max_hp * 0.25) || // We are low on HP
+                    incomingDamage > bot.hp) // We could literally die with the next attack
+            ) {
                 // Equip the jacko if we need to
                 let inventoryPos: number
                 if (!bot.canUse("scare") && bot.hasItem("jacko")) {
@@ -1749,7 +2291,12 @@ export function startSellLoop(bot: Character, itemsToSell = ITEMS_TO_SELL, items
  * @param itemsToSend
  * @param goldToHold
  */
-export function startSendStuffAllowlistLoop(bot: Character, sendTo: string, itemsToSend: (ItemName)[], goldToHold = GOLD_TO_HOLD): void {
+export function startSendStuffAllowlistLoop(
+    bot: Character,
+    sendTo: string,
+    itemsToSend: ItemName[],
+    goldToHold = GOLD_TO_HOLD,
+): void {
     async function sendStuffLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -1794,7 +2341,12 @@ export function startSendStuffAllowlistLoop(bot: Character, sendTo: string, item
  * @param itemsToHold
  * @param goldToHold
  */
-export function startSendStuffDenylistLoop(bot: Character, sendTo: string[], itemsToHold = ITEMS_TO_HOLD, goldToHold = 1_000_000): void {
+export function startSendStuffDenylistLoop(
+    bot: Character,
+    sendTo: string[],
+    itemsToHold = ITEMS_TO_HOLD,
+    goldToHold = 1_000_000,
+): void {
     async function sendStuffLoop() {
         try {
             if (!bot.socket || bot.socket.disconnected) return
@@ -1938,18 +2490,26 @@ export function startUpgradeLoop(bot: Character, itemsToSell: ItemLevelInfo = IT
                             let scrollPos = bot.locateItem(scrollName)
                             const primlingPos = bot.locateItem("offeringp")
                             try {
-                                if (scrollPos == undefined && !bot.canBuy(scrollName)) continue // We can't buy a scroll for whatever reason :(
+                                if (scrollPos == undefined && !bot.canBuy(scrollName))
+                                    continue // We can't buy a scroll for whatever reason :(
                                 else if (scrollPos == undefined) scrollPos = ((await bot.buy(scrollName)) as any).num
 
-                                if ((ITEMS_TO_PRIMLING[itemName] && dLevel >= ITEMS_TO_PRIMLING[itemName])
-                                    || (!ITEMS_TO_PRIMLING[itemName] && ((level0Grade == 0 && dLevel >= 8) || (level0Grade == 1 && dLevel >= 6) || (level0Grade == 2 && dLevel >= 4)))) {
+                                if (
+                                    (ITEMS_TO_PRIMLING[itemName] && dLevel >= ITEMS_TO_PRIMLING[itemName]) ||
+                                    (!ITEMS_TO_PRIMLING[itemName] &&
+                                        ((level0Grade == 0 && dLevel >= 8) ||
+                                            (level0Grade == 1 && dLevel >= 6) ||
+                                            (level0Grade == 2 && dLevel >= 4)))
+                                ) {
                                     // We want to use an offeringp to upgrade these
                                     if (primlingPos == undefined) continue // We don't have any primlings
-                                    if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as Merchant).massProduction()
+                                    if (!bot.s.massproduction && bot.canUse("massproduction"))
+                                        (bot as Merchant).massProduction()
                                     await bot.upgrade(slot, scrollPos, primlingPos)
                                 } else {
                                     // We don't want to use an offeringp to upgrade these
-                                    if (!bot.s.massproduction && bot.canUse("massproduction")) (bot as Merchant).massProduction()
+                                    if (!bot.s.massproduction && bot.canUse("massproduction"))
+                                        (bot as Merchant).massProduction()
                                     await bot.upgrade(slot, scrollPos)
                                 }
                             } catch (e) {
