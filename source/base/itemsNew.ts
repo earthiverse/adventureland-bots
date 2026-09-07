@@ -187,16 +187,16 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         ...SELL_TO_NPC,
     },
     /** Blue Candy */
-    // candy0: {
-    //     exchange: true,
-    // },
+    candy0: {
+        exchange: true,
+    },
     /** Pink Candy */
-    // candy1: {
-    //     exchange: true,
-    // },
-    // candycane: {
-    //     exchange: true,
-    // },
+    candy1: {
+        exchange: true,
+    },
+    candycane: {
+        exchange: true,
+    },
     candypop: {
         exchange: true,
     },
@@ -427,6 +427,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
         // sell: true,
         sellPrice: 10_000_000,
+        upgradeUntilLevel: 8, // TODO: Temporary until we get some scroll3
     },
     hotchocolate: {
         sellExcess: 9999 * 3,
@@ -521,9 +522,15 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     mshield: {
         buy: true,
         buyPrice: "ponty",
+        upgradeUntilLevel: 8, // TODO: Temporary until we get some scroll3
     },
     mushroomstaff: {
         ...SELL_TO_NPC,
+    },
+    mysterybox: {
+        buy: true,
+        buyPrice: "ponty",
+        exchange: true,
     },
     northstar: {
         buy: true,
@@ -562,6 +569,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     ornament: {
         exchange: true,
+    },
+    ornamentstaff: {
+        upgradeUntilLevel: 8, // TODO: Temporary until we get some scroll3
     },
     pants: {
         ...SELL_TO_NPC,
