@@ -500,6 +500,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     mace: {
         ...SELL_TO_NPC,
     },
+    maceofthedead: {
+        // Vampiric Hammer is pretty much better in every way
+        ...SELL_TO_NPC,
+    },
     mearring: {
         buy: true,
         buyPrice: 50_000_000,
@@ -597,6 +601,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     pinkie: {
         buy: true,
         buyPrice: 1_000_000,
+    },
+    pmaceofthedead: {
+        // Lunar mace is pretty much better in every way
+        ...SELL_TO_NPC,
     },
     // pouchbow: {
     //     craft: true,
@@ -706,6 +714,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     staff: {
         sellExcess: 5,
         upgradeUntilLevel: 0,
+    },
+    staffofthedead: {
+        // Harbringer is basically better in every way
+        ...SELL_TO_NPC,
     },
     stand0: {
         ...SELL_TO_NPC,
