@@ -59,13 +59,12 @@ class MrPumpkinMoveStrategy extends ImprovedMoveStrategy {
             }
         }
 
-        // Farm xscorpions if we
         const mrpumpkin = bot.getEntity({ type: "mrpumpkin" })
         if (!bot.s.coop || bot.s.coop.ms < 60_000 || bot.s.coop.p < 300_000) {
             // We might miss out on coop share
             this.types = ["mrpumpkin"]
         } else if (mrpumpkin && bot.s.hopsickness && bot.s.hopsickness.ms + 10_000 > getMsToDeath(mrpumpkin)) {
-            // We're killing it too fast
+            // We're killing it too fast, farm xscorpions
             this.types = ["xscorpion"]
         } else {
             this.types = ["mrpumpkin"]

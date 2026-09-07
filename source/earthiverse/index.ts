@@ -393,7 +393,7 @@ const managerLoop = async () => {
         }
 
         // Apply monster attack and move strategies
-        const priority: MonsterName[] = [nextMonster]
+        const priority: MonsterName[] = [nextMonster, nextMonster, nextMonster]
         for (const _context of activeStrategists) {
             priority.push(...DEFAULT_MONSTERS)
         }
