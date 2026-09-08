@@ -143,6 +143,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: "ponty",
     },
+    anniversarygift: {
+        buy: true,
+        buyPrice: "ponty",
+    },
     armorbox: {
         buy: true,
         buyPrice: "ponty",
@@ -185,6 +189,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     cake: {
         craft: true,
         ...SELL_TO_NPC,
+    },
+    candleward: {
+        buy: true,
+        buyPrice: "ponty",
     },
     /** Blue Candy */
     candy0: {
@@ -235,6 +243,30 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     computer: {
         hold: true,
         holdSlot: 40,
+    },
+    cosmo0: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    cosmo1: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    cosmo2: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    cosmo3: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    cosmo4: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    cosmo5: {
+        buy: true,
+        buyPrice: "ponty",
     },
     cring: {
         buy: true,
@@ -377,6 +409,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     gemfragment: {
         exchange: true,
     },
+    gift0: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    gift1: {
+        buy: true,
+        buyPrice: "ponty",
+    },
     glolipop: {
         ...SELL_TO_NPC,
     },
@@ -396,6 +436,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     greenenvelope: {
         exchange: true,
+    },
+    guestbook: {
+        buy: true,
+        buyPrice: "ponty",
     },
     harbringer: {
         buy: true,
@@ -423,6 +467,18 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
     },
     hhelmet: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    homecomingcape: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    homecomingcoat: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    homecominghelm: {
         buy: true,
         buyPrice: "ponty",
     },
@@ -472,6 +528,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: "ponty",
     },
+    keepsakependant: {
+        buy: true,
+        buyPrice: "ponty",
+    },
     lantern: {
         buy: true,
         buyPrice: "ponty",
@@ -503,6 +563,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     maceofthedead: {
         // Vampiric Hammer is pretty much better in every way
         ...SELL_TO_NPC,
+    },
+    marketparcel: {
+        buy: true,
+        buyPrice: "ponty",
     },
     mearring: {
         buy: true,
@@ -590,6 +654,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
         upgradeUntilLevel: 9,
     },
+    paradequiver: {
+        buy: true,
+        buyPrice: "ponty",
+    },
     phelmet: {
         ...SELL_TO_NPC,
     },
@@ -627,6 +695,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     resistancering: {
         craft: true,
+    },
+    reunionbow: {
+        buy: true,
+        buyPrice: "ponty",
     },
     ringhs: {
         buy: true,
@@ -676,8 +748,36 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
         upgradeUntilLevel: 9,
     },
+    sixcake: {
+        buy: true,
+        buyPrice: "ponty",
+    },
     skullamulet: {
         ...SELL_TO_NPC,
+    },
+    slice_blueberry: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    slice_citrus: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    slice_honey: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    slice_mint: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    slice_nightberry: {
+        buy: true,
+        buyPrice: "ponty",
+    },
+    slice_strawberry: {
+        buy: true,
+        buyPrice: "ponty",
     },
     slimestaff: {
         ...SELL_TO_NPC,
@@ -733,6 +833,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     stinger: {
         ...SELL_TO_NPC,
     },
+    stormquiver: {
+        buy: true,
+        buyPrice: "ponty",
+    },
     stramulet: {
         ...SELL_TO_NPC,
     },
@@ -766,6 +870,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     test_orb: {
         upgradeUntilLevel: 0,
+    },
+    thistlequiver: {
+        buy: true,
+        buyPrice: "ponty",
     },
     throwingstars: {
         // We use level 0 to craft other stars
@@ -860,6 +968,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     warmscarf: {
         ...SELL_TO_NPC,
     },
+    warpvest: {
+        buy: true,
+        buyPrice: "ponty",
+    },
     wattire: {
         buy: true,
         buyPrice: "ponty",
@@ -890,6 +1002,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     wingedboots: {
         craft: true,
+    },
+    worldrootcrook: {
+        buy: true,
+        buyPrice: "ponty",
     },
     wshoes: {
         buy: true,

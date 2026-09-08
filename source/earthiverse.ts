@@ -776,13 +776,14 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
                 await sleep(100)
             }
 
-            // Clear realmfatigue on any non-merchant bots by reconnecting them
+            // Clear realmfatigue on any non-merchant bots by reconnecting them (only on home server)
             const fatiguedContexts = contexts.filter(
                 (c) =>
                     c.isReady() &&
                     c.bot.ctype !== "merchant" &&
                     c.bot.serverData.region === TARGET_REGION &&
                     c.bot.serverData.name === TARGET_IDENTIFIER &&
+                    `${TARGET_REGION}${TARGET_IDENTIFIER}` === c.bot.home &&
                     Boolean(c.bot.s?.realmfatigue),
             )
 
