@@ -94,8 +94,10 @@ export class FindAnniversaryTargetStrategy<Type extends Character> implements St
         if (bot.s.anniversary_visit.round !== bot.S.anniversary.round) return // Wrong round
         if (bot.s.anniversary_visit.realm !== `${bot.serverData.region} ${bot.serverData.name}`) return // Wrong server
 
+        const position = bot.players.get(bot.S.anniversary.id) ?? (bot.S.anniversary as IPosition)
+
         // Move to player
-        await bot.smartMove(bot.S.anniversary as IPosition, { getWithin: 50 })
+        await bot.smartMove(position, { getWithin: 50 })
 
         // Kiss player
         if (bot.getPlayer({ id: bot.S.anniversary.id, withinRange: 80 })) {

@@ -2397,9 +2397,15 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         if (bot.s.anniversary_visit.round !== bot.S.anniversary.round) return // Wrong round
         if (bot.s.anniversary_visit.realm !== `${bot.serverData.region} ${bot.serverData.name}`) return // Wrong server
 
-        await bot.smartMove(bot.S.anniversary as IPosition, { getWithin: 50 })
-        if (bot.getPlayer({ id: bot.S.anniversary.id, withinRange: 80 })) {
-            await bot.kiss(bot.S.anniversary.id)
+        for (let i = 0; i < 10; i++) {
+            if (bot.s.anniversary_visit) return // We got the buff
+
+            const position = bot.players.get(bot.S.anniversary.id) ?? (bot.S.anniversary as IPosition)
+
+            await bot.smartMove(position, { getWithin: 50 })
+            if (bot.getPlayer({ id: bot.S.anniversary.id, withinRange: 80 })) {
+                await bot.kiss(bot.S.anniversary.id)
+            }
         }
     }
 
