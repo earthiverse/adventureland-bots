@@ -799,6 +799,8 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             if (!context.isReady()) continue
             const bot = context.bot
 
+            if (bot.ctype == "merchant") continue // Merchant should have equivalent event logic in the Merchant Strategy
+
             // Anniversary logic
             if (
                 bot.S.anniversary && // Anniversary event is live
@@ -821,8 +823,6 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
                 context.applyStrategy(getHolidaySpiritStrategy)
                 continue
             }
-
-            if (bot.ctype == "merchant") continue
 
             if (
                 ENABLE_MONSTERHUNTS &&

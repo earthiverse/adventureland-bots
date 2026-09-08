@@ -91,6 +91,7 @@ export class FindAnniversaryTargetStrategy<Type extends Character> implements St
         if (!bot.S.anniversary.live || !bot.S.anniversary.active) return // Not live
         if (bot.s.hopsickness || bot.s.realmfatigue) return // Can't farm with hopsickness or realmfatigue
         if (!bot.s.anniversary_visit) return // We don't have a person to visit
+        if (bot.s.anniversary_visit.round !== bot.S.anniversary.round) return // Wrong round
         if (bot.s.anniversary_visit.realm !== `${bot.serverData.region} ${bot.serverData.name}`) return // Wrong server
 
         // Move to player

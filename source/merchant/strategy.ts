@@ -1497,6 +1497,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await this.joinGiveaways(bot).catch(console.error)
                 await this.doBanking(bot) // NOTE: Don't catch, we don't want to continue if banking fails
                 await this.goGetHolidaySpirit(bot).catch(console.error)
+                await this.goVisitAnniversaryTarget(bot).catch(console.error)
                 await this.goDeliverReplenishables(bot).catch(console.error)
                 await this.goDeliverUpgrades(bot).catch(console.error)
                 await this.goGetItemsFromContexts(bot).catch(console.error)
@@ -2385,6 +2386,20 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
         await bot.smartMove("newyear_tree", { getWithin: Constants.NPC_INTERACTION_DISTANCE - 50 })
         await bot.getHolidaySpirit()
+    }
+
+    protected async goVisitAnniversaryTarget(bot: Merchant): Promise<void> {
+        if (!bot.S.anniversary) return // Not anniversary
+        if (!bot.S.anniversary.live || !bot.S.anniversary.active) return // Not live
+        if (bot.s.hopsickness || bot.s.realmfatigue) return // Can't farm with hopsickness or realmfatigue
+        if (!bot.s.anniversary_visit) return // We don't have a person to visit
+        if (bot.s.anniversary_visit.round !== bot.S.anniversary.round) return // Wrong round
+        if (bot.s.anniversary_visit.realm !== `${bot.serverData.region} ${bot.serverData.name}`) return // Wrong server
+
+        await bot.smartMove(bot.S.anniversary as IPosition, { getWithin: 50 })
+        if (bot.getPlayer({ id: bot.S.anniversary.id, withinRange: 80 })) {
+            await bot.kiss(bot.S.anniversary.id)
+        }
     }
 
     protected async goGetItemsFromContexts(bot: Merchant): Promise<void> {
