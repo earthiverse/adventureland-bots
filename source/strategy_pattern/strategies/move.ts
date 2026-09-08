@@ -74,6 +74,35 @@ export class BasicMoveStrategy implements Strategy<Character> {
     }
 }
 
+export class FindAnniversaryTargetStrategy<Type extends Character> implements Strategy<Type> {
+    public loops = new Map<LoopName, Loop<Type>>()
+
+    public constructor() {
+        this.loops.set("move", {
+            fn: async (bot: Type) => {
+                await this.move(bot)
+            },
+            interval: 250,
+        })
+    }
+
+    private async move(bot: Type) {
+        if (!bot.S.anniversary) return // Not anniversary
+        if (!bot.S.anniversary.live || !bot.S.anniversary.active) return // Not live
+        if (bot.s.hopsickness || bot.s.realmfatigue) return // Can't farm with hopsickness or realmfatigue
+        if (!bot.s.anniversary_visit) return // We don't have a person to visit
+        if (bot.s.anniversary_visit.realm !== `${bot.serverData.region} ${bot.serverData.name}`) return // Wrong server
+
+        // Move to player
+        await bot.smartMove(bot.S.anniversary as IPosition, { getWithin: 50 })
+
+        // Kiss player
+        if (bot.getPlayer({ id: bot.S.anniversary.id, withinRange: 80 })) {
+            await bot.kiss(bot.S.anniversary.id)
+        }
+    }
+}
+
 export class FinishMonsterHuntStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
 
@@ -483,7 +512,7 @@ export type SpreadOutImprovedMoveStrategyOptions = ImprovedMoveStrategyOptions &
 }
 
 export class SpreadOutImprovedMoveStrategy extends ImprovedMoveStrategy {
-    protected declare options: SpreadOutImprovedMoveStrategyOptions
+    declare protected options: SpreadOutImprovedMoveStrategyOptions
 
     public constructor(type: MonsterName | MonsterName[], options?: SpreadOutImprovedMoveStrategyOptions) {
         super(type, options)

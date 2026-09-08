@@ -37,6 +37,7 @@ import {
     MagiportServiceStrategy,
 } from "./strategy_pattern/strategies/magiport.js"
 import {
+    FindAnniversaryTargetStrategy,
     FinishMonsterHuntStrategy,
     GetHolidaySpiritStrategy,
     GetMonsterHuntStrategy,
@@ -162,6 +163,7 @@ const debugStrategy = new DebugStrategy({
 // Movement
 const avoidDeathStrategy = new AvoidDeathStrategy()
 const avoidStackingStrategy = new AvoidStackingStrategy()
+const findAnniversaryTargetStrategy = new FindAnniversaryTargetStrategy()
 const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const finishMonsterHuntStrategy = new FinishMonsterHuntStrategy()
 const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
@@ -790,12 +792,30 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
                 }
             }
 
+            // TODO: New player luck logic
+
             // TODO: Add go to bank if full logic
 
             // Holiday spirit
             if (bot.S.holidayseason && !bot.s.holidayspirit) {
                 removeSetup(context)
                 context.applyStrategy(getHolidaySpiritStrategy)
+                continue
+            }
+
+            // Anniversary logic
+            if (
+                bot.S.anniversary && // Anniversary event is live
+                bot.S.anniversary.live &&
+                bot.S.anniversary.active &&
+                // TODO: Check if it's live
+                !bot.s.hopsickness && // We can't kiss with hopsickness
+                !bot.s.realmfatigue && // We can't kiss with realmfatigue
+                bot.s.anniversary_visit && // We haven't visited yet
+                bot.s.anniversary_visit.realm === `${bot.serverData.region} ${bot.serverData.name}` // We need to be on the right server
+            ) {
+                removeSetup(context)
+                context.applyStrategy(findAnniversaryTargetStrategy)
                 continue
             }
 
