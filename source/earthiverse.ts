@@ -740,28 +740,64 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             TARGET_IDENTIFIER = OVERRIDE_IDENTIFIER
         }
 
+        // Coordinate server change across all contexts
+        const contextsNeedingHop = contexts.filter(
+            (c) =>
+                c.isReady() &&
+                (c.bot.serverData.region !== TARGET_REGION || c.bot.serverData.name !== TARGET_IDENTIFIER),
+        )
+
+        if (contextsNeedingHop.length > 0) {
+            console.log(
+                `Changing servers for ${contextsNeedingHop.length} character(s) to ${TARGET_REGION} ${TARGET_IDENTIFIER}...`,
+            )
+            for (const context of contextsNeedingHop) {
+                removeSetup(context)
+                for (const [id] of context.bot.chests) await context.bot.openChest(id).catch(console.error)
+            }
+
+            // Initiate server change
+            await Promise.allSettled(
+                contextsNeedingHop.map((context) =>
+                    context.changeServer(TARGET_REGION, TARGET_IDENTIFIER).catch(console.error),
+                ),
+            )
+
+            // Wait until all contexts are connected to the target server
+            const waitTimeout = Date.now() + 30_000
+            while (Date.now() < waitTimeout) {
+                const allArrived = contextsNeedingHop.every(
+                    (c) =>
+                        c.isReady() &&
+                        c.bot.serverData.region === TARGET_REGION &&
+                        c.bot.serverData.name === TARGET_IDENTIFIER,
+                )
+                if (allArrived) break
+                await sleep(100)
+            }
+
+            // Clear realmfatigue on any non-merchant bots by reconnecting them
+            const fatiguedContexts = contexts.filter(
+                (c) =>
+                    c.isReady() &&
+                    c.bot.ctype !== "merchant" &&
+                    c.bot.serverData.region === TARGET_REGION &&
+                    c.bot.serverData.name === TARGET_IDENTIFIER &&
+                    Boolean(c.bot.s?.realmfatigue),
+            )
+
+            for (const context of fatiguedContexts) {
+                console.log(`Reconnecting ${context.bot.id} to clear realmfatigue...`)
+                await context.reconnect().catch(console.error)
+                await sleep(250)
+            }
+
+            return
+        }
+
         for (const context of contexts) {
             if (!context.isReady()) continue
             const bot = context.bot
-
-            if (
-                context.uptime() > 60_000 &&
-                (bot.serverData.region !== TARGET_REGION || bot.serverData.name !== TARGET_IDENTIFIER)
-            ) {
-                await sleep(1000)
-                console.log(
-                    bot.id,
-                    "is changing server from",
-                    bot.serverData.region,
-                    bot.serverData.name,
-                    "to",
-                    TARGET_REGION,
-                    TARGET_IDENTIFIER,
-                )
-                for (const [id] of bot.chests) await bot.openChest(id).catch(console.error)
-                context.changeServer(TARGET_REGION, TARGET_IDENTIFIER).catch(console.error)
-                continue
-            }
 
             if (bot.ctype == "merchant") continue
 
@@ -808,10 +844,10 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
                 bot.S.anniversary && // Anniversary event is live
                 bot.S.anniversary.live &&
                 bot.S.anniversary.active &&
-                // TODO: Check if it's live
                 !bot.s.hopsickness && // We can't kiss with hopsickness
                 !bot.s.realmfatigue && // We can't kiss with realmfatigue
                 bot.s.anniversary_visit && // We haven't visited yet
+                bot.s.anniversary_visit.round === bot.S.anniversary.round && // We need the same round
                 bot.s.anniversary_visit.realm === `${bot.serverData.region} ${bot.serverData.name}` // We need to be on the right server
             ) {
                 removeSetup(context)
