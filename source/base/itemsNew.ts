@@ -535,8 +535,6 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     lantern: {
         buy: true,
         buyPrice: "ponty",
-        sell: true,
-        sellPrice: 2_000_000,
     },
     // "lbelt": {
     //     craft: true
