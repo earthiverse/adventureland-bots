@@ -799,6 +799,29 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             if (!context.isReady()) continue
             const bot = context.bot
 
+            // Anniversary logic
+            if (
+                bot.S.anniversary && // Anniversary event is live
+                bot.S.anniversary.live &&
+                bot.S.anniversary.active &&
+                !bot.s.hopsickness && // We can't kiss with hopsickness
+                !bot.s.realmfatigue && // We can't kiss with realmfatigue
+                bot.s.anniversary_visit && // We haven't visited yet
+                bot.s.anniversary_visit.round === bot.S.anniversary.round && // We need the same round
+                bot.s.anniversary_visit.realm === `${bot.serverData.region} ${bot.serverData.name}` // We need to be on the right server
+            ) {
+                removeSetup(context)
+                context.applyStrategy(findAnniversaryTargetStrategy)
+                continue
+            }
+
+            // Holiday spirit
+            if (bot.S.holidayseason && !bot.s.holidayspirit) {
+                removeSetup(context)
+                context.applyStrategy(getHolidaySpiritStrategy)
+                continue
+            }
+
             if (bot.ctype == "merchant") continue
 
             if (
@@ -831,29 +854,6 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             // TODO: New player luck logic
 
             // TODO: Add go to bank if full logic
-
-            // Holiday spirit
-            if (bot.S.holidayseason && !bot.s.holidayspirit) {
-                removeSetup(context)
-                context.applyStrategy(getHolidaySpiritStrategy)
-                continue
-            }
-
-            // Anniversary logic
-            if (
-                bot.S.anniversary && // Anniversary event is live
-                bot.S.anniversary.live &&
-                bot.S.anniversary.active &&
-                !bot.s.hopsickness && // We can't kiss with hopsickness
-                !bot.s.realmfatigue && // We can't kiss with realmfatigue
-                bot.s.anniversary_visit && // We haven't visited yet
-                bot.s.anniversary_visit.round === bot.S.anniversary.round && // We need the same round
-                bot.s.anniversary_visit.realm === `${bot.serverData.region} ${bot.serverData.name}` // We need to be on the right server
-            ) {
-                removeSetup(context)
-                context.applyStrategy(findAnniversaryTargetStrategy)
-                continue
-            }
 
             freeContexts.push(context)
         }
