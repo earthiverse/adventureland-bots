@@ -1510,6 +1510,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await this.goSellItems(bot).catch(console.error)
                 await this.listForSale(bot).catch(console.error)
                 await this.goCheckInstances(bot).catch(console.error)
+                await this.tryForMerritBonus(bot).catch(console.error)
 
                 await bot.smartMove(this.options.defaultPosition)
             },
@@ -2974,5 +2975,37 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 // TODO: Add support for sellPrice array
             }
         }
+    }
+
+    protected async tryForMerritBonus(bot: Merchant): Promise<void> {
+        if (!checkOnlyEveryMS(`tryForMerritBonus_${bot.owner}`, 2 * 60 * 60 * 1000)) return // We can try once an hour
+
+        // Move somewhere Merrit patrols
+        await bot.smartMove({ map: "main", x: 40, y: 180 })
+
+        // Open the stand
+        await bot.openMerchantStand()
+
+        // Add event listener to close the stand when we get our gift
+        let received = false
+        const onGift = () => {
+            received = true
+        }
+        // @ts-expect-error TODO: Add merrit stuff to ALClient
+        bot.socket.once("merrit_gift", onGift)
+
+        // Wait for Merrit for up to 3 minutes
+        for (let i = 0; i < 60; i++) {
+            if (received) {
+                break
+            }
+            await sleep(3000)
+        }
+
+        // Remove the listener
+        // @ts-expect-error TODO: Add merrit stuff to ALClient
+        bot.socket.off("merrit_gift", onGift)
+
+        await bot.closeMerchantStand()
     }
 }
