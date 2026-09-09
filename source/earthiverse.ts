@@ -776,6 +776,9 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
                 await sleep(100)
             }
 
+            // Give the server/database a brief moment to commit character server states
+            await sleep(1000)
+
             // Clear realmfatigue on any non-merchant bots by reconnecting them (only on home server)
             const fatiguedContexts = contexts.filter(
                 (c) =>
@@ -790,7 +793,12 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             for (const context of fatiguedContexts) {
                 console.log(`Reconnecting ${context.bot.id} to clear realmfatigue...`)
                 await context.reconnect().catch(console.error)
-                await sleep(250)
+                if (context.bot?.s?.realmfatigue) {
+                    console.warn(`[realmfatigue] ${context.bot.id} still has realmfatigue.`)
+                } else {
+                    console.log(`[realmfatigue] Successfully cleared realmfatigue on ${context.bot.id}!`)
+                }
+                await sleep(500)
             }
 
             return
