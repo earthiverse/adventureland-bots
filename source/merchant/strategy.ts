@@ -2984,7 +2984,12 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
     }
 
     protected async tryForMerritBonus(bot: Merchant): Promise<void> {
-        if ((bot.merrit?.next_at ?? 0) > Date.now()) return // We can't try again yet
+        const shouldTry = (): boolean => {
+            if (!bot.merrit?.last) return true // No info, we should try
+            return Date.now() - bot.merrit.last.at > 58 * 60 * 1000 // 58 minutes since last bonus
+        }
+
+        if (!shouldTry()) return
 
         // Move somewhere Merrit patrols
         const xMin = 0 // -240
@@ -3012,8 +3017,8 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
         // Wait for Merrit for up to 3 minutes
         for (let i = 0; i < 60; i++) {
-            if ((bot.merrit?.next_at ?? 0) > Date.now()) break // We got our gift
-            await sleep(3000) // Wait a bit more
+            if (!shouldTry()) break
+            await sleep(3000)
         }
 
         await bot.closeMerchantStand()
