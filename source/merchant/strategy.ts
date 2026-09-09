@@ -2987,7 +2987,25 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         if ((bot.merrit?.next_at ?? 0) > Date.now()) return // We can't try again yet
 
         // Move somewhere Merrit patrols
-        await bot.smartMove({ map: "main", x: 40, y: 180 })
+        const xMin = 0 // -240
+        const xMax = 240
+        const yMin = 0 // -120
+        const yMax = 144
+
+        const findASpot = (): IPosition | undefined => {
+            for (let i = 0; i < 100; i++) {
+                const x = Math.floor(Math.random() * (xMax - xMin + 1)) + xMin
+                const y = Math.floor(Math.random() * (yMax - yMin + 1)) + yMin
+                if (!Pathfinder.canStand({ map: "main", x, y })) continue
+                if (bot.getPlayer({ isNPC: false, withinRange: 20, withinRangeOf: { map: "main", x, y } })) continue
+                return { map: "main", x, y }
+            }
+            return undefined
+        }
+
+        const spot = findASpot()
+        if (!spot) return
+        await bot.smartMove(spot)
 
         // Open the stand
         await bot.openMerchantStand()
