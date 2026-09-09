@@ -2984,7 +2984,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
     }
 
     protected async tryForMerritBonus(bot: Merchant): Promise<void> {
-        if (!checkOnlyEveryMS(`tryForMerritBonus_${bot.owner}`, 2 * 60 * 60 * 1000)) return // We can try once an hour
+        if ((bot.merrit?.next_at ?? 0) > Date.now()) return // We can't try again yet
 
         // Move somewhere Merrit patrols
         await bot.smartMove({ map: "main", x: 40, y: 180 })
@@ -2992,23 +2992,11 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         // Open the stand
         await bot.openMerchantStand()
 
-        // Add event listener to close the stand when we get our gift
-        let received = false
-        const onGift = () => {
-            received = true
-        }
-        bot.socket.once("merrit_gift", onGift)
-
         // Wait for Merrit for up to 3 minutes
         for (let i = 0; i < 60; i++) {
-            if (received) {
-                break
-            }
-            await sleep(3000)
+            if ((bot.merrit?.next_at ?? 0) > Date.now()) break // We got our gift
+            await sleep(3000) // Wait a bit more
         }
-
-        // Remove the listener
-        bot.socket.off("merrit_gift", onGift)
 
         await bot.closeMerchantStand()
     }
