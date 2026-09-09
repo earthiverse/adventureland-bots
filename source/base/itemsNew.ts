@@ -246,7 +246,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     cosmo0: {
         buy: true,
-        buyPrice: "ponty",
+        buyPrice: 9248000,
     },
     cosmo1: {
         buy: true,
@@ -254,11 +254,11 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     cosmo2: {
         buy: true,
-        buyPrice: "ponty",
+        buyPrice: 4128000,
     },
     cosmo3: {
         buy: true,
-        buyPrice: "ponty",
+        buyPrice: 12768000,
     },
     cosmo4: {
         buy: true,
@@ -266,7 +266,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     cosmo5: {
         buy: true,
-        buyPrice: "ponty",
+        buyPrice: 41568000,
     },
     cring: {
         buy: true,

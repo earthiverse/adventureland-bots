@@ -658,7 +658,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 if (bot.isEquipped("rod") || (bot.hasItem("rod") && AL.Tools.distance(bot, mainFishingSpot) > 10)) {
                     this.debug(bot, "Fishing - Moving to fishing spot")
                     // TODO: find closest fishing spot
-                    await bot.smartMove(mainFishingSpot, { costs: { transport: 9999 } })
+                    await bot.smartMove(mainFishingSpot)
                 }
 
                 if (!bot.isEquipped("rod") && bot.hasItem("rod")) {
@@ -2366,7 +2366,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
 
         // TODO: Find closest fishing spot
-        await bot.smartMove(mainFishingSpot, { costs: { transport: 9999 } }).catch()
+        await bot.smartMove(mainFishingSpot).catch()
 
         if (!bot.isEquipped("rod")) {
             // Equip the rod
@@ -2531,7 +2531,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
 
         // TODO: Find closest mining spot
-        await bot.smartMove(miningSpot, { costs: { transport: 9999 } }).catch()
+        await bot.smartMove(miningSpot).catch()
 
         if (!bot.isEquipped("pickaxe")) {
             // Equip the pickaxe
@@ -2997,7 +2997,6 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         const onGift = () => {
             received = true
         }
-        // @ts-expect-error TODO: Add merrit stuff to ALClient
         bot.socket.once("merrit_gift", onGift)
 
         // Wait for Merrit for up to 3 minutes
@@ -3009,7 +3008,6 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
 
         // Remove the listener
-        // @ts-expect-error TODO: Add merrit stuff to ALClient
         bot.socket.off("merrit_gift", onGift)
 
         await bot.closeMerchantStand()

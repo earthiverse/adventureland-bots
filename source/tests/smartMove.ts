@@ -29,7 +29,11 @@ async function run() {
     const canWalk = AL.Pathfinder.canWalkPath({ map: "main", x: 17, y: -152 }, { map: "main", x: 0, y: 0 })
     console.log(`canWalk: ${canWalk}`)
 
-    const data2 = await AL.Pathfinder.getPath({ map: "main", x: 17, y: -152 }, { map: "main", x: 383, y: 1480 }, { avoidTownWarps: true, costs: { town: 11450 } })
+    const data2 = AL.Pathfinder.getPath(
+        { map: "main", x: 17, y: -152 },
+        { map: "main", x: 383, y: 1480 },
+        { avoidTownWarps: true },
+    )
     console.log(data2)
 
     // bot.disconnect()
