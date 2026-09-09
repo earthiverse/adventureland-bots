@@ -1578,7 +1578,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
         if (!wantToBank) return
 
-        if (!bot.map.startsWith("bank")) await bot.smartMove(bankingPosition)
+        await bot.smartMove(bankingPosition)
 
         const itemCounts = await getItemCounts(bot.owner)
 
