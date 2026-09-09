@@ -10,7 +10,7 @@ export const mainBigBirds: NodeData = { map: "main", x: 1343, y: 248 }
 export const mainCrabs: NodeData = { map: "main", x: -1202.5, y: -66 }
 export const mainCrabXs: NodeData = { map: "main", x: -984, y: 1762 }
 export const mainCrocs: NodeData = { map: "main", x: 801, y: 1710 }
-export const mainFishingSpot: NodeData = { map: "main", x: -1198, y: -288 }
+export const mainFishingSpot: NodeData = { map: "main", x: -1125, y: -285 }
 export const mainFrogs: NodeData = { map: "main", x: -1124.5, y: 1118 }
 export const mainGoos: NodeData = { map: "main", x: -64, y: 787 }
 export const mainPoisios: NodeData = { map: "main", x: -121, y: 1360 }
@@ -59,7 +59,7 @@ export const frankyIdlePosition: NodeData = { map: "level2w", x: 0, y: 0 }
 export const mforestOdinos: NodeData = { map: "mforest", x: 17, y: 695 }
 
 // Tunnel
-export const miningSpot: NodeData = { map: "tunnel", x: -280, y: -10 }
+export const miningSpot: NodeData = { map: "tunnel", x: -275, y: -5 }
 
 // Winterland
 export const winterlandArcticBees: NodeData = { map: "winterland", x: 1082, y: -873 }
