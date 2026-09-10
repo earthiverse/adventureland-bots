@@ -613,7 +613,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     offeringp: {
         hold: ["merchant"],
         buy: true,
-        buyPrice: 2_500_000,
+        buyPrice: 5_000_000,
     },
     orba: {
         craft: true,
