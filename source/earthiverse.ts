@@ -757,51 +757,9 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             }
 
             // Initiate server change
-            await Promise.allSettled(
-                contextsNeedingHop.map((context) =>
-                    context.changeServer(TARGET_REGION, TARGET_IDENTIFIER).catch(console.error),
-                ),
-            )
-
-            // Wait until all contexts are connected to the target server
-            const waitTimeout = Date.now() + 30_000
-            while (Date.now() < waitTimeout) {
-                const allArrived = contextsNeedingHop.every(
-                    (c) =>
-                        c.isReady() &&
-                        c.bot.serverData.region === TARGET_REGION &&
-                        c.bot.serverData.name === TARGET_IDENTIFIER,
-                )
-                if (allArrived) break
-                await sleep(100)
+            for (const context of contextsNeedingHop) {
+                await context.changeServer(TARGET_REGION, TARGET_IDENTIFIER).catch(console.error)
             }
-
-            // Give the server/database a brief moment to commit character server states
-            await sleep(1000)
-
-            // Clear realmfatigue on any non-merchant bots by reconnecting them (only on home server)
-            const fatiguedContexts = contexts.filter(
-                (c) =>
-                    c.isReady() &&
-                    c.bot.ctype !== "merchant" &&
-                    c.bot.serverData.region === TARGET_REGION &&
-                    c.bot.serverData.name === TARGET_IDENTIFIER &&
-                    `${TARGET_REGION}${TARGET_IDENTIFIER}` === c.bot.home &&
-                    Boolean(c.bot.s?.realmfatigue),
-            )
-
-            for (const context of fatiguedContexts) {
-                console.log(`Reconnecting ${context.bot.id} to clear realmfatigue...`)
-                await context.reconnect().catch(console.error)
-                if (context.bot?.s?.realmfatigue) {
-                    console.warn(`[realmfatigue] ${context.bot.id} still has realmfatigue.`)
-                } else {
-                    console.log(`[realmfatigue] Successfully cleared realmfatigue on ${context.bot.id}!`)
-                }
-                await sleep(500)
-            }
-
-            return
         }
 
         for (const context of contexts) {
@@ -977,7 +935,7 @@ const startMerchantContext = async () => {
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
-startMerchantContext()
+await startMerchantContext()
 
 const startWarriorContext = async (name: string) => {
     let warrior: Warrior
@@ -994,7 +952,7 @@ const startWarriorContext = async (name: string) => {
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
-for (const name of WARRIORS) startWarriorContext(name)
+for (const name of WARRIORS) await startWarriorContext(name)
 
 const startMageContext = async (name: string) => {
     let mage: Mage
@@ -1011,7 +969,7 @@ const startMageContext = async (name: string) => {
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
-for (const name of MAGES) startMageContext(name)
+for (const name of MAGES) await startMageContext(name)
 
 const startPaladinContext = async (name: string) => {
     let paladin: Paladin
@@ -1028,7 +986,7 @@ const startPaladinContext = async (name: string) => {
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
-for (const name of PALADINS) startPaladinContext(name)
+for (const name of PALADINS) await startPaladinContext(name)
 
 const startPriestContext = async (name: string) => {
     let priest: Priest
@@ -1045,7 +1003,7 @@ const startPriestContext = async (name: string) => {
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
-for (const name of PRIESTS) startPriestContext(name)
+for (const name of PRIESTS) await startPriestContext(name)
 
 const startRangerContext = async (name: string) => {
     let ranger: Ranger
@@ -1062,7 +1020,7 @@ const startRangerContext = async (name: string) => {
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
-for (const name of RANGERS) startRangerContext(name)
+for (const name of RANGERS) await startRangerContext(name)
 
 const startRogueContext = async (name: string) => {
     let rogue: Rogue
@@ -1079,7 +1037,7 @@ const startRogueContext = async (name: string) => {
     PRIVATE_CONTEXTS.push(CONTEXT)
     ALL_CONTEXTS.push(CONTEXT)
 }
-for (const name of ROGUES) startRogueContext(name)
+for (const name of ROGUES) await startRogueContext(name)
 
 class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> {
     private onCodeEval: (data: string) => Promise<void>
