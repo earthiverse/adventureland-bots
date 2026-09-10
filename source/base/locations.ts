@@ -59,7 +59,7 @@ export const frankyIdlePosition: NodeData = { map: "level2w", x: 0, y: 0 }
 export const mforestOdinos: NodeData = { map: "mforest", x: 17, y: 695 }
 
 // Tunnel
-export const miningSpot: NodeData = { map: "tunnel", x: -275, y: -5 }
+export const miningSpot: NodeData = { map: "tunnel", x: -275, y: -15 }
 
 // Winterland
 export const winterlandArcticBees: NodeData = { map: "winterland", x: 1082, y: -873 }
