@@ -1326,9 +1326,9 @@ app.get("/", (_req, res) => {
 
 app.post(
     "/",
-    body("user").trim().isAlphanumeric().withMessage("User IDs are numeric."),
+    body("user").trim().matches(/^US_+/).withMessage("User IDs are numeric."),
     body("auth").trim().isAlphanumeric().withMessage("Auth codes are alphanumeric."),
-    body("char").trim().isAlphanumeric().withMessage("Character IDs are numeric."),
+    body("char").trim().matches(/^CH_+/).withMessage("Character IDs are numeric."),
     body("char_type")
         .trim()
         .isIn(["mage", "merchant", "paladin", "priest", "ranger", "rogue", "warrior"])
