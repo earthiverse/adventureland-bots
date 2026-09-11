@@ -1,76 +1,77 @@
-import { Character, IPosition, Pathfinder } from "alclient"
-import { NodeData } from "alclient/build/definitions/pathfinder"
+import { Character, IPosition, MapName, Pathfinder } from "alclient"
+
+type IPositionWithMap = { map: MapName } & IPosition
 
 // Main
-export const mainArmadillos: NodeData = { map: "main", x: 526, y: 1846 }
-export const mainBeesNearTunnel: NodeData = { map: "main", x: 152, y: 1487 }
-export const mainBeesNearGoos: NodeData = { map: "main", x: 546, y: 1059 }
-export const mainBeesNearRats: NodeData = { map: "main", x: 625, y: 725 }
-export const mainBigBirds: NodeData = { map: "main", x: 1343, y: 248 }
-export const mainCrabs: NodeData = { map: "main", x: -1202.5, y: -66 }
-export const mainCrabXs: NodeData = { map: "main", x: -984, y: 1762 }
-export const mainCrocs: NodeData = { map: "main", x: 801, y: 1710 }
-export const mainFishingSpot: NodeData = { map: "main", x: -1125, y: -285 }
-export const mainFrogs: NodeData = { map: "main", x: -1124.5, y: 1118 }
-export const mainGoos: NodeData = { map: "main", x: -64, y: 787 }
-export const mainPoisios: NodeData = { map: "main", x: -121, y: 1360 }
-export const mainScorpions: NodeData = { map: "main", x: 1577.5, y: -168 }
-export const mainSnakes: NodeData = { map: "main", x: -82, y: 1901 }
-export const mainSpiders: NodeData = { map: "main", x: 948, y: -144 }
-export const mainSquigs: NodeData = { map: "main", x: -1175.5, y: 422 }
+export const mainArmadillos: IPositionWithMap = { map: "main", x: 526, y: 1846 }
+export const mainBeesNearTunnel: IPositionWithMap = { map: "main", x: 152, y: 1487 }
+export const mainBeesNearGoos: IPositionWithMap = { map: "main", x: 546, y: 1059 }
+export const mainBeesNearRats: IPositionWithMap = { map: "main", x: 625, y: 725 }
+export const mainBigBirds: IPositionWithMap = { map: "main", x: 1343, y: 248 }
+export const mainCrabs: IPositionWithMap = { map: "main", x: -1202.5, y: -66 }
+export const mainCrabXs: IPositionWithMap = { map: "main", x: -984, y: 1762 }
+export const mainCrocs: IPositionWithMap = { map: "main", x: 801, y: 1710 }
+export const mainFishingSpot: IPositionWithMap = { map: "main", x: -1125, y: -285 }
+export const mainFrogs: IPositionWithMap = { map: "main", x: -1124.5, y: 1118 }
+export const mainGoos: IPositionWithMap = { map: "main", x: -64, y: 787 }
+export const mainPoisios: IPositionWithMap = { map: "main", x: -121, y: 1360 }
+export const mainScorpions: IPositionWithMap = { map: "main", x: 1577.5, y: -168 }
+export const mainSnakes: IPositionWithMap = { map: "main", x: -82, y: 1901 }
+export const mainSpiders: IPositionWithMap = { map: "main", x: 948, y: -144 }
+export const mainSquigs: IPositionWithMap = { map: "main", x: -1175.5, y: 422 }
 export const mainSquigtoads = mainSquigs
 export const mainTortoises = mainFrogs
 
 // Bank
-export const bankingPosition: NodeData = { map: "bank", x: 0, y: -200 }
+export const bankingPosition: IPositionWithMap = { map: "bank", x: 0, y: -200 }
 
 // (Bat) Cave
-export const caveCryptEntrance: NodeData = { map: "cave", x: -193.41, y: -1295.83 }
-export const caveBatsNearDoor: NodeData = { map: "cave", x: -194, y: -461 }
-export const caveBatsNearCrypt: NodeData = { map: "cave", x: 323.5, y: -1107 }
-export const caveBatsSouthEast: NodeData = { map: "cave", x: 1243, y: -27 }
-export const caveBatsNorthEast: NodeData = { map: "cave", x: 1201.5, y: -782 }
+export const caveCryptEntrance: IPositionWithMap = { map: "cave", x: -193.41, y: -1295.83 }
+export const caveBatsNearDoor: IPositionWithMap = { map: "cave", x: -194, y: -461 }
+export const caveBatsNearCrypt: IPositionWithMap = { map: "cave", x: 323.5, y: -1107 }
+export const caveBatsSouthEast: IPositionWithMap = { map: "cave", x: 1243, y: -27 }
+export const caveBatsNorthEast: IPositionWithMap = { map: "cave", x: 1201.5, y: -782 }
 
 // Crypt
-export const cryptWaitingSpot: NodeData = { map: "crypt", x: 100, y: 50 }
-export const cryptEnd: NodeData = { map: "crypt", x: 2689.64, y: 505.06 }
+export const cryptWaitingSpot: IPositionWithMap = { map: "crypt", x: 100, y: 50 }
+export const cryptEnd: IPositionWithMap = { map: "crypt", x: 2689.64, y: 505.06 }
 
 // Desertland
-export const desertlandPorcupines: NodeData = { map: "desertland", x: -829, y: 135 }
-export const desertlandScorpions: NodeData = { map: "desertland", x: 390.675, y: -1422.46 }
+export const desertlandPorcupines: IPositionWithMap = { map: "desertland", x: -829, y: 135 }
+export const desertlandScorpions: IPositionWithMap = { map: "desertland", x: 390.675, y: -1422.46 }
 
 // Halloween
-export const halloweenGreenJr: NodeData = { map: "halloween", x: -569, y: -511.5 }
-export const halloweenSafeSnakes: NodeData = { map: "halloween", x: 346.5, y: -747 }
-export const halloweenMiniMushes: NodeData = { map: "halloween", x: 16, y: 630.5 }
-export const halloweenXScorpions: NodeData = { map: "halloween", x: -485.5, y: 685.5 }
+export const halloweenGreenJr: IPositionWithMap = { map: "halloween", x: -569, y: -511.5 }
+export const halloweenSafeSnakes: IPositionWithMap = { map: "halloween", x: 346.5, y: -747 }
+export const halloweenMiniMushes: IPositionWithMap = { map: "halloween", x: 16, y: 630.5 }
+export const halloweenXScorpions: IPositionWithMap = { map: "halloween", x: -485.5, y: 685.5 }
 
 // Level1
-export const level1PratsNearDoor: NodeData = { map: "level1", x: -11, y: 114.5 }
-export const level1PratsNearLedge: NodeData = { map: "level1", x: -154, y: 695.5 }
+export const level1PratsNearDoor: IPositionWithMap = { map: "level1", x: -11, y: 114.5 }
+export const level1PratsNearLedge: IPositionWithMap = { map: "level1", x: -154, y: 695.5 }
 
 // Level2E
-export const pinkGoblinIdlePosition: NodeData = { map: "level2e", x: 476, y: 116 }
+export const pinkGoblinIdlePosition: IPositionWithMap = { map: "level2e", x: 476, y: 116 }
 
 // Level2W
-export const frankyIdlePosition: NodeData = { map: "level2w", x: 0, y: 0 }
+export const frankyIdlePosition: IPositionWithMap = { map: "level2w", x: 0, y: 0 }
 
 // Mystical Forest (mforest)
-export const mforestOdinos: NodeData = { map: "mforest", x: 17, y: 695 }
+export const mforestOdinos: IPositionWithMap = { map: "mforest", x: 17, y: 695 }
 
 // Tunnel
-export const miningSpot: NodeData = { map: "tunnel", x: -275, y: -15 }
+export const miningSpot: IPositionWithMap = { map: "tunnel", x: -275, y: -15 }
 
 // Winterland
-export const winterlandArcticBees: NodeData = { map: "winterland", x: 1082, y: -873 }
-export const winterlandBoars: NodeData = { map: "winterland", x: 19.5, y: -1109 }
-export const winterlandXmageEntrance: NodeData = { map: "winterland", x: 1060, y: -2000 }
+export const winterlandArcticBees: IPositionWithMap = { map: "winterland", x: 1082, y: -873 }
+export const winterlandBoars: IPositionWithMap = { map: "winterland", x: 19.5, y: -1109 }
+export const winterlandXmageEntrance: IPositionWithMap = { map: "winterland", x: 1060, y: -2000 }
 
 // Winter Cave
-export const winterCaveBBPomPomsNearDoor: NodeData = { map: "winter_cave", x: 51, y: -164 }
-export const winterCaveBBPomPomsAbove: NodeData = { map: "winter_cave", x: -82.5, y: -949 }
+export const winterCaveBBPomPomsNearDoor: IPositionWithMap = { map: "winter_cave", x: 51, y: -164 }
+export const winterCaveBBPomPomsAbove: IPositionWithMap = { map: "winter_cave", x: -82.5, y: -949 }
 
-export function getClosestBotToPosition(position: NodeData, bots: Character[]): Character {
+export function getClosestBotToPosition(position: IPositionWithMap, bots: Character[]): Character {
     let closest: Character
     let closestScore = Number.MAX_VALUE
     for (const bot of bots) {
@@ -104,7 +105,7 @@ export function offsetPositionParty(position: IPosition, bot: Character, offsetA
     // Spiral from the position to get the offset.
     // Based on https://stackoverflow.com/a/19287714
     let i = 0
-    let pos: IPosition = { in: position.in, map: position.map, x: position.x, y: position.y }
+    const pos: IPosition = { in: position.in, map: position.map, x: position.x, y: position.y }
     while (i <= offsetIndex) {
         const r = Math.floor((Math.sqrt(i + 1) - 1) / 2) + 1
         const p = (8 * r * (r - 1)) / 2
