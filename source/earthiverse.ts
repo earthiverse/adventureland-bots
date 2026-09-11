@@ -1326,15 +1326,12 @@ app.get("/", (_req, res) => {
 
 app.post(
     "/",
-    body("user").trim().isLength({ max: 16, min: 16 }).withMessage("User IDs are exactly 16 digits."),
-    body("user").trim().isNumeric().withMessage("User IDs are numeric."),
-    body("auth").trim().isLength({ max: 21, min: 21 }).withMessage("Auth codes are exactly 21 characters."),
-    body("auth").trim().isAlphanumeric("en-US", { ignore: /\s/ }).withMessage("Auth codes are alphanumeric."),
-    body("char").trim().isLength({ max: 16, min: 16 }).withMessage("Character IDs are exactly 16 digits."),
-    body("char").trim().isNumeric().withMessage("Character IDs are numeric."),
+    body("user").trim().isAlphanumeric().withMessage("User IDs are numeric."),
+    body("auth").trim().isAlphanumeric().withMessage("Auth codes are alphanumeric."),
+    body("char").trim().isAlphanumeric().withMessage("Character IDs are numeric."),
     body("char_type")
         .trim()
-        .matches(/\b(?:mage|merchant|paladin|priest|ranger|rogue|warrior)\b/)
+        .isIn(["mage", "merchant", "paladin", "priest", "ranger", "rogue", "warrior"])
         .withMessage("Character type not supported."),
     async (req, res) => {
         const errors = validationResult(req)
