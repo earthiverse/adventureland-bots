@@ -10,7 +10,7 @@ import {
     SlotType,
     WeaponType,
 } from "alclient"
-import { EnsureEquipped, EnsureEquippedSlot } from "../strategies/attack"
+import { EnsureEquipped, EnsureEquippedSlot } from "../strategies/attack.js"
 
 export const RETURN_HIGHEST: LocateItemFilters = { returnHighestLevel: true }
 export const UNEQUIP: EnsureEquippedSlot = { name: undefined, unequip: true }

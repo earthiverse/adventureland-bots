@@ -22,7 +22,6 @@ import AL, {
     Tools,
     TradeSlotType,
 } from "alclient"
-import { PathfinderOptions } from "alclient/build/definitions/pathfinder"
 import fs from "fs"
 import { ItemLevelInfo } from "../../definitions/bot.js"
 import { bankingPosition, offsetPositionParty } from "../../base/locations.js"
