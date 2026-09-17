@@ -14,27 +14,49 @@ async function attackLoop() {
 }
 attackLoop()
 
+const MPOT0_RECOVERY = G.items.mpot0.gives[0][1]
+const MPOT1_RECOVERY = G.items.mpot1.gives[0][1]
+const HPOT0_RECOVERY = G.items.hpot0.gives[0][1]
+const HPOT1_RECOVERY = G.items.hpot1.gives[0][1]
 async function regenLoop() {
     try {
-        const hp_ratio = character.hp / character.max_hp
-        const mp_ratio = character.mp / character.max_mp
+        const hpRatio = character.hp / character.max_hp
+        const hpMissing = character.max_hp - character.hp
+        const mpRatio = character.mp / character.max_mp
+        const mpMissing = character.max_mp - character.mp
+        const minPing = Math.min(...parent.pings)
 
-        // NOTE: If you want to use potions, modify this function,
-        // because potions share a cooldown with regen_hp and regen_mp
+        if (character.rip) return // Don't heal if we're dead
 
-        if (mp_ratio < hp_ratio && can_use("regen_mp")) {
-            // We have less MP than HP, so let's regen some MP.
-            await use_skill("regen_mp")
-            reduce_cooldown("regen_mp", Math.min(...parent.pings))
-        } else if (can_use("regen_hp")) {
-            // We have less HP than MP, so let's regen some HP.
-            await use_skill("regen_hp")
-            reduce_cooldown("regen_hp", Math.min(...parent.pings))
+        if (mpRatio < hpRatio) {
+            // We want to regen MP
+            const mpot0 = locate_item("mpot0")
+            const mpot1 = locate_item("mpot1")
+
+            if (mpot1 !== -1 && mpMissing >= MPOT1_RECOVERY) {
+                await equip(mpot1)
+                reduce_cooldown("use_hp", minPing)
+            } else if (mpot0 !== -1 && mpMissing >= MPOT0_RECOVERY) {
+                await equip(mpot0)
+                reduce_cooldown("use_hp", minPing)
+            }
+        } else if (character.hp !== character.max_hp) {
+            // We want to regen HP
+            const hpot0 = locate_item("hpot0")
+            const hpot1 = locate_item("hpot1")
+
+            if (hpot1 !== -1 && hpMissing >= HPOT1_RECOVERY) {
+                await equip(hpot1)
+                reduce_cooldown("use_hp", minPing)
+            } else if (hpot0 !== -1 && hpMissing >= HPOT0_RECOVERY) {
+                await equip(hpot0)
+                reduce_cooldown("use_hp", minPing)
+            }
         }
     } catch (e) {
         console.error(e)
     } finally {
-        setTimeout(regenLoop, Math.max(100, parent.next_skill["use_hp"].getTime() - Date.now()))
+        setTimeout(regenLoop, Math.max(100, ms_to_next_skill("use_hp")))
     }
 }
 regenLoop()
