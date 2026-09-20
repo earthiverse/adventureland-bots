@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adventure Land - Character Launcher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #090d16;
+            --card-bg: rgba(22, 30, 49, 0.75);
+            --card-border: rgba(99, 102, 241, 0.2);
+            --input-bg: rgba(15, 23, 42, 0.8);
+            --input-border: rgba(148, 163, 184, 0.2);
+            --input-focus: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-primary: #6366f1;
+            --accent-hover: #4f46e5;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --glow: 0 0 25px rgba(99, 102, 241, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-base);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(15, 23, 42, 0.5) 0px, transparent 100%);
+            min-height: 100vh;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 1.25rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), var(--glow);
+            padding: 2.25rem 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.3rem 0.75rem;
+            border-radius: 9999px;
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        h1 {
+            font-size: 1.85rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 30%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.925rem;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #38bdf8;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: rgba(56, 189, 248, 0.2);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 580px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 1.75rem 1.25rem;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 0.6rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        select:focus {
+            border-color: var(--input-focus);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+            cursor: pointer;
+        }
+
+        select option {
+            background: #0f172a;
+            color: #f8fafc;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 1.15rem;
+            height: 1.15rem;
+            border-radius: 0.35rem;
+            accent-color: var(--accent-primary);
+            cursor: pointer;
+        }
+
+        .checkbox-text {
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .checkbox-desc {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-left: 1.9rem;
+            margin-top: -0.3rem;
+        }
+
+        button[type="submit"] {
+            margin-top: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, #4338ca 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.95rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+            background: linear-gradient(135deg, #6d70f7 0%, #4f46e5 100%);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        button[type="submit"]:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #status-box {
+            display: none;
+            margin-top: 1.5rem;
+            padding: 1.15rem 1.25rem;
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+
+        #status-box.success {
+            display: block;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+
+        #status-box.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        #status-box.loading {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            color: #c7d2fe;
+        }
+
+        .spinner {
+            width: 1.15rem;
+            height: 1.15rem;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 0.75s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+
+        #status-box a {
+            color: #38bdf8;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="badge">Adventure Land Public Bot</span>
+            <h1>Spawn Characters</h1>
+            <p class="subtitle">Start autonomous character processes with custom setups and pathfinding</p>
+        </div>
+
+        <form id="bot-form">
+            <!-- Account Auth -->
+            <div>
+                <div class="section-title">Credentials</div>
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label for="user">User ID</label>
+                        <input type="text" id="user" name="user" placeholder="e.g. 5123456789 or US_123" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="auth">Auth Code</label>
+                        <input type="password" id="auth" name="auth" placeholder="Alphanumeric Auth Token" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Characters -->
+            <div>
+                <div class="section-title">Characters (1 to 4)</div>
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label for="char1">Character 1 (Party Leader)</label>
+                        <input type="text" id="char1" name="char1" placeholder="e.g. MyWarrior" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="char2">Character 2 (Optional)</label>
+                        <input type="text" id="char2" name="char2" placeholder="e.g. MyPriest">
+                    </div>
+                    <div class="input-group">
+                        <label for="char3">Character 3 (Optional)</label>
+                        <input type="text" id="char3" name="char3" placeholder="e.g. MyMage">
+                    </div>
+                    <div class="input-group">
+                        <label for="char4">Character 4 (Optional)</label>
+                        <input type="text" id="char4" name="char4" placeholder="e.g. MyRanger">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Server & Target Monster -->
+            <div>
+                <div class="section-title">Target & Server</div>
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label for="region">Server Region</label>
+                        <select id="region" name="region">
+                            <option value="US" selected>US</option>
+                            <option value="EU">EU</option>
+                            <option value="ASIA">ASIA</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="identifier">Server Identifier</label>
+                        <select id="identifier" name="identifier">
+                            <option value="I">I</option>
+                            <option value="II" selected>II</option>
+                            <option value="III">III</option>
+                            <option value="PVP">PVP</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 1rem;">
+                    <label for="monster">Farm Monster</label>
+                    <select id="monster" name="monster">
+                        <option value="goo">Goo (Beginner)</option>
+                        <option value="bee">Bee</option>
+                        <option value="crab">Crab</option>
+                        <option value="minimush">Minimush</option>
+                        <option value="snake">Snake</option>
+                        <option value="osnake">OSnake</option>
+                        <option value="rat">Rat</option>
+                        <option value="armadillo">Armadillo</option>
+                        <option value="croc">Croc</option>
+                        <option value="porcupine">Porcupine</option>
+                        <option value="squig">Squig</option>
+                        <option value="squigtoad">Squigtoad</option>
+                        <option value="scorpion">Scorpion</option>
+                        <option value="bscorpion">Black Scorpion</option>
+                        <option value="plantoid" selected>Plantoid</option>
+                        <option value="spider">Spider</option>
+                        <option value="bat">Bat</option>
+                        <option value="wolf">Wolf</option>
+                        <option value="wolfie">Wolfie</option>
+                        <option value="boar">Boar</option>
+                        <option value="bbpompom">BBPomPom</option>
+                        <option value="pppompom">PPPomPom</option>
+                        <option value="tortoise">Tortoise</option>
+                        <option value="bigbird">Big Bird</option>
+                        <option value="stoneworm">Stone Worm</option>
+                        <option value="mole">Mole</option>
+                        <option value="mummy">Mummy</option>
+                        <option value="fvampire">Female Vampire</option>
+                        <option value="mvampire">Male Vampire</option>
+                        <option value="skeletor">Skeletor</option>
+                        <option value="fireroamer">Fire Roamer</option>
+                        <option value="iceroamer">Ice Roamer</option>
+                        <option value="oneeye">One Eye</option>
+                        <option value="ghost">Ghost</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Pathfinding & Events -->
+            <div>
+                <div class="section-title">Options</div>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="use_bank_b" name="use_bank_b">
+                        <span class="checkbox-text">Use bank_b</span>
+                    </label>
+                    <p class="checkbox-desc">Include Basement Bank in pathfinding (uncheck to exclude).</p>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="use_bank_u" name="use_bank_u">
+                        <span class="checkbox-text">Use bank_u</span>
+                    </label>
+                    <p class="checkbox-desc">Include Underground Bank in pathfinding (uncheck to exclude).</p>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="do_events" name="do_events" checked>
+                        <span class="checkbox-text">Do events</span>
+                    </label>
+                    <p class="checkbox-desc">Join in event bosses when active, falling back to chosen monster.</p>
+                </div>
+            </div>
+
+            <button type="submit" id="submit-btn">
+                <span>Start Characters</span>
+            </button>
+        </form>
+
+        <div id="status-box"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('bot-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const statusBox = document.getElementById('status-box');
+        const STORAGE_KEY = 'al_bot_form_data';
+
+        function saveFormData() {
+            const data = {
+                user: document.getElementById('user').value,
+                auth: document.getElementById('auth').value,
+                char1: document.getElementById('char1').value,
+                char2: document.getElementById('char2').value,
+                char3: document.getElementById('char3').value,
+                char4: document.getElementById('char4').value,
+                region: document.getElementById('region').value,
+                identifier: document.getElementById('identifier').value,
+                monster: document.getElementById('monster').value,
+                use_bank_b: document.getElementById('use_bank_b').checked,
+                use_bank_u: document.getElementById('use_bank_u').checked,
+                do_events: document.getElementById('do_events').checked,
+            };
+            try {
+                const serialized = JSON.stringify(data);
+                localStorage.setItem(STORAGE_KEY, serialized);
+                const encoded = encodeURIComponent(serialized);
+                document.cookie = `${STORAGE_KEY}=${encoded}; path=/; max-age=31536000; SameSite=Lax`;
+            } catch (e) {
+                console.warn('Unable to persist form data:', e);
+            }
+        }
+
+        function loadFormData() {
+            try {
+                let raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) {
+                    const match = document.cookie.match(new RegExp('(?:^|; )' + STORAGE_KEY + '=([^;]*)'));
+                    if (match) raw = decodeURIComponent(match[1]);
+                }
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (data.user) document.getElementById('user').value = data.user;
+                if (data.auth) document.getElementById('auth').value = data.auth;
+                if (data.char1) document.getElementById('char1').value = data.char1;
+                if (data.char2) document.getElementById('char2').value = data.char2;
+                if (data.char3) document.getElementById('char3').value = data.char3;
+                if (data.char4) document.getElementById('char4').value = data.char4;
+                if (data.region) document.getElementById('region').value = data.region;
+                if (data.identifier) document.getElementById('identifier').value = data.identifier;
+                if (data.monster) document.getElementById('monster').value = data.monster;
+                if (typeof data.use_bank_b === 'boolean') document.getElementById('use_bank_b').checked = data.use_bank_b;
+                if (typeof data.use_bank_u === 'boolean') document.getElementById('use_bank_u').checked = data.use_bank_u;
+                if (typeof data.do_events === 'boolean') document.getElementById('do_events').checked = data.do_events;
+            } catch (e) {
+                console.warn('Unable to restore form data:', e);
+            }
+        }
+
+        // Restore saved settings on load and auto-save on input changes
+        loadFormData();
+        form.addEventListener('input', saveFormData);
+        form.addEventListener('change', saveFormData);
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            saveFormData();
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span><span>Spawning Characters...</span>';
+
+            statusBox.className = 'loading';
+            statusBox.innerHTML = '<span class="spinner"></span><div><strong>Spawning runner...</strong> Initializing processes and connecting bots.</div>';
+            statusBox.style.display = 'flex';
+
+            const payload = {
+                user: document.getElementById('user').value.trim(),
+                auth: document.getElementById('auth').value.trim(),
+                char1: document.getElementById('char1').value.trim(),
+                char2: document.getElementById('char2').value.trim(),
+                char3: document.getElementById('char3').value.trim(),
+                char4: document.getElementById('char4').value.trim(),
+                region: document.getElementById('region').value,
+                identifier: document.getElementById('identifier').value,
+                monster: document.getElementById('monster').value,
+                use_bank_b: document.getElementById('use_bank_b').checked,
+                use_bank_u: document.getElementById('use_bank_u').checked,
+                do_events: document.getElementById('do_events').checked,
+            };
+
+            try {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusBox.className = 'success';
+                    statusBox.innerHTML = `<strong>Success!</strong> ${data.message || 'Characters process spawned!'} <br><br>Observe your characters at <a href="https://adventure.land/comm" target="_blank" rel="noopener">https://adventure.land/comm</a>`;
+                } else {
+                    statusBox.className = 'error';
+                    statusBox.innerHTML = `<strong>Error:</strong> ${data.error || 'Failed to start characters'}`;
+                }
+            } catch (err) {
+                statusBox.className = 'error';
+                statusBox.innerHTML = `<strong>Request Error:</strong> ${err.message}`;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Start Characters</span>';
+            }
+        });
+    </script>
+</body>
+</html>
