@@ -3,11 +3,11 @@ const LEADER = "earthiverse"
 async function moveLoop() {
     try {
         let target = parent.entities[LEADER] // Leader nearby
-        if (!target) target = bot.partyData?.party?.[LEADER] // Leader not nearby, use partyData to get approximate location
+        if (!target) target = parent.party?.[LEADER] // Leader not nearby, use partyData to get approximate location
         if (!target) return // Cannot locate leader
 
         // Offset position based on index in party
-        const offsetIndex = (bot.partyData?.list ?? []).indexOf(bot.id)
+        const offsetIndex = (parent.party_list ?? []).indexOf(character.id)
         switch (offsetIndex) {
             case 1:
                 await smart_move({ map: target.map, x: target.x - 25, y: target.y })
