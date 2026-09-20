@@ -1,23 +1,14 @@
 import AL, {
     Attribute,
-    CharacterType,
     IPosition,
-    ItemName,
-    Mage,
-    Merchant,
     MonsterName,
-    Paladin,
     PingCompensatedCharacter,
-    Priest,
-    Ranger,
-    Rogue,
     ServerIdentifier,
     ServerInfoDataLive,
     ServerRegion,
-    Warrior,
 } from "alclient"
 import { randomIntFromInterval, sleep } from "../base/general.js"
-import { DEFAULT_ITEM_CONFIG } from "../base/itemsNew.js"
+import { ItemConfig, REPLENISH_ITEM_CONFIG } from "../base/itemsNew.js"
 import { defaultNewMerchantStrategyOptions, NewMerchantStrategy } from "../merchant/strategy.js"
 import { Strategist, Strategy } from "../strategy_pattern/context.js"
 import { Config, constructGenericSetup, constructSetups, Setups } from "../strategy_pattern/setups/base.js"
@@ -72,14 +63,31 @@ try {
     process.exit(1)
 }
 
-console.log(`[Runner] Starting independent runner for characters: ${config.characters.join(", ")} on ${config.region} ${config.identifier}`)
-console.log(`[Runner] Target monster: ${config.monster} | Events: ${config.doEvents} | Bank B: ${config.useBankB} | Bank U: ${config.useBankU}`)
+console.log(
+    `[Runner] Starting independent runner for characters: ${config.characters.join(", ")} on ${config.region} ${config.identifier}`,
+)
+console.log(
+    `[Runner] Target monster: ${config.monster} | Events: ${config.doEvents} | Bank B: ${config.useBankB} | Bank U: ${config.useBankU}`,
+)
 
 // Configure AL user credentials
 AL.Game.user = {
     userID: config.userId,
     userAuth: config.userAuth,
     secure: true,
+}
+
+const RUNNER_ITEM_CONFIG: ItemConfig = {
+    ...REPLENISH_ITEM_CONFIG,
+    computer: {
+        hold: true,
+    },
+    supercomputer: {
+        hold: true,
+    },
+    tracker: {
+        hold: true,
+    },
 }
 
 // Global active contexts & setup cache
@@ -119,7 +127,9 @@ class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> 
         const handler = async (data: string) => {
             data = typeof data === "string" ? data.toLowerCase().trim() : ""
             if (data === "stop" || data === "disconnect") {
-                console.log(`[Runner] Received '${data}' command from ${bot.id}. Shutting down all characters and exiting runner process...`)
+                console.log(
+                    `[Runner] Received '${data}' command from ${bot.id}. Shutting down all characters and exiting runner process...`,
+                )
                 for (const context of activeContexts) {
                     try {
                         context.stop()
@@ -189,7 +199,7 @@ function applyBaseCharacterStrategies(context: Strategist<PingCompensatedCharact
                 new NewMerchantStrategy({
                     ...defaultNewMerchantStrategyOptions,
                     contexts: activeContexts,
-                    itemConfig: DEFAULT_ITEM_CONFIG,
+                    itemConfig: RUNNER_ITEM_CONFIG,
                     defaultPosition,
                     goldToHold: 50_000_000,
                 }),
@@ -214,7 +224,10 @@ const removeSetup = (context: Strategist<PingCompensatedCharacter>) => {
     }
 }
 
-const isDoable = (configOption: Config, setupContexts: Strategist<PingCompensatedCharacter>[]): Strategist<PingCompensatedCharacter>[] | false => {
+const isDoable = (
+    configOption: Config,
+    setupContexts: Strategist<PingCompensatedCharacter>[],
+): Strategist<PingCompensatedCharacter>[] | false => {
     const tempContexts = [...setupContexts]
     const doableWith: Strategist<PingCompensatedCharacter>[] = []
     nextConfigCharacter: for (const characterConfig of configOption.characters) {
@@ -244,10 +257,7 @@ const isDoable = (configOption: Config, setupContexts: Strategist<PingCompensate
     return doableWith
 }
 
-const applyConfig = (
-    configOption: Config,
-    setupContexts: Strategist<PingCompensatedCharacter>[],
-): boolean => {
+const applyConfig = (configOption: Config, setupContexts: Strategist<PingCompensatedCharacter>[]): boolean => {
     const doableWith = isDoable(configOption, setupContexts)
     if (!doableWith) return false
     nextConfig: for (const characterConfig of configOption.characters) {
@@ -444,10 +454,10 @@ async function start() {
     respawnStrategy = new RespawnStrategy()
     trackerStrategy = new TrackerStrategy()
     elixirStrategy = new ElixirStrategy("elixirluck")
-    buyStrategy = new BuyStrategy({ contexts: activeContexts, itemConfig: DEFAULT_ITEM_CONFIG })
-    sellStrategy = new SellStrategy({ itemConfig: DEFAULT_ITEM_CONFIG })
-    itemStrategy = new ItemStrategy({ contexts: activeContexts, itemConfig: DEFAULT_ITEM_CONFIG })
-    destroyStrategy = new DestroyStrategy({ itemConfig: DEFAULT_ITEM_CONFIG })
+    buyStrategy = new BuyStrategy({ contexts: activeContexts, itemConfig: RUNNER_ITEM_CONFIG })
+    sellStrategy = new SellStrategy({ itemConfig: RUNNER_ITEM_CONFIG })
+    itemStrategy = new ItemStrategy({ contexts: activeContexts, itemConfig: RUNNER_ITEM_CONFIG })
+    destroyStrategy = new DestroyStrategy({ itemConfig: RUNNER_ITEM_CONFIG })
 
     partyLeader = config.characters[0]
     partyAcceptStrategy = new AcceptPartyRequestStrategy()
