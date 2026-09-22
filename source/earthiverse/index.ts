@@ -32,12 +32,14 @@ import { defaultNewMerchantStrategyOptions, NewMerchantStrategy } from "../merch
 import { HomeServerStrategy } from "../strategy_pattern/strategies/home_server"
 import { TemporalSurgeBossesStrategy } from "../strategy_pattern/strategies/temporal"
 import { FixStuffStrategy } from "../strategy_pattern/strategies/fixes"
+import { fileURLToPath } from "url"
 
 process.on("unhandledRejection", (reason) => {
     console.error("Unhandled promise rejection:", reason)
 })
 
-await Promise.all([AL.Game.loginJSONFile("credentials.json", true), AL.Game.getGData(true)])
+const credentialsPath = fileURLToPath(new URL("../../credentials.json", import.meta.url))
+await Promise.all([AL.Game.loginJSONFile(credentialsPath, true), AL.Game.getGData(true)])
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true, remove_abtesting: true, remove_test: true })
 
 const DEFAULT_REGION: ServerRegion = "US"
