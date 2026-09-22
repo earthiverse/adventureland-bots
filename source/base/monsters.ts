@@ -6,12 +6,17 @@ import { TOMB_MONSTERS } from "../strategy_pattern/setups/tomb.js"
 
 const MONSTER_CACHE = new Map<string, MonsterName[]>()
 
-export async function getRecentSpecialMonsters(partyAllow: string[], specialMonsters: MonsterName[], serverIdentifier: ServerIdentifier, serverRegion: ServerRegion): Promise<MonsterName[]> {
+export async function getRecentSpecialMonsters(
+    partyAllow: string[],
+    specialMonsters: MonsterName[],
+    serverIdentifier: ServerIdentifier,
+    serverRegion: ServerRegion,
+): Promise<MonsterName[]> {
     if (!AL.Database.connection) return [] // No database
 
     // Use the cache if we've recently checked
     const key = `${partyAllow.join(",")}_${specialMonsters.join(",")}_${serverIdentifier}_${serverRegion}}`
-    if (MONSTER_CACHE.has(key) && !checkOnlyEveryMS(key, 5_000, false)) {
+    if (MONSTER_CACHE.has(key) && !checkOnlyEveryMS(key, 2_000, false)) {
         return MONSTER_CACHE.get(key)
     }
 
@@ -55,7 +60,10 @@ export async function getRecentSpecialMonsters(partyAllow: string[], specialMons
     return types
 }
 
-export async function getRecentProtectors(serverIdentifier: ServerIdentifier, serverRegion: ServerRegion): Promise<MonsterName[]> {
+export async function getRecentProtectors(
+    serverIdentifier: ServerIdentifier,
+    serverRegion: ServerRegion,
+): Promise<MonsterName[]> {
     if (!AL.Database.connection) return [] // No database
 
     // Use the cache if we've recently checked
@@ -68,10 +76,7 @@ export async function getRecentProtectors(serverIdentifier: ServerIdentifier, se
     const types: MonsterName[] = []
     for (const protector of await AL.EntityModel.find(
         {
-            $or: [
-                { firstSeen: null },
-                { firstSeen: { $lt: Date.now() - getCryptWaitTime("tomb") } },
-            ],
+            $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime("tomb") } }],
             lastSeen: { $gt: Date.now() - 60000 },
             serverIdentifier: serverIdentifier,
             serverRegion: serverRegion,
@@ -93,7 +98,10 @@ export async function getRecentProtectors(serverIdentifier: ServerIdentifier, se
     return types
 }
 
-export async function getRecentXMages(serverIdentifier: ServerIdentifier, serverRegion: ServerRegion): Promise<MonsterName[]> {
+export async function getRecentXMages(
+    serverIdentifier: ServerIdentifier,
+    serverRegion: ServerRegion,
+): Promise<MonsterName[]> {
     if (!AL.Database.connection) return [] // No database
 
     // Use the cache if we've recently checked
@@ -106,10 +114,7 @@ export async function getRecentXMages(serverIdentifier: ServerIdentifier, server
     const types: MonsterName[] = []
     for (const xmage of await AL.EntityModel.find(
         {
-            $or: [
-                { firstSeen: null },
-                { firstSeen: { $lt: Date.now() - getCryptWaitTime("winter_instance") } },
-            ],
+            $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime("winter_instance") } }],
             lastSeen: { $gt: Date.now() - 60000 },
             serverIdentifier: serverIdentifier,
             serverRegion: serverRegion,
@@ -131,8 +136,10 @@ export async function getRecentXMages(serverIdentifier: ServerIdentifier, server
     return types
 }
 
-
-export async function getRecentCryptMonsters(serverIdentifier: ServerIdentifier, serverRegion: ServerRegion): Promise<MonsterName[]> {
+export async function getRecentCryptMonsters(
+    serverIdentifier: ServerIdentifier,
+    serverRegion: ServerRegion,
+): Promise<MonsterName[]> {
     if (!AL.Database.connection) return [] // No database
 
     // Use the cache if we've recently checked

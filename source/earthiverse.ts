@@ -550,7 +550,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
             }
 
             for (const type of await getRecentSpecialMonsters(
-                PARTY_ALLOWLIST,
+                [...PARTY_ALLOWLIST, ...(context.bot?.partyData?.list ?? [])],
                 SPECIAL_MONSTERS,
                 context.bot.serverData.name,
                 context.bot.serverData.region,
