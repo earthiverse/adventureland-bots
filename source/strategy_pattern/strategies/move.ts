@@ -74,37 +74,6 @@ export class BasicMoveStrategy implements Strategy<Character> {
     }
 }
 
-export class FindAnniversaryTargetStrategy<Type extends Character> implements Strategy<Type> {
-    public loops = new Map<LoopName, Loop<Type>>()
-
-    public constructor() {
-        this.loops.set("move", {
-            fn: async (bot: Type) => {
-                await this.move(bot)
-            },
-            interval: 250,
-        })
-    }
-
-    private async move(bot: Type) {
-        if (!bot.S.anniversary) return // Not anniversary
-        if (!bot.S.anniversary.live || !bot.S.anniversary.active) return // Not live
-        if (bot.s.hopsickness || bot.s.realmfatigue) return // Can't farm with hopsickness or realmfatigue
-        if (!bot.s.anniversary_visit) return // We don't have a person to visit
-        if (bot.s.anniversary_visit.round !== bot.S.anniversary.round) return // Wrong round
-        if (bot.s.anniversary_visit.realm !== `${bot.serverData.region} ${bot.serverData.name}`) return // Wrong server
-
-        const position = bot.players.get(bot.S.anniversary.id) ?? (bot.S.anniversary as IPosition)
-
-        // Move to player
-        await bot.smartMove(position, { getWithin: 50 })
-
-        // Kiss player
-        if (bot.getPlayer({ id: bot.S.anniversary.id, withinRange: 80 })) {
-            await bot.kiss(bot.S.anniversary.id)
-        }
-    }
-}
 
 export class FinishMonsterHuntStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()
@@ -179,31 +148,6 @@ export class FollowFriendMoveStrategy implements Strategy<Character> {
     }
 }
 
-export class GetHolidaySpiritStrategy<Type extends Character> implements Strategy<Type> {
-    public loops = new Map<LoopName, Loop<Type>>()
-
-    public constructor() {
-        this.loops.set("move", {
-            fn: async (bot: Type) => {
-                await this.getHolidaySpirit(bot)
-            },
-            interval: 100,
-        })
-    }
-
-    private async getHolidaySpirit(bot: Type) {
-        if (!bot.S.holidayseason) return // Not holiday season
-        if (bot.s.holidayspirit) return // We already have holiday spirit
-        await bot
-            .smartMove("newyear_tree", { getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2 })
-            .catch(suppress_errors)
-        await bot.smartMove("newyear_tree", {
-            getWithin: AL.Constants.NPC_INTERACTION_DISTANCE / 2,
-            avoidTownWarps: true,
-        })
-        await bot.getHolidaySpirit()
-    }
-}
 
 export class GetMonsterHuntStrategy<Type extends Character> implements Strategy<Type> {
     public loops = new Map<LoopName, Loop<Type>>()

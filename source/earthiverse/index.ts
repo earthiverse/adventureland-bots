@@ -32,6 +32,8 @@ import { defaultNewMerchantStrategyOptions, NewMerchantStrategy } from "../merch
 import { HomeServerStrategy } from "../strategy_pattern/strategies/home_server"
 import { TemporalSurgeBossesStrategy } from "../strategy_pattern/strategies/temporal"
 import { FixStuffStrategy } from "../strategy_pattern/strategies/fixes"
+import { canDoAnniversaryKiss, FindAnniversaryTargetStrategy } from "../strategy_pattern/strategies/anniversary"
+import { canGetHolidaySpirit, GetHolidaySpiritStrategy } from "../strategy_pattern/strategies/holidayseason"
 import { fileURLToPath } from "url"
 
 process.on("unhandledRejection", (reason) => {
@@ -205,6 +207,7 @@ const applySetups = (
 }
 
 const ACCEPT_PARTY_REQUEST_STRATEGY = new AcceptPartyRequestStrategy()
+const ANNIVERSARY_STRATEGY = new FindAnniversaryTargetStrategy()
 const AVOID_DEATH_STRATEGY = new AvoidDeathStrategy()
 const AVOID_STACKING_STRATEGY = new AvoidStackingStrategy()
 const BASE_STRATEGY = new BaseStrategy(activeStrategists)
@@ -219,6 +222,7 @@ const DESTROY_STRATEGY = new DestroyStrategy({ itemConfig: DEFAULT_ITEM_CONFIG }
 const ELIXIR_STRATEGY = new ElixirStrategy("elixirluck")
 const FIX_STUFF_STRATEGY = new FixStuffStrategy()
 const GIVE_ROGUE_SPEED_STRATEGY = new GiveRogueSpeedStrategy()
+const HOLIDAY_SPIRIT_STRATEGY = new GetHolidaySpiritStrategy()
 const ITEM_STRATEGY = new ItemStrategy({
     contexts: activeStrategists,
     itemConfig: DEFAULT_ITEM_CONFIG,
@@ -369,7 +373,6 @@ const managerLoop = async () => {
                         break
                 }
 
-                // TODO: Holiday spirit strategy
                 // TODO: Monster hunt strategy
 
                 if (character.type === "merchant") {
@@ -404,12 +407,44 @@ const managerLoop = async () => {
             currentIdentifier = nextIdentifier
         }
 
+        const freeContexts: Strategist<PingCompensatedCharacter>[] = []
+        for (const context of activeStrategists) {
+            if (!context.isReady()) continue
+            const bot = context.bot
+
+            if (bot.ctype === "merchant") continue
+
+            // Anniversary logic
+            if (canDoAnniversaryKiss(bot)) {
+                removeSetup(context)
+                if (!context.hasStrategy(ANNIVERSARY_STRATEGY)) {
+                    context.applyStrategy(ANNIVERSARY_STRATEGY)
+                }
+                continue
+            } else if (context.hasStrategy(ANNIVERSARY_STRATEGY)) {
+                context.removeStrategy(ANNIVERSARY_STRATEGY)
+            }
+
+            // Holiday spirit
+            if (canGetHolidaySpirit(bot)) {
+                removeSetup(context)
+                if (!context.hasStrategy(HOLIDAY_SPIRIT_STRATEGY)) {
+                    context.applyStrategy(HOLIDAY_SPIRIT_STRATEGY)
+                }
+                continue
+            } else if (context.hasStrategy(HOLIDAY_SPIRIT_STRATEGY)) {
+                context.removeStrategy(HOLIDAY_SPIRIT_STRATEGY)
+            }
+
+            freeContexts.push(context)
+        }
+
         // Apply monster attack and move strategies
         const priority: MonsterName[] = [nextMonster, nextMonster, nextMonster]
-        for (const _context of activeStrategists) {
+        for (const _context of freeContexts) {
             priority.push(...DEFAULT_MONSTERS)
         }
-        applySetups(activeStrategists, MONSTER_SETUPS, priority)
+        applySetups(freeContexts, MONSTER_SETUPS, priority)
     } catch (e) {
         console.error(e)
     } finally {

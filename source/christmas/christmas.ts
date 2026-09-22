@@ -49,8 +49,8 @@ import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_war
 import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategy_pattern/strategies/attack_rogue.js"
 import { PaladinAttackStrategy } from "../strategy_pattern/strategies/attack_paladin.js"
+import { GetHolidaySpiritStrategy } from "../strategy_pattern/strategies/holidayseason.js"
 import {
-    GetHolidaySpiritStrategy,
     KiteMoveStrategy,
     SpecialMonsterMoveStrategy,
     SpreadOutImprovedMoveStrategy,

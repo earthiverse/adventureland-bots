@@ -1,4 +1,16 @@
-import AL, { CharacterType, ItemName, Mage, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import AL, {
+    CharacterType,
+    ItemName,
+    Mage,
+    Paladin,
+    PingCompensatedCharacter,
+    Priest,
+    Ranger,
+    Rogue,
+    ServerIdentifier,
+    ServerRegion,
+    Warrior,
+} from "alclient"
 import { AvoidStackingStrategy } from "../strategy_pattern/strategies/avoid_stacking.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 import { BuyStrategy } from "../strategy_pattern/strategies/buy.js"
@@ -24,7 +36,8 @@ import { PriestAttackStrategy } from "../strategy_pattern/strategies/attack_prie
 import { RangerAttackStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategy_pattern/strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategy_pattern/strategies/attack_warrior.js"
-import { GetHolidaySpiritStrategy, GetReplenishablesStrategy, ImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
+import { GetHolidaySpiritStrategy } from "../strategy_pattern/strategies/holidayseason.js"
+import { GetReplenishablesStrategy, ImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { MoveToBankAndDepositStuffStrategy } from "../strategy_pattern/strategies/bank.js"
 import { BaseAttackStrategy } from "../strategy_pattern/strategies/attack.js"
 import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from "../base/defaults.js"
@@ -35,52 +48,52 @@ await Promise.all([AL.Game.loginJSONFile("../../credentials.json"), AL.Game.getG
 await AL.Pathfinder.prepare(AL.Game.G, { cheat: true })
 
 const CRABRAVE_ITEM_CONFIG: ItemConfig = {
-    "cclaw": {
+    cclaw: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "computer": {
+    computer: {
         hold: true,
-        holdSlot: 40
+        holdSlot: 40,
     },
-    "crabclaw": {
+    crabclaw: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "ringsj": {
+    ringsj: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "hpamulet": {
+    hpamulet: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "hpbelt": {
+    hpbelt: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "hpot1": {
+    hpot1: {
         hold: true,
         holdSlot: 39,
-        replenish: 1000
+        replenish: 1000,
     },
-    "mpot1": {
+    mpot1: {
         hold: true,
         holdSlot: 38,
-        replenish: 1000
+        replenish: 1000,
     },
-    "tracker": {
+    tracker: {
         hold: true,
-        holdSlot: 41
+        holdSlot: 41,
     },
-    "wcap": {
+    wcap: {
         sell: true,
-        sellPrice: "npc"
+        sellPrice: "npc",
     },
-    "wshoes": {
+    wshoes: {
         sell: true,
-        sellPrice: "npc"
-    }
+        sellPrice: "npc",
+    },
 }
 
 const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
@@ -99,14 +112,14 @@ const bankStrategy = new MoveToBankAndDepositStuffStrategy()
 const baseStrategy = new BaseStrategy(CONTEXTS)
 const buyStrategy = new BuyStrategy({
     contexts: CONTEXTS,
-    itemConfig: CRABRAVE_ITEM_CONFIG
+    itemConfig: CRABRAVE_ITEM_CONFIG,
 })
 const chargeStrategy = new ChargeStrategy()
 const elixirStrategy = new ElixirStrategy("elixirluck")
 const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const getReplenishablesStrategy = new GetReplenishablesStrategy({
     contexts: CONTEXTS,
-    replenishables: REPLENISHABLES
+    replenishables: REPLENISHABLES,
 })
 const itemStrategy = new ItemStrategy({ contexts: CONTEXTS, itemConfig: CRABRAVE_ITEM_CONFIG })
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(CONTEXTS)
@@ -117,14 +130,14 @@ const attackStrategies: { [T in Exclude<CharacterType, "merchant">]: BaseAttackS
     priest: new PriestAttackStrategy({ contexts: CONTEXTS, disableCurse: true, type: "crab" }),
     ranger: new RangerAttackStrategy({ contexts: CONTEXTS, disableHuntersMark: true, type: "crab" }),
     rogue: new RogueAttackStrategy({ contexts: CONTEXTS, type: "crab" }),
-    warrior: new WarriorAttackStrategy({ contexts: CONTEXTS, disableAgitate: true, type: "crab" })
+    warrior: new WarriorAttackStrategy({ contexts: CONTEXTS, disableAgitate: true, type: "crab" }),
 }
 const partyHealStrategy = new PartyHealStrategy(CONTEXTS)
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 const respawnStrategy = new RespawnStrategy()
 const rspeedStrategy = new GiveRogueSpeedStrategy()
 const sellStrategy = new SellStrategy({
-    itemConfig: CRABRAVE_ITEM_CONFIG
+    itemConfig: CRABRAVE_ITEM_CONFIG,
 })
 
 class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> {
@@ -147,11 +160,11 @@ class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> 
 }
 const disconnectOnCommandStrategy = new DisconnectOnCommandStrategy()
 
-const currentSetups = new Map<
-    Strategist<PingCompensatedCharacter>,
-    Strategy<PingCompensatedCharacter>[]
->()
-const swapStrategies = (context: Strategist<PingCompensatedCharacter>, strategies: Strategy<PingCompensatedCharacter>[]) => {
+const currentSetups = new Map<Strategist<PingCompensatedCharacter>, Strategy<PingCompensatedCharacter>[]>()
+const swapStrategies = (
+    context: Strategist<PingCompensatedCharacter>,
+    strategies: Strategy<PingCompensatedCharacter>[],
+) => {
     // Remove old strategies that aren't in the list
     for (const strategy of currentSetups.get(context) ?? []) {
         if (strategies.includes(strategy)) continue // Keep it
@@ -190,7 +203,7 @@ const contextsLogic = async () => {
             // Need replenishables
             for (const [item, numHold] of REPLENISHABLES) {
                 const numHas = context.bot.countItem(item, context.bot.items)
-                if (numHas > (numHold / 4)) continue // We have more 25% of the amount we want
+                if (numHas > numHold / 4) continue // We have more 25% of the amount we want
                 const numWant = numHold - numHas
                 if (!context.bot.canBuy(item, { ignoreLocation: true, quantity: numWant })) continue // We can't buy enough, don't go to buy them
 
@@ -265,7 +278,13 @@ const stopRaving = async (characterID: string) => {
     CONTEXTS.splice(publicIndex, 1)
 }
 
-const startRaving = async (type: CharacterType, userID: string, userAuth: string, characterID: string, attemptNum = 0) => {
+const startRaving = async (
+    type: CharacterType,
+    userID: string,
+    userAuth: string,
+    characterID: string,
+    attemptNum = 0,
+) => {
     // Remove stopped contexts
     for (let i = 0; i < CONTEXTS.length; i++) {
         const context = CONTEXTS[i]
@@ -276,37 +295,75 @@ const startRaving = async (type: CharacterType, userID: string, userAuth: string
     }
 
     // Checks
-    if (CONTEXTS.length >= MAX_CHARS) throw `Too many characters are already running (We only support ${MAX_CHARS} characters)`
+    if (CONTEXTS.length >= MAX_CHARS)
+        throw `Too many characters are already running (We only support ${MAX_CHARS} characters)`
     for (const context of CONTEXTS) {
         const character = context.bot
-        if (character.characterID == characterID) throw `There is a character with the ID '${characterID}' (${character.id}) already running. Stop the character first to change its settings.`
+        if (character.characterID == characterID)
+            throw `There is a character with the ID '${characterID}' (${character.id}) already running. Stop the character first to change its settings.`
     }
 
     let bot: PingCompensatedCharacter
     try {
         switch (type) {
             case "mage": {
-                bot = new AL.Mage(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER])
+                bot = new AL.Mage(
+                    userID,
+                    userAuth,
+                    characterID,
+                    AL.Game.G,
+                    AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER],
+                )
                 break
             }
             case "paladin": {
-                bot = new AL.Paladin(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER])
+                bot = new AL.Paladin(
+                    userID,
+                    userAuth,
+                    characterID,
+                    AL.Game.G,
+                    AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER],
+                )
                 break
             }
             case "priest": {
-                bot = new AL.Priest(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER])
+                bot = new AL.Priest(
+                    userID,
+                    userAuth,
+                    characterID,
+                    AL.Game.G,
+                    AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER],
+                )
                 break
             }
             case "ranger": {
-                bot = new AL.Ranger(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER])
+                bot = new AL.Ranger(
+                    userID,
+                    userAuth,
+                    characterID,
+                    AL.Game.G,
+                    AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER],
+                )
                 break
             }
             case "rogue": {
-                bot = new AL.Rogue(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER])
+                bot = new AL.Rogue(
+                    userID,
+                    userAuth,
+                    characterID,
+                    AL.Game.G,
+                    AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER],
+                )
                 break
             }
             case "warrior": {
-                bot = new AL.Warrior(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER])
+                bot = new AL.Warrior(
+                    userID,
+                    userAuth,
+                    characterID,
+                    AL.Game.G,
+                    AL.Game.servers[SERVER_REGION][SERVER_IDENTIFIER],
+                )
                 break
             }
             default: {
@@ -370,17 +427,25 @@ app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }))
 const port = 80
 
-app.get("/", (_req, res) => { res.sendFile(path.join(path.resolve(), "/index.html")) })
-app.get("/m5x7.ttf", (_req, res) => { res.sendFile(path.join(path.resolve(), "/m5x7.ttf")) })
+app.get("/", (_req, res) => {
+    res.sendFile(path.join(path.resolve(), "/index.html"))
+})
+app.get("/m5x7.ttf", (_req, res) => {
+    res.sendFile(path.join(path.resolve(), "/m5x7.ttf"))
+})
 
-app.post("/",
+app.post(
+    "/",
     body("user").trim().isLength({ max: 16, min: 16 }).withMessage("User IDs are exactly 16 digits."),
     body("user").trim().isNumeric().withMessage("User IDs are numeric."),
     body("auth").trim().isLength({ max: 21, min: 21 }).withMessage("Auth codes are exactly 21 characters."),
     body("auth").trim().isAlphanumeric("en-US", { ignore: /\s/ }).withMessage("Auth codes are alphanumeric."),
     body("char").trim().isLength({ max: 16, min: 16 }).withMessage("Character IDs are exactly 16 digits."),
     body("char").trim().isNumeric().withMessage("Character IDs are numeric."),
-    body("char_type").trim().matches(/\b(?:mage|paladin|priest|ranger|rogue|warrior)\b/).withMessage("Character type not supported."),
+    body("char_type")
+        .trim()
+        .matches(/\b(?:mage|paladin|priest|ranger|rogue|warrior)\b/)
+        .withMessage("Character type not supported."),
     async (req, res) => {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
@@ -398,7 +463,8 @@ app.post("/",
         } catch (e) {
             return res.status(500).send(e)
         }
-    })
+    },
+)
 
 app.listen(port, async () => {
     console.log(`Ready on port ${port}!`)

@@ -1,6 +1,25 @@
-import AL, { CharacterType, IPosition, ItemName, Mage, Merchant, MonsterName, Paladin, PingCompensatedCharacter, Priest, Ranger, Rogue, ServerIdentifier, ServerRegion, Warrior } from "alclient"
+import AL, {
+    CharacterType,
+    IPosition,
+    ItemName,
+    Mage,
+    Merchant,
+    MonsterName,
+    Paladin,
+    PingCompensatedCharacter,
+    Priest,
+    Ranger,
+    Rogue,
+    ServerIdentifier,
+    ServerRegion,
+    Warrior,
+} from "alclient"
 import { getMsToNextMinute, randomIntFromInterval } from "../base/general.js"
-import { NewMerchantStrategy, NewMerchantStrategyOptions, defaultNewMerchantStrategyOptions } from "../merchant/strategy.js"
+import {
+    NewMerchantStrategy,
+    NewMerchantStrategyOptions,
+    defaultNewMerchantStrategyOptions,
+} from "../merchant/strategy.js"
 import { Strategist, Strategy } from "./context.js"
 import { BaseAttackStrategy, BaseAttackStrategyOptions } from "./strategies/attack.js"
 import { MageAttackStrategy } from "./strategies/attack_mage.js"
@@ -16,7 +35,8 @@ import { BuyStrategy } from "./strategies/buy.js"
 import { ChargeStrategy } from "./strategies/charge.js"
 import { ItemStrategy } from "./strategies/item.js"
 import { MagiportOthersSmartMovingToUsStrategy } from "./strategies/magiport.js"
-import { GetHolidaySpiritStrategy, GetReplenishablesStrategy, ImprovedMoveStrategy, ImprovedMoveStrategyOptions } from "./strategies/move.js"
+import { GetHolidaySpiritStrategy } from "./strategies/holidayseason.js"
+import { GetReplenishablesStrategy, ImprovedMoveStrategy, ImprovedMoveStrategyOptions } from "./strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategies/party.js"
 import { PartyHealStrategy } from "./strategies/partyheal.js"
 import { RespawnStrategy } from "./strategies/respawn.js"
@@ -33,7 +53,7 @@ const CONTEXTS: Strategist<PingCompensatedCharacter>[] = []
 // Strategies
 const avoidStackingStrategy = new AvoidStackingStrategy()
 const bankStrategy = new MoveToBankAndDepositStuffStrategy({
-    invisibleRogue: true
+    invisibleRogue: true,
 })
 const baseStrategy = new BaseStrategy(CONTEXTS)
 const chargeStrategy = new ChargeStrategy()
@@ -62,7 +82,10 @@ export type RunnerOptions = {
 }
 
 const currentSetups = new Map<Strategist<PingCompensatedCharacter>, Strategy<PingCompensatedCharacter>[]>()
-const swapStrategies = (context: Strategist<PingCompensatedCharacter>, strategies: Strategy<PingCompensatedCharacter>[]) => {
+const swapStrategies = (
+    context: Strategist<PingCompensatedCharacter>,
+    strategies: Strategy<PingCompensatedCharacter>[],
+) => {
     // Remove old strategies that aren't in the list
     for (const strategy of currentSetups.get(context) ?? []) {
         if (strategies.includes(strategy)) continue // Keep it
@@ -79,14 +102,19 @@ const swapStrategies = (context: Strategist<PingCompensatedCharacter>, strategie
     currentSetups.set(context, strategies)
 }
 
-export async function startRunner(character: PingCompensatedCharacter, options: RunnerOptions): Promise<Strategist<PingCompensatedCharacter>> {
+export async function startRunner(
+    character: PingCompensatedCharacter,
+    options: RunnerOptions,
+): Promise<Strategist<PingCompensatedCharacter>> {
     if (options.ephemeral && options.ephemeral.buffer >= 30_000) {
         throw new Error("Please choose a buffer time for `options.ephemeral.buffer` less than 30_000")
     }
 
-    if (options.ephemeral?.check && (!(await options.ephemeral.check()))) {
+    if (options.ephemeral?.check && !(await options.ephemeral.check())) {
         // Prevent from starting for a minute
-        setTimeout(() => { startRunner(character, options).catch(console.error) }, getMsToNextMinute() + options.ephemeral.buffer)
+        setTimeout(() => {
+            startRunner(character, options).catch(console.error)
+        }, getMsToNextMinute() + options.ephemeral.buffer)
         return
     }
 
@@ -95,7 +123,8 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
     switch (character.ctype) {
         case "mage":
             context = new Strategist<Mage>(character as Mage, baseStrategy)
-            attackStrategy = options.attackStrategy ?? new MageAttackStrategy({ typeList: options.monsters, contexts: CONTEXTS })
+            attackStrategy =
+                options.attackStrategy ?? new MageAttackStrategy({ typeList: options.monsters, contexts: CONTEXTS })
             context.applyStrategy(magiportStrategy)
             break
         case "merchant": {
@@ -104,25 +133,55 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
         }
         case "paladin":
             context = new Strategist<Paladin>(character as Paladin, baseStrategy)
-            attackStrategy = options.attackStrategy ?? new PaladinAttackStrategy({ typeList: options.monsters, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
+            attackStrategy =
+                options.attackStrategy ??
+                new PaladinAttackStrategy({
+                    typeList: options.monsters,
+                    contexts: CONTEXTS,
+                    ...(options.attackOverrides ?? {}),
+                })
             break
         case "priest":
             context = new Strategist<Priest>(character as Priest, baseStrategy)
-            attackStrategy = options.attackStrategy ?? new PriestAttackStrategy({ typeList: options.monsters, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
+            attackStrategy =
+                options.attackStrategy ??
+                new PriestAttackStrategy({
+                    typeList: options.monsters,
+                    contexts: CONTEXTS,
+                    ...(options.attackOverrides ?? {}),
+                })
             context.applyStrategy(partyHealStrategy)
             break
         case "ranger":
             context = new Strategist<Ranger>(character as Ranger, baseStrategy)
-            attackStrategy = options.attackStrategy ?? new RangerAttackStrategy({ typeList: options.monsters, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
+            attackStrategy =
+                options.attackStrategy ??
+                new RangerAttackStrategy({
+                    typeList: options.monsters,
+                    contexts: CONTEXTS,
+                    ...(options.attackOverrides ?? {}),
+                })
             break
         case "rogue":
             context = new Strategist<Rogue>(character as Rogue, baseStrategy)
-            attackStrategy = options.attackStrategy ?? new RogueAttackStrategy({ typeList: options.monsters, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
+            attackStrategy =
+                options.attackStrategy ??
+                new RogueAttackStrategy({
+                    typeList: options.monsters,
+                    contexts: CONTEXTS,
+                    ...(options.attackOverrides ?? {}),
+                })
             context.applyStrategy(rSpeedStrategy)
             break
         case "warrior":
             context = new Strategist<Warrior>(character as Warrior, baseStrategy)
-            attackStrategy = options.attackStrategy ?? new WarriorAttackStrategy({ typeList: options.monsters, contexts: CONTEXTS, ...(options.attackOverrides ?? {}) })
+            attackStrategy =
+                options.attackStrategy ??
+                new WarriorAttackStrategy({
+                    typeList: options.monsters,
+                    contexts: CONTEXTS,
+                    ...(options.attackOverrides ?? {}),
+                })
             context.applyStrategy(chargeStrategy)
             break
         default:
@@ -148,12 +207,13 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
     }
     const getReplenishablesStrategy = new GetReplenishablesStrategy({
         contexts: CONTEXTS,
-        replenishables: REPLENISHABLES
+        replenishables: REPLENISHABLES,
     })
 
     let moveStrategy: Strategy<PingCompensatedCharacter>
     if (character.ctype !== "merchant") {
-        moveStrategy = options.moveStrategy ?? new ImprovedMoveStrategy(options.monsters, { ...(options.moveOverrides ?? {}) })
+        moveStrategy =
+            options.moveStrategy ?? new ImprovedMoveStrategy(options.monsters, { ...(options.moveOverrides ?? {}) })
 
         if (options.partyLeader) {
             if (character.id == options.partyLeader) {
@@ -166,7 +226,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
         const defaultPosition: IPosition = {
             map: "main",
             x: randomIntFromInterval(-100, -50),
-            y: randomIntFromInterval(-50, 50)
+            y: randomIntFromInterval(-50, 50),
         }
 
         moveStrategy = new NewMerchantStrategy({
@@ -175,14 +235,14 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
             contexts: CONTEXTS,
             itemConfig: options.itemConfig,
             defaultPosition: defaultPosition,
-            goldToHold: 50_000_000
+            goldToHold: 50_000_000,
         })
-        context.applyStrategy(new ToggleStandStrategy({
-            offWhenMoving: true,
-            onWhenNear: [
-                { distance: 10, position: defaultPosition }
-            ]
-        }))
+        context.applyStrategy(
+            new ToggleStandStrategy({
+                offWhenMoving: true,
+                onWhenNear: [{ distance: 10, position: defaultPosition }],
+            }),
+        )
     }
 
     const logicLoop = () => {
@@ -206,7 +266,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
             // Need replenishables
             for (const [item, numHold] of REPLENISHABLES) {
                 const numHas = context.bot.countItem(item, context.bot.items)
-                if (numHas > (numHold / 4)) continue // We have more 25% of the amount we want
+                if (numHas > numHold / 4) continue // We have more 25% of the amount we want
                 const numWant = numHold - numHas
                 if (!context.bot.canBuy(item, { ignoreLocation: true, quantity: numWant })) continue // We can't buy enough, don't go to buy them
 
@@ -224,7 +284,9 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
         } catch (e) {
             console.error(e)
         } finally {
-            setTimeout(() => { logicLoop() }, 1000)
+            setTimeout(() => {
+                logicLoop()
+            }, 1000)
         }
     }
     logicLoop()
@@ -232,7 +294,7 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
     if (options.ephemeral) {
         const connectLoop = async () => {
             try {
-                if (options.ephemeral?.check && (!(await options.ephemeral.check()))) {
+                if (options.ephemeral?.check && !(await options.ephemeral.check())) {
                     // Prevent from starting
                     return
                 }
@@ -241,10 +303,14 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
                 console.error(e)
             } finally {
                 context?.bot?.socket?.removeAllListeners("disconnect")
-                setTimeout(async () => { await connectLoop() }, getMsToNextMinute() + options.ephemeral.buffer)
+                setTimeout(async () => {
+                    await connectLoop()
+                }, getMsToNextMinute() + options.ephemeral.buffer)
             }
         }
-        setTimeout(async () => { await connectLoop() }, getMsToNextMinute() + options.ephemeral.buffer)
+        setTimeout(async () => {
+            await connectLoop()
+        }, getMsToNextMinute() + options.ephemeral.buffer)
 
         const disconnectLoop = async () => {
             try {
@@ -255,17 +321,31 @@ export async function startRunner(character: PingCompensatedCharacter, options: 
             } catch (e) {
                 console.error(e)
             } finally {
-                setTimeout(async () => { await disconnectLoop() }, getMsToNextMinute() + (60_000 - options.ephemeral.buffer))
+                setTimeout(
+                    async () => {
+                        await disconnectLoop()
+                    },
+                    getMsToNextMinute() + (60_000 - options.ephemeral.buffer),
+                )
             }
         }
-        setTimeout(async () => { await disconnectLoop() }, getMsToNextMinute() - options.ephemeral.buffer)
+        setTimeout(async () => {
+            await disconnectLoop()
+        }, getMsToNextMinute() - options.ephemeral.buffer)
     }
 
     CONTEXTS.push(context)
     return context
 }
 
-export async function startCharacterFromCredentials(userID: string, userAuth: string, characterID: string, type: CharacterType, sRegion: ServerRegion, sID: ServerIdentifier) {
+export async function startCharacterFromCredentials(
+    userID: string,
+    userAuth: string,
+    characterID: string,
+    type: CharacterType,
+    sRegion: ServerRegion,
+    sID: ServerIdentifier,
+) {
     let character: PingCompensatedCharacter
     switch (type) {
         case "mage":
@@ -290,7 +370,13 @@ export async function startCharacterFromCredentials(userID: string, userAuth: st
             character = new Warrior(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[sRegion][sID])
             break
         default:
-            character = new PingCompensatedCharacter(userID, userAuth, characterID, AL.Game.G, AL.Game.servers[sRegion][sID])
+            character = new PingCompensatedCharacter(
+                userID,
+                userAuth,
+                characterID,
+                AL.Game.G,
+                AL.Game.servers[sRegion][sID],
+            )
             break
     }
 

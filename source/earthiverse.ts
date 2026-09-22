@@ -16,7 +16,7 @@ import AL, {
     ServerRegion,
     Warrior,
 } from "alclient"
-import { randomIntFromInterval, sleep } from "./base/general.js"
+import { randomIntFromInterval } from "./base/general.js"
 import {
     getEasterMonsterPriority,
     getHalloweenMonsterPriority,
@@ -36,12 +36,9 @@ import {
     MagiportOthersSmartMovingToUsStrategy,
     MagiportServiceStrategy,
 } from "./strategy_pattern/strategies/magiport.js"
-import {
-    FindAnniversaryTargetStrategy,
-    FinishMonsterHuntStrategy,
-    GetHolidaySpiritStrategy,
-    GetMonsterHuntStrategy,
-} from "./strategy_pattern/strategies/move.js"
+import { canDoAnniversaryKiss, FindAnniversaryTargetStrategy } from "./strategy_pattern/strategies/anniversary.js"
+import { canGetHolidaySpirit, GetHolidaySpiritStrategy } from "./strategy_pattern/strategies/holidayseason.js"
+import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "./strategy_pattern/strategies/move.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategy_pattern/strategies/party.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
@@ -769,26 +766,25 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             if (bot.ctype == "merchant") continue // Merchant should have equivalent event logic in the Merchant Strategy
 
             // Anniversary logic
-            if (
-                bot.S.anniversary && // Anniversary event is live
-                bot.S.anniversary.live &&
-                bot.S.anniversary.active &&
-                !bot.s.hopsickness && // We can't kiss with hopsickness
-                !bot.s.realmfatigue && // We can't kiss with realmfatigue
-                bot.s.anniversary_visit && // We haven't visited yet
-                bot.s.anniversary_visit.round === bot.S.anniversary.round && // We need the same round
-                bot.s.anniversary_visit.realm === `${bot.serverData.region} ${bot.serverData.name}` // We need to be on the right server
-            ) {
+            if (canDoAnniversaryKiss(bot)) {
                 removeSetup(context)
-                context.applyStrategy(findAnniversaryTargetStrategy)
+                if (!context.hasStrategy(findAnniversaryTargetStrategy)) {
+                    context.applyStrategy(findAnniversaryTargetStrategy)
+                }
                 continue
+            } else if (context.hasStrategy(findAnniversaryTargetStrategy)) {
+                context.removeStrategy(findAnniversaryTargetStrategy)
             }
 
             // Holiday spirit
-            if (bot.S.holidayseason && !bot.s.holidayspirit) {
+            if (canGetHolidaySpirit(bot)) {
                 removeSetup(context)
-                context.applyStrategy(getHolidaySpiritStrategy)
+                if (!context.hasStrategy(getHolidaySpiritStrategy)) {
+                    context.applyStrategy(getHolidaySpiritStrategy)
+                }
                 continue
+            } else if (context.hasStrategy(getHolidaySpiritStrategy)) {
+                context.removeStrategy(getHolidaySpiritStrategy)
             }
 
             if (

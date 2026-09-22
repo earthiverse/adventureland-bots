@@ -34,11 +34,8 @@ import { WarriorAttackWithAttributesStrategy } from "../strategy_pattern/strateg
 import { RangerAttackWithAttributesStrategy } from "../strategy_pattern/strategies/attack_ranger.js"
 import { RogueAttackWithAttributesStrategy } from "../strategy_pattern/strategies/attack_rogue.js"
 import { PaladinAttackWithAttributesStrategy } from "../strategy_pattern/strategies/attack_paladin.js"
-import {
-    GetHolidaySpiritStrategy,
-    SpecialMonsterMoveStrategy,
-    SpreadOutImprovedMoveStrategy,
-} from "../strategy_pattern/strategies/move.js"
+import { GetHolidaySpiritStrategy } from "../strategy_pattern/strategies/holidayseason.js"
+import { SpecialMonsterMoveStrategy, SpreadOutImprovedMoveStrategy } from "../strategy_pattern/strategies/move.js"
 import { mainFrogs } from "../base/locations.js"
 import { BoosterStrategy } from "../strategy_pattern/strategies/booster.js"
 import { FixStuffStrategy } from "../strategy_pattern/strategies/fixes.js"
