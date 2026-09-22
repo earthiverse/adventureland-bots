@@ -3093,7 +3093,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await bot
                     .smartMove(spawn, {
                         getWithin: 250,
-                        stopIfTrue: () => bot.getEntity({ type: monster }) !== undefined,
+                        stopIfTrue: async () => bot.getEntity({ type: monster }) !== undefined,
                     })
                     .catch(console.error)
 
