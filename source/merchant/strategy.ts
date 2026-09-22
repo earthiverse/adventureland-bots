@@ -11,6 +11,7 @@ import AL, {
     LocateItemsFilters,
     MapName,
     Merchant,
+    MonsterName,
     NewMapData,
     Pathfinder,
     PingCompensatedCharacter,
@@ -73,6 +74,8 @@ import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.j
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
+
+export const DEFAULT_MINI_BOSSES: MonsterName[] = ["skeletor", "mvampire", "fvampire", "jr", "greenjr", "rharpy"]
 
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
@@ -1446,6 +1449,14 @@ export type NewMerchantStrategyOptions = {
             maxInstances?: number
         }
     }
+    enableMiniBossCheck?: {
+        /** How often to check for each monster if not seen / not on respawn (ms, default: 300_000) */
+        checkInterval?: number
+        /** Do not check if seen in DB within this window (ms, default: 60_000) */
+        recentlySeenInterval?: number
+        /** Monsters to check */
+        monsters?: MonsterName[]
+    }
     enableMluck?: {
         /** Should we mluck those that we pass through `contexts`? */
         contexts?: true
@@ -1463,6 +1474,11 @@ export const defaultNewMerchantStrategyOptions: NewMerchantStrategyOptions = {
     itemConfig: DEFAULT_ITEM_CONFIG,
     defaultPosition: { map: "main", x: 0, y: 0 },
     goldToHold: DEFAULT_GOLD_TO_HOLD,
+    enableMiniBossCheck: {
+        checkInterval: 300_000,
+        recentlySeenInterval: 60_000,
+        monsters: DEFAULT_MINI_BOSSES,
+    },
     enableMluck: {
         contexts: true,
         others: true,
@@ -1511,6 +1527,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await this.listForSale(bot).catch(console.error)
                 await this.goCheckInstances(bot).catch(console.error)
                 await this.tryForMerritBonus(bot).catch(console.error)
+                await this.goCheckMiniBosses(bot).catch(console.error)
 
                 await bot.smartMove(this.options.defaultPosition)
             },
@@ -3022,5 +3039,66 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         }
 
         await bot.closeMerchantStand()
+    }
+
+    protected async goCheckMiniBosses(bot: Merchant): Promise<void> {
+        if (!Database.connection) return
+        if (!this.options.enableMiniBossCheck) return
+        if (bot.rip || bot.esize <= 0) return
+
+        const checkInterval = this.options.enableMiniBossCheck.checkInterval ?? 300_000
+        const recentlySeenInterval = this.options.enableMiniBossCheck.recentlySeenInterval ?? 60_000
+        const monsters = this.options.enableMiniBossCheck.monsters ?? DEFAULT_MINI_BOSSES
+
+        for (const monster of monsters) {
+            const checkKey = `${bot.serverData.region}${bot.serverData.name}_miniboss_check_${monster}`
+            if (!checkOnlyEveryMS(checkKey, checkInterval, false)) continue
+
+            // Check if seen recently in DB
+            const dbEntity = await AL.EntityModel.findOne({
+                lastSeen: { $gt: Date.now() - recentlySeenInterval },
+                serverIdentifier: bot.serverData.name,
+                serverRegion: bot.serverData.region,
+                type: monster,
+            })
+                .lean()
+                .exec()
+            if (dbEntity) {
+                setLastCheck(checkKey)
+                continue
+            }
+
+            // Check if on respawn in DB
+            const dbRespawn = await AL.RespawnModel.findOne({
+                estimatedRespawn: { $gt: Date.now() },
+                serverIdentifier: bot.serverData.name,
+                serverRegion: bot.serverData.region,
+                type: monster,
+            })
+                .lean()
+                .exec()
+            if (dbRespawn) {
+                continue
+            }
+
+            // Look for the monster
+            setLastCheck(checkKey)
+            const spawns = Pathfinder.locateMonster(monster)
+            if (!spawns || !spawns.length) continue
+
+            for (const spawn of spawns) {
+                if (bot.rip || bot.esize <= 0) return
+                if (bot.getEntity({ type: monster })) break
+
+                await bot
+                    .smartMove(spawn, {
+                        getWithin: 250,
+                        stopIfTrue: () => bot.getEntity({ type: monster }) !== undefined,
+                    })
+                    .catch(console.error)
+
+                if (bot.getEntity({ type: monster })) break // Found
+            }
+        }
     }
 }
