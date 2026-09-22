@@ -1,4 +1,4 @@
-import { Mage, MonsterName, PingCompensatedCharacter, Warrior } from "alclient"
+import { Character, Mage, MonsterName, PingCompensatedCharacter, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -8,6 +8,20 @@ import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base.js"
+
+export function canDoGoobrawl(bot: Character): boolean {
+    if (bot.ctype === "merchant") return false
+    if (bot.map.startsWith("bank")) return false
+    if (bot.map === "goobrawl") {
+        // NOTE: If we're on the map, hopsickness is fine
+        // NOTE: If we server hopped while on the goobrawl map,
+        //       it's possible that there are leftover goos after the event ends
+        if (bot.getEntity({ typeList: ["rgoo", "bgoo"] })) return true
+        if (bot.S.goobrawl) return true
+    }
+    if (bot.s.hopsickness) return false
+    return !!bot.S.goobrawl
+}
 
 class MageRGooAttackStrategy extends MageAttackStrategy {
     public onApply(bot: Mage): void {

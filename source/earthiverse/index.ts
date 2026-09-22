@@ -40,6 +40,7 @@ import {
     FinishMonsterHuntStrategy,
     GetMonsterHuntStrategy,
 } from "../strategy_pattern/strategies/monsterhunt"
+import { canDoGoobrawl } from "../strategy_pattern/setups/rgoo"
 import { fileURLToPath } from "url"
 
 process.on("unhandledRejection", (reason) => {
@@ -258,6 +259,15 @@ const TOGGLE_STAND_STRATEGY = new ToggleStandStrategy({
 const TRACKER_STRATEGY = new TrackerStrategy()
 
 const getNextTarget = async (): Promise<[ServerRegion, ServerIdentifier, MonsterName] | undefined> => {
+    // Check if Goobrawl is active on our current server
+    for (const strategist of activeStrategists) {
+        if (!strategist.isReady()) continue
+        const bot = strategist.bot
+        if (canDoGoobrawl(bot)) {
+            return [bot.server.region, bot.server.name, "rgoo"]
+        }
+    }
+
     // Get monsters from the DB
     const liveMonsters = await EntityModel.find({
         type: { $in: MONSTER_PRIORITY },
@@ -456,7 +466,7 @@ const managerLoop = async () => {
                     context.removeStrategy(FINISH_MONSTER_HUNT_STRATEGY)
                 }
 
-                if (canGetMonsterHunt(bot, DEFAULT_REGION, DEFAULT_IDENTIFIER)) {
+                if (!canDoGoobrawl(bot) && canGetMonsterHunt(bot, DEFAULT_REGION, DEFAULT_IDENTIFIER)) {
                     removeSetup(context)
                     if (!context.hasStrategy(GET_MONSTER_HUNT_STRATEGY)) {
                         context.applyStrategy(GET_MONSTER_HUNT_STRATEGY)
@@ -483,7 +493,12 @@ const managerLoop = async () => {
             priority.push(nextMonster, nextMonster, nextMonster)
         }
 
-        if (ENABLE_MONSTERHUNTS && currentRegion === DEFAULT_REGION && currentIdentifier === DEFAULT_IDENTIFIER) {
+        const isGoobrawl = freeContexts.some((context) => canDoGoobrawl(context.bot))
+        if (isGoobrawl) {
+            if (!priority.includes("rgoo")) {
+                priority.unshift("rgoo", "rgoo", "rgoo")
+            }
+        } else if (ENABLE_MONSTERHUNTS && currentRegion === DEFAULT_REGION && currentIdentifier === DEFAULT_IDENTIFIER) {
             const monsterhunts: { ms: number; id: MonsterName }[] = []
             for (const context of freeContexts) {
                 const bot = context.bot

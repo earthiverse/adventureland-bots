@@ -44,6 +44,7 @@ import {
     FinishMonsterHuntStrategy,
     GetMonsterHuntStrategy,
 } from "./strategy_pattern/strategies/monsterhunt.js"
+import { canDoGoobrawl } from "./strategy_pattern/setups/rgoo.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategy_pattern/strategies/party.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
@@ -441,12 +442,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
     if (ENABLE_EVENTS) {
         for (const context of contexts) {
             // Goobrawl
-            if (
-                // Can join
-                (context.bot.S.goobrawl && !context.bot.s.hopsickness && !context.bot.map.startsWith("bank")) ||
-                // Already there
-                (context.bot.map == "goobrawl" && context.bot.getEntity({ typeList: ["rgoo", "bgoo"] }))
-            ) {
+            if (canDoGoobrawl(context.bot)) {
                 priority.push("rgoo")
             }
 
@@ -729,7 +725,7 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
             }
 
             // Goobrawl
-            if (bot1.S.goobrawl && !bot1.s?.hopsickness) {
+            if (canDoGoobrawl(bot1)) {
                 // Goobrawl is active, stay on the current server
                 TARGET_IDENTIFIER = bot1.serverData.name
                 TARGET_REGION = bot1.serverData.region
@@ -803,7 +799,7 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
                     context.removeStrategy(finishMonsterHuntStrategy)
                 }
 
-                if (canGetMonsterHunt(bot, DEFAULT_REGION, DEFAULT_IDENTIFIER)) {
+                if (!canDoGoobrawl(bot) && canGetMonsterHunt(bot, DEFAULT_REGION, DEFAULT_IDENTIFIER)) {
                     removeSetup(context)
                     if (!context.hasStrategy(getMonsterHuntStrategy)) {
                         context.applyStrategy(getMonsterHuntStrategy)
