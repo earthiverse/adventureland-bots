@@ -38,7 +38,12 @@ import {
 } from "./strategy_pattern/strategies/magiport.js"
 import { canDoAnniversaryKiss, FindAnniversaryTargetStrategy } from "./strategy_pattern/strategies/anniversary.js"
 import { canGetHolidaySpirit, GetHolidaySpiritStrategy } from "./strategy_pattern/strategies/holidayseason.js"
-import { FinishMonsterHuntStrategy, GetMonsterHuntStrategy } from "./strategy_pattern/strategies/move.js"
+import {
+    canFinishMonsterHunt,
+    canGetMonsterHunt,
+    FinishMonsterHuntStrategy,
+    GetMonsterHuntStrategy,
+} from "./strategy_pattern/strategies/monsterhunt.js"
 import { AcceptPartyRequestStrategy, RequestPartyStrategy } from "./strategy_pattern/strategies/party.js"
 import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
@@ -787,30 +792,32 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
                 context.removeStrategy(getHolidaySpiritStrategy)
             }
 
-            if (
-                ENABLE_MONSTERHUNTS &&
-                // Only monsterhunt on our default server
-                bot.serverData.region == DEFAULT_REGION &&
-                bot.serverData.name == DEFAULT_IDENTIFIER
-            ) {
-                if (
-                    !bot.s.monsterhunt && // We don't have a monster hunt
-                    bot.map === bot.in // We aren't in an instance
-                ) {
-                    // Get a new monster hunt
+            if (ENABLE_MONSTERHUNTS) {
+                if (canFinishMonsterHunt(bot)) {
                     removeSetup(context)
-                    context.applyStrategy(getMonsterHuntStrategy)
+                    if (!context.hasStrategy(finishMonsterHuntStrategy)) {
+                        context.applyStrategy(finishMonsterHuntStrategy)
+                    }
                     continue
+                } else if (context.hasStrategy(finishMonsterHuntStrategy)) {
+                    context.removeStrategy(finishMonsterHuntStrategy)
                 }
 
-                if (bot.s.monsterhunt?.c == 0) {
-                    // Turn in our monster hunt
-                    const [region, id] = bot.s.monsterhunt.sn.split(" ") as [ServerRegion, ServerIdentifier]
-                    if (region == bot.serverData.region && id == bot.serverData.name) {
-                        removeSetup(context)
-                        context.applyStrategy(finishMonsterHuntStrategy)
-                        continue
+                if (canGetMonsterHunt(bot, DEFAULT_REGION, DEFAULT_IDENTIFIER)) {
+                    removeSetup(context)
+                    if (!context.hasStrategy(getMonsterHuntStrategy)) {
+                        context.applyStrategy(getMonsterHuntStrategy)
                     }
+                    continue
+                } else if (context.hasStrategy(getMonsterHuntStrategy)) {
+                    context.removeStrategy(getMonsterHuntStrategy)
+                }
+            } else {
+                if (context.hasStrategy(finishMonsterHuntStrategy)) {
+                    context.removeStrategy(finishMonsterHuntStrategy)
+                }
+                if (context.hasStrategy(getMonsterHuntStrategy)) {
+                    context.removeStrategy(getMonsterHuntStrategy)
                 }
             }
 

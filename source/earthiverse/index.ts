@@ -34,6 +34,12 @@ import { TemporalSurgeBossesStrategy } from "../strategy_pattern/strategies/temp
 import { FixStuffStrategy } from "../strategy_pattern/strategies/fixes"
 import { canDoAnniversaryKiss, FindAnniversaryTargetStrategy } from "../strategy_pattern/strategies/anniversary"
 import { canGetHolidaySpirit, GetHolidaySpiritStrategy } from "../strategy_pattern/strategies/holidayseason"
+import {
+    canFinishMonsterHunt,
+    canGetMonsterHunt,
+    FinishMonsterHuntStrategy,
+    GetMonsterHuntStrategy,
+} from "../strategy_pattern/strategies/monsterhunt"
 import { fileURLToPath } from "url"
 
 process.on("unhandledRejection", (reason) => {
@@ -46,6 +52,7 @@ await AL.Pathfinder.prepare(AL.Game.G, { cheat: true, remove_abtesting: true, re
 
 const DEFAULT_REGION: ServerRegion = "US"
 const DEFAULT_IDENTIFIER: ServerIdentifier = "II"
+const ENABLE_MONSTERHUNTS = true
 const DEFAULT_MONSTERS: MonsterName[] = ["plantoid", "crab", "crab"]
 const MONSTER_PRIORITY: MonsterName[] = [
     // Main bosses
@@ -220,7 +227,9 @@ const BUY_STRATEGY = new BuyStrategy({
 const CHARGE_STRATEGY = new ChargeStrategy()
 const DESTROY_STRATEGY = new DestroyStrategy({ itemConfig: DEFAULT_ITEM_CONFIG })
 const ELIXIR_STRATEGY = new ElixirStrategy("elixirluck")
+const FINISH_MONSTER_HUNT_STRATEGY = new FinishMonsterHuntStrategy()
 const FIX_STUFF_STRATEGY = new FixStuffStrategy()
+const GET_MONSTER_HUNT_STRATEGY = new GetMonsterHuntStrategy()
 const GIVE_ROGUE_SPEED_STRATEGY = new GiveRogueSpeedStrategy()
 const HOLIDAY_SPIRIT_STRATEGY = new GetHolidaySpiritStrategy()
 const ITEM_STRATEGY = new ItemStrategy({
@@ -373,7 +382,6 @@ const managerLoop = async () => {
                         break
                 }
 
-                // TODO: Monster hunt strategy
 
                 if (character.type === "merchant") {
                     strategist.applyStrategies([MERCHANT_DESTROY_STRATEGY, MERCHANT_STRATEGY, TOGGLE_STAND_STRATEGY])
@@ -436,11 +444,60 @@ const managerLoop = async () => {
                 context.removeStrategy(HOLIDAY_SPIRIT_STRATEGY)
             }
 
+            // Monster hunt
+            if (ENABLE_MONSTERHUNTS) {
+                if (canFinishMonsterHunt(bot)) {
+                    removeSetup(context)
+                    if (!context.hasStrategy(FINISH_MONSTER_HUNT_STRATEGY)) {
+                        context.applyStrategy(FINISH_MONSTER_HUNT_STRATEGY)
+                    }
+                    continue
+                } else if (context.hasStrategy(FINISH_MONSTER_HUNT_STRATEGY)) {
+                    context.removeStrategy(FINISH_MONSTER_HUNT_STRATEGY)
+                }
+
+                if (canGetMonsterHunt(bot, DEFAULT_REGION, DEFAULT_IDENTIFIER)) {
+                    removeSetup(context)
+                    if (!context.hasStrategy(GET_MONSTER_HUNT_STRATEGY)) {
+                        context.applyStrategy(GET_MONSTER_HUNT_STRATEGY)
+                    }
+                    continue
+                } else if (context.hasStrategy(GET_MONSTER_HUNT_STRATEGY)) {
+                    context.removeStrategy(GET_MONSTER_HUNT_STRATEGY)
+                }
+            } else {
+                if (context.hasStrategy(FINISH_MONSTER_HUNT_STRATEGY)) {
+                    context.removeStrategy(FINISH_MONSTER_HUNT_STRATEGY)
+                }
+                if (context.hasStrategy(GET_MONSTER_HUNT_STRATEGY)) {
+                    context.removeStrategy(GET_MONSTER_HUNT_STRATEGY)
+                }
+            }
+
             freeContexts.push(context)
         }
 
         // Apply monster attack and move strategies
-        const priority: MonsterName[] = [nextMonster, nextMonster, nextMonster]
+        const priority: MonsterName[] = []
+        if (nextMonster && nextMonster !== DEFAULT_MONSTERS[0]) {
+            priority.push(nextMonster, nextMonster, nextMonster)
+        }
+
+        if (ENABLE_MONSTERHUNTS && currentRegion === DEFAULT_REGION && currentIdentifier === DEFAULT_IDENTIFIER) {
+            const monsterhunts: { ms: number; id: MonsterName }[] = []
+            for (const context of freeContexts) {
+                const bot = context.bot
+                if (!bot.s.monsterhunt || bot.s.monsterhunt.c === 0) continue
+                monsterhunts.push(bot.s.monsterhunt)
+            }
+            monsterhunts.sort((a, b) => a.ms - b.ms) // Lower time remaining first
+            for (const monsterhunt of monsterhunts) {
+                for (const _context of freeContexts) {
+                    priority.push(monsterhunt.id)
+                }
+            }
+        }
+
         for (const _context of freeContexts) {
             priority.push(...DEFAULT_MONSTERS)
         }
