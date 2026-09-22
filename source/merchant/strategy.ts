@@ -75,7 +75,15 @@ import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 
-export const DEFAULT_MINI_BOSSES: MonsterName[] = ["skeletor", "mvampire", "fvampire", "jr", "greenjr", "rharpy"]
+export const DEFAULT_MINI_BOSSES: MonsterName[] = [
+    "skeletor",
+    "mvampire",
+    "fvampire",
+    "jr",
+    "greenjr",
+    "rharpy",
+    "stompy",
+]
 
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
