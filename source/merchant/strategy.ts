@@ -79,10 +79,10 @@ export const DEFAULT_MINI_BOSSES: MonsterName[] = [
     "skeletor",
     "mvampire",
     "fvampire",
-    "jr",
     "greenjr",
-    "rharpy",
+    "jr",
     "stompy",
+    "rharpy",
 ]
 
 export type MerchantMoveStrategyOptions = {
