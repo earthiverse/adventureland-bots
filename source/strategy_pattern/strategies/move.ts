@@ -554,6 +554,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
     protected async checkGoodData(
         bot: Character,
         disableCheckDB = this.options.disableCheckDB,
+        disableFallback = false,
     ): Promise<{ map: MapName; x: number; y: number; type?: MonsterName }> {
         // Look for something nearby
         const target = bot.getEntity({ returnNearest: true, typeList: this.options.typeList })
@@ -626,20 +627,22 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             if (respawningTargets.length === this.options.typeList.length) return bot // Everything is respawning, don't move anywhere
         }
 
-        for (const type of this.options.typeList) {
-            const sInfo = bot.S?.[type] as ServerInfoDataLive
-            if (sInfo?.live && sInfo.map && bot.map !== sInfo.map) {
-                // We're not on the right map but the default spawn is better than nothing
-                const gInfo: GMap = AL.Game.G.maps[sInfo.map as keyof GData["maps"]]
-                return { map: sInfo.map, x: gInfo.spawns[0][0], y: gInfo.spawns[0][1] }
+        if (!disableFallback) {
+            for (const type of this.options.typeList) {
+                const sInfo = bot.S?.[type] as ServerInfoDataLive
+                if (sInfo?.live && sInfo.map && bot.map !== sInfo.map) {
+                    // We're not on the right map but the default spawn is better than nothing
+                    const gInfo: GMap = AL.Game.G.maps[sInfo.map as keyof GData["maps"]]
+                    return { map: sInfo.map, x: gInfo.spawns[0][0], y: gInfo.spawns[0][1] }
+                }
             }
-        }
 
-        const maps = new Set<MapName>(this.spawns.map((s) => s.map))
-        if (maps.size > 0 && !maps.has(bot.map)) {
-            // Go to a map that has this monster
-            const gInfo: GMap = AL.Game.G.maps[this.spawns[0].map as keyof GData["maps"]]
-            return { map: this.spawns[0].map, x: gInfo.spawns[0][0], y: gInfo.spawns[0][1] }
+            const maps = new Set<MapName>(this.spawns.map((s) => s.map))
+            if (maps.size > 0 && !maps.has(bot.map)) {
+                // Go to a map that has this monster
+                const gInfo: GMap = AL.Game.G.maps[this.spawns[0].map as keyof GData["maps"]]
+                return { map: this.spawns[0].map, x: gInfo.spawns[0][0], y: gInfo.spawns[0][1] }
+            }
         }
 
         // Couldn't find a good data source for the monster
@@ -650,7 +653,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         const smartMoveOptions: SmartMoveOptions = {
             getWithin: bot.range - 10,
             stopIfTrue: async (): Promise<boolean> => {
-                const target = await this.checkGoodData(bot, true)
+                const target = await this.checkGoodData(bot, true, true)
                 if (!target || target === bot) return false // No target, keep looking
                 return AL.Tools.distance(target, bot.smartMoving) > bot.range // It's moved far from where we're smart moving to
             },

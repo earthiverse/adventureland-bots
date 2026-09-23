@@ -43,8 +43,9 @@ export async function getRecentSpecialMonsters(
                 {
                     $or: [
                         { target: undefined },
+                        { target: null },
                         { target: { $in: partyAllow } },
-                        { type: { $in: ["crabxx", "franky", "icegolem", "phoenix", "snowman", "wabbit"] } }, // Coop monsters will give credit
+                        { type: { $in: ["crabxx", "franky", "icegolem", "phoenix", "rharpy", "snowman", "wabbit"] } }, // Coop monsters will give credit
                     ],
                 },
                 {
