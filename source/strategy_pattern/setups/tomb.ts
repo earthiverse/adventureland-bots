@@ -8,8 +8,7 @@ import { RETURN_HIGHEST } from "./equipment.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
-
-export const TOMB_MONSTERS: MonsterName[] = ["ggreenpro", "gredpro", "gbluepro", "gpurplepro"]
+import { TOMB_MONSTERS } from "../../base/monsters.js"
 
 class TombMoveStrategy extends SpecialMonsterMoveStrategy {
     public constructor(contexts: Strategist<PingCompensatedCharacter>[]) {

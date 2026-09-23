@@ -7,7 +7,7 @@ import { sleep } from "../base/general.js"
 import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.js"
 import { caveCryptEntrance, winterlandXmageEntrance } from "../base/locations.js"
 import { suppress_errors } from "../strategy_pattern/logging.js"
-import { XMAGE_MONSTERS } from "../strategy_pattern/setups/xmage.js"
+import { XMAGE_MONSTERS } from "../base/monsters.js"
 import { BaseStrategy } from "../strategy_pattern/strategies/base.js"
 
 const credentials = "../../credentials.json"

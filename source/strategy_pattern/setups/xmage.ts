@@ -12,7 +12,7 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
 import { generateEnsureEquipped } from "./equipment.js"
 
-export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xmagefz"]
+import { XMAGE_MONSTERS } from "../../base/monsters.js"
 export const DOWNTIME_MONSTERS: MonsterName[] = ["snowman", "arcticbee"]
 
 class XMageMoveStrategy extends KiteMoveStrategy {

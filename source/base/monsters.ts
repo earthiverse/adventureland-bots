@@ -1,9 +1,10 @@
 import AL, { MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
 import { checkOnlyEveryMS, setLastCheck } from "./general.js"
-import { XMAGE_MONSTERS } from "../strategy_pattern/setups/xmage.js"
 import { CRYPT_MONSTERS, getCryptWaitTime } from "./crypt.js"
-import { TOMB_MONSTERS } from "../strategy_pattern/setups/tomb.js"
 import { Strategist } from "../strategy_pattern/context.js"
+
+export const TOMB_MONSTERS: MonsterName[] = ["ggreenpro", "gredpro", "gbluepro", "gpurplepro"]
+export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xmagefz"]
 
 const MONSTER_CACHE = new Map<string, MonsterName[]>()
 

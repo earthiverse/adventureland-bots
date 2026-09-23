@@ -67,12 +67,12 @@ import {
     runSanityCheckOnItemConfig,
 } from "./base/itemsNew.js"
 import {
+    XMAGE_MONSTERS,
     getRecentCryptMonsters,
     getRecentProtectors,
     getRecentSpecialMonsters,
     getRecentXMages,
 } from "./base/monsters.js"
-import { XMAGE_MONSTERS } from "./strategy_pattern/setups/xmage.js"
 import { AvoidDeathStrategy } from "./strategy_pattern/strategies/avoid_death.js"
 import { AvoidStackingStrategy } from "./strategy_pattern/strategies/avoid_stacking.js"
 import { ChargeStrategy } from "./strategy_pattern/strategies/charge.js"
