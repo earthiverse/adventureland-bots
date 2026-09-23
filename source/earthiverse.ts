@@ -652,12 +652,12 @@ const removeSetup = (context: Strategist<PingCompensatedCharacter>) => {
     }
 }
 
-const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], setups: Setups) => {
+const serverHopLogic = async () => {
     try {
-        const freeContexts: Strategist<PingCompensatedCharacter>[] = []
+        const expected = (MERCHANT ? 1 : 0) + PARTY_ALLOWLIST.length
+        if (PRIVATE_CONTEXTS.length < expected || PRIVATE_CONTEXTS.some((c) => !c.isReady())) return
 
-        // Check for server hop
-        const bot1 = contexts[0]?.bot
+        const bot1 = PRIVATE_CONTEXTS.find((c) => c.isReady())?.bot
         if (!bot1) return
 
         if (ENABLE_SERVER_HOPS) {
@@ -740,7 +740,7 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
         }
 
         // Coordinate server change across all contexts
-        const contextsNeedingHop = contexts.filter(
+        const contextsNeedingHop = ALL_CONTEXTS.filter(
             (c) =>
                 c.isReady() &&
                 (c.bot.serverData.region !== TARGET_REGION || c.bot.serverData.name !== TARGET_IDENTIFIER),
@@ -760,6 +760,16 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
                 await context.changeServer(TARGET_REGION, TARGET_IDENTIFIER).catch(console.error)
             }
         }
+    } catch (e) {
+        console.error(e)
+    } finally {
+        setTimeout(serverHopLogic, 1000)
+    }
+}
+
+const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], setups: Setups) => {
+    try {
+        const freeContexts: Strategist<PingCompensatedCharacter>[] = []
 
         for (const context of contexts) {
             if (!context.isReady()) continue
@@ -832,7 +842,6 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
         setTimeout(contextsLogic, 1000, contexts, setups)
     }
 }
-contextsLogic(PRIVATE_CONTEXTS, privateSetups)
 contextsLogic(PUBLIC_CONTEXTS, publicSetups)
 
 // Shared setup
@@ -1038,6 +1047,8 @@ const startRogueContext = async (name: string) => {
     ALL_CONTEXTS.push(CONTEXT)
 }
 for (const name of ROGUES) await startRogueContext(name)
+serverHopLogic()
+contextsLogic(PRIVATE_CONTEXTS, privateSetups)
 
 class DisconnectOnCommandStrategy implements Strategy<PingCompensatedCharacter> {
     private onCodeEval: (data: string) => Promise<void>
