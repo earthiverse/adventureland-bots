@@ -554,6 +554,7 @@ const applySetups = async (contexts: Strategist<PingCompensatedCharacter>[], set
                 SPECIAL_MONSTERS,
                 context.bot.serverData.name,
                 context.bot.serverData.region,
+                contexts,
             )) {
                 priority.push(type)
             }

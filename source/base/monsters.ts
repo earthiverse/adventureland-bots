@@ -1,16 +1,30 @@
-import AL, { MonsterName, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
 import { checkOnlyEveryMS, setLastCheck } from "./general.js"
 import { XMAGE_MONSTERS } from "../strategy_pattern/setups/xmage.js"
 import { CRYPT_MONSTERS, getCryptWaitTime } from "./crypt.js"
 import { TOMB_MONSTERS } from "../strategy_pattern/setups/tomb.js"
+import { Strategist } from "../strategy_pattern/context.js"
 
 const MONSTER_CACHE = new Map<string, MonsterName[]>()
+
+export function invalidateMonsterCache(serverIdentifier?: ServerIdentifier, serverRegion?: ServerRegion) {
+    if (!serverIdentifier || !serverRegion) {
+        MONSTER_CACHE.clear()
+        return
+    }
+    for (const key of MONSTER_CACHE.keys()) {
+        if (key.includes(`${serverIdentifier}_${serverRegion}`)) {
+            MONSTER_CACHE.delete(key)
+        }
+    }
+}
 
 export async function getRecentSpecialMonsters(
     partyAllow: string[],
     specialMonsters: MonsterName[],
     serverIdentifier: ServerIdentifier,
     serverRegion: ServerRegion,
+    contexts?: Strategist<PingCompensatedCharacter>[],
 ): Promise<MonsterName[]> {
     if (!AL.Database.connection) return [] // No database
 
@@ -22,7 +36,7 @@ export async function getRecentSpecialMonsters(
 
     // Get the latest data
     const types: MonsterName[] = []
-    for (const type of await AL.EntityModel.find(
+    const entities = await AL.EntityModel.find(
         {
             $and: [
                 {
@@ -45,12 +59,31 @@ export async function getRecentSpecialMonsters(
             type: { $in: specialMonsters },
         },
         {
+            _id: 1,
+            in: 1,
+            map: 1,
+            name: 1,
             type: 1,
+            x: 1,
+            y: 1,
         },
     )
         .lean()
-        .exec()) {
-        types.push(type.type)
+        .exec()
+
+    entities: for (const entity of entities) {
+        for (const context of contexts ?? []) {
+            if (!context.isReady()) continue
+            if (context.bot.serverData.name !== serverIdentifier || context.bot.serverData.region !== serverRegion)
+                continue
+            if (AL.Tools.distance(context.bot, entity) < AL.Constants.MAX_VISIBLE_RANGE / 2) {
+                if (entity.name && !context.bot.entities.has(entity.name)) {
+                    AL.EntityModel.deleteOne({ _id: entity._id }).lean().exec().catch(console.error)
+                    continue entities
+                }
+            }
+        }
+        types.push(entity.type)
     }
 
     // Update the cache

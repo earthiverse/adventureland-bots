@@ -16,6 +16,7 @@ import AL, {
     Warrior,
 } from "alclient"
 import { checkOnlyEveryMS, sleep } from "../../base/general.js"
+import { invalidateMonsterCache } from "../../base/monsters.js"
 import { offsetPositionParty } from "../../base/locations.js"
 import {
     sortClosestDistance,
@@ -586,7 +587,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                     x: { $exists: true },
                     y: { $exists: true },
                 },
-                { _id: 0, hp: 1, map: 1, in: 1, type: 1, x: 1, y: 1 },
+                { _id: 1, hp: 1, map: 1, in: 1, name: 1, type: 1, x: 1, y: 1 },
             )
                 .sort({ lastSeen: -1 })
                 .lean()
@@ -596,7 +597,17 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 // Check if one of our contexts should be able to see it
                 for (const context of this.options.contexts) {
                     if (!context.isReady()) continue
-                    if (AL.Tools.distance(context.bot, target) < AL.Constants.MAX_VISIBLE_RANGE / 2) continue targets // We should be able to see it, the data is not valid
+                    if (AL.Tools.distance(context.bot, target) < AL.Constants.MAX_VISIBLE_RANGE / 2) {
+                        // We should be able to see it, the data is not valid
+                        if (target._id) {
+                            AL.EntityModel.deleteOne({ _id: target._id })
+                                .lean()
+                                .exec()
+                                .catch(console.error)
+                            invalidateMonsterCache(bot.serverData.name, bot.serverData.region)
+                        }
+                        continue targets
+                    }
                 }
                 return target
             }
