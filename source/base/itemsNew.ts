@@ -146,6 +146,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     anniversarygift: {
         buy: true,
         buyPrice: "ponty",
+        exchange: true,
     },
     armorbox: {
         buy: true,
