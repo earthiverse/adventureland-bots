@@ -237,8 +237,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         ...SELL_TO_NPC,
     },
     coat1: {
-        buy: true,
-        buyPrice: "ponty",
+        ...SELL_TO_NPC,
     },
     computer: {
         hold: true,
@@ -394,6 +393,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     // froststaff: {
     //     craft: true,
     // },
+    ftrinket: {
+        buy: true,
+        buyPrice: "ponty",
+    },
     fury: {
         buy: true,
         buyPrice: 100_000_000,
@@ -412,10 +415,12 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     gift0: {
         buy: true,
         buyPrice: "ponty",
+        exchange: true,
     },
     gift1: {
         buy: true,
         buyPrice: "ponty",
+        exchange: true,
     },
     glolipop: {
         ...SELL_TO_NPC,
@@ -424,9 +429,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         ...SELL_TO_NPC,
     },
     gloves1: {
-        buy: true,
-        buyPrice: "ponty",
-        upgradeUntilLevel: 9,
+        ...SELL_TO_NPC,
     },
     goldbooster: {
         hold: true,
@@ -458,9 +461,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         ...SELL_TO_NPC,
     },
     helmet1: {
-        buy: true,
-        buyPrice: "ponty",
-        upgradeUntilLevel: 9,
+        ...SELL_TO_NPC,
     },
     hgloves: {
         buy: true,
@@ -565,6 +566,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     marketparcel: {
         buy: true,
         buyPrice: "ponty",
+        exchange: true,
     },
     mearring: {
         buy: true,
@@ -648,13 +650,14 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         ...SELL_TO_NPC,
     },
     pants1: {
-        buy: true,
-        buyPrice: "ponty",
-        upgradeUntilLevel: 9,
+        ...SELL_TO_NPC,
     },
     paradequiver: {
         buy: true,
         buyPrice: "ponty",
+    },
+    partyhat: {
+        ...SELL_TO_NPC,
     },
     phelmet: {
         ...SELL_TO_NPC,
@@ -670,6 +673,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     pmaceofthedead: {
         // Lunar mace is pretty much better in every way
+        ...SELL_TO_NPC,
+    },
+    poker: {
         ...SELL_TO_NPC,
     },
     // pouchbow: {
@@ -742,9 +748,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         upgradeUntilLevel: 0,
     },
     shoes1: {
-        buy: true,
-        buyPrice: "ponty",
-        upgradeUntilLevel: 9,
+        ...SELL_TO_NPC,
     },
     sixcake: {
         buy: true,
@@ -979,7 +983,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buy: true,
         buyPrice: 500_000_000,
     },
-    wbook1: {},
+    wbook1: {
+        buy: true,
+        buyPrice: "ponty",
+    },
     wbreeches: {
         buy: true,
         buyPrice: "ponty",
