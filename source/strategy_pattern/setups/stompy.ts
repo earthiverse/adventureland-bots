@@ -3,7 +3,7 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackWithAttributesStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy } from "../strategies/move.js"
+import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 import {
     MAGE_SPLASH,
@@ -17,6 +17,8 @@ import {
 
 export function constructStompySetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const typeList: MonsterName[] = ["stompy", "wolf", "mechagnome"]
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["stompy"] })
+    const warriorMoveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["stompy", "wolf"] })
     return {
         configs: [
             {
@@ -36,7 +38,7 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                             },
                             typeList,
                         }),
-                        move: new ImprovedMoveStrategy("stompy"),
+                        move: moveStrategy,
                     },
                     {
                         ctype: "priest",
@@ -53,7 +55,7 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                             enableGreedyAggro: ["mechagnome", "wolf"],
                             typeList,
                         }),
-                        move: new ImprovedMoveStrategy("stompy"),
+                        move: moveStrategy,
                     },
                     {
                         ctype: "warrior",
@@ -87,7 +89,7 @@ export function constructStompySetup(contexts: Strategist<PingCompensatedCharact
                                 ],
                             ],
                         }),
-                        move: new ImprovedMoveStrategy(["stompy", "wolf"]),
+                        move: warriorMoveStrategy,
                     },
                 ],
             },

@@ -3,7 +3,7 @@ import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy } from "../strategies/move.js"
+import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
@@ -18,8 +18,8 @@ class WarriorSkeletorAttackStrategy extends WarriorAttackStrategy {
 }
 
 export function constructSkeletorSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy("skeletor")
     const typeList: MonsterName[] = ["skeletor", "cgoo"]
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: typeList })
 
     const priestConfig: CharacterConfig = {
         ctype: "priest",

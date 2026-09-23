@@ -308,6 +308,8 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
             return
         }
 
+        if (this.spawns.length === 0) return
+
         if (bot.map !== this.spawns[0].map) {
             // Move to spawn
             await bot.smartMove(this.spawns[0], {

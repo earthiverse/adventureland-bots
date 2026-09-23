@@ -6,7 +6,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy } from "../strategies/move.js"
+import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
 
 class WarriorIceGolemAttackStrategy extends WarriorAttackStrategy {
@@ -27,7 +27,7 @@ class WarriorIceGolemAttackStrategy extends WarriorAttackStrategy {
 }
 
 export function constructIceGolemSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy("icegolem")
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["icegolem"] })
 
     return {
         configs: [
@@ -111,6 +111,8 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
 }
 
 export function constructIceGolemHelperSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["icegolem"] })
+
     return {
         configs: [
             {
@@ -119,7 +121,7 @@ export function constructIceGolemHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "mage",
                         attack: new MageAttackStrategy({ contexts: contexts, type: "icegolem", hasTarget: true }),
-                        move: new ImprovedMoveStrategy("icegolem")
+                        move: moveStrategy
                     }
                 ]
             },
@@ -129,7 +131,7 @@ export function constructIceGolemHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({ contexts: contexts, type: "icegolem", hasTarget: true }),
-                        move: new ImprovedMoveStrategy("icegolem")
+                        move: moveStrategy
                     }
                 ]
             },
@@ -139,7 +141,7 @@ export function constructIceGolemHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "priest",
                         attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, enableHealStrangers: true, type: "icegolem", hasTarget: true }),
-                        move: new ImprovedMoveStrategy("icegolem")
+                        move: moveStrategy
                     }
                 ]
             },
@@ -149,7 +151,7 @@ export function constructIceGolemHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, type: "icegolem", hasTarget: true }),
-                        move: new ImprovedMoveStrategy("icegolem")
+                        move: moveStrategy
                     }
                 ]
             },
@@ -159,7 +161,7 @@ export function constructIceGolemHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({ contexts: contexts, type: "icegolem", hasTarget: true }),
-                        move: new ImprovedMoveStrategy("icegolem")
+                        move: moveStrategy
                     }
                 ]
             },
@@ -169,7 +171,7 @@ export function constructIceGolemHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "warrior",
                         attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, type: "icegolem", hasTarget: true }),
-                        move: new ImprovedMoveStrategy("icegolem")
+                        move: moveStrategy
                     }
                 ]
             }

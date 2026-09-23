@@ -1,12 +1,12 @@
 import { PingCompensatedCharacter } from "alclient"
 import { Strategist } from "../context.js"
-import { ImprovedMoveStrategy } from "../strategies/move.js"
+import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 
 export function constructGreenJrSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new ImprovedMoveStrategy("greenjr")
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["greenjr"] })
     const mageConfig: CharacterConfig = {
         ctype: "mage",
         attack: new MageAttackStrategy({
