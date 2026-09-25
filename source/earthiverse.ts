@@ -717,7 +717,7 @@ const serverHopLogic = async () => {
 
             // Other servers
             if (TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
-                const monster = (await getServerHopMonsterPriority(true))[0]
+                const monster = (await getServerHopMonsterPriority(true, PRIVATE_CONTEXTS))[0]
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier

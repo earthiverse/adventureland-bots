@@ -1,4 +1,13 @@
-import AL, { GData, IEntity, MonsterName, ServerIdentifier, ServerInfoDataLive, ServerRegion } from "alclient"
+import AL, {
+    GData,
+    IEntity,
+    MonsterName,
+    PingCompensatedCharacter,
+    ServerIdentifier,
+    ServerInfoDataLive,
+    ServerRegion,
+} from "alclient"
+import { Strategist } from "../strategy_pattern/context.js"
 
 export const SERVER_HOP_SERVERS: [ServerRegion, ServerIdentifier][] = [
     ["ASIA", "I"],
@@ -139,13 +148,31 @@ export async function getTargetServerFromPlayer(
     return [defaultRegion, defaultIdentifier]
 }
 
-export async function getServerHopMonsterPriority(avoidPVP = false) {
+export async function getServerHopMonsterPriority(avoidPVP = false, contexts?: Strategist<PingCompensatedCharacter>[]) {
     if (!AL.Database.connection) return []
 
     const monsterPriority: MonsterName[] = ["franky", "crabxx", "icegolem", "goldenbat", "cutebee"]
     const serverPriority = ["EUI", "EUII", "USI", "USII", "USIII", "ASIAI", "EUPVP", "USPVP"]
 
-    const entitiesFilters = { lastSeen: { $gt: Date.now() - 30000 }, type: { $in: monsterPriority } }
+    const partyAllow = new Set<string>()
+    for (const context of contexts ?? []) {
+        if (!context.isReady()) continue
+        partyAllow.add(context.bot.id)
+        for (const member of context.bot.partyData?.list ?? []) {
+            partyAllow.add(member)
+        }
+    }
+
+    const entitiesFilters: any = {
+        lastSeen: { $gt: Date.now() - 30000 },
+        type: { $in: monsterPriority },
+        $or: [
+            { type: { $nin: ["goldenbat", "cutebee"] } },
+            { target: undefined },
+            { target: null },
+            { target: { $in: [...partyAllow] } },
+        ],
+    }
     if (avoidPVP) entitiesFilters["serverIdentifier"] = { $ne: "PVP" }
 
     const entitiesP = await AL.EntityModel.find(entitiesFilters).lean().exec()
@@ -173,7 +200,6 @@ export async function getServerHopMonsterPriority(avoidPVP = false) {
     const toReturn = []
     for (const entity of entities) {
         if (entity.in && entity.in !== entity.map) continue // Don't include instanced monsters
-        if (entity.target && (entity.type == "goldenbat" || entity.type == "cutebee")) continue
 
         toReturn.push({
             hp: entity.hp,
