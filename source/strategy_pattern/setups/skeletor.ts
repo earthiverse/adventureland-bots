@@ -19,7 +19,7 @@ class WarriorSkeletorAttackStrategy extends WarriorAttackStrategy {
 
 export function constructSkeletorSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
     const typeList: MonsterName[] = ["skeletor", "cgoo"]
-    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: typeList })
+    const moveStrategy = new SpecialMonsterMoveStrategy({ contexts: contexts, typeList: ["skeletor"] })
 
     const priestConfig: CharacterConfig = {
         ctype: "priest",
