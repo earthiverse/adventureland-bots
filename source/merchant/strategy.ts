@@ -74,6 +74,7 @@ import { AvoidDeathStrategy } from "../strategy_pattern/strategies/avoid_death.j
 import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party.js"
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
+import { canDoAnniversaryKiss } from "../strategy_pattern/strategies/anniversary.js"
 
 export const DEFAULT_MINI_BOSSES: MonsterName[] = [
     "skeletor",
@@ -2415,15 +2416,10 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
     }
 
     protected async goVisitAnniversaryTarget(bot: Merchant): Promise<void> {
-        if (!bot.S.anniversary) return // Not anniversary
-        if (!bot.S.anniversary.live || !bot.S.anniversary.active || !bot.S.anniversary.available) return // Not live
-        if (bot.s.hopsickness || bot.s.realmfatigue) return // Can't farm with hopsickness or realmfatigue
-        if (!bot.s.anniversary_visit) return // We don't have a person to visit
-        if (bot.s.anniversary_visit.round !== bot.S.anniversary.round) return // Wrong round
-        if (bot.s.anniversary_visit.realm !== `${bot.serverData.region} ${bot.serverData.name}`) return // Wrong server
+        if (!canDoAnniversaryKiss(bot)) return
 
         for (let i = 0; i < 10; i++) {
-            if (bot.s.anniversary_kiss) return // We got the buff
+            if (!canDoAnniversaryKiss(bot)) return
 
             const position = bot.players.get(bot.S.anniversary.id) ?? (bot.S.anniversary as IPosition)
 
