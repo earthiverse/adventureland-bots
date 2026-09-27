@@ -35,6 +35,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                         ctype: "mage",
                         attack: new MageAttackStrategy({
                             contexts: contexts,
+                            disableCreditCheck: true, // To attack porcupines if someone drags them up
                             disableEnergize: true,
                             disableZapper: true,
                             generateEnsureEquipped: {
@@ -50,6 +51,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
+                            disableCreditCheck: true, // To attack porcupines if someone drags them up
                             disableEnergize: true,
                             enableGreedyAggro: ["mechagnome"],
                             generateEnsureEquipped: {
@@ -91,6 +93,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({
                             contexts: contexts,
+                            disableCreditCheck: true, // To attack porcupines if someone drags them up
                             generateEnsureEquipped: {
                                 attributes: ["armor", "int", "explosion", "blast"],
                                 prefer: {
@@ -107,6 +110,7 @@ export function constructPlantoidSetup(contexts: Strategist<PingCompensatedChara
                         ctype: "priest",
                         attack: new PriestAttackStrategy({
                             contexts: contexts,
+                            disableCreditCheck: true, // To attack porcupines if someone drags them up
                             disableEnergize: true,
                             enableGreedyAggro: ["mechagnome"],
                             generateEnsureEquipped: {
