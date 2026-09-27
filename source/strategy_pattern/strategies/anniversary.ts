@@ -5,6 +5,7 @@ export function canDoAnniversaryKiss(bot: Character): boolean {
     return (
         !!bot.S.anniversary?.live &&
         !!bot.S.anniversary?.active &&
+        !!bot.S.anniversary?.available &&
         !bot.s.hopsickness &&
         !bot.s.realmfatigue &&
         !!bot.s.anniversary_visit &&

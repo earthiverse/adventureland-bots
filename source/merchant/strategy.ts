@@ -2416,7 +2416,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
     protected async goVisitAnniversaryTarget(bot: Merchant): Promise<void> {
         if (!bot.S.anniversary) return // Not anniversary
-        if (!bot.S.anniversary.live || !bot.S.anniversary.active) return // Not live
+        if (!bot.S.anniversary.live || !bot.S.anniversary.active || !bot.S.anniversary.available) return // Not live
         if (bot.s.hopsickness || bot.s.realmfatigue) return // Can't farm with hopsickness or realmfatigue
         if (!bot.s.anniversary_visit) return // We don't have a person to visit
         if (bot.s.anniversary_visit.round !== bot.S.anniversary.round) return // Wrong round
