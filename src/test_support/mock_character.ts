@@ -241,8 +241,8 @@ export class MockCharacter {
         this.y = y
     }
 
-    public async smartMove(destination: any): Promise<void> {
-        this.recordCall("smartMove", destination)
+    public async smartMove(destination: any, options?: any): Promise<void> {
+        this.recordCall("smartMove", destination, options)
         if (typeof destination === "object") {
             if (destination.x !== undefined) this.x = destination.x
             if (destination.y !== undefined) this.y = destination.y

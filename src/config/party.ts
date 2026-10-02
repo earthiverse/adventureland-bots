@@ -27,7 +27,7 @@ export const activeTeamConfig: TeamConfig = {
         name: "Merzair",
         type: "merchant",
     },
-    partyLeader: "Merzair",
+    partyLeader: "Warzair",
     characters: [
         { name: "Warzair", type: "warrior" },
         { name: "Magzair", type: "mage" },

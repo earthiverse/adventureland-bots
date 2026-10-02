@@ -35,6 +35,7 @@ export interface TeamRunnerOptions {
     credentialsPath?: string
     eventBus?: EventBus
     blackboard?: TeamBlackboard
+    skipPathfinderCheck?: boolean
 }
 
 /**
@@ -90,7 +91,7 @@ export function buildActionsForRole(
     }
 
     // 4. Movement / Formation: Followers keep formation behind the tank
-    actions.push(new FollowLeaderAction(coordinator))
+    actions.push(new FollowLeaderAction(coordinator, { throttleMs: 1000, debug: true }))
 
     // 4. Default Attack
     actions.push(new BasicAttackAction({ gData }))
@@ -116,6 +117,7 @@ export class MultiBotTeamManager {
     private partySyncTimer: NodeJS.Timeout | null = null
     private isRunning = false
     private gData: any = null
+    private pathfinderReady = false
 
     public constructor(options: TeamRunnerOptions = {}) {
         this.config = options.config ?? activeTeamConfig
@@ -129,6 +131,10 @@ export class MultiBotTeamManager {
                 this.config.server.identifier,
                 this.eventBus,
             )
+
+        if (options.skipPathfinderCheck) {
+            this.pathfinderReady = true
+        }
 
         const allMemberNames = [
             ...this.config.characters.map((c) => c.name),
@@ -162,7 +168,27 @@ export class MultiBotTeamManager {
         this.gData = AL.Game.G
         console.info(`[TeamManager] GData loaded successfully. Preparing pathfinder...`)
         await AL.Pathfinder.prepare(this.gData, { cheat: true })
-        console.info(`[TeamManager] Pathfinder ready.`)
+
+        // Verify Pathfinder has fully completed and loaded map geometry
+        const isPrepared = (AL.Pathfinder as any).prepared === true
+        const preparedMaps: Set<string> | undefined = (AL.Pathfinder as any).preparedMaps
+        const mapCount = preparedMaps?.size ?? 0
+        const hasMainGrid = AL.Pathfinder.getGrid("main")
+
+        if (!isPrepared || mapCount === 0 || !hasMainGrid) {
+            throw new Error(
+                `[TeamManager] Pathfinder preparation failed: map geometry not loaded (prepared=${isPrepared}, maps=${mapCount}, mainGrid=${hasMainGrid})`,
+            )
+        }
+
+        this.pathfinderReady = true
+        console.info(
+            `[TeamManager] Pathfinder ready. Successfully loaded map geometry for ${mapCount} maps.`,
+        )
+    }
+
+    public isPathfinderReady(): boolean {
+        return this.pathfinderReady
     }
 
     /**
@@ -173,6 +199,11 @@ export class MultiBotTeamManager {
         region: ServerRegion,
         identifier: ServerIdentifier,
     ): Promise<BotController> {
+        if (!this.pathfinderReady || !this.gData) {
+            throw new Error(
+                `[TeamManager] Cannot spawn bot '${charConfig.name}': AL.Pathfinder.prepare() must fully complete and load map geometry before bots are spawned. Call initialize() first.`,
+            )
+        }
         console.info(
             `[TeamManager] Starting ${charConfig.type} "${charConfig.name}" on ${region} ${identifier}...`,
         )
@@ -215,6 +246,13 @@ export class MultiBotTeamManager {
      */
     public async startTeam(): Promise<void> {
         if (this.isRunning) return
+
+        if (!this.pathfinderReady || !this.gData) {
+            throw new Error(
+                "[TeamManager] Cannot start team: AL.Pathfinder.prepare() must fully complete and load map geometry before any bot attempts to move. Call initialize() first.",
+            )
+        }
+
         this.isRunning = true
 
         const region = this.config.server.region

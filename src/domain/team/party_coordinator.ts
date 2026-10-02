@@ -500,28 +500,35 @@ export class PartyCoordinator {
     public getFollowTarget(
         followerName: string,
         followerType?: CharacterType,
+        currentPos?: { x?: number; y?: number; map?: MapName },
     ): {
         shouldMove: boolean
         target?: FollowPosition
         distance: number
+        distanceToLeader: number
         onDifferentMap: boolean
     } {
         if (this.isLeader(followerName)) {
-            return { shouldMove: false, distance: 0, onDifferentMap: false }
+            return { shouldMove: false, distance: 0, distanceToLeader: 0, onDifferentMap: false }
         }
 
         const leaderStatus = this.blackboard.getMemberStatus(this.designatedLeader)
         const followerStatus = this.blackboard.getMemberStatus(followerName)
 
-        if (!leaderStatus || !followerStatus) {
-            return { shouldMove: false, distance: 0, onDifferentMap: false }
+        if (!leaderStatus || (!followerStatus && (!currentPos || typeof currentPos.x !== "number"))) {
+            return { shouldMove: false, distance: 0, distanceToLeader: 0, onDifferentMap: false }
         }
 
-        if (followerStatus.map !== leaderStatus.map) {
+        const posX = typeof currentPos?.x === "number" ? currentPos.x : (followerStatus?.x ?? 0)
+        const posY = typeof currentPos?.y === "number" ? currentPos.y : (followerStatus?.y ?? 0)
+        const posMap = currentPos?.map ?? followerStatus?.map ?? leaderStatus.map
+
+        if (posMap !== leaderStatus.map) {
             return {
                 shouldMove: true,
                 target: { x: leaderStatus.x, y: leaderStatus.y, map: leaderStatus.map },
                 distance: Infinity,
+                distanceToLeader: Infinity,
                 onDifferentMap: true,
             }
         }
@@ -534,11 +541,12 @@ export class PartyCoordinator {
             { x: leaderStatus.x, y: leaderStatus.y, map: leaderStatus.map },
             followerIndex,
             followers.length,
-            followerType ?? followerStatus.type,
+            followerType ?? followerStatus?.type,
             this.formationOptions,
         )
 
-        const dist = Math.hypot(followerStatus.x - target.x, followerStatus.y - target.y)
+        const dist = Math.hypot(posX - target.x, posY - target.y)
+        const distanceToLeader = Math.hypot(posX - leaderStatus.x, posY - leaderStatus.y)
         const leash = this.formationOptions.leashDistance ?? 30
         const shouldMove = dist > leash
 
@@ -546,6 +554,7 @@ export class PartyCoordinator {
             shouldMove,
             target,
             distance: dist,
+            distanceToLeader,
             onDifferentMap: false,
         }
     }
@@ -577,27 +586,86 @@ export class PartyCoordinator {
     }
 }
 
+export interface FollowLeaderActionOptions {
+    /** Cooldown / throttle between issuing movement commands in ms (default: 1000) */
+    throttleMs?: number
+    /** Whether to enable debug logging of move executions (default: true) */
+    debug?: boolean
+}
+
 /**
  * FollowLeaderAction plugs directly into ActionRunner to keep squishies in formation.
  */
 export class FollowLeaderAction implements Action<PingCompensatedCharacter> {
     public readonly name = "follow_leader"
     private coordinator: PartyCoordinator
+    private throttleMs: number
+    private debug: boolean
+    private lastMoveTimes = new Map<string, number>()
 
-    public constructor(coordinator: PartyCoordinator) {
+    public constructor(
+        coordinator: PartyCoordinator,
+        options: FollowLeaderActionOptions = {},
+    ) {
         this.coordinator = coordinator
+        this.throttleMs = options.throttleMs ?? 1000
+        this.debug = options.debug ?? true
+    }
+
+    /**
+     * Resets the movement cooldown for a bot or all bots.
+     */
+    public resetCooldown(botName?: string): void {
+        if (botName) {
+            this.lastMoveTimes.delete(botName)
+        } else {
+            this.lastMoveTimes.clear()
+        }
     }
 
     public canExecute(bot: PingCompensatedCharacter, _context: ActionContext): boolean {
         if (this.coordinator.isLeader(bot.name)) return false
         if (bot.rip) return false
-        const plan = this.coordinator.getFollowTarget(bot.name, bot.ctype)
+
+        // 1. Do not call move or smartMove if already actively moving
+        if (Boolean(bot.moving || bot.smartMoving)) {
+            return false
+        }
+
+        // 2. Cooldown / throttle check to avoid spamming requests every cycle
+        const now = Date.now()
+        const lastMove = this.lastMoveTimes.get(bot.name) ?? 0
+        if (now - lastMove < this.throttleMs) {
+            return false
+        }
+
+        // 3. Distance deadzones: verify follower is not already within acceptable range
+        const plan = this.coordinator.getFollowTarget(
+            bot.name,
+            bot.ctype,
+            typeof bot.x === "number" && typeof bot.y === "number"
+                ? { x: bot.x, y: bot.y, map: bot.map }
+                : undefined,
+        )
         return plan.shouldMove && plan.target !== undefined
     }
 
     public score(bot: PingCompensatedCharacter, _context: ActionContext): number {
         if (this.coordinator.isLeader(bot.name)) return 0
-        const plan = this.coordinator.getFollowTarget(bot.name, bot.ctype)
+        if (bot.rip) return 0
+        if (Boolean(bot.moving || bot.smartMoving)) return 0
+
+        const now = Date.now()
+        const lastMove = this.lastMoveTimes.get(bot.name) ?? 0
+        if (now - lastMove < this.throttleMs) return 0
+
+        const plan = this.coordinator.getFollowTarget(
+            bot.name,
+            bot.ctype,
+            typeof bot.x === "number" && typeof bot.y === "number"
+                ? { x: bot.x, y: bot.y, map: bot.map }
+                : undefined,
+        )
         if (!plan.shouldMove || !plan.target) return 0
 
         // If on different map than leader, regroup with utmost urgency
@@ -615,13 +683,55 @@ export class FollowLeaderAction implements Action<PingCompensatedCharacter> {
     }
 
     public async execute(bot: PingCompensatedCharacter, _context: ActionContext): Promise<void> {
-        const plan = this.coordinator.getFollowTarget(bot.name, bot.ctype)
+        // Double-check active movement state before issuing any command
+        if (Boolean(bot.moving || bot.smartMoving)) return
+
+        const now = Date.now()
+        const lastMove = this.lastMoveTimes.get(bot.name) ?? 0
+        if (now - lastMove < this.throttleMs) return
+
+        const plan = this.coordinator.getFollowTarget(
+            bot.name,
+            bot.ctype,
+            typeof bot.x === "number" && typeof bot.y === "number"
+                ? { x: bot.x, y: bot.y, map: bot.map }
+                : undefined,
+        )
         if (!plan.shouldMove || !plan.target) return
 
-        if (plan.onDifferentMap || plan.distance > 300) {
-            await bot.smartMove(plan.target).catch(() => {})
-        } else {
-            await bot.move(plan.target.x, plan.target.y).catch(() => {})
+        this.lastMoveTimes.set(bot.name, now)
+
+        const leash = this.coordinator.getFormationOptions().leashDistance ?? 30
+        const isSmartMove = plan.onDifferentMap || plan.distance > 300
+
+        const reason = plan.onDifferentMap
+            ? `cross-map regroup from '${bot.map}' to leader on '${plan.target.map}'`
+            : plan.distance > 300
+            ? `long-distance pathfinding (dist: ${Math.round(plan.distance)}px > 300px threshold, distToLeader: ${Math.round(plan.distanceToLeader)}px)`
+            : `formation repositioning (dist: ${Math.round(plan.distance)}px > leash: ${leash}px deadzone, distToLeader: ${Math.round(plan.distanceToLeader)}px)`
+
+        if (this.debug) {
+            console.info(
+                `[FollowLeaderAction] Move issued for '${bot.name}' (${bot.ctype}): ` +
+                `action=${isSmartMove ? "smartMove" : "move"} ` +
+                `current={x: ${Math.round(bot.x ?? 0)}, y: ${Math.round(bot.y ?? 0)}, map: '${bot.map}'} ` +
+                `target={x: ${plan.target.x}, y: ${plan.target.y}, map: '${plan.target.map}'} ` +
+                `distToTarget=${Math.round(plan.distance)}px distToLeader=${Math.round(plan.distanceToLeader)}px ` +
+                `reason='${reason}'`,
+            )
+        }
+
+        try {
+            if (isSmartMove) {
+                await bot.smartMove(plan.target, { getWithin: leash })
+            } else {
+                await bot.move(plan.target.x, plan.target.y)
+            }
+        } catch (err: any) {
+            console.warn(
+                `[FollowLeaderAction] Move command failed for '${bot.name}' towards (${plan.target.x}, ${plan.target.y}, ${plan.target.map}):`,
+                err?.message ?? err,
+            )
         }
     }
 }
