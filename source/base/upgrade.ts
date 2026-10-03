@@ -109,7 +109,7 @@ export const UPGRADE_SCROLLS: { [T in UpgradeScrollName]?: number } = {
     scroll0: 1_000,
     scroll1: 40_000,
     scroll2: 1_600_000,
-    scroll3: 64_000_000,
+    scroll3: 250_000_000,
 }
 
 /** cscroll -> price */
@@ -117,13 +117,13 @@ export const COMPOUND_SCROLLS: { [T in CompoundScrollName]?: number } = {
     cscroll0: 6_400,
     cscroll1: 240_000,
     cscroll2: 9_600_000,
-    cscroll3: 384_000_000,
+    cscroll3: 500_000_000,
 }
 
 /** offering -> price */
 export const OFFERINGS: { [T in OfferingName]?: number } = {
-    offering: 3_200_000,
-    offeringp: 2_500_000,
+    offering: 27_420_000,
+    offeringp: 5_000_000,
     offeringx: 1_000_000_000,
 }
 
@@ -379,7 +379,7 @@ export function calculateOptimalUpgradePath(
         // Prim Stacking transition
         if (current.grace < Math.min(13, current.level + 2 - igrace)) {
             const newGrace = Math.min(current.grace + 0.5, 13)
-            const primCost = OFFERINGS.offeringp ?? 2_500_000
+            const primCost = OFFERINGS.offeringp ?? 5_000_000
             const newCost = current.cost + primCost
             const oldMemo = getMemo(current.level, newGrace)
             if (!oldMemo || newCost < oldMemo.cost) {
