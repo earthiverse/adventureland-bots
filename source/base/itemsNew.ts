@@ -196,13 +196,13 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
     },
     /** Blue Candy */
-    candy0: {
-        exchange: true,
-    },
+    // candy0: {
+    //     exchange: true,
+    // },
     /** Pink Candy */
-    candy1: {
-        exchange: true,
-    },
+    // candy1: {
+    //     exchange: true,
+    // },
     candycane: {
         exchange: true,
     },
