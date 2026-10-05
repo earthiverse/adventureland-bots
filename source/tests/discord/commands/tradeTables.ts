@@ -105,13 +105,27 @@ function merchantHeaderCompact(): string {
     return `${pad("Name", 14)} ${pad("Server", 7)} ${pad("Qty", 7)} Price`
 }
 
-function dealLine(row: DealRow): string {
+function dealLine(row: DealRow, withRatio: boolean): string {
     const qty = row.quantity !== undefined ? String(row.quantity) : "—"
+    if (withRatio) {
+        // Don't ellipsize ratios — pad() would turn "100:99" into "100…".
+        const ratio = (row.ratio ?? "—").padEnd(5)
+        return `${pad(row.owner, 12)} ${pad(qty, 4)} ${ratio} ${row.terms}`
+    }
     return `${pad(row.owner, 12)} ${pad(qty, 4)} ${row.terms}`
 }
 
-function dealHeader(): string {
+function dealHeader(withRatio: boolean): string {
+    if (withRatio) {
+        return `${pad("Owner", 12)} ${pad("Qty", 4)} ${"Ratio".padEnd(5)} Terms`
+    }
     return `${pad("Owner", 12)} ${pad("Qty", 4)} Terms`
+}
+
+function dealSectionLines(rows: DealRow[]): string[] {
+    if (!rows.length) return []
+    const withRatio = rows.some((row) => row.ratio)
+    return [dealHeader(withRatio), ...rows.map((row) => dealLine(row, withRatio))]
 }
 
 /** Qty-weighted stand price stats. */
@@ -195,6 +209,15 @@ function formatDealBlurb(wts: DealRow[], wtb: DealRow[]): string {
     return bits.join(" · ")
 }
 
+function formatSwapBlurb(offering: DealRow[], wanting: DealRow[]): string {
+    const count = offering.length + wanting.length
+    if (!count) return ""
+    const bits: string[] = []
+    if (offering.length) bits.push(`**${offering.length}** offering`)
+    if (wanting.length) bits.push(`**${wanting.length}** wanting`)
+    return `Stand swaps · ${bits.join(" · ")}`
+}
+
 function standBlurbs(
     selling: MergedMerchantOffer[],
     buying: MergedMerchantOffer[],
@@ -213,34 +236,55 @@ export function standsTable(
     buying: MergedMerchantOffer[],
     budget: number,
     g: number | null,
-    opts?: { compact?: boolean },
+    opts?: {
+        compact?: boolean
+        swapOffering?: DealRow[]
+        swapWanting?: DealRow[]
+    },
 ): { body: string; blurb: string } {
     const lineFn = opts?.compact ? merchantLineCompact : merchantLine
     const header = opts?.compact ? merchantHeaderCompact() : merchantHeader()
+    const swapOffering = opts?.swapOffering ?? []
+    const swapWanting = opts?.swapWanting ?? []
     const sellLines = selling.length ? [header, ...selling.map(lineFn)] : []
     const buyLines = buying.length ? [header, ...buying.map(lineFn)] : []
+    const offerLines = dealSectionLines(swapOffering)
+    const wantLines = dealSectionLines(swapWanting)
+    const blurbs = standBlurbs(selling, buying, g)
+    const swapBlurb = formatSwapBlurb(swapOffering, swapWanting)
+    if (swapBlurb) blurbs.push(swapBlurb)
     return {
-        body: stackedSections("▸ Selling", sellLines, "▸ Buying", buyLines, budget),
-        blurb: standBlurbs(selling, buying, g).join("\n"),
+        body: multiStackedSections(
+            [
+                { title: "▸ Selling", lines: sellLines },
+                { title: "▸ Buying", lines: buyLines },
+                { title: "▸ Swaps", lines: offerLines },
+                { title: "▸ Wants", lines: wantLines },
+            ],
+            budget,
+        ),
+        blurb: blurbs.join("\n"),
     }
 }
 
 export function dealsTable(wts: DealRow[], wtb: DealRow[], budget: number): { body: string; blurb: string } {
-    const wtsLines = wts.length ? [dealHeader(), ...wts.map(dealLine)] : []
-    const wtbLines = wtb.length ? [dealHeader(), ...wtb.map(dealLine)] : []
+    const wtsLines = dealSectionLines(wts)
+    const wtbLines = dealSectionLines(wtb)
     return {
         body: stackedSections("▸ WTS", wtsLines, "▸ WTB", wtbLines, budget),
         blurb: formatDealBlurb(wts, wtb),
     }
 }
 
-/** Combined stands + deals for one variant embed. */
+/** Combined stands + swaps + deals for one variant embed. */
 export function variantTable(
     group: TradeVariantGroup,
     budget: number,
     g: number | null,
 ): { body: string; blurb: string } {
     const blurbs = standBlurbs(group.selling, group.buying, g)
+    const swapBlurb = formatSwapBlurb(group.swapOffering, group.swapWanting)
+    if (swapBlurb) blurbs.push(swapBlurb)
     const dealBlurb = formatDealBlurb(group.dealWts, group.dealWtb)
     if (dealBlurb) blurbs.push(dealBlurb)
 
@@ -250,14 +294,18 @@ export function variantTable(
     const buyLines = group.buying.length
         ? [merchantHeaderCompact(), ...group.buying.map(merchantLineCompact)]
         : []
-    const wtsLines = group.dealWts.length ? [dealHeader(), ...group.dealWts.map(dealLine)] : []
-    const wtbLines = group.dealWtb.length ? [dealHeader(), ...group.dealWtb.map(dealLine)] : []
+    const offerLines = dealSectionLines(group.swapOffering)
+    const wantLines = dealSectionLines(group.swapWanting)
+    const wtsLines = dealSectionLines(group.dealWts)
+    const wtbLines = dealSectionLines(group.dealWtb)
 
     return {
         body: multiStackedSections(
             [
                 { title: "▸ Selling", lines: sellLines },
                 { title: "▸ Buying", lines: buyLines },
+                { title: "▸ Swaps", lines: offerLines },
+                { title: "▸ Wants", lines: wantLines },
                 { title: "▸ WTS", lines: wtsLines },
                 { title: "▸ WTB", lines: wtbLines },
             ],
@@ -274,11 +322,25 @@ export function buildSummaryText(args: {
     gPrice: number | string
     selling: MergedMerchantOffer[]
     buying: MergedMerchantOffer[]
+    swapOffering?: DealRow[]
+    swapWanting?: DealRow[]
     dealWts: DealRow[]
     dealWtb: DealRow[]
     footer?: string
 }): string {
-    const { item, displayName, variants, gPrice, selling, buying, dealWts, dealWtb, footer } = args
+    const {
+        item,
+        displayName,
+        variants,
+        gPrice,
+        selling,
+        buying,
+        swapOffering = [],
+        swapWanting = [],
+        dealWts,
+        dealWtb,
+        footer,
+    } = args
     const gNum = typeof gPrice === "number" ? gPrice : Number(gPrice)
     const g = Number.isFinite(gNum) && gNum > 0 ? gNum : null
     const gLabel = typeof gPrice === "number" ? formatGold(gPrice) : String(gPrice)
@@ -311,9 +373,15 @@ export function buildSummaryText(args: {
     }
     if (market.length) lines.push(market.join(" · "))
 
+    const swapCount = swapOffering.length + swapWanting.length
     const dealCount = dealWts.length + dealWtb.length
     lines.push(
-        `**${selling.length}** selling · **${buying.length}** buying · **${dealCount}** deal${dealCount === 1 ? "" : "s"}`,
+        [
+            `**${selling.length}** selling`,
+            `**${buying.length}** buying`,
+            `**${swapCount}** swap${swapCount === 1 ? "" : "s"}`,
+            `**${dealCount}** deal${dealCount === 1 ? "" : "s"}`,
+        ].join(" · "),
     )
 
     if (footer) lines.push(`_${footer}_`)

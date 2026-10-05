@@ -15,6 +15,10 @@ export type TradeVariantGroup = {
     p?: string
     selling: MergedMerchantOffer[]
     buying: MergedMerchantOffer[]
+    /** In-game stand swaps from `/merchants` (`want`). */
+    swapOffering: DealRow[]
+    swapWanting: DealRow[]
+    /** Earthiverse `/trades` bank listings. */
     dealWts: DealRow[]
     dealWtb: DealRow[]
 }
@@ -38,6 +42,8 @@ function ensureVariant(
             ...(p ? { p } : {}),
             selling: [],
             buying: [],
+            swapOffering: [],
+            swapWanting: [],
             dealWts: [],
             dealWtb: [],
         }
@@ -46,10 +52,12 @@ function ensureVariant(
     return group
 }
 
-/** Group stand + deal rows by (level, p). */
+/** Group stand + swap + deal rows by (level, p). */
 export function groupTradeByVariant(args: {
     selling?: MergedMerchantOffer[]
     buying?: MergedMerchantOffer[]
+    swapOffering?: DealRow[]
+    swapWanting?: DealRow[]
     dealWts?: DealRow[]
     dealWtb?: DealRow[]
 }): TradeVariantGroup[] {
@@ -60,6 +68,12 @@ export function groupTradeByVariant(args: {
     }
     for (const offer of args.buying ?? []) {
         ensureVariant(map, offer.level, offer.p).buying.push(offer)
+    }
+    for (const row of args.swapOffering ?? []) {
+        ensureVariant(map, row.level, row.p).swapOffering.push(row)
+    }
+    for (const row of args.swapWanting ?? []) {
+        ensureVariant(map, row.level, row.p).swapWanting.push(row)
     }
     for (const row of args.dealWts ?? []) {
         ensureVariant(map, row.level, row.p).dealWts.push(row)
@@ -89,19 +103,23 @@ export function groupTradeByVariant(args: {
 export function pickTradeIconOverlays(args: {
     selling?: Array<{ level?: number; p?: string }>
     buying?: Array<{ level?: number; p?: string }>
+    swapOffering?: Array<{ level?: number; p?: string }>
+    swapWanting?: Array<{ level?: number; p?: string }>
     dealWts?: Array<{ level?: number; p?: string }>
     dealWtb?: Array<{ level?: number; p?: string }>
 }): { level?: number; p?: ItemTitle } {
     const rows = [
         ...(args.selling ?? []),
         ...(args.buying ?? []),
+        ...(args.swapOffering ?? []),
+        ...(args.swapWanting ?? []),
         ...(args.dealWts ?? []),
         ...(args.dealWtb ?? []),
     ]
     let p: ItemTitle | undefined
     let level: number | undefined
     for (const row of rows) {
-        if (!p && row.p) p = row.p as ItemTitle
+        if (!p && row.p) p = row.p
         if (row.level !== undefined && row.level > 0) {
             level = level === undefined ? row.level : Math.max(level, row.level)
         }
@@ -115,6 +133,8 @@ export function listTradeVariants(args: {
     item: string
     selling?: MergedMerchantOffer[]
     buying?: MergedMerchantOffer[]
+    swapOffering?: DealRow[]
+    swapWanting?: DealRow[]
     dealWts?: DealRow[]
     dealWtb?: DealRow[]
 }): string[] {

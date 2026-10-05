@@ -33,6 +33,8 @@ export type DealRow = {
     p?: string
     /** Lister-wallet ratio/gold text */
     terms: string
+    /** Reduced item-for-item ratio matching arrow order (`1:3`). */
+    ratio?: string
 }
 
 export function formatGold(n: number): string {
@@ -75,14 +77,43 @@ function formatOtherItem(item: ItemRef): string {
     return meta ? `${meta} ${item.name}` : item.name
 }
 
-/** Compact lister-wallet terms for table cells. */
-export function formatRatioTerms(listedName: string, side: "WTS" | "WTB", offer: TradeOffer): string {
+function gcd(a: number, b: number): number {
+    let x = Math.abs(Math.trunc(a))
+    let y = Math.abs(Math.trunc(b))
+    while (y) {
+        const t = y
+        y = x % y
+        x = t
+    }
+    return x || 1
+}
+
+/** Reduced left:right ratio for item-for-item terms (matches arrow order). */
+export function formatQuantityRatio(left: number, right: number): string {
+    const l = Number.isFinite(left) && left > 0 ? left : 1
+    const r = Number.isFinite(right) && right > 0 ? right : 1
+    const g = gcd(l, r)
+    return `${l / g}:${r / g}`
+}
+
+/** Compact lister-wallet terms + reduced ratio for table cells. */
+export function formatRatioTerms(
+    listedName: string,
+    side: "WTS" | "WTB",
+    offer: TradeOffer,
+): { terms: string; ratio: string } {
     const other = formatOtherItem(offer.item)
     const nego = offer.negotiable ? " ~" : ""
     if (side === "WTB") {
-        return `${offer.receive} ${other} → ${offer.give} ${listedName}${nego}`
+        return {
+            terms: `${offer.receive} ${other} → ${offer.give} ${listedName}${nego}`,
+            ratio: formatQuantityRatio(offer.receive, offer.give),
+        }
     }
-    return `${offer.give} ${listedName} → ${offer.receive} ${other}${nego}`
+    return {
+        terms: `${offer.give} ${listedName} → ${offer.receive} ${other}${nego}`,
+        ratio: formatQuantityRatio(offer.give, offer.receive),
+    }
 }
 
 export function collectDealRows(owners: OwnerTrades[], item: string): { wts: DealRow[]; wtb: DealRow[] } {
@@ -117,13 +148,15 @@ export function collectDealRows(owners: OwnerTrades[], item: string): { wts: Dea
                 }
 
                 for (const offer of tradeSide.trades ?? []) {
+                    const formatted = formatRatioTerms(item, sideLabel, offer)
                     bucket.push({
                         owner,
                         side: sideLabel,
                         quantity: tradeSide.quantity,
                         priceNegotiable: offer.negotiable,
                         ...listingMeta,
-                        terms: formatRatioTerms(item, sideLabel, offer),
+                        terms: formatted.terms,
+                        ratio: formatted.ratio,
                     })
                 }
 
