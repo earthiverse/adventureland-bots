@@ -7,13 +7,9 @@ import {
     ChatInputCommandInteraction,
 } from "discord.js"
 import { Command } from "../command.js"
-import {
-    collectMerchantOffers,
-    mergeMerchantOffers,
-    sortMerchantOffers,
-} from "./tradeMessage.js"
 import type { GLike } from "./itemIcon.js"
-import { buildTradeReply, collectDealRows, pickTradeIconOverlays, type OwnerTrades } from "./tradeReply.js"
+import { fetchTradeMarket, tradeMarketHasListings } from "./tradeMarket.js"
+import { buildTradeReply, pickTradeIconOverlays } from "./tradeReply.js"
 
 /** Adapt alclient GData to the icon/name helper surface used by /trade. */
 function asTradeIconG(G: Awaited<ReturnType<typeof AL.Game.getGData>>): GLike {
@@ -67,44 +63,16 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
         }
 
         try {
-            const [merchantsResponse, tradesResponse] = await Promise.all([
-                fetch(`${ALDATA_BASE_URL}/merchants/`),
-                fetch(`${ALDATA_BASE_URL}/trades`),
-            ])
+            const market = await fetchTradeMarket(ALDATA_BASE_URL, String(item))
 
-            const merchantsOk = merchantsResponse.status === 200
-            const tradesOk = tradesResponse.status === 200
-
-            if (!merchantsOk && !tradesOk) {
+            if (!market.merchantsOk && !market.tradesOk) {
                 return await interaction.followUp({
                     ephemeral: true,
                     content: `Sorry, I had an error finding data for \`${item}\`. 😥`,
                 })
             }
 
-            let buyingData = sortMerchantOffers([], "buy")
-            let sellingData = sortMerchantOffers([], "sell")
-            let dealWts = collectDealRows([], String(item)).wts
-            let dealWtb = collectDealRows([], String(item)).wtb
-
-            if (merchantsOk) {
-                const data = await merchantsResponse.json()
-                const collected = collectMerchantOffers(data, String(item))
-                buyingData = sortMerchantOffers(mergeMerchantOffers(collected.buying), "buy")
-                sellingData = sortMerchantOffers(mergeMerchantOffers(collected.selling), "sell")
-            }
-
-            if (tradesOk) {
-                const owners = (await tradesResponse.json()) as OwnerTrades[]
-                const deals = collectDealRows(owners, String(item))
-                dealWts = deals.wts
-                dealWtb = deals.wtb
-            }
-
-            const hasMerchants = buyingData.length > 0 || sellingData.length > 0
-            const hasDeals = dealWts.length > 0 || dealWtb.length > 0
-
-            if (!hasMerchants && !hasDeals) {
+            if (!tradeMarketHasListings(market)) {
                 return await interaction.followUp({
                     ephemeral: true,
                     content: `I couldn't find anyone trading \`${item}\` 🥲`,
@@ -112,18 +80,22 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
             }
 
             const overlays = pickTradeIconOverlays({
-                selling: sellingData,
-                buying: buyingData,
-                dealWts,
-                dealWtb,
+                selling: market.selling,
+                buying: market.buying,
+                swapOffering: market.swapOffering,
+                swapWanting: market.swapWanting,
+                dealWts: market.dealWts,
+                dealWtb: market.dealWtb,
             })
             const messages = await buildTradeReply({
                 item: String(item),
                 gPrice: gItem.g,
-                selling: sellingData,
-                buying: buyingData,
-                dealWts,
-                dealWtb,
+                selling: market.selling,
+                buying: market.buying,
+                swapOffering: market.swapOffering,
+                swapWanting: market.swapWanting,
+                dealWts: market.dealWts,
+                dealWtb: market.dealWtb,
                 icon: { G: asTradeIconG(G), ...overlays },
             })
 

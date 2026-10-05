@@ -129,7 +129,7 @@ function chunkVariantMessages(
             (needsFile && files.length >= MAX_FILES_PER_MESSAGE) ||
             (embeds.length > 0 && chars + pieceChars > EMBED_TOTAL_LIMIT)
 
-        if (wouldExceed) flush(`_(continued)_`)
+        if (wouldExceed) flush("_(continued)_")
 
         embeds.push(piece.embed)
         chars += pieceChars
@@ -143,7 +143,7 @@ function chunkVariantMessages(
     return messages
 }
 
-/** Single-variant UX: separate stands + deals embeds. */
+/** Single-variant UX: stands (gold + in-game swaps) + Earthiverse deals embeds. */
 async function buildStandsDealsMessages(args: {
     item: string
     content: string
@@ -151,31 +151,48 @@ async function buildStandsDealsMessages(args: {
     g: number | null
     selling: MergedMerchantOffer[]
     buying: MergedMerchantOffer[]
+    swapOffering: DealRow[]
+    swapWanting: DealRow[]
     dealWts: DealRow[]
     dealWtb: DealRow[]
     icon?: TradeIconOpts
 }): Promise<TradeReplyMessage[]> {
-    const { item, content, embedLabel, g, selling, buying, dealWts, dealWtb, icon } = args
-    const hasStands = selling.length > 0 || buying.length > 0
+    const {
+        item,
+        content,
+        embedLabel,
+        g,
+        selling,
+        buying,
+        swapOffering,
+        swapWanting,
+        dealWts,
+        dealWtb,
+        icon,
+    } = args
+    const hasStands =
+        selling.length > 0 || buying.length > 0 || swapOffering.length > 0 || swapWanting.length > 0
     const hasDeals = dealWts.length > 0 || dealWtb.length > 0
     const perEmbedBudget = Math.min(EMBED_DESCRIPTION_LIMIT - 120, 3400)
 
-    const stands = hasStands ? standsTable(selling, buying, perEmbedBudget, g) : null
+    const stands = hasStands
+        ? standsTable(selling, buying, perEmbedBudget, g, { swapOffering, swapWanting })
+        : null
     const deals = hasDeals ? dealsTable(dealWts, dealWtb, perEmbedBudget) : null
     const thumb = await resolveTradeIcon(item, icon)
 
     const standsEmbed = stands
         ? new EmbedBuilder()
-              .setTitle(`Stands · ${embedLabel}`)
-              .setColor(COLOR_STANDS)
-              .setDescription(composeEmbedDescription(stands.blurb, stands.body))
+            .setTitle(`Stands · ${embedLabel}`)
+            .setColor(COLOR_STANDS)
+            .setDescription(composeEmbedDescription(stands.blurb, stands.body))
         : null
 
     const dealsEmbed = deals
         ? new EmbedBuilder()
-              .setTitle(`Deals · ${embedLabel}`)
-              .setColor(COLOR_DEALS)
-              .setDescription(composeEmbedDescription(deals.blurb, deals.body))
+            .setTitle(`Deals · ${embedLabel}`)
+            .setColor(COLOR_DEALS)
+            .setDescription(composeEmbedDescription(deals.blurb, deals.body))
         : null
 
     if (thumb) {
@@ -227,7 +244,11 @@ async function buildVariantGroupMessages(args: {
         groups.map(async (group) => {
             const label = getFullItemName(G, item, { level: group.level, p: group.p })
             const table = variantTable(group, perEmbedBudget, g)
-            const hasStands = group.selling.length > 0 || group.buying.length > 0
+            const hasStands =
+                group.selling.length > 0 ||
+                group.buying.length > 0 ||
+                group.swapOffering.length > 0 ||
+                group.swapWanting.length > 0
             const color = hasStands ? COLOR_STANDS : COLOR_DEALS
             const thumb = await resolveTradeIcon(item, {
                 G,
@@ -249,29 +270,55 @@ async function buildVariantGroupMessages(args: {
 /**
  * Short summary in message content + stacked ASCII tables in embeds.
  * Always groups by variant. One group → stands/deals embeds; multiple → one embed each.
+ *
+ * Stands come from `/merchants` (gold + in-game `want` swaps).
+ * Deals come from Earthiverse `/trades`.
  */
 export async function buildTradeReply(args: {
     item: string
     gPrice: number | string
     selling: MergedMerchantOffer[]
     buying: MergedMerchantOffer[]
+    swapOffering?: DealRow[]
+    swapWanting?: DealRow[]
     dealWts: DealRow[]
     dealWtb: DealRow[]
     footer?: string
     contentPrefix?: string
     icon?: TradeIconOpts
 }): Promise<TradeReplyMessage[]> {
-    const { item, gPrice, selling, buying, dealWts, dealWtb, footer, contentPrefix, icon } = args
+    const {
+        item,
+        gPrice,
+        selling,
+        buying,
+        swapOffering = [],
+        swapWanting = [],
+        dealWts,
+        dealWtb,
+        footer,
+        contentPrefix,
+        icon,
+    } = args
     const gNum = typeof gPrice === "number" ? gPrice : Number(gPrice)
     const g = Number.isFinite(gNum) && gNum > 0 ? gNum : null
 
     const displayName = icon?.G ? getItemBaseName(icon.G, item) : item
-    const groups = groupTradeByVariant({ selling, buying, dealWts, dealWtb })
+    const groups = groupTradeByVariant({
+        selling,
+        buying,
+        swapOffering,
+        swapWanting,
+        dealWts,
+        dealWtb,
+    })
     const variants = listTradeVariants({
         G: icon?.G,
         item,
         selling,
         buying,
+        swapOffering,
+        swapWanting,
         dealWts,
         dealWtb,
     })
@@ -283,6 +330,8 @@ export async function buildTradeReply(args: {
         gPrice,
         selling,
         buying,
+        swapOffering,
+        swapWanting,
         dealWts,
         dealWtb,
         footer,
@@ -302,7 +351,14 @@ export async function buildTradeReply(args: {
     const overlays =
         icon?.level !== undefined || icon?.p
             ? { level: icon?.level, p: icon?.p }
-            : pickTradeIconOverlays({ selling, buying, dealWts, dealWtb })
+            : pickTradeIconOverlays({
+                selling,
+                buying,
+                swapOffering,
+                swapWanting,
+                dealWts,
+                dealWtb,
+            })
     const titledName =
         icon?.G && (overlays.level || overlays.p)
             ? getFullItemName(icon.G, item, overlays)
@@ -316,6 +372,8 @@ export async function buildTradeReply(args: {
         g,
         selling,
         buying,
+        swapOffering,
+        swapWanting,
         dealWts,
         dealWtb,
         icon: icon?.G ? { G: icon.G, ...overlays } : undefined,
