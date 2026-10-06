@@ -28,6 +28,7 @@ import {
 } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 import { suppress_errors } from "../logging.js"
+import { isEquipmentLocked } from "../lock.js"
 
 export const AVOID_DOORS_COSTS = { blink: 999_999_999, enter: 999_999_999, town: 999_999_999, transport: 999_999_999 }
 
@@ -155,6 +156,7 @@ export class GetReplenishablesStrategy<Type extends Character> implements Strate
         if (bot.targets == 0) return // No targets
         if (!(bot.hasItem("jacko") || bot.isEquipped("jacko"))) return // No jacko to scare
         if (!bot.isEquipped("jacko")) {
+            if (isEquipmentLocked(bot, "orb")) return
             await bot.equip(bot.locateItem("jacko"), "orb")
             if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
         }

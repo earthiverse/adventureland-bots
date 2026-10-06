@@ -19,6 +19,7 @@ import { sleep } from "../../base/general.js"
 import { sortPriority } from "../../base/sort.js"
 import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
 import { suppress_errors } from "../logging.js"
+import { isEquipmentLocked } from "../lock.js"
 import { GenerateEnsureEquipped, generateEnsureEquipped } from "../setups/equipment.js"
 import TTLCache from "@isaacs/ttlcache"
 
@@ -412,6 +413,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
 
         for (const sT in ensureEquipped) {
             const slotType = sT as SlotType
+            if (isEquipmentLocked(bot, slotType)) continue
             const ensure = ensureEquipped[slotType]
 
             if (ensure.unequip) {
@@ -534,6 +536,7 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
         if (this.options.disableScare) return
         if (!(bot.hasItem("jacko") || bot.isEquipped("jacko"))) return // No jacko to scare
         if (!bot.isEquipped("jacko") && bot.canUse("scare", { ignoreEquipped: true })) {
+            if (isEquipmentLocked(bot, "orb")) return
             await bot.equip(bot.locateItem("jacko"), "orb")
             if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
         }

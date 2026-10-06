@@ -2,6 +2,7 @@ import { BankInfo, BankPackName, Character, CharacterData, ItemName, Rogue } fro
 import { sleep } from "../../base/general.js"
 import { Strategy, LoopName, Loop } from "../context.js"
 import { suppress_errors } from "../logging.js"
+import { isEquipmentLocked } from "../lock.js"
 import { DEFAULT_ITEM_CONFIG, ItemConfig, wantToHold } from "../../base/itemsNew.js"
 import { bankingPosition } from "../../base/locations.js"
 import { locateEmptyBankSlots } from "../../base/banking.js"
@@ -69,6 +70,7 @@ export class MoveToBankAndDepositStuffStrategy<Type extends Character> implement
         if (bot.targets == 0) return // No targets
         if (!(bot.hasItem("jacko") || bot.isEquipped("jacko"))) return // No jacko to scare
         if (!bot.isEquipped("jacko")) {
+            if (isEquipmentLocked(bot, "orb")) return
             await bot.equip(bot.locateItem("jacko"), "orb")
             if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
         }

@@ -2,6 +2,7 @@ import AL, { Character, ServerIdentifier, ServerRegion } from "alclient"
 import { sleep } from "../../base/general.js"
 import { Loop, LoopName, Strategy } from "../context.js"
 import { suppress_errors } from "../logging.js"
+import { isEquipmentLocked } from "../lock.js"
 
 export function canGetMonsterHunt(
     bot: Character,
@@ -58,6 +59,7 @@ export class GetMonsterHuntStrategy<Type extends Character> implements Strategy<
         if (bot.targets == 0) return // No targets
         if (!(bot.hasItem("jacko") || bot.isEquipped("jacko"))) return // No jacko to scare
         if (!bot.isEquipped("jacko")) {
+            if (isEquipmentLocked(bot, "orb")) return
             await bot.equip(bot.locateItem("jacko"), "orb")
             if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
         }
@@ -102,6 +104,7 @@ export class FinishMonsterHuntStrategy<Type extends Character> implements Strate
         if (bot.targets == 0) return // No targets
         if (!(bot.hasItem("jacko") || bot.isEquipped("jacko"))) return // No jacko to scare
         if (!bot.isEquipped("jacko")) {
+            if (isEquipmentLocked(bot, "orb")) return
             await bot.equip(bot.locateItem("jacko"), "orb")
             if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
         }
