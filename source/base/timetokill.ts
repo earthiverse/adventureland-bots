@@ -1,17 +1,64 @@
 import TTLCache from "@isaacs/ttlcache"
 import { Entity } from "alclient"
 
-/** Monster ID, [timestamp, HP] */
-const data = new TTLCache<string, [number, number][]>({ ttl: 60_000 })
+/** Monster key (type_id), [timestamp, HP] */
+const data = new TTLCache<string, [number, number][]>({ ttl: 300_000 })
+/** Monster key (type_id), timestamp of last HP drop */
+const lastHpDrop = new TTLCache<string, number>({ ttl: 300_000 })
 
-export function getMsToDeath(monster: Entity) {
-    // Add the current timestamp
-    let monsterData: [number, number][] = data.get(monster.id) ?? []
-    monsterData.push([Date.now(), monster.hp])
-    data.set(monster.id, monsterData)
+export function recordHp(type: string, id: string, hp: number): void {
+    const key = `${type}_${id}`
+    const now = Date.now()
+    let monsterData: [number, number][] = data.get(key) ?? []
 
-    // Prune the number of data points
-    if (monsterData.length > 100) monsterData = monsterData.splice(monsterData.length - 100)
+    const lastEntry = monsterData[monsterData.length - 1]
+    if (!lastEntry) {
+        lastHpDrop.set(key, now)
+        monsterData.push([now, hp])
+    } else {
+        if (hp < lastEntry[1]) {
+            lastHpDrop.set(key, now)
+        }
+        // Only record a new entry if HP changed or at least 1s has elapsed
+        if (hp !== lastEntry[1] || now - lastEntry[0] >= 1_000) {
+            monsterData.push([now, hp])
+        }
+    }
+
+    // Prune entries older than 5 minutes or exceeding 300 entries
+    if (monsterData.length > 300) {
+        monsterData = monsterData.slice(-300)
+    }
+    data.set(key, monsterData)
+}
+
+export function getMsSinceLastHpDrop(type: string, id: string): number {
+    const key = `${type}_${id}`
+    const lastDrop = lastHpDrop.get(key)
+    if (lastDrop === undefined) return 0
+    return Date.now() - lastDrop
+}
+
+export function getMsToDeath(monster: Entity): number
+export function getMsToDeath(type: string, id: string, hp: number): number
+export function getMsToDeath(monsterOrType: Entity | string, id?: string, hp?: number): number {
+    let type: string
+    let monsterId: string
+    let currentHp: number
+
+    if (typeof monsterOrType === "string") {
+        type = monsterOrType
+        monsterId = id
+        currentHp = hp
+    } else {
+        type = monsterOrType.type
+        monsterId = monsterOrType.id
+        currentHp = monsterOrType.hp
+    }
+
+    recordHp(type, monsterId, currentHp)
+    const key = `${type}_${monsterId}`
+    const monsterData = data.get(key) ?? []
 
     // Calculate the damage over time
     let totalDamage = 0
@@ -29,5 +76,5 @@ export function getMsToDeath(monster: Entity) {
 
     const damagePerMs = totalDamage / totalTime
 
-    return totalTime > 0 ? monster.hp / damagePerMs : Number.POSITIVE_INFINITY
+    return totalTime > 0 && damagePerMs > 0 ? currentHp / damagePerMs : Number.POSITIVE_INFINITY
 }

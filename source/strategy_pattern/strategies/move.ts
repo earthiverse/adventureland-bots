@@ -18,6 +18,7 @@ import AL, {
 import { checkOnlyEveryMS, sleep } from "../../base/general.js"
 import { invalidateMonsterCache } from "../../base/monsters.js"
 import { offsetPositionParty } from "../../base/locations.js"
+import { getMsSinceLastHpDrop, getMsToDeath } from "../../base/timetokill.js"
 import {
     sortClosestDistance,
     sortClosestDistancePathfinder,
@@ -197,6 +198,9 @@ export class HoldPositionMoveStrategy implements Strategy<Character> {
 }
 
 export type ImprovedMoveStrategyOptions = {
+    /** If set, we will check other contexts */
+    contexts?: Strategist<PingCompensatedCharacter>[]
+
     /** Where to wait if there are no monsters to move to */
     idlePosition?: IPosition
 
@@ -912,5 +916,119 @@ export class KiteMoveStrategy extends SpecialMonsterMoveStrategy {
             }
             break
         }
+    }
+}
+
+export class KaneEventBossMoveStrategy extends ImprovedMoveStrategy {
+    protected waitingAtKane = new Set<string>()
+    protected lastBossId?: string
+    protected lastOtherAttackers = 0
+    protected lastAttackerCheckTime = 0
+    protected monsterType: MonsterName
+
+    public constructor(type: MonsterName, options?: ImprovedMoveStrategyOptions) {
+        super(type, options)
+        this.monsterType = type
+    }
+
+    protected async move(bot: Character): Promise<void> {
+        const type = this.monsterType
+        const sInfo = bot.S?.[type] as ServerInfoDataLive | undefined
+
+        // If monster is not live, clean up Kane state and move normally
+        if (!sInfo || !sInfo.live) {
+            this.waitingAtKane.delete(bot.id)
+            return super.move(bot)
+        }
+
+        const now = Date.now()
+        const entity = bot.getEntity({ type })
+
+        if (entity) {
+            this.lastBossId = entity.id
+            getMsToDeath(entity)
+
+            let otherAttackers = 0
+            for (const [, player] of bot.players) {
+                if (player.id === bot.id) continue
+                if (bot.party && player.party === bot.party) continue
+                if (this.options.contexts?.some((c) => c.bot?.id === player.id)) continue
+                if (player.target === entity.id) otherAttackers++
+            }
+            this.lastOtherAttackers = otherAttackers
+            this.lastAttackerCheckTime = now
+        } else if (this.lastBossId && sInfo.hp !== undefined) {
+            getMsToDeath(type, this.lastBossId, sInfo.hp)
+        }
+
+        const bossId = this.lastBossId
+        const msToDeath =
+            bossId && sInfo.hp !== undefined
+                ? getMsToDeath(type, bossId, sInfo.hp)
+                : Number.POSITIVE_INFINITY
+        const msSinceLastDrop = bossId ? getMsSinceLastHpDrop(type, bossId) : 0
+
+        // If currently at or moving to Kane, check fallback conditions
+        if (this.waitingAtKane.has(bot.id)) {
+            // Fallback: boss HP hasn't dropped for 1 minute, or estimated death time is > 2 minutes
+            if (msSinceLastDrop > 60_000 || msToDeath > 120_000) {
+                this.waitingAtKane.delete(bot.id)
+                return super.move(bot)
+            }
+
+            let kane: IPosition = bot.players.get("$Kane")
+            if (!kane && AL.Database.connection) {
+                kane = await AL.NPCModel.findOne(
+                    {
+                        name: "Kane",
+                        serverRegion: bot.serverData.region,
+                        serverIdentifier: bot.serverData.name,
+                    },
+                    { _id: 0, map: 1, x: 1, y: 1 },
+                )
+                    .lean()
+                    .exec()
+            }
+
+            if (kane) {
+                await bot
+                    .smartMove(offsetPositionParty(kane, bot), { avoidTownWarps: true, useBlink: true })
+                    .catch(suppress_errors)
+                return
+            } else {
+                this.waitingAtKane.delete(bot.id)
+                return super.move(bot)
+            }
+        }
+
+        // Check if we should head to Kane
+        const recentAttackers = now - this.lastAttackerCheckTime <= 10_000 ? this.lastOtherAttackers : 0
+        const hasCoopPoints = Boolean(bot.s.coop && bot.s.coop.p >= 300_000)
+
+        if (hasCoopPoints && msToDeath <= 60_000 && recentAttackers >= 3) {
+            let kane: IPosition = bot.players.get("$Kane")
+            if (!kane && AL.Database.connection) {
+                kane = await AL.NPCModel.findOne(
+                    {
+                        name: "Kane",
+                        serverRegion: bot.serverData.region,
+                        serverIdentifier: bot.serverData.name,
+                    },
+                    { _id: 0, map: 1, x: 1, y: 1 },
+                )
+                    .lean()
+                    .exec()
+            }
+
+            if (kane) {
+                this.waitingAtKane.add(bot.id)
+                await bot
+                    .smartMove(offsetPositionParty(kane, bot), { avoidTownWarps: true, useBlink: true })
+                    .catch(suppress_errors)
+                return
+            }
+        }
+
+        return super.move(bot)
     }
 }
