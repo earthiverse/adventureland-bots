@@ -1,0 +1,42 @@
+{
+  "name": "adventureland-bots",
+  "version": "0.2.0",
+  "description": "Bot scripts for adventure.land",
+  "author": {
+    "name": "Kent Rasmussen",
+    "email": "hyprkookeez@gmail.com",
+    "url": "https://earthiverse.ca"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/earthiverse/adventureland-bots/issues"
+  },
+  "homepage": "https://github.com/earthiverse/adventureland-bots#readme",
+  "private": true,
+  "type": "module",
+  "module": "src/index.ts",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun --watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "bun run typecheck && bun run lint && bun run format:check"
+  },
+  "dependencies": {
+    "alclient": "^0.26.5",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/bun": "latest",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.9",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript-eslint": "^8.71.1"
+  }
+}
