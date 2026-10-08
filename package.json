@@ -23,10 +23,11 @@
     "lint:fix": "eslint --fix .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "bun run typecheck && bun run lint && bun run format:check"
+    "check": "bun run typecheck && bun run lint && bun run format:check",
+    "fix": "bun run lint:fix && bun run format"
   },
   "dependencies": {
-    "alclient": "^0.26.5",
+    "alclient": "^0.26.6",
     "zod": "^4.6.5"
   },
   "devDependencies": {
