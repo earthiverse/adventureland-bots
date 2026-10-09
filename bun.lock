@@ -6,6 +6,7 @@
       "name": "adventureland-bots-v2",
       "dependencies": {
         "alclient": "^0.26.6",
+        "lru-cache": "^11.5.3",
         "zod": "^4.6.5",
       },
       "devDependencies": {
