@@ -56,6 +56,13 @@ export class State {
   }
 
   /**
+   * Returns all bots from registered contexts that belong to the specified party
+   */
+  public getBotsByParty(id: string): PingCompensatedCharacter[] {
+    return this.bots.filter((c) => c.party === id);
+  }
+
+  /**
    * Retrieves all contexts of a specific character type.
    */
   public getContextsByType(type: CharacterType): Context[] {
