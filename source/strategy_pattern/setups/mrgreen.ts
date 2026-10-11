@@ -1,4 +1,4 @@
-import { PingCompensatedCharacter, Warrior } from "alclient"
+import { PingCompensatedCharacter, Priest, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -12,9 +12,25 @@ import { RETURN_HIGHEST } from "./equipment.js"
 
 class MrGreenMoveStrategy extends KaneEventBossMoveStrategy {}
 
+class PriestMrGreenAttackStrategy extends PriestAttackStrategy {
+    public onApply(bot: Priest): void {
+        if (bot.isPVP()) {
+            delete this.options.enableGreedyAggro
+        } else {
+            this.options.enableGreedyAggro = ["mrgreen"]
+        }
+        super.onApply(bot)
+    }
+
+    protected async absorbTargets(bot: Priest) {
+        if (bot.players.has("CrownPriest") || bot.players.has("Hierophant")) return
+        return super.absorbTargets(bot)
+    }
+}
+
 class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
     public onApply(bot: Warrior): void {
-        if (bot.serverData.name === "PVP") {
+        if (bot.isPVP()) {
             // No Splash Damage
             this.options.disableCleave = true
             delete this.options.enableEquipForCleave
@@ -23,14 +39,14 @@ class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
             // Additional Cleave Damage
             delete this.options.disableCleave
             this.options.enableEquipForCleave = true
-            if (bot.players.get("CrownPriest") || bot.players.get("Hierophant")) {
-                // Too much MP wasted fighting for aggro
-                delete this.options.enableGreedyAggro
-            } else {
-                this.options.enableGreedyAggro = true
-            }
+            this.options.enableGreedyAggro = ["mrgreen"]
         }
         super.onApply(bot)
+    }
+
+    protected async agitateTargets(bot: Warrior) {
+        if (bot.players.has("CrownPriest") || bot.players.has("Hierophant")) return
+        return super.agitateTargets(bot)
     }
 }
 
@@ -54,9 +70,10 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
 
     const priestConfig: CharacterConfig = {
         ctype: "priest",
-        attack: new PriestAttackStrategy({
+        attack: new PriestMrGreenAttackStrategy({
             contexts: contexts,
             disableEnergize: true,
+            enableGreedyAggro: ["mrgreen"],
             enableHealStrangers: true,
             generateEnsureEquipped: {
                 attributes: ["armor", "int", "attack"],

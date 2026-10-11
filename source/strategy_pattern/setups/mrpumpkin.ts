@@ -66,20 +66,20 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
             this.options.generateEnsureEquipped.prefer.ring2 = { name: "cring", filters: RETURN_HIGHEST }
         }
 
-        super.onApply(bot)
         if (bot.isPVP()) {
             this.options.typeList = ["mrpumpkin"]
             delete this.options.enableGreedyAggro
         } else {
             this.options.typeList = NON_PVP_MONSTERS
-            if (bot.players.get("CrownPriest") || bot.players.get("Hierophant")) {
-                // Too much MP wasted fighting for aggro
-                delete this.options.enableGreedyAggro
-            } else {
-                this.options.enableGreedyAggro = ["mrpumpkin"]
-            }
+            this.options.enableGreedyAggro = ["mrpumpkin"]
             this.options.maximumTargets = bot.mcourage
         }
+        super.onApply(bot)
+    }
+
+    protected async absorbTargets(bot: Priest) {
+        if (bot.players.has("CrownPriest") || bot.players.has("Hierophant")) return
+        return super.absorbTargets(bot)
     }
 
     protected shouldAttack(bot: Character): boolean {
@@ -144,7 +144,6 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             }
         }
 
-        super.onApply(bot)
         if (bot.isPVP()) {
             this.options.disableCleave = true
             delete this.options.enableEquipForCleave
@@ -154,13 +153,14 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
             delete this.options.disableCleave
             this.options.enableEquipForCleave = true
             this.options.typeList = NON_PVP_MONSTERS
-            if (bot.players.get("CrownPriest") || bot.players.get("Hierophant")) {
-                // Too much MP wasted fighting for aggro
-                delete this.options.enableGreedyAggro
-            } else {
-                this.options.enableGreedyAggro = ["mrpumpkin"]
-            }
+            this.options.enableGreedyAggro = ["mrpumpkin"]
         }
+        super.onApply(bot)
+    }
+
+    protected async agitateTargets(bot: Warrior) {
+        if (bot.players.has("CrownPriest") || bot.players.has("Hierophant")) return
+        return super.agitateTargets(bot)
     }
 
     protected shouldAttack(bot: Character): boolean {
@@ -196,7 +196,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
         attack: new PriestMrPumpkinAttackStrategy({
             contexts: contexts,
             disableEnergize: true,
-            enableGreedyAggro: true,
+            enableGreedyAggro: ["mrpumpkin"],
             enableHealStrangers: true,
             generateEnsureEquipped: {
                 attributes: ["resistance", "int", "attack"],
