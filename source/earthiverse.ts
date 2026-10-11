@@ -698,11 +698,21 @@ const serverHopLogic = async () => {
                 }
             } else if (bot1.S.halloween) {
                 // Halloween
-                const monster = (await getHalloweenMonsterPriority(true))[0]
-                if (monster) {
-                    // We want to switch servers
-                    TARGET_IDENTIFIER = monster.serverIdentifier
-                    TARGET_REGION = monster.serverRegion
+                const currentPumpkin = bot1.S.mrpumpkin as ServerInfoDataLive
+                const currentGreen = bot1.S.mrgreen as ServerInfoDataLive
+
+                if (currentPumpkin?.live || currentGreen?.live) {
+                    // Stay and fight
+                    TARGET_IDENTIFIER = bot1.serverData.name
+                    TARGET_REGION = bot1.serverData.region
+                } else {
+                    // Look for pumpkins on other servers
+                    const monster = (await getHalloweenMonsterPriority(true))[0]
+                    if (monster) {
+                        // We want to switch servers
+                        TARGET_IDENTIFIER = monster.serverIdentifier
+                        TARGET_REGION = monster.serverRegion
+                    }
                 }
             } else if (bot1.S.holidayseason) {
                 // Christmas

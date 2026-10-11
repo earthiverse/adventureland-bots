@@ -1,12 +1,4 @@
-import {
-    Character,
-    Mage,
-    MonsterName,
-    PingCompensatedCharacter,
-    Priest,
-    Rogue,
-    Warrior,
-} from "alclient"
+import { Character, Mage, MonsterName, PingCompensatedCharacter, Priest, Rogue, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -18,7 +10,7 @@ import { ImprovedMoveStrategy, KaneEventBossMoveStrategy } from "../strategies/m
 import { CharacterConfig, Setup } from "./base.js"
 import { RETURN_HIGHEST, UNEQUIP } from "./equipment.js"
 
-const NON_PVP_MONSTERS: MonsterName[] = ["mrpumpkin", "phoenix", "xscorpion", "minimush", "tinyp"]
+const NON_PVP_MONSTERS: MonsterName[] = ["jr", "mrpumpkin", "phoenix", "xscorpion", "minimush", "tinyp"]
 
 class MrPumpkinMoveStrategy extends KaneEventBossMoveStrategy {}
 
@@ -50,7 +42,7 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
             delete this.options.enableGreedyAggro
         } else {
             this.options.typeList = NON_PVP_MONSTERS
-            this.options.enableGreedyAggro = ["minimush"]
+            this.options.enableGreedyAggro = ["mrpumpkin"]
             this.options.maximumTargets = bot.mcourage
         }
     }
@@ -80,7 +72,12 @@ class PriestMrPumpkinAttackStrategy extends PriestAttackStrategy {
             delete this.options.enableGreedyAggro
         } else {
             this.options.typeList = NON_PVP_MONSTERS
-            this.options.enableGreedyAggro = ["minimush"]
+            if (bot.players.get("CrownPriest") || bot.players.get("Hierophant")) {
+                // Too much MP wasted fighting for aggro
+                delete this.options.enableGreedyAggro
+            } else {
+                this.options.enableGreedyAggro = ["mrpumpkin"]
+            }
             this.options.maximumTargets = bot.mcourage
         }
     }
@@ -156,8 +153,13 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
         } else {
             delete this.options.disableCleave
             this.options.enableEquipForCleave = true
-            this.options.typeList = ["mrpumpkin", "phoenix", "xscorpion", "tinyp", "minimush"]
-            this.options.enableGreedyAggro = ["mrpumpkin", "xscorpion"]
+            this.options.typeList = NON_PVP_MONSTERS
+            if (bot.players.get("CrownPriest") || bot.players.get("Hierophant")) {
+                // Too much MP wasted fighting for aggro
+                delete this.options.enableGreedyAggro
+            } else {
+                this.options.enableGreedyAggro = ["mrpumpkin"]
+            }
         }
     }
 

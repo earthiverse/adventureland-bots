@@ -1,7 +1,4 @@
-import {
-    PingCompensatedCharacter,
-    Warrior,
-} from "alclient"
+import { PingCompensatedCharacter, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -26,7 +23,12 @@ class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
             // Additional Cleave Damage
             delete this.options.disableCleave
             this.options.enableEquipForCleave = true
-            this.options.enableGreedyAggro = true
+            if (bot.players.get("CrownPriest") || bot.players.get("Hierophant")) {
+                // Too much MP wasted fighting for aggro
+                delete this.options.enableGreedyAggro
+            } else {
+                this.options.enableGreedyAggro = true
+            }
         }
         super.onApply(bot)
     }
@@ -45,7 +47,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                 attributes: ["armor", "int", "attack"],
                 prefer: { mainhand: { name: "firestaff", filters: RETURN_HIGHEST } },
             },
-            type: "mrgreen",
+            typeList: ["greenjr", "mrgreen"],
         }),
         move: moveStrategy,
     }
@@ -55,7 +57,6 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
         attack: new PriestAttackStrategy({
             contexts: contexts,
             disableEnergize: true,
-            enableGreedyAggro: true,
             enableHealStrangers: true,
             generateEnsureEquipped: {
                 attributes: ["armor", "int", "attack"],
@@ -63,7 +64,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                     mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
                 },
             },
-            type: "mrgreen",
+            typeList: ["greenjr", "mrgreen"],
         }),
         move: moveStrategy,
     }
@@ -80,7 +81,7 @@ export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharac
                     offhand: { name: "fireblade", filters: RETURN_HIGHEST },
                 },
             },
-            type: "mrgreen",
+            typeList: ["greenjr", "mrgreen"],
         }),
         move: moveStrategy,
     }

@@ -412,9 +412,27 @@ export async function getHalloweenMonsterPriority(avoidPVP = false) {
     if (!AL.Database.connection) return []
 
     const monsterPriority: MonsterName[] = ["mrpumpkin", "mrgreen"]
-    const serverPriority = ["USI", "EUI", "USII", "USIII", "EUII", "ASIAI", "EUPVP", "USPVP"]
+    const serverPriority = [
+        "USI",
+        "USII",
+        "USIII",
+        "USIV",
+        "USV",
+        "EUI",
+        "EUII",
+        "EUIII",
+        "EUIV",
+        "ASIAI",
+        "ASIAII",
+        "EUPVP",
+        "USPVP",
+    ]
 
-    const entitiesFilters = { lastSeen: { $gt: Date.now() - 600_000 }, type: { $in: monsterPriority } }
+    const entitiesFilters = {
+        lastSeen: { $gt: Date.now() - 60_000 },
+        type: { $in: monsterPriority },
+        hp: { $gte: 7_200_000 }, // 20% HP
+    }
     if (avoidPVP) entitiesFilters["serverIdentifier"] = { $ne: "PVP" }
 
     const entitiesP = await AL.EntityModel.find(entitiesFilters).lean().exec()
