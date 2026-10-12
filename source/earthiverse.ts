@@ -875,6 +875,7 @@ async function startShared(context: Strategist<PingCompensatedCharacter>, privat
     context.applyStrategy(homeServerStrategy)
     context.applyStrategy(avoidDeathStrategy)
     context.applyStrategy(avoidStackingStrategy)
+    context.applyStrategy(boosterStrategy)
     context.applyStrategy(respawnStrategy)
     context.applyStrategy(trackerStrategy)
     context.applyStrategy(elixirStrategy)
