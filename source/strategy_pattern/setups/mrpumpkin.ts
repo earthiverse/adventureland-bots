@@ -36,15 +36,14 @@ class MageMrPumpkinAttackStrategy extends MageAttackStrategy {
             this.options.generateEnsureEquipped.prefer.offhand = UNEQUIP
         }
 
-        super.onApply(bot)
         if (bot.isPVP()) {
             this.options.typeList = ["mrpumpkin"]
             delete this.options.enableGreedyAggro
         } else {
             this.options.typeList = NON_PVP_MONSTERS
             this.options.enableGreedyAggro = ["mrpumpkin"]
-            this.options.maximumTargets = bot.mcourage
         }
+        super.onApply(bot)
     }
 
     protected shouldAttack(bot: Character): boolean {

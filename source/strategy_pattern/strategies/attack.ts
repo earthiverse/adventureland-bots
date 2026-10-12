@@ -222,7 +222,9 @@ export class BaseAttackStrategy<Type extends Character> implements Strategy<Type
                     }
                     for (const monster of bot.getEntities({
                         hasTarget: false,
-                        typeList: this.options.typeList,
+                        typeList: Array.isArray(this.options.enableGreedyAggro)
+                            ? this.options.enableGreedyAggro
+                            : this.options.typeList,
                         withinRange: "cburst",
                     })) {
                         if (cbursts.some((cburst) => cburst[0] == monster.id)) continue // Already in our list to cburst
