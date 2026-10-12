@@ -50,6 +50,7 @@ import { PartyHealStrategy } from "./strategy_pattern/strategies/partyheal.js"
 import { RespawnStrategy } from "./strategy_pattern/strategies/respawn.js"
 import { SellStrategy } from "./strategy_pattern/strategies/sell.js"
 import { TrackerStrategy } from "./strategy_pattern/strategies/tracker.js"
+import { BoosterStrategy } from "./strategy_pattern/strategies/booster.js"
 
 import bodyParser from "body-parser"
 import cors from "cors"
@@ -166,6 +167,7 @@ const debugStrategy = new DebugStrategy({
 // Movement
 const avoidDeathStrategy = new AvoidDeathStrategy()
 const avoidStackingStrategy = new AvoidStackingStrategy()
+const boosterStrategy = new BoosterStrategy("luckbooster")
 const findAnniversaryTargetStrategy = new FindAnniversaryTargetStrategy()
 const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const finishMonsterHuntStrategy = new FinishMonsterHuntStrategy()
