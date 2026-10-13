@@ -30,7 +30,7 @@ export class PartyStrategy<BotType extends PingCompensatedCharacter> implements 
   };
   public readonly priority = -100;
 
-  protected onRequest: ((data: { name: string }) => Promise<void>) | undefined = undefined;
+  protected onRequest: ((data: InviteData) => Promise<void>) | undefined = undefined;
 
   public constructor(protected options: PartyStrategyOptions) {}
 

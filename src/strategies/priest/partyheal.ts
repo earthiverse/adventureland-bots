@@ -1,9 +1,20 @@
-import type { PingCompensatedCharacter, Player, Priest } from 'alclient';
+import type { CMData, Priest } from 'alclient';
+import z from 'zod';
 
-import { state } from '@/state/state';
 import type { Strategy, StrategyLoops } from '@/types/strategy';
+import { getVisiblePlayers } from '@/utils/players';
+
+export const listenerDataSchema = z.object({
+  request: z.literal('partyheal'),
+  hp: z.int().positive().max(10_000).optional(),
+});
 
 export interface PartyHealStrategyOptions {
+  /**
+   * If set, we will not enable the CM listener for heal requests
+   */
+  disableCmListener?: true;
+
   /**
    * If set, we will party heal if any character is missing >= specified HP
    * If set to 'optimal', we will party heal if any character is missing >= how much we can party heal at our current level
@@ -26,8 +37,11 @@ export class PartyHealStrategy implements Strategy<Priest> {
   };
   public readonly priority = 20;
 
+  protected readonly listenerMap = new Map<string, (data: CMData) => void>();
+  protected listenerHealAmount = 0;
+
   public constructor(protected options: PartyHealStrategyOptions) {
-    if (options.healIfMissingHp === undefined && options.healIfHpRatioBelow === undefined)
+    if (options.disableCmListener && options.healIfMissingHp === undefined && options.healIfHpRatioBelow === undefined)
       throw new Error('No PartyHealStrategyOptions options are set');
     if (typeof options.healIfMissingHp === 'number' && options.healIfMissingHp <= 0)
       throw new Error('healIfMissingHp must be > 0');
@@ -41,14 +55,28 @@ export class PartyHealStrategy implements Strategy<Priest> {
     if (!bot.party) return; // Not in a party, don't party heal
     if (!bot.canUse('partyheal')) return; // Can't use partyheal
 
-    const partyMembers = this.getHealablePartyMembers(bot);
-    if (!partyMembers.length) return; // Nobody needs healing
+    if (this.listenerHealAmount > 0) {
+      const healAmount = this.getPartyHealAmount(bot);
+      if (!healAmount) return; // Won't heal anything
+      await bot.partyHeal();
+      this.listenerHealAmount = Math.max(0, this.listenerHealAmount - healAmount);
+      return;
+    }
+
+    const partyMembers = getVisiblePlayers({
+      party: bot.party,
+      isDead: false,
+      isMissingHp: true,
+      serverIdentifier: bot.serverData.name,
+      serverRegion: bot.serverData.region,
+    });
+    if (!partyMembers.length) return; // Nobody (that we can see) needs healing
 
     // healIfMissingHp
     let healAmount: number | 'optimal' | undefined = this.options.healIfMissingHp;
     if (healAmount === 'optimal') {
-      healAmount = bot.G.skills.partyheal.levels!.findLast(([level]) => bot.level >= level)?.[1];
-      if (!healAmount) return; // We aren't a high enough level to partyheal
+      healAmount = this.getPartyHealAmount(bot);
+      if (!healAmount) return; // Won't heal anything
     }
     if (healAmount) {
       if (partyMembers.some((c) => c.max_hp - c.hp >= healAmount)) {
@@ -70,27 +98,37 @@ export class PartyHealStrategy implements Strategy<Priest> {
     return Math.max(50, bot.getCooldown('partyheal'));
   }
 
-  /**
-   * Returns a list of party members that we can see that we could heal
-   */
-  private getHealablePartyMembers(bot: Priest): (PingCompensatedCharacter | Player)[] {
-    if (!bot.party) return []; // Not in a party
+  public async onApply(bot: Priest) {
+    if (this.options.disableCmListener) return;
 
-    // Get context bots that are alive and missing HP
-    const contextBots = state.getBotsByParty(bot.party);
+    const listener = (data: CMData) => {
+      if (!bot.party) return; // We are not in a party
+      if (!bot.partyData?.list?.includes(data.name)) return; // They're not in our party
 
-    // Get nearby party members from our contexts that are alive and missing hp
-    const nearbyPartyMembers: Player[] = [];
-    for (const contextBot of contextBots) {
-      for (const player of contextBot.players.values()) {
-        if (player.rip) continue; // Player is dead
-        if (player.party !== bot.party) continue; // Different party
-        if (player.hp >= player.max_hp) continue; // Player has full HP
-        if (contextBots.some((c) => c.id === player.id)) continue; // One of our characters
-        if (nearbyPartyMembers.some((c) => c.id === player.id)) continue; // Already in the list
-        nearbyPartyMembers.push(player);
+      try {
+        const json = JSON.parse(data.message);
+        const request = listenerDataSchema.safeParse(json);
+        if (!request.success) return;
+
+        this.listenerHealAmount = Math.max(this.listenerHealAmount, request.data.hp ?? this.getPartyHealAmount(bot));
+      } catch {
+        // Invalid JSON
       }
-    }
-    return [...contextBots.filter((c) => !c.rip && c.hp < c.max_hp), ...nearbyPartyMembers];
+    };
+    bot.socket.on('cm', listener);
+    this.listenerMap.set(bot.id, listener);
+  }
+
+  public async onRemove(bot: Priest) {
+    const listener = this.listenerMap.get(bot.id);
+    if (listener) bot.socket.off('cm', listener);
+    this.listenerMap.delete(bot.id);
+  }
+
+  /**
+   * Returns the amount that the character can party heal
+   */
+  private getPartyHealAmount(bot: Priest): number {
+    return bot.G.skills.partyheal.levels!.findLast(([level]) => bot.level >= level)?.[1] ?? 0;
   }
 }
