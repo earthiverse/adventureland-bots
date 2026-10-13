@@ -422,8 +422,8 @@ export async function getHalloweenMonsterPriority(avoidPVP = false) {
         "EUII",
         "EUIII",
         "EUIV",
-        "ASIAI",
-        "ASIAII",
+        // "ASIAI",
+        // "ASIAII",
         "EUPVP",
         "USPVP",
     ]
@@ -432,6 +432,7 @@ export async function getHalloweenMonsterPriority(avoidPVP = false) {
         lastSeen: { $gt: Date.now() - 60_000 },
         type: { $in: monsterPriority },
         hp: { $gte: 7_200_000 }, // 20% HP
+        serverRegion: { $nin: ["ASIA"] },
     }
     if (avoidPVP) entitiesFilters["serverIdentifier"] = { $ne: "PVP" }
 
