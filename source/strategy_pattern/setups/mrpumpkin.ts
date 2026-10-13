@@ -6,7 +6,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
-import { ImprovedMoveStrategy, KaneEventBossMoveStrategy } from "../strategies/move.js"
+import { ImprovedMoveStrategy, KaneEventBossMoveStrategy, SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base.js"
 import { RETURN_HIGHEST, UNEQUIP } from "./equipment.js"
 
@@ -200,7 +200,7 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                 attributes: ["resistance", "int", "attack"],
             },
         }),
-        move: moveStrategy,
+        move: new SpecialMonsterMoveStrategy({ typeList: ["mrpumpkin"], contexts: contexts }),
         require: {
             items: ["jacko", "cring"],
         },
