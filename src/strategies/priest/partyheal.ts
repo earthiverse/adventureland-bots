@@ -98,7 +98,7 @@ export class PartyHealStrategy implements Strategy<Priest> {
     return Math.max(50, bot.getCooldown('partyheal'));
   }
 
-  public async onApply(bot: Priest) {
+  public onApply(bot: Priest): void {
     if (this.options.disableCmListener) return;
 
     const listener = (data: CMData) => {
@@ -106,7 +106,7 @@ export class PartyHealStrategy implements Strategy<Priest> {
       if (!bot.partyData?.list?.includes(data.name)) return; // They're not in our party
 
       try {
-        const json = JSON.parse(data.message);
+        const json: unknown = JSON.parse(data.message);
         const request = listenerDataSchema.safeParse(json);
         if (!request.success) return;
 
@@ -119,7 +119,7 @@ export class PartyHealStrategy implements Strategy<Priest> {
     this.listenerMap.set(bot.id, listener);
   }
 
-  public async onRemove(bot: Priest) {
+  public onRemove(bot: Priest): void {
     const listener = this.listenerMap.get(bot.id);
     if (listener) bot.socket.off('cm', listener);
     this.listenerMap.delete(bot.id);

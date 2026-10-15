@@ -31,7 +31,7 @@ export class AttackStrategy<BotType extends PingCompensatedCharacter> implements
 
     // Target nearest entity
     const target = bot.getEntity({
-      couldDieToProjectiles: this.options.couldDieToProjectiles ?? undefined,
+      couldDieToProjectiles: this.options.couldDieToProjectiles,
       couldGiveCredit: this.options.couldGiveCredit ?? true,
       ignoreIDs: [...IGNORED_MONSTERS.keys()],
       returnNearest: true,

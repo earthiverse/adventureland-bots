@@ -23,11 +23,11 @@ export interface Strategy<BotType extends PingCompensatedCharacter = PingCompens
    * Callend when the strategy is applied to a bot.
    * Can be used to perform any necessary actions before the loops start running.
    */
-  onApply?: (bot: BotType) => Promise<void>;
+  onApply?: (bot: BotType) => void;
 
   /**
    * Callend when the strategy is removed from a bot.
    * Can be used to perform any necessary cleanup after the loops stop running.
    */
-  onRemove?: (bot: BotType) => Promise<void>;
+  onRemove?: (bot: BotType) => void;
 }

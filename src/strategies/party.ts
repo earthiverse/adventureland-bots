@@ -41,7 +41,7 @@ export class PartyStrategy<BotType extends PingCompensatedCharacter> implements 
     await bot.sendPartyRequest(this.options.partyLeader).catch(noop);
   }
 
-  public async onApply(bot: BotType) {
+  public onApply(bot: BotType): void {
     if (bot.id !== this.options.partyLeader) return; // Only the party leader listens for invites
 
     this.onRequest = async (data: InviteData) => {
@@ -53,7 +53,7 @@ export class PartyStrategy<BotType extends PingCompensatedCharacter> implements 
     bot.socket.on('request', this.onRequest);
   }
 
-  public async onRemove(bot: BotType) {
+  public onRemove(bot: BotType): void {
     if (this.onRequest) bot.socket.off('request', this.onRequest);
     this.onRequest = undefined;
   }

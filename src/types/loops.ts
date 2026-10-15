@@ -14,7 +14,7 @@ export interface LoopDefinition<BotType extends PingCompensatedCharacter> {
    * Logic to run in the loop.
    * If `false`, we will skip running lower priority functions in the loop.
    */
-  fn: (bot: BotType) => Promise<false | void>;
+  fn: (bot: BotType) => Promise<false | void> | false | void;
 
   /**
    * Returns ms to wait before running the loop again.

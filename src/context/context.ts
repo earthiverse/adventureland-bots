@@ -41,7 +41,7 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
 
     // Call remove on strategies
     for (const strategy of this.strategies) {
-      if (strategy.onRemove) await strategy.onRemove(this.bot);
+      if (strategy.onRemove) strategy.onRemove(this.bot);
     }
 
     // Disconnect
@@ -61,7 +61,7 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
 
         // Reapply strategies
         for (const strategy of this.strategies) {
-          if (strategy.onApply) await strategy.onApply(this.bot);
+          if (strategy.onApply) strategy.onApply(this.bot);
         }
 
         // Resume loops
@@ -98,11 +98,11 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
   /**
    * Applies a strategy
    */
-  public async applyStrategy(strategy: Strategy<BotType>): Promise<void> {
+  public applyStrategy(strategy: Strategy<BotType>): void {
     if (this.strategies.has(strategy)) return;
     this.strategies.add(strategy);
 
-    if (strategy.onApply) await strategy.onApply(this.bot);
+    if (strategy.onApply) strategy.onApply(this.bot);
 
     if (!strategy.loops) return; // No loops
 
@@ -128,11 +128,11 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
   /**
    * Removes a strategy
    */
-  public async removeStrategy(strategy: Strategy<BotType>): Promise<void> {
+  public removeStrategy(strategy: Strategy<BotType>): void {
     if (!this.strategies.has(strategy)) return;
     this.strategies.delete(strategy);
 
-    if (strategy.onRemove) await strategy.onRemove(this.bot);
+    if (strategy.onRemove) strategy.onRemove(this.bot);
 
     if (!strategy.loops) return; // No loops
 
@@ -219,7 +219,7 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
       this.stopLoop(name);
     }
     for (const strategy of this.strategies) {
-      if (strategy.onRemove) strategy.onRemove(this.bot).catch(console.error);
+      if (strategy.onRemove) strategy.onRemove(this.bot);
     }
     try {
       this.bot.disconnect();

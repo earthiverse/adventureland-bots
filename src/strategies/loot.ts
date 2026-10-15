@@ -19,7 +19,7 @@ export class LootStrategy<BotType extends PingCompensatedCharacter> implements S
 
   public constructor() {}
 
-  protected async loot(bot: BotType): Promise<void> {
+  protected loot(bot: BotType): void {
     for (const chest of bot.chests.values()) {
       if (LOOTED_CHESTS.has(chest.id)) continue; // Another character is looting
 
