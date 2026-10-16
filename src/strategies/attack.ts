@@ -1,4 +1,4 @@
-import { type MonsterName, type PingCompensatedCharacter } from 'alclient';
+import type { MonsterName, PingCompensatedCharacter } from 'alclient';
 import { LRUCache } from 'lru-cache/raw';
 
 import type { Strategy, StrategyLoops } from '@/types/strategy';

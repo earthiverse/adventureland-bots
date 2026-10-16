@@ -1,18 +1,18 @@
-import { type InviteData, type PingCompensatedCharacter } from 'alclient';
+import type { InviteData, PingCompensatedCharacter } from 'alclient';
 
 import type { Strategy, StrategyLoops } from '@/types/strategy';
 import { noop } from '@/utils/noop';
 
 export interface PartyStrategyOptions {
   /**
-   * If set, we will only accept requests from these character IDs
+   * If set, we will ONLY accept requests from these character IDs
    */
-  allowList?: string[];
+  allowIds?: string[];
 
   /**
    * If set, we will deny requests from these character IDs
    */
-  denyList?: string[];
+  denyIds?: string[];
 
   /**
    * The leader of the party.
@@ -45,8 +45,8 @@ export class PartyStrategy<BotType extends PingCompensatedCharacter> implements 
     if (bot.id !== this.options.partyLeader) return; // Only the party leader listens for invites
 
     this.onRequest = async (data: InviteData) => {
-      if (this.options.allowList && !this.options.allowList.includes(data.name)) return; // Not in allow list
-      if (this.options.denyList && this.options.denyList.includes(data.name)) return; // In deny list
+      if (this.options.allowIds && !this.options.allowIds.includes(data.name)) return; // Not in allow list
+      if (this.options.denyIds && this.options.denyIds.includes(data.name)) return; // In deny list
 
       await bot.acceptPartyRequest(data.name).catch(console.error);
     };

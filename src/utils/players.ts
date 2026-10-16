@@ -1,6 +1,6 @@
 import type { PingCompensatedCharacter, Player, ServerIdentifier, ServerRegion } from 'alclient';
 
-import { Context } from '@/context/context';
+import type { Context } from '@/context/context';
 import { state } from '@/state/state';
 
 export interface GetVisiblePlayersOptions {

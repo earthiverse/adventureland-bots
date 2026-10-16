@@ -4,7 +4,7 @@ import type { PingCompensatedCharacter } from 'alclient';
  * One loop will be run for each LoopName in the Strategy.
  * Loops run in parallel.
  */
-export type LoopName = 'attack' | 'item' | 'loot' | 'move' | 'party' | 'regen';
+export type LoopName = 'attack' | 'item' | 'loot' | 'move' | 'party' | 'regen' | 'rspeed';
 
 /**
  * Loop definition for a Strategy

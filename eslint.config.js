@@ -25,6 +25,12 @@ export default defineConfig([
       },
     },
     rules: {
+      '@typescript-eslint/consistent-type-exports': ['error', { fixMixedExportsWithInlineTypeSpecifier: true }],
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
+      ],
+      '@typescript-eslint/no-import-type-side-effects': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -33,6 +39,8 @@ export default defineConfig([
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+      '@typescript-eslint/return-await': ['error', 'error-handling-correctness-only'],
+      '@typescript-eslint/switch-exhaustiveness-check': 'error',
     },
   },
   {

@@ -1,4 +1,4 @@
-import { type PingCompensatedCharacter } from 'alclient';
+import type { PingCompensatedCharacter } from 'alclient';
 
 import type { Strategy, StrategyLoops } from '@/types/strategy';
 
