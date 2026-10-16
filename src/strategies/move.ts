@@ -39,4 +39,10 @@ export class MoveStrategy<BotType extends PingCompensatedCharacter> implements S
       bot.smartMove(target, { getWithin: bot.range - 25 }).catch(noop);
     }
   }
+
+  public onRemove(bot: BotType): void {
+    if (bot.smartMoving) {
+      bot.stopSmartMove().catch(noop);
+    }
+  }
 }
