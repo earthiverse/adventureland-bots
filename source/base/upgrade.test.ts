@@ -46,6 +46,34 @@ test("calculateOptimalUpgradePath computes valid paths with prim stacking", () =
     expect(hasStackStep).toBeTruthy()
 })
 
+test("calculateOptimalUpgradePath uses stat scroll with prim stacking on stat items", async () => {
+    const path = calculateOptimalUpgradePath({ name: "horsecapeg", level: 0 }, 10_000_000, AL.Game.G, 10)
+    expect(path).toBeDefined()
+
+    let hasStatStackStep = false
+    for (let i = 1; i < path!.length; i++) {
+        if (path![i]!.level === path![i - 1]!.level && path![i]!.scroll === "strscroll") {
+            hasStatStackStep = true
+            expect(path![i]!.offering).toBe("offeringp")
+            expect(Math.round((path![i]!.grace - path![i - 1]!.grace) * 10) / 10).toBe(1)
+        }
+    }
+    expect(hasStatStackStep).toBeTruthy()
+
+    const mockBot: any = {
+        G: AL.Game.G,
+        items: [{ name: "horsecapeg", level: 6 }],
+        locateItem: () => 1,
+        calculateUpgrade: async () => ({ grace: 0.2 }),
+    }
+    const stackWithStrScroll = await getNextUpgradeAction(mockBot, 0, { buyPrice: 10_000_000 })
+    expect(stackWithStrScroll).toEqual({
+        action: "stack",
+        scroll: "strscroll",
+        offering: "offeringp",
+    })
+})
+
 test("debug upgrade path and getNextUpgradeAction", async () => {
     const bataxePath = calculateOptimalUpgradePath({ name: "bataxe", level: 0 }, 6_000_000, AL.Game.G, 10)
     console.log("Bataxe path:", bataxePath)

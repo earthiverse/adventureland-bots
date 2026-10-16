@@ -353,11 +353,32 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
             if (nextAction.action === "stack") {
                 const offering = nextAction.offering as ItemName
-                let offeringSlot = bot.locateItem(offering)
-                if (offeringSlot === undefined) {
-                    if (bot.canBuy(offering)) offeringSlot = await bot.buy(offering)
+                if (!bot.hasItem(offering)) {
+                    if (bot.canBuy(offering)) await bot.buy(offering)
                     else continue
                 }
+
+                const scroll = nextAction.scroll as ItemName | undefined
+                let scrollSlot: number | undefined
+                if (scroll) {
+                    const numNeeded = 10 ** item.calculateGrade()
+                    scrollSlot = bot.locateItem(scroll, bot.items, { quantityGreaterThan: numNeeded - 1 })
+                    if (scrollSlot === undefined) {
+                        const existingSlot = bot.locateItem(scroll, bot.items, {
+                            quantityLessThan: (AL.Game.G.items[scroll]?.s ?? 9999) - numNeeded + 1,
+                        })
+                        const numToBuy =
+                            existingSlot !== undefined ? numNeeded - (bot.items[existingSlot]?.q ?? 1) : numNeeded
+                        if (bot.canBuy(scroll, { quantity: numToBuy })) {
+                            scrollSlot = await bot.buy(scroll, numToBuy)
+                        } else {
+                            continue
+                        }
+                    }
+                }
+
+                let offeringSlot = bot.locateItem(offering)
+                if (!bot.canUpgrade(slot, scrollSlot, offeringSlot)) return
 
                 if (bot.canUse("massproduction")) await (bot as unknown as Merchant).massProduction()
 
@@ -366,15 +387,17 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
                     const luckySlot = LUCKY_SLOTS.get(bot.id)
                     if (luckySlot !== slot) {
                         await bot.swapItems(luckySlot, slot)
-                        slot = luckySlot
-
+                        if (scrollSlot === luckySlot) {
+                            scrollSlot = slot
+                        }
                         if (offeringSlot === luckySlot) {
                             offeringSlot = slot
                         }
+                        slot = luckySlot
                     }
                 }
 
-                return bot.upgrade(slot, undefined, offeringSlot)
+                return bot.upgrade(slot, scrollSlot, offeringSlot)
             } else if (nextAction.action === "upgrade") {
                 const scroll = nextAction.scroll as ItemName
                 const offering = nextAction.offering as ItemName | undefined
@@ -402,14 +425,13 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
                     const luckySlot = LUCKY_SLOTS.get(bot.id)
                     if (luckySlot !== slot) {
                         await bot.swapItems(luckySlot, slot)
-                        slot = luckySlot
-
                         if (scrollSlot === luckySlot) {
                             scrollSlot = slot
                         }
                         if (offeringSlot === luckySlot) {
                             offeringSlot = slot
                         }
+                        slot = luckySlot
                     }
                 }
 

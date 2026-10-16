@@ -3,6 +3,7 @@ import FastPriorityQueue from "fastpriorityqueue"
 import { UpgradeConfig } from "./itemsNew.js"
 
 export type UpgradeScrollName = "scroll0" | "scroll1" | "scroll2" | "scroll3"
+export type StatScrollName = "strscroll" | "intscroll" | "dexscroll"
 export type CompoundScrollName = "cscroll0" | "cscroll1" | "cscroll2" | "cscroll3"
 export type OfferingName = "offering" | "offeringp" | "offeringx"
 
@@ -112,6 +113,13 @@ export const UPGRADE_SCROLLS: { [T in UpgradeScrollName]?: number } = {
     scroll3: 250_000_000,
 }
 
+/** pscroll -> price */
+export const STAT_SCROLLS: { [T in StatScrollName]?: number } = {
+    dexscroll: 8_000,
+    intscroll: 8_000,
+    strscroll: 8_000,
+}
+
 /** cscroll -> price */
 export const COMPOUND_SCROLLS: { [T in CompoundScrollName]?: number } = {
     cscroll0: 6_400,
@@ -133,6 +141,10 @@ export function getScrollAndOfferingPricesFromG(g: GData) {
     if (g.items.scroll1) UPGRADE_SCROLLS.scroll1 = g.items.scroll1.g
     if (g.items.scroll2) UPGRADE_SCROLLS.scroll2 = g.items.scroll2.g
     if (g.items.scroll3) UPGRADE_SCROLLS.scroll3 = g.items.scroll3.g
+
+    if (g.items.dexscroll) STAT_SCROLLS.dexscroll = g.items.dexscroll.g
+    if (g.items.intscroll) STAT_SCROLLS.intscroll = g.items.intscroll.g
+    if (g.items.strscroll) STAT_SCROLLS.strscroll = g.items.strscroll.g
 
     if (g.items.cscroll0) COMPOUND_SCROLLS.cscroll0 = g.items.cscroll0.g
     if (g.items.cscroll1) COMPOUND_SCROLLS.cscroll1 = g.items.cscroll1.g
@@ -307,7 +319,7 @@ export function calculateCompoundChance(
 
 export type UpgradeMemoData = {
     cost: number
-    method: { scroll: UpgradeScrollName; offering?: OfferingName } | "stack" | "initial"
+    method: { scroll?: UpgradeScrollName | StatScrollName; offering?: OfferingName } | "stack" | "initial"
     previous: { level: number; grace: number } | undefined
     chance: number
 }
@@ -315,7 +327,7 @@ export type UpgradeMemoData = {
 export type UpgradePathNode = {
     level: number
     grace: number
-    scroll?: UpgradeScrollName
+    scroll?: UpgradeScrollName | StatScrollName
     offering?: OfferingName
     cost: number
     chance: number
@@ -347,7 +359,7 @@ export function calculateOptimalUpgradePath(
         grace: number,
         cost: number,
         previous: { level: number; grace: number } | undefined,
-        method: { scroll: UpgradeScrollName; offering?: OfferingName } | "stack" | "initial",
+        method: { scroll?: UpgradeScrollName | StatScrollName; offering?: OfferingName } | "stack" | "initial",
         chance: number,
     ) => {
         if (!memo.has(level)) memo.set(level, new Map())
@@ -375,10 +387,11 @@ export function calculateOptimalUpgradePath(
         maxGrace.set(current.level, current.grace)
 
         const currentItem: ItemData = { name: item.name, level: current.level }
+        const currentGrade = getItemGrade(currentItem, g)
 
         // Prim Stacking transition
         if (current.grace < Math.min(13, current.level + 2 - igrace)) {
-            const newGrace = Math.min(current.grace + 0.5, 13)
+            const newGrace = Math.min(Math.round((current.grace + 0.5) * 10) / 10, 13)
             const primCost = OFFERINGS.offeringp ?? 5_000_000
             const newCost = current.cost + primCost
             const oldMemo = getMemo(current.level, newGrace)
@@ -386,10 +399,28 @@ export function calculateOptimalUpgradePath(
                 setMemo(current.level, newGrace, newCost, { level: current.level, grace: current.grace }, "stack", 1)
                 queue.add({ cost: newCost, level: current.level, grace: newGrace })
             }
+
+            // Stat Scroll + Prim Stacking transition (+1.0 grace instead of +0.5)
+            if (g.items[item.name]?.stat && currentGrade !== undefined && currentGrade <= 3) {
+                const newGraceStat = Math.min(Math.round((current.grace + 1) * 10) / 10, 13)
+                const statScrollCost = (STAT_SCROLLS.strscroll ?? 8_000) * 10 ** currentGrade
+                const newCostStat = current.cost + primCost + statScrollCost
+                const oldMemoStat = getMemo(current.level, newGraceStat)
+                if (!oldMemoStat || newCostStat < oldMemoStat.cost) {
+                    setMemo(
+                        current.level,
+                        newGraceStat,
+                        newCostStat,
+                        { level: current.level, grace: current.grace },
+                        { scroll: "strscroll", offering: "offeringp" },
+                        1,
+                    )
+                    queue.add({ cost: newCostStat, level: current.level, grace: newGraceStat })
+                }
+            }
         }
 
         // Upgrade transition
-        const currentGrade = getItemGrade(currentItem, g)
         for (let grade = currentGrade; grade <= Math.min(currentGrade + 1, 3); grade++) {
             const scroll = `scroll${grade}` as UpgradeScrollName
             const scrollCost = UPGRADE_SCROLLS[scroll]
@@ -438,7 +469,7 @@ export function calculateOptimalUpgradePath(
     let level = targetLevel
 
     while (datum) {
-        let scroll: UpgradeScrollName | undefined
+        let scroll: UpgradeScrollName | StatScrollName | undefined
         let offering: OfferingName | undefined
         if (typeof datum.method === "object") {
             scroll = datum.method.scroll
@@ -612,6 +643,7 @@ export function calculateOptimalCompoundPath(
 export type NextUpgradeAction =
     | {
           action: "stack"
+          scroll?: StatScrollName
           offering: "offeringp"
       }
     | {
@@ -650,7 +682,7 @@ export async function getNextUpgradeAction(
         try {
             const chanceData = await bot.calculateUpgrade(itemPos, scrollPos, undefined)
             if (chanceData && typeof chanceData.grace === "number") {
-                grace = chanceData.grace
+                grace = Math.round(chanceData.grace * 10) / 10
             }
         } catch {
             // Ignore calculate error
@@ -658,14 +690,22 @@ export async function getNextUpgradeAction(
     }
 
     const currentLevel = item.level ?? 0
-    for (const node of upgradePath) {
+    for (let i = 1; i < upgradePath.length; i++) {
+        const node = upgradePath[i]
+        const prev = upgradePath[i - 1]
         if (node.level <= currentLevel) continue
-        if (grace < node.grace) {
-            return { action: "stack", offering: "offeringp" }
+        if (grace < prev.grace) {
+            const canStatScroll = Boolean(g.items[item.name]?.stat) && grade <= 2
+            const needMoreThanHalf = Math.round((prev.grace - grace) * 10) > 5
+            return {
+                action: "stack",
+                scroll: canStatScroll && needMoreThanHalf ? "strscroll" : undefined,
+                offering: "offeringp",
+            }
         }
         return {
             action: "upgrade",
-            scroll: node.scroll ?? (`scroll${grade}` as UpgradeScrollName),
+            scroll: (node.scroll as UpgradeScrollName) ?? (`scroll${grade}` as UpgradeScrollName),
             offering: node.offering,
         }
     }
@@ -689,9 +729,7 @@ export function getNextCompoundAction(
     if (!item) return undefined
 
     const initialValue =
-        (typeof itemConfig?.buyPrice === "number" ? itemConfig.buyPrice : undefined) ??
-        (g.items[item.name]?.g as number) ??
-        1_000
+        (typeof itemConfig?.buyPrice === "number" ? itemConfig.buyPrice : undefined) ?? g.items[item.name]?.g ?? 1_000
 
     const compoundPath = calculateOptimalCompoundPath(item, initialValue, g, itemConfig?.upgradeUntilLevel)
     const grade = getItemGrade(item, g)

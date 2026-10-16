@@ -20,7 +20,19 @@ while (calc.grace < targetGrace) {
         log("No offeringp!")
         return
     }
-    await upgrade(luckySlot, null, primlingSlot)
+    const item = character.items[luckySlot]
+    const grade = item_grade(item)
+    let scrollSlot = null
+    if (G.items[item.name]?.stat && grade <= 2 && Math.round((targetGrace - calc.grace) * 10) > 5) {
+        const needed = 10 ** grade
+        scrollSlot = locate_item("strscroll")
+        if (scrollSlot < 0 || (character.items[scrollSlot]?.q ?? 1) < needed) {
+            const currentQ = scrollSlot >= 0 ? (character.items[scrollSlot]?.q ?? 1) : 0
+            await buy("strscroll", needed - currentQ)
+            scrollSlot = locate_item("strscroll")
+        }
+    }
+    await upgrade(luckySlot, scrollSlot, primlingSlot)
     calc = await upgrade(luckySlot, null, primlingSlot, true)
     log(`Current grace: ${calc.grace}`)
 }
