@@ -30,7 +30,7 @@ export interface RspeedStrategyOptions {
 
   /**
    * If set, we will give rspeed when the buff has less than the specified # of ms left
-   * Defaults to 30,000 ms
+   * Defaults to 30,000ms
    */
   giveWhenMsLessThan?: number;
 }
