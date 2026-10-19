@@ -1,13 +1,19 @@
 import AL from 'alclient';
 
-import { IDENTIFIER, REGION } from './config/defaults';
+import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from './config/defaults';
 import { env } from './config/env';
+import { ENABLE_MONSTER_HUNTS } from './config/flags';
 import { Context } from './context/context';
 import { SetupManager } from './setups/manager';
 import { crabSetups } from './setups/monsters/crab';
+import { frogSetups } from './setups/monsters/frog';
 import { gooSetups } from './setups/monsters/goo';
+import { minimushSetups } from './setups/monsters/minimush';
+import { phoenixSetups } from './setups/monsters/phoenix';
+import { tortoiseSetups } from './setups/monsters/tortoise';
 import { state } from './state/state';
 import { LootStrategy } from './strategies/loot';
+import { MonsterHuntStrategy } from './strategies/monsterhunt';
 import { PartyStrategy } from './strategies/party';
 import { RegenStrategy } from './strategies/regen';
 import { RespawnStrategy } from './strategies/respawn';
@@ -20,21 +26,22 @@ await AL.Game.getGData();
 await AL.Pathfinder.prepare(AL.Game.G);
 
 const LOOT_STRATEGY = new LootStrategy();
+const MONSTER_HUNT_STRATEGY = new MonsterHuntStrategy();
 const PARTY_STRATEGY = new PartyStrategy({ partyLeader: 'Warzair' });
 const REGEN_STRATEGY = new RegenStrategy();
 const RESPAWN_STRATEGY = new RespawnStrategy();
 
-const warrior = await AL.Game.startWarrior('Warzair', REGION, IDENTIFIER);
-const mage = await AL.Game.startMage('Magzair', REGION, IDENTIFIER);
-const ranger = await AL.Game.startRanger('Ranzair', REGION, IDENTIFIER);
+const warrior = await AL.Game.startWarrior('Warzair', DEFAULT_REGION, DEFAULT_IDENTIFIER);
+const mage = await AL.Game.startMage('Magzair', DEFAULT_REGION, DEFAULT_IDENTIFIER);
+const ranger = await AL.Game.startRanger('Ranzair', DEFAULT_REGION, DEFAULT_IDENTIFIER);
 
-const warriorContext = new Context(warrior, REGION, IDENTIFIER);
+const warriorContext = new Context(warrior, DEFAULT_REGION, DEFAULT_IDENTIFIER);
 state.addContext(warriorContext);
 
-const mageContext = new Context(mage, REGION, IDENTIFIER);
+const mageContext = new Context(mage, DEFAULT_REGION, DEFAULT_IDENTIFIER);
 state.addContext(mageContext);
 
-const rangerContext = new Context(ranger, REGION, IDENTIFIER);
+const rangerContext = new Context(ranger, DEFAULT_REGION, DEFAULT_IDENTIFIER);
 state.addContext(rangerContext);
 
 // Base strategies
@@ -43,6 +50,8 @@ for (const context of [warriorContext, mageContext, rangerContext]) {
   context.applyStrategy(PARTY_STRATEGY);
   context.applyStrategy(REGEN_STRATEGY);
   context.applyStrategy(RESPAWN_STRATEGY);
+
+  if (ENABLE_MONSTER_HUNTS) context.applyStrategy(MONSTER_HUNT_STRATEGY);
 }
 
-new SetupManager([...crabSetups, ...gooSetups]);
+new SetupManager([...crabSetups, ...frogSetups, ...gooSetups, ...minimushSetups, ...phoenixSetups, ...tortoiseSetups]);
