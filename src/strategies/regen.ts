@@ -191,6 +191,8 @@ export class RegenStrategy<BotType extends PingCompensatedCharacter> implements 
    * Uses the potion from the stack with the fewest items
    */
   protected useFromSmallestStack(bot: BotType, potion: ItemName) {
-    return bot.usePotion(bot.locateItem(potion, bot.items, { returnLowestQuantity: true }));
+    const potionLocation = bot.locateItem(potion, bot.items, { returnLowestQuantity: true });
+    if (potionLocation !== undefined) return bot.usePotion(potionLocation);
+    return undefined;
   }
 }

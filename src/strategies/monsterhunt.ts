@@ -18,10 +18,20 @@ export class MonsterHuntStrategy<BotType extends PingCompensatedCharacter> imple
   public constructor() {}
 
   protected async attack(bot: BotType): Promise<false | void> {
-    if (bot.targets <= 0) return; // Nothing targeting us
+    if (!bot.isScared()) return;
     if (bot.s.monsterhunt && bot.s.monsterhunt.c > 0) return; // We're not traveling to the monster hunter
 
-    //
+    if (bot.canUse('scare')) {
+      await bot.scare();
+      return;
+    }
+
+    if (bot.canUse('scare', { ignoreEquipped: true })) {
+      const jackoSlot = bot.locateItem('jacko');
+      if (jackoSlot !== undefined) {
+        await bot.equip(jackoSlot);
+      }
+    }
   }
 
   protected async move(bot: BotType): Promise<false | void> {

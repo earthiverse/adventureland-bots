@@ -54,4 +54,12 @@ for (const context of [warriorContext, mageContext, rangerContext]) {
   if (ENABLE_MONSTER_HUNTS) context.applyStrategy(MONSTER_HUNT_STRATEGY);
 }
 
-new SetupManager([...crabSetups, ...frogSetups, ...gooSetups, ...minimushSetups, ...phoenixSetups, ...tortoiseSetups]);
+const manager = new SetupManager([
+  ...crabSetups,
+  ...frogSetups,
+  ...gooSetups,
+  ...minimushSetups,
+  ...phoenixSetups,
+  ...tortoiseSetups,
+]);
+manager.start();

@@ -27,8 +27,11 @@ export class SetupManager {
   public constructor(
     public setups: Setups,
     protected options: SetupManagerOptions = {},
-  ) {
+  ) {}
+
+  public start(): this {
     this.scheduleNextTick(0);
+    return this;
   }
 
   // TODO: this needs to be async for future logic

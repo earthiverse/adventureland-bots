@@ -2,11 +2,19 @@ import eslint from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import sonarjs from 'eslint-plugin-sonarjs';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
+  sonarjs.configs.recommended,
+  {
+    rules: {
+      'sonarjs/cognitive-complexity': 'warn',
+      'sonarjs/todo-tag': 'warn',
+    },
+  },
   eslintConfigPrettier,
   {
     plugins: {
