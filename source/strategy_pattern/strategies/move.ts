@@ -862,10 +862,10 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
     }
 
     protected async kiteToNPC(bot: Character) {
-        const target = bot.getEntity({ typeList: this.options.typeList })
-        if (!target) return // No target to kite to NPC
+        const monster = bot.getEntity({ typeList: this.options.typeList })
+        if (!monster) return // No target to kite to NPC
 
-        const targets: IPosition[] = [target]
+        const destinations: IPosition[] = []
 
         if (bot.map === "main") {
             let kane = bot.players.get("$Kane")
@@ -877,7 +877,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                     if (kane) break
                 }
             }
-            if (kane) targets.push(kane)
+            if (kane) destinations.push(kane)
             let angel = bot.players.get("$Angel")
             if (!angel && this.options.contexts) {
                 for (const context of this.options.contexts) {
@@ -887,10 +887,10 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                     if (angel) break
                 }
             }
-            if (angel) targets.push(angel)
+            if (angel) destinations.push(angel)
 
             if (
-                targets.length == 1 &&
+                destinations.length == 0 &&
                 !this.options.disableCheckDB &&
                 checkOnlyEveryMS(`kiteToNpc_${bot.id}_${bot.serverData.region}${bot.serverData.name}`, 10_000)
             ) {
@@ -911,51 +911,35 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 )
                     .lean()
                     .exec()
-                if (npc) targets.push(npc)
+                if (npc) destinations.push(npc)
             }
         }
 
-        if (targets.length == 1) return // No NPCS nearby
-        targets.sort(sortClosestDistance(bot))
-
-        // Move to next target
-        let lastD = 0
-        for (const target of targets) {
-            if (!target) return
-            const d = AL.Tools.distance({ x: bot.x, y: bot.y }, { x: target.x, y: target.y })
-            if (d < bot.range) {
-                lastD = d
-                continue
-            }
-
-            if (lastD) {
-                bot.smartMove(target, {
-                    costs: AVOID_DOORS_COSTS,
-                    getWithin: d - (bot.range - lastD),
-                    resolveOnFinalMoveStart: true,
-                }).catch(() => {
-                    /** Suppress Error */
-                })
-            } else {
-                bot.smartMove(target, { costs: AVOID_DOORS_COSTS, resolveOnFinalMoveStart: true }).catch(() => {
-                    /** Suppress Error */
-                })
-            }
-            return
+        if (destinations.length === 0 && this.options.idlePosition && this.options.idlePosition.map === bot.map) {
+            destinations.push(this.options.idlePosition)
         }
 
-        if (lastD) {
-            // Move towards center of an NPC
-            bot.smartMove(offsetPositionParty(targets[1], bot), {
-                costs: AVOID_DOORS_COSTS,
-                getWithin:
-                    AL.Tools.distance({ x: bot.x, y: bot.y }, { x: targets[1].x, y: targets[1].y }) -
-                    (bot.range - lastD),
-                resolveOnFinalMoveStart: true,
-            }).catch(() => {
-                /** Suppress Error */
-            })
-        }
+            if (destinations.length === 0) return // No NPCS or idle position nearby
+            destinations.sort(sortClosestDistance(bot))
+            const destination = destinations[0]
+            const destWithOffset = offsetPositionParty(destination, bot)
+
+        const monsterDist = AL.Tools.distance(bot, monster)
+        if (monsterDist > bot.range) return // Out of range of monster, move() will handle approaching
+
+        const destDist = AL.Tools.distance(bot, destWithOffset)
+        if (destDist <= 25) return // Already at destination
+
+        const slack = bot.range - monsterDist
+        if (slack <= 0) return // Monster at max attack range, wait for it to get closer before moving
+
+        const getWithin = Math.max(0, destDist - slack)
+        bot.smartMove(destWithOffset, {
+            avoidTownWarps: bot.targets > 0,
+            costs: AVOID_DOORS_COSTS,
+            getWithin,
+            resolveOnFinalMoveStart: true,
+        }).catch(suppress_errors)
     }
 }
 
@@ -1144,5 +1128,10 @@ export class KaneEventBossMoveStrategy extends SpecialMonsterMoveStrategy {
         }
 
         return super.move(bot)
+    }
+
+    protected async kiteToNPC(bot: Character): Promise<void> {
+        if (this.waitingAtKane.has(bot.id)) return
+        return super.kiteToNPC(bot)
     }
 }
