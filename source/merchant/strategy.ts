@@ -1537,6 +1537,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await this.goCheckInstances(bot).catch(console.error)
                 await this.tryForMerritBonus(bot).catch(console.error)
                 await this.goCheckMiniBosses(bot).catch(console.error)
+                await this.goTrickOrTreat(bot).catch(console.error)
 
                 await bot.smartMove(this.options.defaultPosition)
             },
@@ -1970,7 +1971,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 .lean()
                 .exec()
             if (instance) {
-                const gMap = AL.Game.G.maps[map] as GMap
+                const gMap = AL.Game.G.maps[map]
 
                 // Move to the spawn entrance
                 // If it's not valid, it will be removed from the DB in ALClient
@@ -3103,6 +3104,22 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
                 if (bot.getEntity({ type: monster })) break // Found
             }
+        }
+    }
+
+    protected async goTrickOrTreat(bot: Merchant): Promise<void> {
+        if (!bot.S.halloween) return // Can only trick or treat during halloween
+        if (bot.esize < 2) return // Limited empty slots
+        if (!checkOnlyEveryMS(`${bot.id}_trick_or_treat`, 60_000)) return
+
+        const doors = bot.G.events.trickortreat?.doors ?? []
+        for (let i = 0; i < doors.length; i++) {
+            const door = doors[i]
+            if (bot.canKnock(i, { ignoreLocation: true })) {
+                await bot.smartMove({ map: door[0], x: door[1], y: door[2] }, { getWithin: 80 })
+                await bot.knock(i)
+            }
+            if (bot.esize < 2) return // Limited empty slots
         }
     }
 }

@@ -7,7 +7,7 @@
       "dependencies": {
         "@isaacs/ttlcache": "^1.4.1",
         "@types/cors": "^2.8.17",
-        "alclient": "^0.26.3",
+        "alclient": "^0.26.10",
         "algui": "^0.1.22",
         "axios": "^1.6.7",
         "body-parser": "^1.20.2",
@@ -432,11 +432,11 @@
 
     "ajv": ["ajv@6.15.0", "", { "dependencies": { "fast-deep-equal": "^3.1.1", "fast-json-stable-stringify": "^2.0.0", "json-schema-traverse": "^0.4.1", "uri-js": "^4.2.2" } }, "sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw=="],
 
-    "alclient": ["alclient@0.26.3", "", { "dependencies": { "alpathfinder": "^0.5.1", "axios": "^1.9.0", "is-number": "^7.0.0", "lru-cache": "^11.2.6", "mongoose": "^8.15.0", "socket.io-client": "^4.8.1" } }, "sha512-nJluTmeVSfal4St65Y+kJOXeCKScELayylVlMfCyoJq4irNI+cd9kZUXw92W3jZBpiNxJDQ539nS1YXRcPdVMw=="],
+    "alclient": ["alclient@0.26.10", "", { "dependencies": { "alpathfinder": "^0.6.0", "axios": "^1.9.0", "is-number": "^7.0.0", "lru-cache": "^11.2.6", "mongoose": "^8.15.0", "socket.io-client": "^4.8.1" } }, "sha512-KMP3Am2KVJ8WwxCDxukDI6Cp5+mv/DLjiQpo5DC4TWKHVtD7Y0wTBIPYYjqMrAZCOwyS9X1DVdMzkp0XX77xhw=="],
 
     "algui": ["algui@0.1.22", "", { "dependencies": { "@pixi/filter-color-matrix": "^6.3.0", "@pixi/layers": "^1.0.11", "@types/express": "^4.17.13", "@types/json-diff": "^0.7.0", "express": "^4.17.3", "json-diff": "^0.7.3", "pixi-viewport": "^4.34.4", "pixi-webfont-loader": "^1.0.2", "pixi.js": "^6.3.0", "socket.io": "^4.5.1", "socket.io-client": "^4.5.1" } }, "sha512-RciQVtLmQmMqk6ZBr1Ix6DyyRv6NUOQ8mgmTyLokW/Clsvi73y6UrCJ/bquBuptZ1stX83Gx1ETi3+YIG316Dg=="],
 
-    "alpathfinder": ["alpathfinder@0.5.1", "", { "dependencies": { "typed-adventureland": "^0.0.55" } }, "sha512-jSefyjkBqKIP/DuNQfDHX/SiUU6hdmYqelW/ndn9zblxVVmLXCldJmKeuB9L53WBNOEhSnZ1QUP6SSnpPKib2g=="],
+    "alpathfinder": ["alpathfinder@0.6.0", "", { "dependencies": { "typed-adventureland": "^0.0.55" } }, "sha512-ytKxt8skr3JWQvTIdI/7drPJNhVUc5hUJcRkL3WwMCVNQG7AynSK9bPBtHsVZVZfZPAWfxwSqxZ3XbGjooSfYQ=="],
 
     "ansi-escapes": ["ansi-escapes@4.3.2", "", { "dependencies": { "type-fest": "^0.21.3" } }, "sha512-gKXj5ALrKWQLsYG9jlTRmR/xKluxHV+Z9QEwNIgCfM1/uwPMCuzVVnh5mwTd+OuBZcwSIMbqssNWRm1lE51QaQ=="],
 
