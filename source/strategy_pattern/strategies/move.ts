@@ -935,7 +935,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
         const getWithin = Math.max(0, destDist - slack)
         bot.smartMove(destWithOffset, {
-            avoidTownWarps: bot.targets > 0,
+            avoidTownWarps: true,
             costs: AVOID_DOORS_COSTS,
             getWithin,
             resolveOnFinalMoveStart: true,
