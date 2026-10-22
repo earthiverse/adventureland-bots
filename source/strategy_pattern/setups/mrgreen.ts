@@ -1,4 +1,4 @@
-import { PingCompensatedCharacter, Priest, Warrior } from "alclient"
+import { IPosition, PingCompensatedCharacter, Priest, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -51,7 +51,8 @@ class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
 }
 
 export function constructMrGreenSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
-    const moveStrategy = new MrGreenMoveStrategy("mrgreen", { contexts: contexts })
+    const idlePosition: IPosition = { map: "spookytown", x: 255, y: -1175 } // Mummies
+    const moveStrategy = new MrGreenMoveStrategy("mrgreen", { contexts: contexts, idlePosition })
 
     const mageConfig: CharacterConfig = {
         ctype: "mage",
