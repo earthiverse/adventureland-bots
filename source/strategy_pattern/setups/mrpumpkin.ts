@@ -1,4 +1,4 @@
-import { Character, Mage, MonsterName, PingCompensatedCharacter, Priest, Rogue, Warrior } from "alclient"
+import { Character, IPosition, Mage, MonsterName, PingCompensatedCharacter, Priest, Rogue, Warrior } from "alclient"
 import { Strategist } from "../context.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
 import { PaladinAttackStrategy } from "../strategies/attack_paladin.js"
@@ -168,9 +168,10 @@ class WarriorMrPumpkinAttackStrategy extends WarriorAttackStrategy {
 }
 
 export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
+    const idlePosition: IPosition = { map: "halloween", x: -250, y: 725 }
     const moveStrategy = new MrPumpkinMoveStrategy("mrpumpkin", {
         contexts: contexts,
-        idlePosition: { map: "halloween", x: -250, y: 725 },
+        idlePosition: idlePosition,
     })
 
     const mageConfig: CharacterConfig = {
@@ -200,7 +201,11 @@ export function constructMrPumpkinSetup(contexts: Strategist<PingCompensatedChar
                 attributes: ["resistance", "int", "attack"],
             },
         }),
-        move: new SpecialMonsterMoveStrategy({ typeList: ["mrpumpkin"], contexts: contexts }),
+        move: new SpecialMonsterMoveStrategy({
+            contexts: contexts,
+            idlePosition: idlePosition,
+            typeList: ["mrpumpkin"],
+        }),
         require: {
             items: ["jacko", "cring"],
         },

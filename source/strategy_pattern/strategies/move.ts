@@ -358,17 +358,34 @@ export class ImprovedMoveStrategy implements Strategy<Character> {
 
     protected async useWarriorDash(bot: Character, target: IPosition) {
         if (bot.ctype !== "warrior") return // Only usable by warriors
-        if (Tools.distance(bot, target) < 50) return // It's nearby
-        if (bot.mp < bot.max_mp / 2) return // Want to save mana
+        if (target.map && target.map !== bot.map) return // Can't dash across maps
+        const warrior = bot as Warrior
+        if (!warrior.canUse("dash")) return // Cooldown, MP, status check
         if (bot.s.dash) return // Already dashing
+        if (bot.mp < bot.max_mp / 2) return // Want to save mana
 
-        const angleFromBotToTarget = Math.atan2(target.y - bot.y, target.x - bot.x)
-        const destination: IPosition = {
-            x: bot.x + Math.cos(angleFromBotToTarget) * 49.9,
-            y: bot.y + Math.sin(angleFromBotToTarget) * 49.9,
+        const dist = Tools.distance(bot, target)
+        if (dist <= bot.range) return // Already in range
+
+        // Server maximum dash distance is 50, minimum is 10
+        const maxDashDist = Math.min(49.9, dist)
+        if (maxDashDist < 10) return
+
+        const angle = Math.atan2(target.y - bot.y, target.x - bot.x)
+
+        // Find a walkable landing spot (dash can cross obstacles, only destination must be walkable)
+        for (const factor of [1.0, 0.8, 0.6]) {
+            const d = maxDashDist * factor
+            if (d < 10) break
+            const destination: IPosition = {
+                map: bot.map,
+                x: bot.x + Math.cos(angle) * d,
+                y: bot.y + Math.sin(angle) * d,
+            }
+            if (Pathfinder.canStand(destination)) {
+                return warrior.dash(destination).catch(suppress_errors)
+            }
         }
-        if (!Pathfinder.canWalkPath(destination, target)) return // Something is in the way
-        return (bot as Warrior).dash(destination)
     }
 }
 
@@ -513,8 +530,15 @@ export type SpecialMonsterMoveStrategyOptions = {
     contexts?: Strategist<PingCompensatedCharacter>[]
     /** If true, we won't use the database locations */
     disableCheckDB?: true
+    /** Where to wait if there are no monsters to move to */
+    idlePosition?: IPosition
     /** If true, we will ignore moving if the monster is on one of these maps */
     ignoreMaps?: MapName[]
+    /** If set, we will offset the given location by this amount */
+    offset?: {
+        x?: number
+        y?: number
+    }
     /** The monsters we want to look for */
     typeList: MonsterName[]
 }
@@ -535,6 +559,13 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         if (this.options.ignoreMaps.length) {
             // Remove all ignored maps
             this.spawns = this.spawns.filter((p) => !this.options.ignoreMaps.includes(p.map))
+        }
+
+        if (this.options.offset) {
+            for (const spawn of this.spawns) {
+                if (this.options.offset.x) spawn.x += this.options.offset.x
+                if (this.options.offset.y) spawn.y += this.options.offset.y
+            }
         }
 
         this.loops.set("move", {
@@ -607,10 +638,7 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                     if (AL.Tools.distance(context.bot, target) < AL.Constants.MAX_VISIBLE_RANGE / 2) {
                         // We should be able to see it, the data is not valid
                         if (target._id) {
-                            AL.EntityModel.deleteOne({ _id: target._id })
-                                .lean()
-                                .exec()
-                                .catch(console.error)
+                            AL.EntityModel.deleteOne({ _id: target._id }).lean().exec().catch(console.error)
                             invalidateMonsterCache(bot.serverData.name, bot.serverData.region)
                         }
                         continue targets
@@ -669,8 +697,17 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
         const target = await this.checkGoodData(bot)
         // Go to the target if we have good data where it is
-        if (target) {
-            return AL.Tools.distance(bot, target) > bot.range ? bot.smartMove(target, smartMoveOptions) : undefined
+        if (target && target !== bot) {
+            if (AL.Tools.distance(bot, target) > bot.range) {
+                await this.useWarriorDash(bot, target)
+                return bot.smartMove(target, smartMoveOptions)
+            }
+            return undefined
+        }
+
+        if (target === bot) {
+            if (this.options.idlePosition) return this.idle(bot)
+            return undefined
         }
 
         // Look for if there's a spawn for it
@@ -695,7 +732,11 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
 
             // If there's good data where it is, stop & smart move there
             const target = await this.checkGoodData(bot)
-            if (target) return bot.smartMove(target, smartMoveOptions)
+            if (target && target !== bot) return bot.smartMove(target, smartMoveOptions)
+        }
+
+        if (this.options.idlePosition) {
+            return this.idle(bot)
         }
 
         // Look through all spawns on the current map for it
@@ -759,6 +800,64 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             // If there's good data where it is, stop & smart move there
             const target = await this.checkGoodData(bot)
             if (target) return bot.smartMove(target, smartMoveOptions)
+        }
+    }
+
+    protected async idle(bot: Character): Promise<IPosition> {
+        if (!this.options.idlePosition) return bot
+        const idle = offsetPositionParty(this.options.idlePosition, bot)
+        if (bot.map !== idle.map || AL.Tools.distance(bot, idle) > 0) {
+            if (
+                !bot.smartMoving ||
+                bot.smartMoving.map !== idle.map ||
+                bot.smartMoving.x !== idle.x ||
+                bot.smartMoving.y !== idle.y
+            ) {
+                await bot
+                    .smartMove(idle, {
+                        avoidTownWarps: bot.targets > 0,
+                        resolveOnFinalMoveStart: true,
+                        useBlink: true,
+                        stopIfTrue: async () => {
+                            const target = await this.checkGoodData(bot, true, true)
+                            return Boolean(target && target !== bot)
+                        },
+                    })
+                    .catch(() => undefined)
+            }
+        }
+        return bot
+    }
+
+    protected async useWarriorDash(bot: Character, target: IPosition) {
+        if (bot.ctype !== "warrior") return // Only usable by warriors
+        if (target.map && target.map !== bot.map) return // Can't dash across maps
+        const warrior = bot as Warrior
+        if (!warrior.canUse("dash")) return // Cooldown, MP, status check
+        if (bot.s.dash) return // Already dashing
+        if (bot.mp < bot.max_mp / 2) return // Want to save mana
+
+        const dist = Tools.distance(bot, target)
+        if (dist <= bot.range) return // Already in range
+
+        // Server maximum dash distance is 50, minimum is 10
+        const maxDashDist = Math.min(49.9, dist)
+        if (maxDashDist < 10) return
+
+        const angle = Math.atan2(target.y - bot.y, target.x - bot.x)
+
+        // Find a walkable landing spot (dash can cross obstacles, only destination must be walkable)
+        for (const factor of [1.0, 0.8, 0.6]) {
+            const d = maxDashDist * factor
+            if (d < 10) break
+            const destination: IPosition = {
+                map: bot.map,
+                x: bot.x + Math.cos(angle) * d,
+                y: bot.y + Math.sin(angle) * d,
+            }
+            if (Pathfinder.canStand(destination)) {
+                return warrior.dash(destination).catch(suppress_errors)
+            }
         }
     }
 
@@ -921,19 +1020,21 @@ export class KiteMoveStrategy extends SpecialMonsterMoveStrategy {
     }
 }
 
-export class KaneEventBossMoveStrategy extends ImprovedMoveStrategy {
+export type KaneEventBossMoveStrategyOptions = Omit<SpecialMonsterMoveStrategyOptions, "typeList">
+
+export class KaneEventBossMoveStrategy extends SpecialMonsterMoveStrategy {
     protected waitingAtKane = new Set<string>()
     protected lastBossId?: string
     protected lastOtherAttackers = 0
     protected lastAttackerCheckTime = 0
     protected monsterType: MonsterName
 
-    public constructor(type: MonsterName, options?: ImprovedMoveStrategyOptions) {
-        super(type, options)
+    public constructor(type: MonsterName, options?: KaneEventBossMoveStrategyOptions) {
+        super({ ...options, typeList: [type] })
         this.monsterType = type
     }
 
-    protected async move(bot: Character): Promise<void> {
+    protected async move(bot: Character): Promise<IPosition> {
         const type = this.monsterType
         const sInfo = bot.S?.[type] as ServerInfoDataLive | undefined
 
@@ -944,14 +1045,27 @@ export class KaneEventBossMoveStrategy extends ImprovedMoveStrategy {
         }
 
         const now = Date.now()
-        const entity = bot.getEntity({ type })
+        let entity = bot.getEntity({ type })
+        let viewingBot: Character = bot
+        if (!entity && this.options.contexts) {
+            for (const context of this.options.contexts) {
+                if (!context.isReady()) continue
+                if (context.bot === bot) continue
+                const contextEntity = context.bot.getEntity({ type })
+                if (contextEntity) {
+                    entity = contextEntity
+                    viewingBot = context.bot
+                    break
+                }
+            }
+        }
 
         if (entity) {
             this.lastBossId = entity.id
             getMsToDeath(entity)
 
             let otherAttackers = 0
-            for (const [, player] of bot.players) {
+            for (const [, player] of viewingBot.players) {
                 if (player.id === bot.id) continue
                 if (bot.party && player.party === bot.party) continue
                 if (this.options.contexts?.some((c) => c.bot?.id === player.id)) continue
@@ -965,9 +1079,7 @@ export class KaneEventBossMoveStrategy extends ImprovedMoveStrategy {
 
         const bossId = this.lastBossId
         const msToDeath =
-            bossId && sInfo.hp !== undefined
-                ? getMsToDeath(type, bossId, sInfo.hp)
-                : Number.POSITIVE_INFINITY
+            bossId && sInfo.hp !== undefined ? getMsToDeath(type, bossId, sInfo.hp) : Number.POSITIVE_INFINITY
         const msSinceLastDrop = bossId ? getMsSinceLastHpDrop(type, bossId) : 0
 
         // If currently at or moving to Kane, check fallback conditions
