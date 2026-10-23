@@ -10,6 +10,9 @@ import { frogSetups } from './setups/monsters/frog';
 import { gooSetups } from './setups/monsters/goo';
 import { minimushSetups } from './setups/monsters/minimush';
 import { phoenixSetups } from './setups/monsters/phoenix';
+import { porcupineSetups } from './setups/monsters/porcupine';
+import { snakeSetups } from './setups/monsters/snake';
+import { squigSetups } from './setups/monsters/squig';
 import { tortoiseSetups } from './setups/monsters/tortoise';
 import { state } from './state/state';
 import { LootStrategy } from './strategies/loot';
@@ -60,6 +63,9 @@ const manager = new SetupManager([
   ...gooSetups,
   ...minimushSetups,
   ...phoenixSetups,
+  ...porcupineSetups,
+  ...snakeSetups,
+  ...squigSetups,
   ...tortoiseSetups,
 ]);
 manager.start();
