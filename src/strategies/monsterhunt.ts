@@ -6,7 +6,7 @@ export class MonsterHuntStrategy<BotType extends PingCompensatedCharacter> imple
   public readonly loops: StrategyLoops<BotType> = {
     attack: {
       fn: (bot) => this.attack(bot),
-      getDelay: () => 1000,
+      getDelay: (bot) => this.getAttackDelay(bot),
     },
     move: {
       fn: (bot) => this.move(bot),
@@ -19,6 +19,7 @@ export class MonsterHuntStrategy<BotType extends PingCompensatedCharacter> imple
 
   protected async attack(bot: BotType): Promise<false | void> {
     if (!bot.isScared()) return;
+    if (bot.isOnCooldown('scare')) return;
     if (bot.s.monsterhunt && bot.s.monsterhunt.c > 0) return; // We're not traveling to the monster hunter
 
     if (bot.canUse('scare')) {
@@ -26,12 +27,17 @@ export class MonsterHuntStrategy<BotType extends PingCompensatedCharacter> imple
       return;
     }
 
-    if (bot.canUse('scare', { ignoreEquipped: true })) {
-      const jackoSlot = bot.locateItem('jacko');
-      if (jackoSlot !== undefined) {
-        await bot.equip(jackoSlot);
-      }
-    }
+    // Equip jacko if we need
+    if (bot.slots.orb?.name === 'jacko') return false;
+    const jackoSlot = bot.locateItem('jacko');
+    if (jackoSlot === undefined) return;
+    await bot.equip(jackoSlot);
+    return false;
+  }
+
+  protected getAttackDelay(bot: BotType): number {
+    const cooldown = bot.getCooldown('scare');
+    return cooldown > 0 ? Math.max(50, cooldown) : 1000;
   }
 
   protected async move(bot: BotType): Promise<false | void> {

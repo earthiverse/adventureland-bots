@@ -45,10 +45,11 @@ export class PartyHealStrategy implements Strategy<Priest> {
       throw new Error('No PartyHealStrategyOptions options are set');
     if (typeof options.healIfMissingHp === 'number' && options.healIfMissingHp <= 0)
       throw new Error('healIfMissingHp must be > 0');
-    if (options.healIfHpRatioBelow !== undefined) {
-      if (options.healIfHpRatioBelow <= 0 || options.healIfHpRatioBelow >= 1)
-        throw new Error('healIfHpRatioBelow must be > 0 and < 1');
-    }
+    if (
+      options.healIfHpRatioBelow !== undefined &&
+      (options.healIfHpRatioBelow <= 0 || options.healIfHpRatioBelow >= 1)
+    )
+      throw new Error('healIfHpRatioBelow must be > 0 and < 1');
   }
 
   protected async partyHeal(bot: Priest): Promise<void> {
@@ -78,19 +79,17 @@ export class PartyHealStrategy implements Strategy<Priest> {
       healAmount = this.getPartyHealAmount(bot);
       if (!healAmount) return; // Won't heal anything
     }
-    if (healAmount) {
-      if (partyMembers.some((c) => c.max_hp - c.hp >= healAmount)) {
-        await bot.partyHeal();
-        return;
-      }
+    if (healAmount && partyMembers.some((c) => c.max_hp - c.hp >= healAmount)) {
+      await bot.partyHeal();
+      return;
     }
 
     // healIfHpRatioBelow
-    if (this.options.healIfHpRatioBelow !== undefined) {
-      if (partyMembers.some((c) => c.hp / c.max_hp < this.options.healIfHpRatioBelow!)) {
-        await bot.partyHeal();
-        return;
-      }
+    if (
+      this.options.healIfHpRatioBelow !== undefined &&
+      partyMembers.some((c) => c.hp / c.max_hp < this.options.healIfHpRatioBelow!)
+    ) {
+      await bot.partyHeal();
     }
   }
 

@@ -44,7 +44,7 @@ export class SetupManager {
     const assignedContexts = new Set<Context>();
 
     while (availableContexts.length > 0) {
-      let bestMatch: EvaluatedMatch | undefined = undefined;
+      let bestMatch: EvaluatedMatch | undefined;
 
       for (const setup of this.setups) {
         if (setup.configs.length === 0 || setup.configs.length > availableContexts.length) continue;
@@ -80,7 +80,7 @@ export class SetupManager {
   }
 
   protected findBestMatchForSetup(setup: Setup, availableContexts: Context[]): EvaluatedMatch | undefined {
-    let best: EvaluatedMatch | undefined = undefined;
+    let best: EvaluatedMatch | undefined;
     const currentSlots: MatchedSlot[] = [];
     const usedContexts = new Set<Context>();
 
@@ -139,6 +139,16 @@ export class SetupManager {
     this.activeStrategies.delete(context);
   }
 
+  private async runTick(): Promise<void> {
+    try {
+      await this.evaluate();
+    } catch (error) {
+      console.error('[SetupManager] Error evaluating setups:', error);
+    } finally {
+      this.scheduleNextTick(this.options.intervalMs ?? 1000);
+    }
+  }
+
   protected scheduleNextTick(delayMs: number): void {
     if (this.timeout) {
       clearTimeout(this.timeout);
@@ -146,15 +156,7 @@ export class SetupManager {
     }
     if (!this.isRunning) return;
 
-    this.timeout = setTimeout(() => {
-      this.evaluate()
-        .catch((error) => {
-          console.error('[SetupManager] Error evaluating setups:', error);
-        })
-        .finally(() => {
-          this.scheduleNextTick(this.options.intervalMs ?? 1000);
-        });
-    }, delayMs);
+    this.timeout = setTimeout(() => void this.runTick(), delayMs);
   }
 
   public stop(): void {
@@ -163,7 +165,7 @@ export class SetupManager {
       clearTimeout(this.timeout);
       this.timeout = undefined;
     }
-    for (const context of [...this.activeStrategies.keys()]) {
+    for (const context of this.activeStrategies.keys()) {
       this.clearConfigStrategies(context);
     }
   }

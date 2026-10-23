@@ -28,7 +28,7 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
     this.bot.socket.on('disconnect', () => {
       if (this.isSwitchingOrReconnecting) return; // We're already handling it
       console.warn(`[Context] ${this.bot.id} disconnected. Attempting auto-reconnect...`);
-      this.reconnect().catch(console.error);
+      void this.reconnect().catch(console.error);
     });
   }
 
@@ -166,7 +166,7 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
     // Only run if bot is ready/connected
     const executedEntries: RegisteredLoopEntry<BotType>[] = [];
     if (this.bot.ready) {
-      for (const entry of [...entries]) {
+      for (const entry of entries) {
         if (!this.strategies.has(entry.strategy)) continue;
         executedEntries.push(entry);
         try {
@@ -199,7 +199,7 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
     if (!this.isRunning) return;
 
     const timeout = setTimeout(() => {
-      this.runLoopTick(name).catch(console.error);
+      void this.runLoopTick(name).catch(console.error);
     }, delayMs);
 
     this.activeTimeouts.set(name, timeout);
@@ -207,10 +207,12 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
 
   private stopLoop(name: LoopName): void {
     const timeout = this.activeTimeouts.get(name);
-    if (timeout) {
-      clearTimeout(timeout);
-      this.activeTimeouts.delete(name);
+    if (!timeout) {
+      return;
     }
+
+    clearTimeout(timeout);
+    this.activeTimeouts.delete(name);
   }
 
   public stop(): void {

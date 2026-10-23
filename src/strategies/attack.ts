@@ -5,7 +5,7 @@ import type { Strategy, StrategyLoops } from '@/types/strategy';
 
 export const IGNORED_MONSTERS = new LRUCache<string, true>({
   max: 50,
-  ttl: 2_500,
+  ttl: 2500,
 });
 
 export interface AttackStrategyOptions {
@@ -44,9 +44,11 @@ export class AttackStrategy<BotType extends PingCompensatedCharacter> implements
 
     const willDie = bot.canKillInOneShot(target, 'attack');
     if (willDie) IGNORED_MONSTERS.set(target.id, true);
-    await bot.basicAttack(target.id).catch(() => {
+    try {
+      await bot.basicAttack(target.id);
+    } catch {
       if (willDie) IGNORED_MONSTERS.delete(target.id);
-    });
+    }
   }
 
   protected getAttackDelay(bot: BotType): number {

@@ -36,13 +36,13 @@ export class MoveStrategy<BotType extends PingCompensatedCharacter> implements S
 
     const distance = Tools.distance(bot, target);
     if (distance > bot.range - 25) {
-      bot.smartMove(target, { getWithin: bot.range - 25 }).catch(noop);
+      void bot.smartMove(target, { getWithin: bot.range - 25 }).catch(noop);
     }
   }
 
   public onRemove(bot: BotType): void {
     if (bot.smartMoving) {
-      bot.stopSmartMove().catch(noop);
+      void bot.stopSmartMove().catch(noop);
     }
   }
 }

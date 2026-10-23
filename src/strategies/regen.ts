@@ -51,10 +51,10 @@ export class RegenStrategy<BotType extends PingCompensatedCharacter> implements 
 
   protected async buyPotions(bot: BotType): Promise<false | void> {
     const potions = this.options.potionsToBuy;
-    const maxPotions = this.options.numPotionsToBuy;
     if (!potions.length) return; // Not buying
     if (!bot.canBuy(potions[0]!)) return; // Can't buy potions
 
+    const maxPotions = this.options.numPotionsToBuy;
     const itemData = bot.G.items;
     const currentCounts = new Map(potions.map((p) => [p, bot.countItem(p)]));
     const plannedCounts = new Map(potions.map((p) => [p, Math.min(maxPotions, currentCounts.get(p)!)]));
@@ -117,20 +117,20 @@ export class RegenStrategy<BotType extends PingCompensatedCharacter> implements 
     if (missingHP === 0 && missingMP === 0) return; // We have full HP and MP
 
     let bestHpGain = Math.min(bot.G.skills.regen_hp.output ?? 50, missingHP); // If we use `regen_hp` skill
-    let bestHpSource: ItemName | 'regen_hp' = 'regen_hp';
     let bestMpGain = Math.min(bot.G.skills.regen_mp.output ?? 100, missingMP); // If we use `regen_mp` skill
-    let bestMpSource: ItemName | 'regen_mp' = 'regen_mp';
     let bestCombinedGain = Math.max(bestHpGain, bestMpGain);
-    let bestCombinedSource: ItemName | undefined = undefined;
 
     const hpRatio = bot.hp / bot.max_hp;
     const mpRatio = bot.mp / bot.max_mp;
 
     if (bot.c.town || bot.c.fishing || bot.c.mining || bot.c.pickpocket) {
       // Channeled skills will stop channelling if you use a potion
-      if (hpRatio <= mpRatio) return bot.regenHP();
-      else return bot.regenMP();
+      return hpRatio <= mpRatio ? bot.regenHP() : bot.regenMP();
     }
+
+    let bestHpSource: ItemName | 'regen_hp' = 'regen_hp';
+    let bestMpSource: ItemName | 'regen_mp' = 'regen_mp';
+    let bestCombinedSource: ItemName | undefined;
 
     for (const potion of this.options.potionsToUse) {
       const itemData = bot.G.items[potion];
@@ -157,26 +157,22 @@ export class RegenStrategy<BotType extends PingCompensatedCharacter> implements 
       }
     }
 
-    if (Math.abs(hpRatio - mpRatio) < 0.25) {
-      // Our ratios are pretty similar, prefer both
-      if (bestCombinedSource) return this.useFromSmallestStack(bot, bestCombinedSource);
-    }
+    // Our ratios are pretty similar, prefer both
+    if (Math.abs(hpRatio - mpRatio) < 0.25 && bestCombinedSource)
+      return this.useFromSmallestStack(bot, bestCombinedSource);
 
     if (hpRatio <= mpRatio) {
       // HP ratio is the same, or lower than the MP ratio, prefer HP
-      if (bestHpSource === 'regen_hp') return bot.regenHP();
-      else return this.useFromSmallestStack(bot, bestHpSource);
+      return bestHpSource === 'regen_hp' ? bot.regenHP() : this.useFromSmallestStack(bot, bestHpSource);
     }
 
     // MP ratio is lower, prefer MP
-    if (bestMpSource === 'regen_mp') return bot.regenMP();
-    else return this.useFromSmallestStack(bot, bestMpSource);
+    return bestMpSource === 'regen_mp' ? bot.regenMP() : this.useFromSmallestStack(bot, bestMpSource);
   }
 
   protected getRegenDelay(bot: BotType): number {
     const cooldown = bot.getCooldown('use_hp');
-    if (cooldown > 0) return Math.max(50, cooldown);
-    return 250; // Not on cooldown (we probably have full MP & HP)
+    return cooldown > 0 ? Math.max(50, cooldown) : 250;
   }
 
   /**
@@ -190,9 +186,8 @@ export class RegenStrategy<BotType extends PingCompensatedCharacter> implements 
   /**
    * Uses the potion from the stack with the fewest items
    */
-  protected useFromSmallestStack(bot: BotType, potion: ItemName) {
+  protected async useFromSmallestStack(bot: BotType, potion: ItemName): Promise<void> {
     const potionLocation = bot.locateItem(potion, bot.items, { returnLowestQuantity: true });
-    if (potionLocation !== undefined) return bot.usePotion(potionLocation);
-    return undefined;
+    if (potionLocation !== undefined) await bot.usePotion(potionLocation);
   }
 }

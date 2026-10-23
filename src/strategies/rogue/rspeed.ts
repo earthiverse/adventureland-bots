@@ -47,9 +47,8 @@ export class RspeedStrategy implements Strategy<Rogue> {
   };
 
   public constructor(options: RspeedStrategyOptions = {}) {
-    if (options.giveWhenMsLessThan !== undefined) {
-      if (options.giveWhenMsLessThan <= 0) throw new Error('giveWhenMsLessThan must be > 0');
-    }
+    if (options.giveWhenMsLessThan !== undefined && options.giveWhenMsLessThan <= 0)
+      throw new Error('giveWhenMsLessThan must be > 0');
 
     this.options = {
       ...options,
@@ -84,7 +83,6 @@ export class RspeedStrategy implements Strategy<Rogue> {
 
   protected getRspeedDelay(bot: Rogue): number {
     const cooldown = bot.getCooldown('rspeed');
-    if (cooldown > 0) return Math.max(50, cooldown);
-    return 1000; // Not on cooldown
+    return cooldown > 0 ? Math.max(50, cooldown) : 1000;
   }
 }

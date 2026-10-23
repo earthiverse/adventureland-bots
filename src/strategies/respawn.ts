@@ -2,6 +2,9 @@ import type { PingCompensatedCharacter } from 'alclient';
 
 import type { Strategy, StrategyLoops } from '@/types/strategy';
 
+// TODO: Should we put this at a high priority,
+//       and have a move / attack loop hooks that return `false` if dead?
+
 export class RespawnStrategy<BotType extends PingCompensatedCharacter> implements Strategy<BotType> {
   public readonly loops: StrategyLoops<BotType> = {
     move: {
@@ -16,6 +19,8 @@ export class RespawnStrategy<BotType extends PingCompensatedCharacter> implement
   protected async respawn(bot: BotType): Promise<void> {
     if (!bot.rip) return; // Not dead
 
-    await bot.respawn().catch(console.error);
+    // TODO: Logic if we can respawn or not
+
+    await bot.respawn();
   }
 }

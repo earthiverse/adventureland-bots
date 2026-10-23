@@ -3,11 +3,14 @@ import { defineConfig } from 'eslint/config';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import sonarjs from 'eslint-plugin-sonarjs';
+import unicorn from 'eslint-plugin-unicorn';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
   eslint.configs.recommended,
+
   ...tseslint.configs.recommendedTypeChecked,
+
   sonarjs.configs.recommended,
   {
     rules: {
@@ -15,7 +18,11 @@ export default defineConfig([
       'sonarjs/todo-tag': 'warn',
     },
   },
+
+  unicorn.configs.unopinionated,
+
   eslintConfigPrettier,
+
   {
     plugins: {
       'simple-import-sort': simpleImportSort,
@@ -25,6 +32,7 @@ export default defineConfig([
       'simple-import-sort/exports': 'error',
     },
   },
+
   {
     languageOptions: {
       parserOptions: {
@@ -51,6 +59,7 @@ export default defineConfig([
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
     },
   },
+
   {
     ignores: ['build', 'data', 'dist', 'node_modules', 'bun.lock'],
   },

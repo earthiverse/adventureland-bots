@@ -33,11 +33,11 @@ export class LootStrategy<BotType extends PingCompensatedCharacter> implements S
             c.serverData.name === bot.serverData.name &&
             Tools.distance(c, chest) <= Constants.NPC_INTERACTION_DISTANCE,
         )
-        .sort((a, b) => b.goldm - a.goldm)[0];
+        .toSorted((a, b) => b.goldm - a.goldm)[0];
       if (!bestNearbyLooter) continue;
 
       LOOTED_CHESTS.set(chest.id, true);
-      bestNearbyLooter.openChest(chest.id).catch(() => LOOTED_CHESTS.delete(chest.id));
+      void bestNearbyLooter.openChest(chest.id).catch(() => LOOTED_CHESTS.delete(chest.id));
     }
   }
 }
