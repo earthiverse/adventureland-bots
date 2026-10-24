@@ -1,10 +1,10 @@
 import { AttackStrategy } from '@/strategies/attack';
-import { MoveStrategy } from '@/strategies/move';
+import { BasicMoveStrategy } from '@/strategies/move/basic';
 import type { Setups } from '@/types/setup';
 import { getPriority } from '@/utils/priority';
 
 const BBPOMPOM_ATTACK_STRATEGY = new AttackStrategy({ targetType: 'bbpompom' });
-const BBPOMPOM_MOVE_STRATEGY = new MoveStrategy({ targetType: 'bbpompom' });
+const BBPOMPOM_MOVE_STRATEGY = new BasicMoveStrategy({ targetType: 'bbpompom' });
 
 const BBPOMPOM_CONFIG = {
   strategies: [BBPOMPOM_ATTACK_STRATEGY, BBPOMPOM_MOVE_STRATEGY],

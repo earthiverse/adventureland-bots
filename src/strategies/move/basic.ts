@@ -3,13 +3,13 @@ import { type MonsterName, type PingCompensatedCharacter, Tools } from 'alclient
 import type { Strategy, StrategyLoops } from '@/types/strategy';
 import { noop } from '@/utils/noop';
 
-import { IGNORED_MONSTERS } from './attack';
+import { IGNORED_MONSTERS } from '../attack';
 
 export interface MoveStrategyOptions {
   targetType: MonsterName;
 }
 
-export class MoveStrategy<BotType extends PingCompensatedCharacter> implements Strategy<BotType> {
+export class BasicMoveStrategy<BotType extends PingCompensatedCharacter> implements Strategy<BotType> {
   public readonly loops: StrategyLoops<BotType> = {
     move: {
       fn: (bot) => this.move(bot),
