@@ -16,6 +16,7 @@ import { phoenixSetups } from './setups/monsters/phoenix';
 import { porcupineSetups } from './setups/monsters/porcupine';
 import { snakeSetups } from './setups/monsters/snake';
 import { squigSetups } from './setups/monsters/squig';
+import { targetr750Setups } from './setups/monsters/target_r750';
 import { tortoiseSetups } from './setups/monsters/tortoise';
 import { state } from './state/state';
 import { LootStrategy } from './strategies/loot';
@@ -72,6 +73,7 @@ const manager = new SetupManager([
   ...porcupineSetups,
   ...snakeSetups,
   ...squigSetups,
+  ...targetr750Setups,
   ...tortoiseSetups,
 ]);
 manager.start();
