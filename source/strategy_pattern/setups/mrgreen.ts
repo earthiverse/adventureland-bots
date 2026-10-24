@@ -23,7 +23,7 @@ class PriestMrGreenAttackStrategy extends PriestAttackStrategy {
     }
 
     protected async absorbTargets(bot: Priest) {
-        if (bot.players.has("CrownPriest") || bot.players.has("Hierophant")) return
+        if (bot.players.has("CrownPriest") || bot.players.has("Hierophant") || bot.players.has("CowTheMooh")) return
         return super.absorbTargets(bot)
     }
 }
@@ -45,7 +45,7 @@ class WarriorMrGreenAttackStrategy extends WarriorAttackStrategy {
     }
 
     protected async agitateTargets(bot: Warrior) {
-        if (bot.players.has("CrownPriest") || bot.players.has("Hierophant")) return
+        if (bot.players.has("CrownPriest") || bot.players.has("Hierophant") || bot.players.has("CowTheMooh")) return
         return super.agitateTargets(bot)
     }
 }

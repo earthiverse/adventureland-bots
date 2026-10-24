@@ -3117,6 +3117,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             const door = doors[i]
             if (bot.canKnock(i, { ignoreLocation: true })) {
                 await bot.smartMove({ map: door[0], x: door[1], y: door[2] }, { getWithin: 80 })
+                // TODO: Equip helmet if we have one
                 await bot.knock(i)
             }
             if (bot.esize < 2) return // Limited empty slots
