@@ -35,7 +35,7 @@ export function getPriority(bots: PingCompensatedCharacter[], options: PriorityO
           if (player.s.monsterhunt.sn !== `${bot.server.region} ${bot.server.name}`) continue; // Monster hunt is for a different server
 
           // We have a monster hunt for this monster, increase priority
-          priority += player.owner === bot.owner ? 100 : 50;
+          priority += (player.owner === bot.owner ? 100 : 50) - player.s.monsterhunt.ms / 1_800_000;
         }
       }
     }
