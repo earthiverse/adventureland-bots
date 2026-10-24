@@ -13,6 +13,17 @@ import type {
 import type { Context } from '@/context/context';
 import type { Strategy } from '@/types/strategy';
 
+export const COMBAT_CLASSES = [
+  'mage',
+  'paladin',
+  'priest',
+  'ranger',
+  'rogue',
+  'warrior',
+] as const satisfies readonly CharacterType[];
+
+export type CombatCharacterType = (typeof COMBAT_CLASSES)[number];
+
 export interface CharacterTypeMap {
   mage: Mage;
   merchant: Merchant;
@@ -23,13 +34,22 @@ export interface CharacterTypeMap {
   warrior: Warrior;
 }
 
-export type CharacterConfig<T extends CharacterType = CharacterType> = {
+export type SpecificCharacterConfig<T extends CharacterType = CharacterType> = {
   [K in T]: {
     ctype: K;
     require?(bot: CharacterTypeMap[K]): boolean;
     strategies: Strategy<CharacterTypeMap[K]>[];
   };
 }[T];
+
+export interface GenericCharacterConfig {
+  ctype?: CharacterType | readonly CharacterType[];
+  require?(bot: PingCompensatedCharacter): boolean;
+  strategies: Strategy<PingCompensatedCharacter>[];
+}
+
+export type CharacterConfig<T extends CharacterType = CharacterType> =
+  SpecificCharacterConfig<T> | GenericCharacterConfig;
 
 export interface Setup {
   /**

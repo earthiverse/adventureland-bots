@@ -1,4 +1,4 @@
-import type { PingCompensatedCharacter } from 'alclient';
+import type { CharacterType, PingCompensatedCharacter } from 'alclient';
 
 import type { Context } from '@/context/context';
 import { state } from '@/state/state';
@@ -97,7 +97,12 @@ export class SetupManager {
       const config = setup.configs[configIndex]!;
       for (const context of availableContexts) {
         if (usedContexts.has(context)) continue;
-        if (context.bot.ctype !== config.ctype) continue;
+        if (config.ctype) {
+          const matches = Array.isArray(config.ctype)
+            ? (config.ctype as readonly CharacterType[]).includes(context.bot.ctype)
+            : context.bot.ctype === config.ctype;
+          if (!matches) continue;
+        }
         if (config.require && !config.require(context.bot as never)) continue;
 
         usedContexts.add(context);
