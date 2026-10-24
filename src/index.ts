@@ -5,6 +5,7 @@ import { env } from './config/env';
 import { ENABLE_MONSTER_HUNTS } from './config/flags';
 import { Context } from './context/context';
 import { SetupManager } from './setups/manager';
+import { armadilloSetups } from './setups/monsters/armadillo';
 import { bbpompomSetups } from './setups/monsters/bbpompom';
 import { crabSetups } from './setups/monsters/crab';
 import { crocSetups } from './setups/monsters/croc';
@@ -60,6 +61,7 @@ for (const context of [warriorContext, mageContext, rangerContext]) {
 }
 
 const manager = new SetupManager([
+  ...armadilloSetups,
   ...bbpompomSetups,
   ...crabSetups,
   ...crocSetups,
