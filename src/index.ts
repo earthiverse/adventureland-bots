@@ -32,7 +32,7 @@ import { RespawnStrategy } from './strategies/respawn';
 await AL.Game.login(env.EMAIL, env.PASSWORD, env.MONGO_URI, true);
 
 // Get game data & prepare the pathfinder
-await AL.Game.getGData();
+await AL.Game.getGData(true);
 await AL.Pathfinder.prepare(AL.Game.G);
 
 const AVOID_STACKING_STRATEGY = new AvoidStackingStrategy();
