@@ -18,7 +18,7 @@ export function getPriority(bots: PingCompensatedCharacter[], options: PriorityO
   if (options.typeList?.some((t) => Constants.SPECIAL_MONSTERS.includes(t))) {
     for (const bot of bots) {
       if (!bot.getEntities({ typeList: options.typeList }).length) continue;
-      priority += 11;
+      priority += 1000;
       break;
     }
   }
