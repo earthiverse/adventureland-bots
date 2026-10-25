@@ -37,7 +37,7 @@ export class PartyHealStrategy implements Strategy<Priest> {
   };
   public readonly priority = 20;
 
-  protected readonly listenerMap = new Map<string, (data: CMData) => void>();
+  protected readonly onCmListeners = new Map<string, (data: CMData) => void>();
   protected listenerHealAmount = 0;
 
   public constructor(protected options: PartyHealStrategyOptions) {
@@ -115,13 +115,13 @@ export class PartyHealStrategy implements Strategy<Priest> {
       }
     };
     bot.socket.on('cm', listener);
-    this.listenerMap.set(bot.id, listener);
+    this.onCmListeners.set(bot.id, listener);
   }
 
   public onRemove(bot: Priest): void {
-    const listener = this.listenerMap.get(bot.id);
+    const listener = this.onCmListeners.get(bot.id);
     if (listener) bot.socket.off('cm', listener);
-    this.listenerMap.delete(bot.id);
+    this.onCmListeners.delete(bot.id);
   }
 
   /**

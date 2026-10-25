@@ -23,6 +23,7 @@ import { tortoiseSetups } from './setups/monsters/tortoise';
 import { state } from './state/state';
 import { LootStrategy } from './strategies/loot';
 import { MonsterHuntStrategy } from './strategies/monsterhunt';
+import { AvoidStackingStrategy } from './strategies/move/avoid_stacking';
 import { PartyStrategy } from './strategies/party';
 import { RegenStrategy } from './strategies/regen';
 import { RespawnStrategy } from './strategies/respawn';
@@ -34,6 +35,7 @@ await AL.Game.login(env.EMAIL, env.PASSWORD, env.MONGO_URI, true);
 await AL.Game.getGData();
 await AL.Pathfinder.prepare(AL.Game.G);
 
+const AVOID_STACKING_STRATEGY = new AvoidStackingStrategy();
 const LOOT_STRATEGY = new LootStrategy();
 const MONSTER_HUNT_STRATEGY = new MonsterHuntStrategy();
 const PARTY_STRATEGY = new PartyStrategy({ partyLeader: 'Warzair' });
@@ -55,6 +57,7 @@ state.addContext(rangerContext);
 
 // Base strategies
 for (const context of [warriorContext, mageContext, rangerContext]) {
+  context.applyStrategy(AVOID_STACKING_STRATEGY);
   context.applyStrategy(LOOT_STRATEGY);
   context.applyStrategy(PARTY_STRATEGY);
   context.applyStrategy(REGEN_STRATEGY);
