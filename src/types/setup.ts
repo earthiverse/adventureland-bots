@@ -43,7 +43,7 @@ export type SpecificCharacterConfig<T extends CharacterType = CharacterType> = {
 }[T];
 
 export interface GenericCharacterConfig {
-  ctype?: CharacterType | readonly CharacterType[];
+  ctype?: CharacterType[] | readonly CharacterType[];
   require?(bot: PingCompensatedCharacter): boolean;
   strategies: Strategy<PingCompensatedCharacter>[];
 }
