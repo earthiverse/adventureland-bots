@@ -6,6 +6,7 @@
       "name": "adventureland-bots-v2",
       "dependencies": {
         "alclient": "^0.26.10",
+        "fastpriorityqueue": "^0.8.0",
         "lru-cache": "^11.5.3",
         "zod": "^4.6.5",
       },
@@ -270,6 +271,8 @@
     "fast-json-stable-stringify": ["fast-json-stable-stringify@2.1.0", "", {}, "sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw=="],
 
     "fast-levenshtein": ["fast-levenshtein@2.0.6", "", {}, "sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw=="],
+
+    "fastpriorityqueue": ["fastpriorityqueue@0.8.0", "", {}, "sha512-Nli86GbwvbI15pK0wQJSfrh+kMDQI9tae1QFO1HHgUdABL+WK/5rsFv0m/NfwHQmxTPRDhJTgHKRwfstJMxoSA=="],
 
     "fdir": ["fdir@6.5.0", "", { "peerDependencies": { "picomatch": "^3 || ^4" }, "optionalPeers": ["picomatch"] }, "sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg=="],
 
