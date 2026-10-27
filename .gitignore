@@ -27,6 +27,7 @@ data
 .eslintcache
 .cache
 *.tsbuildinfo
+G_*.json
 
 # IntelliJ based IDEs
 .idea
