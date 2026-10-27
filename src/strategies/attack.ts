@@ -66,22 +66,44 @@ export class AttackStrategy<
       couldGiveCredit: this.options.couldGiveCredit ?? true,
       ignoreIDs: [...IGNORED_MONSTERS.keys()],
       type: this.options.targetType,
-      willBurnToDeath: this.options.willBurnToDeath ?? false,
+      willBurnToDeath: this.options.willBurnToDeath,
       willDieToProjectiles: this.options.willDieToProjectiles ?? false,
     };
   }
 
-  protected getEntity(bot: BotType, extraFilters: GetEntityFilters = {}): Entity | undefined {
-    return bot.getEntity({
-      ...this.getBaseEntityFilters(),
-      ...extraFilters,
-    });
+  protected getEntity(bot: BotType, extraFilters: GetEntitiesFilters = {}): Entity | undefined {
+    return this.getEntities(bot, extraFilters)[0];
   }
 
   protected getEntities(bot: BotType, extraFilters: GetEntitiesFilters = {}): Entity[] {
-    return bot.getEntities({
+    const entities = bot.getEntities({
       ...this.getBaseEntityFilters(),
       ...extraFilters,
     });
+
+    // Prioritize targets
+    entities.sort((a, b) => {
+      // Prioritize monsters that won't burn to death
+      const aWillBurn = a.willBurnToDeath();
+      const bWillBurn = b.willBurnToDeath();
+      if (aWillBurn && !bWillBurn) return 1;
+      if (!aWillBurn && bWillBurn) return -1;
+
+      // Prioritize monsters that aren't guaranteed to die to projectiles
+      const aCouldDie = a.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities);
+      const bCouldDie = b.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities);
+      if (aCouldDie && !bCouldDie) return 1;
+      if (!aCouldDie && bCouldDie) return -1;
+
+      // Prioritize monsters with a target
+      if (a.target && !b.target) return -1;
+      // eslint-disable-next-line unicorn/prefer-ternary
+      if (!a.target && b.target) return 1;
+
+      // Prioritize monsters with lower HP
+      return a.hp - b.hp;
+    });
+
+    return entities;
   }
 }
