@@ -1,4 +1,4 @@
-import type { CharacterType, PingCompensatedCharacter } from 'alclient';
+import type { PingCompensatedCharacter } from 'alclient';
 
 import type { Context } from '@/context/context';
 
@@ -60,13 +60,6 @@ export class State {
    */
   public getBotsByParty(id: string): PingCompensatedCharacter[] {
     return this.bots.filter((c) => c.party === id);
-  }
-
-  /**
-   * Retrieves all contexts of a specific character type.
-   */
-  public getContextsByType(type: CharacterType): Context[] {
-    return this.contexts.filter((c) => c.bot.ctype === type);
   }
 
   /**
