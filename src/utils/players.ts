@@ -63,6 +63,7 @@ export function getVisiblePlayers(options?: GetVisiblePlayersOptions): (PingComp
   // Then everything they can see, preferring the controlled instance
   for (const bot of inputBots) {
     for (const player of bot.players.values()) {
+      if (player.isNPC()) continue;
       if (visible.has(player.id)) continue;
       visible.set(player.id, controlledById.get(player.id) ?? player);
     }
