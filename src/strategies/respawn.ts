@@ -12,15 +12,20 @@ export class RespawnStrategy<BotType extends PingCompensatedCharacter> implement
       getDelay: () => 1000,
     },
   };
-  public readonly priority = -100;
+  public readonly priority = 1000;
 
   public constructor() {}
 
-  protected async respawn(bot: BotType): Promise<void> {
+  protected async respawn(bot: BotType): Promise<false | void> {
     if (!bot.rip) return; // Not dead
 
     // TODO: Logic if we can respawn or not
 
-    await bot.respawn();
+    try {
+      await bot.respawn();
+    } catch {
+      // Suppress errors
+    }
+    return false;
   }
 }
