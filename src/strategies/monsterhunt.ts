@@ -41,6 +41,8 @@ export class MonsterHuntStrategy<BotType extends PingCompensatedCharacter> imple
   }
 
   protected async move(bot: BotType): Promise<false | void> {
+    if (bot.rip || bot.isDisabled()) return;
+
     if (bot.s.monsterhunt && bot.s.monsterhunt.c <= 0) {
       // Go turn in monster hunt
       try {
