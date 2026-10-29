@@ -5,7 +5,9 @@ import { env } from './config/env';
 import { ENABLE_MONSTER_HUNTS } from './config/flags';
 import { Context } from './context/context';
 import { SetupManager } from './setups/manager';
+import { arcticbeeSetups } from './setups/monsters/arcticbee';
 import { armadilloSetups } from './setups/monsters/armadillo';
+import { batSetups } from './setups/monsters/bat';
 import { bbpompomSetups } from './setups/monsters/bbpompom';
 import { beeSetups } from './setups/monsters/bee';
 import { crabSetups } from './setups/monsters/crab';
@@ -13,12 +15,16 @@ import { crabxSetups } from './setups/monsters/crabx';
 import { crocSetups } from './setups/monsters/croc';
 import { frogSetups } from './setups/monsters/frog';
 import { gooSetups } from './setups/monsters/goo';
+import { greenjrSetups } from './setups/monsters/greenjr';
+import { jrSetups } from './setups/monsters/jr';
 import { minimushSetups } from './setups/monsters/minimush';
 import { phoenixSetups } from './setups/monsters/phoenix';
+import { poisioSetups } from './setups/monsters/poisio';
 import { porcupineSetups } from './setups/monsters/porcupine';
 import { ratSetups } from './setups/monsters/rat';
 import { snakeSetups } from './setups/monsters/snake';
 import { squigSetups } from './setups/monsters/squig';
+import { targeta500Setups } from './setups/monsters/target_a500';
 import { targetr750Setups } from './setups/monsters/target_r750';
 import { tortoiseSetups } from './setups/monsters/tortoise';
 import { state } from './state/state';
@@ -68,7 +74,9 @@ for (const context of [warriorContext, mageContext, rangerContext]) {
 }
 
 const manager = new SetupManager([
+  ...arcticbeeSetups,
   ...armadilloSetups,
+  ...batSetups,
   ...bbpompomSetups,
   ...beeSetups,
   ...crabSetups,
@@ -76,12 +84,16 @@ const manager = new SetupManager([
   ...crocSetups,
   ...frogSetups,
   ...gooSetups,
+  ...greenjrSetups,
+  ...jrSetups,
   ...minimushSetups,
   ...phoenixSetups,
+  ...poisioSetups,
   ...porcupineSetups,
   ...ratSetups,
   ...snakeSetups,
   ...squigSetups,
+  ...targeta500Setups,
   ...targetr750Setups,
   ...tortoiseSetups,
 ]);

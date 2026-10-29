@@ -4,9 +4,9 @@ import { RangerAttackStrategy } from '@/strategies/ranger/attack';
 import type { Setups } from '@/types/setup';
 import { getPriority } from '@/utils/priority';
 
-const MINIMUSH_ATTACK_STRATEGY = new AttackStrategy({ targetType: 'minimush' });
-const MINIMUSH_RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({ targetType: 'minimush' });
-const MINIMUSH_MOVE_STRATEGY = new BasicMoveStrategy({ targetType: 'minimush' });
+const MINIMUSH_ATTACK_STRATEGY = new AttackStrategy({ type: 'minimush' });
+const MINIMUSH_RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({ type: 'minimush' });
+const MINIMUSH_MOVE_STRATEGY = new BasicMoveStrategy({ type: 'minimush' });
 
 // TODO: Actual strategies per class
 

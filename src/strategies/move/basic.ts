@@ -6,7 +6,8 @@ import { noop } from '@/utils/noop';
 import { IGNORED_MONSTERS } from '../attack';
 
 export interface MoveStrategyOptions {
-  targetType: MonsterName;
+  type?: MonsterName;
+  typeList?: MonsterName[];
 }
 
 export class BasicMoveStrategy<BotType extends PingCompensatedCharacter> implements Strategy<BotType> {
@@ -25,12 +26,14 @@ export class BasicMoveStrategy<BotType extends PingCompensatedCharacter> impleme
     // Target nearest entity
     const target = bot.getEntity({
       ignoreIDs: [...IGNORED_MONSTERS.keys()],
-      type: this.options.targetType,
+      type: this.options.type,
+      typeList: this.options.typeList,
       returnNearest: true,
     });
     if (!target) {
       // Move to spawn
-      await bot.smartMove(this.options.targetType, { getWithin: 50 });
+      const spawnMonster = this.options.type ?? this.options.typeList?.[0];
+      if (spawnMonster) await bot.smartMove(spawnMonster, { getWithin: 50 });
       return;
     }
 

@@ -4,9 +4,9 @@ import { RangerAttackStrategy } from '@/strategies/ranger/attack';
 import type { Setups } from '@/types/setup';
 import { getPriority } from '@/utils/priority';
 
-const BEE_ATTACK_STRATEGY = new AttackStrategy({ targetType: 'bee' });
-const BEE_RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({ targetType: 'bee' });
-const BEE_MOVE_STRATEGY = new BasicMoveStrategy({ targetType: 'bee' });
+const BEE_ATTACK_STRATEGY = new AttackStrategy({ type: 'bee' });
+const BEE_RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({ type: 'bee' });
+const BEE_MOVE_STRATEGY = new BasicMoveStrategy({ type: 'bee' });
 
 // TODO: Actual strategies per class
 

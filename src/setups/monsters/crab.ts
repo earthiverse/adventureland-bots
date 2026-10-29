@@ -3,8 +3,8 @@ import { BasicMoveStrategy } from '@/strategies/move/basic';
 import type { Setups } from '@/types/setup';
 import { getPriority } from '@/utils/priority';
 
-const CRAB_ATTACK_STRATEGY = new AttackStrategy({ targetType: 'crab' });
-const CRAB_MOVE_STRATEGY = new BasicMoveStrategy({ targetType: 'crab' });
+const CRAB_ATTACK_STRATEGY = new AttackStrategy({ type: 'crab' });
+const CRAB_MOVE_STRATEGY = new BasicMoveStrategy({ type: 'crab' });
 
 // TODO: Actual strategies per class
 

@@ -4,11 +4,12 @@ import { RangerAttackStrategy } from '@/strategies/ranger/attack';
 import type { Setups } from '@/types/setup';
 import { getPriority } from '@/utils/priority';
 
-const CRABX_ATTACK_STRATEGY = new AttackStrategy({ targetType: 'crabx' });
-const CRABX_RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({ targetType: 'crabx' });
-const CRABX_MOVE_STRATEGY = new BasicMoveStrategy({ targetType: 'crabx' });
+const CRABX_ATTACK_STRATEGY = new AttackStrategy({ type: 'crabx' });
+const CRABX_RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({ type: 'crabx' });
+const CRABX_MOVE_STRATEGY = new BasicMoveStrategy({ type: 'crabx' });
 
 // TODO: Actual strategies per class
+// TODO: require with minimum stats
 
 export const crabxSetups: Setups = [
   {

@@ -3,8 +3,8 @@ import { BasicMoveStrategy } from '@/strategies/move/basic';
 import type { Setups } from '@/types/setup';
 import { getPriority } from '@/utils/priority';
 
-const PORCUPINE_ATTACK_STRATEGY = new AttackStrategy({ targetType: 'porcupine' });
-const PORCUPINE_MOVE_STRATEGY = new BasicMoveStrategy({ targetType: 'porcupine' });
+const PORCUPINE_ATTACK_STRATEGY = new AttackStrategy({ type: 'porcupine' });
+const PORCUPINE_MOVE_STRATEGY = new BasicMoveStrategy({ type: 'porcupine' });
 
 // TODO: Actual strategies per class
 

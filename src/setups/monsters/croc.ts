@@ -3,8 +3,8 @@ import { BasicMoveStrategy } from '@/strategies/move/basic';
 import type { Setups } from '@/types/setup';
 import { getPriority } from '@/utils/priority';
 
-const CROC_ATTACK_STRATEGY = new AttackStrategy({ targetType: 'croc' });
-const CROC_MOVE_STRATEGY = new BasicMoveStrategy({ targetType: 'croc' });
+const CROC_ATTACK_STRATEGY = new AttackStrategy({ type: 'croc' });
+const CROC_MOVE_STRATEGY = new BasicMoveStrategy({ type: 'croc' });
 
 // TODO: Actual strategies per class
 

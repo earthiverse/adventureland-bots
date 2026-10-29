@@ -4,9 +4,9 @@ import { RangerAttackStrategy } from '@/strategies/ranger/attack';
 import type { Setups } from '@/types/setup';
 import { getPriority } from '@/utils/priority';
 
-const TORTOISE_ATTACK_STRATEGY = new AttackStrategy({ targetType: 'tortoise' });
-const TORTOISE_RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({ targetType: 'tortoise' });
-const TORTOISE_MOVE_STRATEGY = new BasicMoveStrategy({ targetType: 'tortoise' });
+const TORTOISE_ATTACK_STRATEGY = new AttackStrategy({ type: 'tortoise' });
+const TORTOISE_RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({ type: 'tortoise' });
+const TORTOISE_MOVE_STRATEGY = new BasicMoveStrategy({ type: 'tortoise' });
 
 // TODO: Actual strategies per class
 

@@ -9,10 +9,12 @@ export const IGNORED_MONSTERS = new LRUCache<string, true>({
 });
 
 export interface AttackStrategyOptions {
-  targetType?: MonsterName;
+  type?: MonsterName;
+  typeList?: MonsterName[];
   couldDieToProjectiles?: boolean;
   couldGiveCredit?: boolean;
   disableBasicAttack?: boolean;
+  reserveMp?: number;
   willBurnToDeath?: boolean;
   willDieToProjectiles?: boolean;
   maxTargets?: number;
@@ -39,10 +41,9 @@ export class AttackStrategy<
     if (this.options.disableBasicAttack) return;
     if (!bot.canUse('attack')) return;
 
-    // Target nearest entity
+    // Target best entity
     const target = this.getEntity(bot, {
       canDamage: 'attack',
-      returnNearest: true,
       withinRange: 'attack',
     });
     if (!target) return;
@@ -65,7 +66,8 @@ export class AttackStrategy<
       couldDieToProjectiles: this.options.couldDieToProjectiles,
       couldGiveCredit: this.options.couldGiveCredit ?? true,
       ignoreIDs: [...IGNORED_MONSTERS.keys()],
-      type: this.options.targetType,
+      type: this.options.type,
+      typeList: this.options.typeList,
       willBurnToDeath: this.options.willBurnToDeath,
       willDieToProjectiles: this.options.willDieToProjectiles ?? false,
     };

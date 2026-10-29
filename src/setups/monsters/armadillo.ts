@@ -4,9 +4,9 @@ import { RangerAttackStrategy } from '@/strategies/ranger/attack';
 import type { Setups } from '@/types/setup';
 import { getPriority } from '@/utils/priority';
 
-const ARMADILLO_ATTACK_STRATEGY = new AttackStrategy({ targetType: 'armadillo' });
-const ARMADILLO_RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({ targetType: 'armadillo' });
-const ARMADILLO_MOVE_STRATEGY = new BasicMoveStrategy({ targetType: 'armadillo' });
+const ARMADILLO_ATTACK_STRATEGY = new AttackStrategy({ type: 'armadillo' });
+const ARMADILLO_RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({ type: 'armadillo' });
+const ARMADILLO_MOVE_STRATEGY = new BasicMoveStrategy({ type: 'armadillo' });
 
 // TODO: Actual strategies per class
 
