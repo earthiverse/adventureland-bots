@@ -14,7 +14,7 @@ export interface AvoidStackingStrategyOptions {
 export class AvoidStackingStrategy<
   BotType extends PingCompensatedCharacter = PingCompensatedCharacter,
 > implements Strategy<BotType> {
-  public readonly priority = 10;
+  public readonly priority = -10;
 
   protected readonly onHitListeners = new Map<string, (data: HitData) => Promise<void>>();
 
