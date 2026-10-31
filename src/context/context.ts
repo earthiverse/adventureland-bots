@@ -1,6 +1,7 @@
 import AL, { type PingCompensatedCharacter, type ServerIdentifier, type ServerRegion } from 'alclient';
 import { sleep } from 'bun';
 
+import type { BusyReason } from '@/types/context';
 import type { LoopDefinition, LoopName } from '@/types/loops';
 import type { Strategy } from '@/types/strategy';
 
@@ -15,6 +16,7 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
   private activeTimeouts = new Map<LoopName, NodeJS.Timeout>();
   private isRunning = true;
   private isSwitchingOrReconnecting = false;
+  private busyReasons = new Set<BusyReason>();
 
   public constructor(
     public bot: BotType,
@@ -43,6 +45,8 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
     for (const strategy of this.strategies) {
       if (strategy.onRemove) strategy.onRemove(this.bot);
     }
+
+    this.busyReasons.clear();
 
     // Disconnect
     try {
@@ -93,6 +97,26 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
     this.serverRegion = serverRegion;
     this.serverIdentifier = serverIdentifier;
     await this.reconnect();
+  }
+
+  public addBusy(reason: BusyReason): void {
+    this.busyReasons.add(reason);
+  }
+
+  public removeBusy(reason: BusyReason): void {
+    this.busyReasons.delete(reason);
+  }
+
+  public isBusyWith(reason: BusyReason): boolean {
+    return this.busyReasons.has(reason);
+  }
+
+  public get isBusy(): boolean {
+    return this.busyReasons.size > 0;
+  }
+
+  public get shouldFarm(): boolean {
+    return !this.isBusy;
   }
 
   /**
@@ -223,6 +247,7 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
     for (const strategy of this.strategies) {
       if (strategy.onRemove) strategy.onRemove(this.bot);
     }
+    this.busyReasons.clear();
     try {
       this.bot.disconnect();
     } catch {

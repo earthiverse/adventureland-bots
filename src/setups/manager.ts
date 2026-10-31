@@ -40,7 +40,7 @@ export class SetupManager {
     if (!this.isRunning) return;
 
     const allContexts = this.options.contexts ?? state.contexts;
-    const availableContexts = allContexts.filter((c) => c.bot.ready);
+    const availableContexts = allContexts.filter((c) => c.bot.ready && !c.isBusy);
     const assignedContexts = new Set<Context>();
 
     while (availableContexts.length > 0) {
