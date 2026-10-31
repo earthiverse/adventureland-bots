@@ -22,6 +22,8 @@ export type OwnerTrades = {
     discordId?: string
 }
 
+export type TradeLot = ItemRef & { q: number }
+
 export type DealRow = {
     owner: string
     side: "WTS" | "WTB"
@@ -35,6 +37,9 @@ export type DealRow = {
     terms: string
     /** Reduced item-for-item ratio matching arrow order (`1:3`). */
     ratio?: string
+    /** Item-for-item terms from the listing owner's perspective. */
+    exchange?: { offered: TradeLot; wanted: TradeLot }
+    note?: string
 }
 
 export function formatGold(n: number): string {
@@ -56,7 +61,7 @@ export function formatGoldShort(n: number): string {
     return formatGold(n)
 }
 
-export function ownerDealPrefix(ownerTrades: OwnerTrades): string {
+function ownerDealPrefix(ownerTrades: OwnerTrades): string {
     const name = ownerTrades.label || ownerTrades.owner
     const discord = ownerTrades.discordName?.trim()
     if (discord && discord.toLowerCase() !== name.toLowerCase()) {
@@ -132,7 +137,11 @@ export function collectDealRows(owners: OwnerTrades[], item: string): { wts: Dea
                 const meta = formatListingMeta(listing)
                 const metaSuffix = meta ? ` ${meta}` : ""
 
-                const listingMeta = { level: listing.level, p: listing.p }
+                const listingMeta = {
+                    level: listing.level,
+                    p: listing.p,
+                    note: tradeSide.note ?? listing.note,
+                }
 
                 if (tradeSide.price !== undefined) {
                     const nego = tradeSide.priceNegotiable ? " ~" : ""
@@ -149,6 +158,8 @@ export function collectDealRows(owners: OwnerTrades[], item: string): { wts: Dea
 
                 for (const offer of tradeSide.trades ?? []) {
                     const formatted = formatRatioTerms(item, sideLabel, offer)
+                    const listed = { name: listing.name, level: listing.level, p: listing.p, q: offer.give }
+                    const other = { ...offer.item, q: offer.receive }
                     bucket.push({
                         owner,
                         side: sideLabel,
@@ -157,6 +168,10 @@ export function collectDealRows(owners: OwnerTrades[], item: string): { wts: Dea
                         ...listingMeta,
                         terms: formatted.terms,
                         ratio: formatted.ratio,
+                        exchange: {
+                            offered: sideKey === "wts" ? listed : other,
+                            wanted: sideKey === "wts" ? other : listed,
+                        },
                     })
                 }
 

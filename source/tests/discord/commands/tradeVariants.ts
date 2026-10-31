@@ -24,8 +24,22 @@ export type TradeVariantGroup = {
 }
 
 /** Stable key for (level, title/`p`) variants of one item id. */
-export function variantKey(level?: number, p?: string): string {
+function variantKey(level?: number, p?: string): string {
     return `${p ?? ""}|${level ?? ""}`
+}
+
+/** Level high→low, then title A→Z; untitled after titled at the same level. */
+export function compareTradeVariants(
+    a: { level?: number; p?: string },
+    b: { level?: number; p?: string },
+): number {
+    const al = a.level ?? -1
+    const bl = b.level ?? -1
+    if (al !== bl) return bl - al
+    if (a.p && !b.p) return -1
+    if (!a.p && b.p) return 1
+    if (a.p && b.p) return a.p.localeCompare(b.p)
+    return 0
 }
 
 function ensureVariant(
@@ -83,21 +97,12 @@ export function groupTradeByVariant(args: {
     }
 
     const groups = [...map.values()]
-    // Level high→low, then title (`p`) A→Z; untitled after titled at the same level.
-    groups.sort((a, b) => {
-        const al = a.level ?? -1
-        const bl = b.level ?? -1
-        if (al !== bl) return bl - al
-        if (a.p && !b.p) return -1
-        if (!a.p && b.p) return 1
-        if (a.p && b.p) return a.p.localeCompare(b.p)
-        return 0
-    })
+    groups.sort(compareTradeVariants)
     return groups
 }
 
 /**
- * Pick a representative level/title for the /trade thumbnail from live offers.
+ * Pick a representative level/title for the /trade icon from live offers.
  * Prefers any title (game field `.p`), then the highest level > 0. Quantity is ignored.
  */
 export function pickTradeIconOverlays(args: {
