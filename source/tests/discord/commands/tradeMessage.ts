@@ -1,13 +1,6 @@
 import { formatRatioTerms, type DealRow, type ItemRef } from "./tradeDeals.js"
 
-const DISCORD_CONTENT_LIMIT = 2000
 const DAY_MS = 8.64e7
-
-export function truncateDiscordContent(content: string): string {
-    if (content.length <= DISCORD_CONTENT_LIMIT) return content
-    const suffix = "\n… (truncated)"
-    return content.slice(0, DISCORD_CONTENT_LIMIT - suffix.length) + suffix
-}
 
 export type MerchantOffer = {
     id: string
@@ -49,7 +42,7 @@ type MerchantPlayer = {
 }
 
 /** Group key: same merchant, server, price, level, and title → one line. */
-export function merchantOfferKey(offer: MerchantOffer): string {
+function merchantOfferKey(offer: MerchantOffer): string {
     return [
         offer.id,
         offer.serverRegion,
@@ -102,13 +95,6 @@ export function sortMerchantOffers(offers: MergedMerchantOffer[], side: "sell" |
         return side === "sell" ? a.price - b.price : b.price - a.price
     })
     return sorted
-}
-
-export function formatMerchantLine(offer: MergedMerchantOffer, verb: "selling" | "buying"): string {
-    const title = offer.p ? `${offer.p} ` : ""
-    const level = offer.level === undefined ? "" : `level ${offer.level} `
-    const stacks = offer.stacks > 1 ? ` (${offer.stacks} stacks)` : ""
-    return `${offer.id} (${offer.serverRegion} ${offer.serverIdentifier}) is ${verb} ${offer.quantity.toLocaleString()} ${title}${level}@ ${offer.price.toLocaleString()}${stacks}`
 }
 
 export function normalizeTradeWant(want: unknown): TradeWantRef | null {
@@ -267,6 +253,11 @@ export function collectMerchantSwapDealRows(
                 ...(want.p ? { p: want.p } : {}),
             }
 
+            const exchange = {
+                offered: { ...listed, q: listedQty },
+                wanted: { ...wanted, q: wantQty },
+            }
+
             if (slot.name === item) {
                 const formatted = formatRatioTerms(item, "WTS", {
                     item: wanted,
@@ -279,6 +270,7 @@ export function collectMerchantSwapDealRows(
                     quantity: listedQty,
                     ...(slot.level !== undefined ? { level: slot.level } : {}),
                     ...(slot.p ? { p: slot.p } : {}),
+                    exchange,
                     terms: formatted.terms,
                     ratio: formatted.ratio,
                 })
@@ -296,6 +288,7 @@ export function collectMerchantSwapDealRows(
                     quantity: wantQty,
                     ...(want.level !== undefined ? { level: want.level } : {}),
                     ...(want.p ? { p: want.p } : {}),
+                    exchange,
                     terms: formatted.terms,
                     ratio: formatted.ratio,
                 })

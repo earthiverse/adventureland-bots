@@ -7,7 +7,6 @@
  * - level badge (upgrade/compound letters + colors)
  * - optional quantity badge
  */
-import AL, { type ItemName } from "alclient"
 import sharp from "sharp"
 
 const AL_ORIGIN = "https://adventure.land"
@@ -70,7 +69,7 @@ export function getItemBaseName(G: GLike, itemKey: string): string {
     return prefix ? `${prefix} ${base}` : base
 }
 
-export function getTitleName(G: GLike, p?: string): string {
+function getTitleName(G: GLike, p?: string): string {
     if (!p) return ""
     return G.titles?.[p]?.title ?? ""
 }
@@ -144,14 +143,14 @@ async function fetchSheet(file: string): Promise<Buffer> {
     return pending
 }
 
-export function resolveItemSkin(G: GLike, itemName: string, opts?: { active?: boolean }): string {
+function resolveItemSkin(G: GLike, itemName: string, opts?: { active?: boolean }): string {
     const gItem = G.items[itemName]
     if (!gItem) return "placeholder"
     if (opts?.active && gItem.skin_a) return gItem.skin_a
     return gItem.skin ?? itemName
 }
 
-export function resolveSkinCrop(G: GLike, skin: string): {
+function resolveSkinCrop(G: GLike, skin: string): {
     pack: Imageset
     packKey: string
     col: number
@@ -175,7 +174,7 @@ export function resolveSkinCrop(G: GLike, skin: string): {
 }
 
 /** Port of market-tracker `getLevelString`. */
-export function getLevelString(gItem: GItemLike, level?: number): string | number | undefined {
+function getLevelString(gItem: GItemLike, level?: number): string | number | undefined {
     if (gItem.upgrade) {
         const capped = Math.min(level ?? 0, 13)
         switch (capped) {
@@ -235,7 +234,7 @@ function titleBorderColor(p: string | undefined, show: boolean): string | null {
     return TITLE_BORDER[p] ?? null
 }
 
-/** Render like market-tracker ItemInstance for Discord attachment thumbnails. */
+/** Render like market-tracker ItemInstance for Discord attachment icons. */
 export async function renderItemIcon(
     G: GLike,
     itemName: string,
@@ -243,10 +242,10 @@ export async function renderItemIcon(
 ): Promise<{ png: Buffer; filename: string; skin: string; sheetUrl: string }> {
     const gItem = G.items[itemName] ?? {}
     const scale = opts.scale ?? 2
-    const iconSize = NATIVE_ICON * scale
-    const border = NATIVE_BORDER * scale
-    const pad = NATIVE_PAD * scale
-    const badge = NATIVE_BADGE * scale
+    const iconSize = Math.round(NATIVE_ICON * scale)
+    const border = Math.round(NATIVE_BORDER * scale)
+    const pad = Math.round(NATIVE_PAD * scale)
+    const badge = Math.round(NATIVE_BADGE * scale)
     const canvas = iconSize + 2 * border + 2 * pad
 
     const showTitleBorder = opts.showTitleBorder ?? !!opts.p
@@ -280,7 +279,7 @@ export async function renderItemIcon(
         const label =
             levelString !== undefined ? String(levelString) : String(level)
         composites.push({
-            input: Buffer.from(levelBadgeSvg(label, levelTextColor(gItem, level), badge, canvas)),
+            input: Buffer.from(levelBadgeSvg(label, levelTextColor(gItem, level), badge)),
             left: border,
             top: canvas - border - badge,
         })
@@ -327,7 +326,7 @@ export async function renderItemIcon(
     return { png, filename, skin, sheetUrl: crop.sheetUrl }
 }
 
-function levelBadgeSvg(label: string, color: string, size: number, _canvas: number): string {
+function levelBadgeSvg(label: string, color: string, size: number): string {
     const fontSize = Math.max(10, Math.round(size * 0.68))
     return `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
   <rect width="${size}" height="${size}" fill="#000000ca" stroke="#1f2937" stroke-width="1"/>
@@ -349,10 +348,4 @@ function quantityBadgeSvg(label: string, width: number, height: number): string 
 
 function escapeXml(value: string): string {
     return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-}
-
-/** Convenience: load G via alclient then render. */
-export async function renderItemIconByName(itemName: ItemName | string, opts?: ItemInstanceOpts) {
-    const G = (await AL.Game.getGData()) as GLike
-    return renderItemIcon(G, itemName, opts)
 }

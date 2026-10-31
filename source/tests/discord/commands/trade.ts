@@ -9,7 +9,7 @@ import {
 import { Command } from "../command.js"
 import type { GLike } from "./itemIcon.js"
 import { fetchTradeMarket, tradeMarketHasListings } from "./tradeMarket.js"
-import { buildTradeReply, pickTradeIconOverlays } from "./tradeReply.js"
+import { buildTradeReply } from "./tradeReply.js"
 
 /** Adapt alclient GData to the icon/name helper surface used by /trade. */
 function asTradeIconG(G: Awaited<ReturnType<typeof AL.Game.getGData>>): GLike {
@@ -79,14 +79,6 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
                 })
             }
 
-            const overlays = pickTradeIconOverlays({
-                selling: market.selling,
-                buying: market.buying,
-                swapOffering: market.swapOffering,
-                swapWanting: market.swapWanting,
-                dealWts: market.dealWts,
-                dealWtb: market.dealWtb,
-            })
             const messages = await buildTradeReply({
                 item: String(item),
                 gPrice: gItem.g,
@@ -96,7 +88,7 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
                 swapWanting: market.swapWanting,
                 dealWts: market.dealWts,
                 dealWtb: market.dealWtb,
-                icon: { G: asTradeIconG(G), ...overlays },
+                icon: { G: asTradeIconG(G) },
             })
 
             for (const message of messages) {
@@ -105,6 +97,7 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
                     content: message.content,
                     embeds: message.embeds,
                     files: message.files,
+                    allowedMentions: message.allowedMentions,
                 })
             }
             return
