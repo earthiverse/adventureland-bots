@@ -1,10 +1,11 @@
-import type { PingCompensatedCharacter } from 'alclient';
+import type { BankInfo, PingCompensatedCharacter } from 'alclient';
 
 import type { Context } from '@/context/context';
 
 export class State {
   private static instance: State;
   private contextsMap = new Map<string, Context>();
+  private banksMap = new Map<string, BankInfo>();
 
   public constructor() {}
 
@@ -35,6 +36,14 @@ export class State {
   }
 
   /**
+   * Returns a bot context by character name or Character instance.
+   */
+  public getContext(nameOrBot: string | PingCompensatedCharacter): Context | undefined {
+    const name = typeof nameOrBot === 'string' ? nameOrBot : nameOrBot.id;
+    return this.contextsMap.get(name);
+  }
+
+  /**
    * Returns all registered contexts.
    */
   public get contexts(): Context[] {
@@ -60,6 +69,29 @@ export class State {
    */
   public getBotsByParty(id: string): PingCompensatedCharacter[] {
     return this.bots.filter((c) => c.party === id);
+  }
+
+  /**
+   * Returns the cached bank snapshot for an owner if available.
+   */
+  public getBank(owner: string): BankInfo | undefined {
+    // Check bots first for the freshest bank data
+    for (const bot of this.getBotsByOwner(owner)) {
+      if (bot.bank) {
+        this.updateBank(owner, bot.bank);
+        return bot.bank;
+      }
+    }
+
+    // Fall back to cache
+    return this.banksMap.get(owner);
+  }
+
+  /**
+   * Updates the cached bank snapshot for an owner.
+   */
+  public updateBank(owner: string, bank: BankInfo): void {
+    this.banksMap.set(owner, bank);
   }
 
   /**
