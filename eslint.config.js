@@ -14,7 +14,7 @@ export default defineConfig([
   sonarjs.configs.recommended,
   {
     rules: {
-      'sonarjs/cognitive-complexity': 'warn',
+      'sonarjs/cognitive-complexity': ['warn', 20],
       'sonarjs/todo-tag': 'warn',
     },
   },
