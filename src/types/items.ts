@@ -6,10 +6,9 @@ import type { CharacterType, ItemName } from 'alclient';
  * When set to 'npc', price an NPC buys it for (g * G.multipliers.buy_to_sell).
  * When set to 'ponty', price Ponty (secondhand) sells it for.
  * When set to 'goblin', price Lost and Found sells it for.
- * When set to 'craft', recursive component + gold cost from G.craft[name].
  * When set to `x${number}`, item value multiplied by that number.
  */
-export type Price = number | 'craft' | 'g' | 'goblin' | 'npc' | 'ponty' | `x${number}`;
+export type Price = number | 'g' | 'goblin' | 'npc' | 'ponty' | `x${number}`;
 
 export interface BuyConfig {
   /**
