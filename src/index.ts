@@ -10,6 +10,7 @@ import { armadilloSetups } from './setups/monsters/armadillo';
 import { batSetups } from './setups/monsters/bat';
 import { bbpompomSetups } from './setups/monsters/bbpompom';
 import { beeSetups } from './setups/monsters/bee';
+import { cgooSetups } from './setups/monsters/cgoo';
 import { crabSetups } from './setups/monsters/crab';
 import { crabxSetups } from './setups/monsters/crabx';
 import { crocSetups } from './setups/monsters/croc';
@@ -79,6 +80,7 @@ const manager = new SetupManager([
   ...batSetups,
   ...bbpompomSetups,
   ...beeSetups,
+  ...cgooSetups,
   ...crabSetups,
   ...crabxSetups,
   ...crocSetups,
