@@ -55,7 +55,7 @@ export class RangerAttackStrategy extends AttackStrategy<Ranger, RangerAttackStr
       consumeCourageSlot(courageBudget, t4);
       consumeCourageSlot(courageBudget, t5);
       return true;
-    } else if (t1 && t2 && t3 && bot.canUse('3shot')) {
+    } else if (t1 && t2 && t3) {
       const shotTargets = [t1, t2, t3];
       const dyingTargets = shotTargets.filter((t) => bot.canKillInOneShot(t, '3shot'));
       for (const t of dyingTargets) IGNORED_MONSTERS.set(t.id, true);
