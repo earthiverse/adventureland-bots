@@ -2,7 +2,7 @@
 import { AttachmentBuilder, EmbedBuilder, escapeMarkdown, type MessageMentionOptions } from "discord.js"
 import stringWidth from "string-width"
 import { getItemBaseName, renderItemIcon, type ItemTitle } from "./itemIcon.js"
-import { formatGold, formatQuantityRatio, type DealRow, type ItemRef } from "./tradeDeals.js"
+import { formatGold, type DealRow, type ItemRef } from "./tradeDeals.js"
 import type { MergedMerchantOffer } from "./tradeMessage.js"
 import { compareTradeVariants, type TradeIconG } from "./tradeVariants.js"
 
@@ -22,7 +22,6 @@ type TableRow = string[]
 type TableKind = {
     nameHeader: "Name (Server)" | "Name (Discord)"
     column: "Price" | "Wants" | "Terms"
-    ratio?: boolean
 }
 type TradeTable = TableKind & {
     action: TableAction
@@ -59,9 +58,9 @@ function cell(value: string): string {
     return value.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/`/g, "ˋ")
 }
 
-function itemLabel(item: ItemRef, G?: TradeIconG, minimum = false): string {
+function itemLabel(item: ItemRef, G?: TradeIconG): string {
     const parts: string[] = []
-    if (item.level !== undefined) parts.push(`${minimum ? "≥" : "+"}${item.level}`)
+    if (item.level !== undefined) parts.push(`+${item.level}`)
     if (item.p) parts.push(G?.titles?.[item.p]?.title ?? item.p)
     parts.push(G ? getItemBaseName(G, item.name) : item.name)
     return parts.join(" ")
@@ -72,7 +71,7 @@ function iconKey(icon: ItemRef): string {
 }
 
 function tableKindKey(kind: TableKind): string {
-    return `${kind.nameHeader}|${kind.column}|${kind.ratio ? "ratio" : ""}`
+    return `${kind.nameHeader}|${kind.column}`
 }
 
 /** Keep one table per variant, action, and column layout so rows never mix variants. */
@@ -116,12 +115,11 @@ function dealTables(tables: TradeTable[], rows: DealRow[], action: TableAction, 
             if (seen.has(row.exchange)) continue
             seen.add(row.exchange)
             const { offered, wanted } = row.exchange
-            const wants = `${formatGold(wanted.q)} ${itemLabel(wanted, G, native)}`
-            addRow(tables, "Trading", { nameHeader, column: "Wants", ratio: true }, offered, [
+            const wants = `${itemLabel(wanted, G)} x${formatGold(wanted.q)}`
+            addRow(tables, "Trading", { nameHeader, column: "Wants" }, offered, [
                 row.owner,
                 formatGold(offered.q),
                 wants,
-                row.ratio ?? formatQuantityRatio(offered.q, wanted.q),
             ], offered.q)
         } else {
             const icon = { name: item, level: row.level, p: row.p }
@@ -146,11 +144,9 @@ function tablePages(table: TradeTable, descriptionLimit: number): string[] {
         table.nameHeader,
         "Qty",
         table.column,
-        ...(table.ratio ? ["Ratio"] : []),
     ]
     const aligns: Array<"left" | "right"> = ["left", "right"]
     aligns.push(table.column === "Price" ? "right" : "left")
-    if (table.ratio) aligns.push("right")
     const valueIndex = 2
     const rows = table.rows.map(row => {
         // Only unbounded free-text terms can be shortened; names and quantities stay intact.
