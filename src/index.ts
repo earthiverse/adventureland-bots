@@ -36,6 +36,9 @@ import { PartyStrategy } from './strategies/party';
 import { RegenStrategy } from './strategies/regen';
 import { RespawnStrategy } from './strategies/respawn';
 
+// Shut down cleanly on SIGINT (Ctrl+C)
+process.on('SIGINT', () => process.exit(0));
+
 // Login
 await AL.Game.login(env.EMAIL, env.PASSWORD, env.MONGO_URI, true);
 
