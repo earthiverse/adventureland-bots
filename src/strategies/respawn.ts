@@ -1,6 +1,7 @@
 import type { PingCompensatedCharacter } from 'alclient';
 
 import type { Strategy, StrategyLoops } from '@/types/strategy';
+import { ignoreErrors } from '@/utils/errors';
 
 // TODO: Should we put this at a high priority,
 //       and have a move / attack loop hooks that return `false` if dead?
@@ -21,11 +22,7 @@ export class RespawnStrategy<BotType extends PingCompensatedCharacter> implement
 
     // TODO: Logic if we can respawn or not
 
-    try {
-      await bot.respawn();
-    } catch {
-      // Suppress errors
-    }
+    await ignoreErrors(bot.respawn());
     return false;
   }
 }

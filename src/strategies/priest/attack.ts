@@ -1,6 +1,8 @@
 import type { PingCompensatedCharacter, Player } from 'alclient';
 import type { Priest } from 'alclient';
 
+import { ignoreErrors } from '@/utils/errors';
+
 import { AttackStrategy, type AttackStrategyOptions } from '../attack';
 
 export interface PriestAttackStrategyOptions extends AttackStrategyOptions {
@@ -117,11 +119,7 @@ export class PriestAttackStrategy extends AttackStrategy<Priest, PriestAttackStr
       return aRatio - bRatio;
     });
 
-    try {
-      await bot.healSkill(potentialTargets[0]!.id);
-    } catch {
-      // Do nothing
-    }
+    await ignoreErrors(bot.healSkill(potentialTargets[0]!.id));
     return true;
   }
 }

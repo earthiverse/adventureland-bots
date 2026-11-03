@@ -3,7 +3,7 @@ import { Mage, type PingCompensatedCharacter, Tools } from 'alclient';
 import { DEFAULT_RESERVE_MP } from '@/config/defaults';
 import { state } from '@/state/state';
 
-import { noop } from './noop';
+import { ignoreErrors } from './errors';
 
 // TODO: Consider option for mp recovery or attack buff
 
@@ -32,5 +32,5 @@ export function getEnergizeFromNearbyBot(bot: PingCompensatedCharacter, requeste
     bestEnergizeMp = energizeMp;
   }
 
-  if (bestMage) void bestMage.energize(bot.id, bestEnergizeMp).catch(noop);
+  if (bestMage) void ignoreErrors(bestMage.energize(bot.id, bestEnergizeMp));
 }

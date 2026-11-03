@@ -1,6 +1,7 @@
 import type { InviteData, PingCompensatedCharacter } from 'alclient';
 
 import type { Strategy, StrategyLoops } from '@/types/strategy';
+import { ignoreErrors } from '@/utils/errors';
 
 export interface PartyStrategyOptions {
   /**
@@ -37,11 +38,7 @@ export class PartyStrategy<BotType extends PingCompensatedCharacter> implements 
     if (bot.id === this.options.partyLeader) return; // The party doesn't join their own party
     if (bot.partyData?.list.includes(this.options.partyLeader)) return; // Already in party
 
-    try {
-      await bot.sendPartyRequest(this.options.partyLeader);
-    } catch {
-      // Ignore
-    }
+    await ignoreErrors(bot.sendPartyRequest(this.options.partyLeader));
   }
 
   public onApply(bot: BotType): void {
@@ -51,11 +48,7 @@ export class PartyStrategy<BotType extends PingCompensatedCharacter> implements 
       if (this.options.allowIds && !this.options.allowIds.includes(data.name)) return; // Not in allow list
       if (this.options.denyIds && this.options.denyIds.includes(data.name)) return; // In deny list
 
-      try {
-        await bot.acceptPartyRequest(data.name);
-      } catch {
-        // Ignore
-      }
+      await ignoreErrors(bot.acceptPartyRequest(data.name));
     };
     bot.socket.on('request', this.onRequest);
   }

@@ -1,7 +1,7 @@
 import type { Entity, Ranger } from 'alclient';
 
 import { canSafelyTarget, consumeCourageSlot, type CourageBudget, getCourageBudget } from '@/utils/courage';
-import { noop } from '@/utils/noop';
+import { ignoreErrors } from '@/utils/errors';
 
 import { AttackStrategy, type AttackStrategyOptions, IGNORED_MONSTERS } from '../attack';
 
@@ -80,7 +80,7 @@ export class RangerAttackStrategy extends AttackStrategy<Ranger, RangerAttackStr
     const target = this.getEntity(bot, { canDamage: 'supershot', withinRange: 'supershot' });
     if (!target) return false; // No target
 
-    void bot.superShot(target.id).catch(noop);
+    void ignoreErrors(bot.superShot(target.id));
     consumeCourageSlot(courageBudget, target);
     return true;
   }

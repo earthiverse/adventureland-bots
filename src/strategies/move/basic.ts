@@ -1,7 +1,7 @@
-import { type MonsterName, type PingCompensatedCharacter, Tools } from 'alclient';
+import { type MonsterName, Pathfinder, type PingCompensatedCharacter, Tools } from 'alclient';
 
 import type { Strategy, StrategyLoops } from '@/types/strategy';
-import { noop } from '@/utils/noop';
+import { ignoreErrors } from '@/utils/errors';
 
 import { IGNORED_MONSTERS } from '../attack';
 
@@ -33,19 +33,26 @@ export class BasicMoveStrategy<BotType extends PingCompensatedCharacter> impleme
     if (!target) {
       // Move to spawn
       const spawnMonster = this.options.type ?? this.options.typeList?.[0];
-      if (spawnMonster) await bot.smartMove(spawnMonster, { getWithin: 50 });
+      if (spawnMonster) {
+        await ignoreErrors(bot.smartMove(spawnMonster, { getWithin: 50 }));
+      }
       return;
     }
 
     const distance = Tools.distance(bot, target);
-    if (distance > bot.range - 25) {
-      void bot.smartMove(target, { getWithin: bot.range - 25 }).catch(noop);
+    if (distance <= bot.range - 25) return; // Already close
+
+    if (Pathfinder.canWalkPath(bot, target)) {
+      if (bot.smartMoving) void ignoreErrors(bot.stopSmartMove());
+      void ignoreErrors(bot.move(target.x, target.y));
+      return;
     }
+
+    if (!bot.smartMoving) void ignoreErrors(bot.smartMove(target, { getWithin: bot.range - 25 }));
   }
 
   public onRemove(bot: BotType): void {
-    if (bot.smartMoving) {
-      void bot.stopSmartMove().catch(noop);
-    }
+    if (!bot.smartMoving) return;
+    void ignoreErrors(bot.stopSmartMove());
   }
 }
