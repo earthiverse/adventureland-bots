@@ -12,9 +12,9 @@ const EMBED_DESCRIPTION_LIMIT = 4096
 const EMBED_TOTAL_LIMIT = 6000
 const COLOR_STANDS = 0x57f287
 const COLOR_DEALS = 0x5865f2
-// Preserve every price digit while using K/M/B/T suffixes instead of long gold amounts.
+// Short K/M/B/T prices rounded to 4 significant digits so the Price column stays narrow.
 const GOLD_FORMAT = new Intl.NumberFormat("en-US", {
-    notation: "compact", maximumSignificantDigits: 21, useGrouping: false,
+    notation: "compact", maximumSignificantDigits: 4, useGrouping: false,
 })
 
 type TableAction = "Selling" | "Buying" | "Trading"
