@@ -91,9 +91,9 @@ export const Trade: Command & { autocomplete: (client: Client, interaction: Auto
                 icon: { G: asTradeIconG(G) },
             })
 
+            // Listings are public: an ephemeral follow-up after the public deferred reply is hidden from the channel.
             for (const message of messages) {
                 await interaction.followUp({
-                    ephemeral: true,
                     content: message.content,
                     embeds: message.embeds,
                     files: message.files,
