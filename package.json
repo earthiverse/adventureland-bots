@@ -27,7 +27,7 @@
     "fix": "bun run lint:fix && bun run format"
   },
   "dependencies": {
-    "alclient": "^0.26.11",
+    "alclient": "^0.26.13",
     "fastpriorityqueue": "^0.8.0",
     "lru-cache": "^11.5.3",
     "zod": "^4.6.5"
