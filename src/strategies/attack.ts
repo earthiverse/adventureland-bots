@@ -65,7 +65,7 @@ export class AttackStrategy<
     return {
       couldDieToProjectiles: this.options.couldDieToProjectiles,
       couldGiveCredit: this.options.couldGiveCredit ?? true,
-      ignoreIDs: [...IGNORED_MONSTERS.keys()],
+      ignoreIDs: IGNORED_MONSTERS.keys(),
       type: this.options.type,
       typeList: this.options.typeList,
       willBurnToDeath: this.options.willBurnToDeath,
