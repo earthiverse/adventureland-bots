@@ -260,8 +260,8 @@ async function sourceIcons(pieces: TradeEmbedPiece[], G?: TradeIconG): Promise<M
 async function tradeIcon(item: string, icon?: TradeIconOpts): Promise<{ png: Buffer; filename: string } | null> {
     if (!icon) return null
     try {
-        // Whole-number sprite scaling at 184px means Discord only shrinks it into its 80px thumbnail box; a smaller icon gets stretched and blurs.
-        return await renderItemIcon(icon.G, item, { level: icon.level, p: icon.p, showQuantity: false, scale: 4 })
+        // A 54px thumbnail is large enough to read while one padding line keeps it clear of the table.
+        return await renderItemIcon(icon.G, item, { level: icon.level, p: icon.p, showQuantity: false, scale: 1.2 })
     } catch (error) {
         console.error(`Failed to render trade icon for ${item}:`, error)
         return null
@@ -334,8 +334,8 @@ export async function buildTradeReply(args: {
             const heading = `**${text(piece.heading)}**`
             // Reserve the summary so a flush never pushes the first description past its limit.
             const pieceLength = heading.length + body.length + source.summary.length + 3
-            const needsFile = thumb && !files.has(thumb.filename)
-            if (embeds.length >= 10 || chars + pieceLength > EMBED_TOTAL_LIMIT || (needsFile && files.size >= 10)) flush()
+            // Each embed has at most one file, so the 10-embed limit also keeps the message within 10 files.
+            if (embeds.length >= 10 || chars + pieceLength > EMBED_TOTAL_LIMIT) flush()
             // Each source's first embed in a message carries its summary, above one padding line that clears the top-right icon.
             const description = summaryShown
                 ? `${heading}
@@ -348,9 +348,11 @@ ${body}`
             summaryShown = true
             // Last-resort cap: an unbounded owner label must never make Discord reject the whole reply.
             piece.embed.setDescription(description.slice(0, EMBED_DESCRIPTION_LIMIT))
-            if (thumb) piece.embed.setThumbnail(`attachment://${thumb.filename}`)
-            if (thumb && !files.has(thumb.filename)) {
-                files.set(thumb.filename, new AttachmentBuilder(thumb.png, { name: thumb.filename }))
+            if (thumb) {
+                // Discord renders a thumbnail blurry when another embed in the message uses the same attachment, so each embed gets its own copy.
+                const filename = files.has(thumb.filename) ? thumb.filename.replace(/\.png$/, `_${embeds.length}.png`) : thumb.filename
+                piece.embed.setThumbnail(`attachment://${filename}`)
+                files.set(filename, new AttachmentBuilder(thumb.png, { name: filename }))
             }
             embeds.push(piece.embed)
             chars += piece.embed.data.description!.length
