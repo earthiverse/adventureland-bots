@@ -260,8 +260,8 @@ async function sourceIcons(pieces: TradeEmbedPiece[], G?: TradeIconG): Promise<M
 async function tradeIcon(item: string, icon?: TradeIconOpts): Promise<{ png: Buffer; filename: string } | null> {
     if (!icon) return null
     try {
-        // A 54px thumbnail is large enough to read while one padding line keeps it clear of the table.
-        return await renderItemIcon(icon.G, item, { level: icon.level, p: icon.p, showQuantity: false, scale: 1.2 })
+        // Whole-number sprite scaling at 184px means Discord only shrinks it into its 80px thumbnail box; a smaller icon gets stretched and blurs.
+        return await renderItemIcon(icon.G, item, { level: icon.level, p: icon.p, showQuantity: false, scale: 4 })
     } catch (error) {
         console.error(`Failed to render trade icon for ${item}:`, error)
         return null
