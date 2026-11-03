@@ -307,23 +307,27 @@ export async function buildTradeReply(args: {
     }
 
     const icons = await sourceIcons(sources.flatMap(source => source.pieces), G)
+    // Green and blue tables share a message until a Discord limit forces the next follow-up.
     const messages: TradeReplyMessage[] = []
+    let embeds: EmbedBuilder[] = []
+    let files = new Map<string, AttachmentBuilder>()
+    let chars = 0
+    let summaryShown = false
+    const flush = () => {
+        if (!embeds.length) return
+        messages.push({
+            content: messages.length ? undefined : content,
+            embeds,
+            files: files.size ? [...files.values()] : undefined,
+            allowedMentions: { parse: [] },
+        })
+        embeds = []
+        files = new Map()
+        chars = 0
+        summaryShown = false
+    }
     for (const source of sources) {
-        let embeds: EmbedBuilder[] = []
-        let files = new Map<string, AttachmentBuilder>()
-        let chars = 0
-        const flush = () => {
-            if (!embeds.length) return
-            messages.push({
-                content: messages.length ? undefined : content,
-                embeds,
-                files: files.size ? [...files.values()] : undefined,
-                allowedMentions: { parse: [] },
-            })
-            embeds = []
-            files = new Map()
-            chars = 0
-        }
+        summaryShown = false
         for (const piece of source.pieces) {
             const thumb = icons.get(iconKey(piece.icon))
             const body = piece.embed.data.description!
@@ -332,11 +336,16 @@ export async function buildTradeReply(args: {
             const pieceLength = heading.length + body.length + source.summary.length + 3
             const needsFile = thumb && !files.has(thumb.filename)
             if (embeds.length >= 10 || chars + pieceLength > EMBED_TOTAL_LIMIT || (needsFile && files.size >= 10)) flush()
-            // The heading and summary sit above one padding line that clears the top-right icon.
-            const firstInMessage = embeds.length === 0
-            const description = firstInMessage
-                ? `${heading}\n${source.summary}\n\n${body}`
-                : `${heading}\n\n${body}`
+            // Each source's first embed in a message carries its summary, above one padding line that clears the top-right icon.
+            const description = summaryShown
+                ? `${heading}
+
+${body}`
+                : `${heading}
+${source.summary}
+
+${body}`
+            summaryShown = true
             // Last-resort cap: an unbounded owner label must never make Discord reject the whole reply.
             piece.embed.setDescription(description.slice(0, EMBED_DESCRIPTION_LIMIT))
             if (thumb) piece.embed.setThumbnail(`attachment://${thumb.filename}`)
@@ -346,7 +355,7 @@ export async function buildTradeReply(args: {
             embeds.push(piece.embed)
             chars += piece.embed.data.description!.length
         }
-        flush()
     }
+    flush()
     return messages
 }
