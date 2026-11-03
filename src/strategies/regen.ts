@@ -87,7 +87,7 @@ export class RegenStrategy<BotType extends PingCompensatedCharacter> implements 
   }
 
   protected async move(bot: BotType): Promise<false | void> {
-    if (bot.rip) return; // Dead, don't try to move
+    if (bot.isDisabled()) return; // Can't move
     if (!this.options.potionsToBuy.length) return; // Not buying
     const firstPotion = this.options.potionsToBuy[0]!;
     if (bot.canBuy(firstPotion)) return; // We can buy potions where we are, no need to move
@@ -108,8 +108,7 @@ export class RegenStrategy<BotType extends PingCompensatedCharacter> implements 
   }
 
   protected async regen(bot: BotType): Promise<void> {
-    if (bot.rip) return; // Dead, don't try to regen
-    if (!bot.canUse('use_hp')) return; // Can't use yet
+    if (!bot.canUse('use_hp')) return; // Can't use
 
     const missingHP = bot.max_hp - bot.hp;
     const missingMP = bot.max_mp - bot.mp;
