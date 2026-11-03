@@ -338,13 +338,8 @@ export async function buildTradeReply(args: {
             if (embeds.length >= 10 || chars + pieceLength > EMBED_TOTAL_LIMIT) flush()
             // Each source's first embed in a message carries its summary, above one padding line that clears the top-right icon.
             const description = summaryShown
-                ? `${heading}
-
-${body}`
-                : `${heading}
-${source.summary}
-
-${body}`
+                ? `${heading}\n\n${body}`
+                : `${heading}\n${source.summary}\n\n${body}`
             summaryShown = true
             // Last-resort cap: an unbounded owner label must never make Discord reject the whole reply.
             piece.embed.setDescription(description.slice(0, EMBED_DESCRIPTION_LIMIT))
