@@ -13,7 +13,7 @@ const TARGETR750_MOVE_STRATEGY = new BasicMoveStrategy({ type: 'target_r750' });
 export const targetr750Setups: Setups = [
   // Ranger
   {
-    priority: (bots) => 1 + getPriority(bots, { typeList: ['minimush'] }),
+    priority: (bots) => 1 + getPriority(bots, { typeList: ['target_r750'] }),
     configs: [
       {
         ctype: 'ranger',

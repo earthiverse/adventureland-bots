@@ -26,6 +26,7 @@ import { ratSetups } from './setups/monsters/rat';
 import { snakeSetups } from './setups/monsters/snake';
 import { squigSetups } from './setups/monsters/squig';
 import { targeta500Setups } from './setups/monsters/target_a500';
+import { targetar900Setups } from './setups/monsters/target_ar900';
 import { targetr750Setups } from './setups/monsters/target_r750';
 import { tortoiseSetups } from './setups/monsters/tortoise';
 import { state } from './state/state';
@@ -99,6 +100,7 @@ const manager = new SetupManager([
   ...snakeSetups,
   ...squigSetups,
   ...targeta500Setups,
+  ...targetar900Setups,
   ...targetr750Setups,
   ...tortoiseSetups,
 ]);
