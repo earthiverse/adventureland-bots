@@ -63,9 +63,9 @@ export class AttackStrategy<
 
   protected getBaseEntityFilters(): GetEntityFilters {
     return {
-      couldDieToProjectiles: this.options.couldDieToProjectiles,
+      couldDieToProjectiles: this.options.couldDieToProjectiles ?? false,
       couldGiveCredit: this.options.couldGiveCredit ?? true,
-      ignoreIDs: IGNORED_MONSTERS.keys(),
+      ignoreIDs: [...IGNORED_MONSTERS.keys()],
       type: this.options.type,
       typeList: this.options.typeList,
       willBurnToDeath: this.options.willBurnToDeath,
