@@ -15,28 +15,28 @@ export function getPriority(bots: PingCompensatedCharacter[], options: PriorityO
   if (options.typeList?.includes(DEFAULT_MONSTER)) priority += 10;
 
   // Increase priority if it's a special monster and one of our party members can see it
-  if (options.typeList?.some((t) => Constants.SPECIAL_MONSTERS.includes(t))) {
-    for (const bot of bots) {
-      if (!bot.getEntities({ typeList: options.typeList }).length) continue;
-      priority += 1000;
-      break;
-    }
+  if (
+    options.typeList?.some((t) => Constants.SPECIAL_MONSTERS_SET.has(t)) &&
+    bots.some((bot) => bot.getEntities({ typeList: options.typeList }).length > 0)
+  ) {
+    priority += 1000;
   }
 
   // Increase priority if we're doing a monster hunt
-  if (ENABLE_MONSTER_HUNTS) {
-    for (const type of options.typeList ?? []) {
-      for (const bot of bots) {
-        const players = bot.party ? state.getBotsByParty(bot.party) : [bot];
-        for (const player of players) {
-          if (!player.s.monsterhunt) continue; // No monsterhunt on this player
-          if (player.s.monsterhunt.c <= 0) continue; // Monsterhunt is already complete
-          if (player.s.monsterhunt.id !== type) continue; // Different type
-          if (player.s.monsterhunt.sn !== `${bot.server.region} ${bot.server.name}`) continue; // Monster hunt is for a different server
+  if (ENABLE_MONSTER_HUNTS && options.typeList?.length) {
+    const types = new Set(options.typeList);
 
-          // We have a monster hunt for this monster, increase priority
-          priority += (player.owner === bot.owner ? 100 : 50) - player.s.monsterhunt.ms / 1_800_000;
-        }
+    for (const bot of bots) {
+      const serverName = `${bot.server.region} ${bot.server.name}`;
+      const players = bot.party ? state.getBotsByParty(bot.party) : [bot];
+      for (const player of players) {
+        const hunt = player.s.monsterhunt;
+        if (!hunt || hunt.c <= 0) continue; // No hunt, or already finished
+        if (!types.has(hunt.id)) continue; // Different type
+        if (hunt.sn !== serverName) continue; // Different server
+
+        // We have a monster hunt for this monster, increase priority
+        priority += (player.owner === bot.owner ? 100 : 50) - hunt.ms / 1_800_000;
       }
     }
   }
