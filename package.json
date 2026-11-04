@@ -18,13 +18,14 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "dev": "bun --watch src/index.ts",
+    "test": "bun test",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "format:fix": "prettier --write .",
     "check": "bun run typecheck && bun run lint && bun run format:check",
-    "fix": "bun run lint:fix && bun run format"
+    "fix": "bun run lint:fix && bun run format:fix"
   },
   "dependencies": {
     "alclient": "^0.26.13",
