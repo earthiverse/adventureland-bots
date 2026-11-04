@@ -18,6 +18,7 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "dev": "bun --watch src/index.ts",
+    "profile": "bun --cpu-prof --cpu-prof-dir=data/profiles run src/index.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
