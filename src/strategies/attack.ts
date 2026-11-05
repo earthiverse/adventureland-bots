@@ -11,6 +11,7 @@ export const IGNORED_MONSTERS = new LRUCache<string, true>({
 export interface AttackStrategyOptions {
   type?: MonsterName;
   typeList?: MonsterName[];
+  couldBurnToDeath?: boolean;
   couldDieToProjectiles?: boolean;
   couldGiveCredit?: boolean;
   disableBasicAttack?: boolean;
@@ -63,12 +64,13 @@ export class AttackStrategy<
 
   protected getBaseEntityFilters(): GetEntityFilters {
     return {
+      couldBurnToDeath: this.options.couldBurnToDeath ?? false,
       couldDieToProjectiles: this.options.couldDieToProjectiles ?? false,
       couldGiveCredit: this.options.couldGiveCredit ?? true,
       ignoreIDs: [...IGNORED_MONSTERS.keys()],
       type: this.options.type,
       typeList: this.options.typeList,
-      willBurnToDeath: this.options.willBurnToDeath,
+      willBurnToDeath: this.options.willBurnToDeath ?? false,
       willDieToProjectiles: this.options.willDieToProjectiles ?? false,
     };
   }
@@ -85,9 +87,9 @@ export class AttackStrategy<
 
     // Prioritize targets
     entities.sort((a, b) => {
-      // Prioritize monsters that won't burn to death
-      const aWillBurn = a.willBurnToDeath();
-      const bWillBurn = b.willBurnToDeath();
+      // Prioritize monsters that can't burn to death
+      const aWillBurn = a.couldBurnToDeath();
+      const bWillBurn = b.couldBurnToDeath();
       if (aWillBurn && !bWillBurn) return 1;
       if (!aWillBurn && bWillBurn) return -1;
 
