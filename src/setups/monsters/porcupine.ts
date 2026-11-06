@@ -2,6 +2,7 @@ import { AttackStrategy } from '@/strategies/attack';
 import { BasicMoveStrategy } from '@/strategies/move/basic';
 import { RangerAttackStrategy } from '@/strategies/ranger/attack';
 import type { Setups } from '@/types/setup';
+import { canAvoidDreturn } from '@/utils/combat';
 import { getPriority } from '@/utils/priority';
 
 const PORCUPINE_ATTACK_STRATEGY = new AttackStrategy({ type: 'porcupine' });
@@ -17,7 +18,7 @@ export const porcupineSetups: Setups = [
     configs: [
       {
         ctype: 'ranger',
-        require: (bot) => bot.range > 64, // Need high range to avoid dreturn
+        require: canAvoidDreturn,
         strategies: [PORCUPINE_RANGER_ATTACK_STRATEGY, PORCUPINE_MOVE_STRATEGY],
       },
     ],
@@ -28,7 +29,7 @@ export const porcupineSetups: Setups = [
     priority: (bots) => getPriority(bots, { typeList: ['porcupine'] }),
     configs: [
       {
-        require: (bot) => bot.range > 64, // Need high range to avoid dreturn
+        require: canAvoidDreturn,
         strategies: [PORCUPINE_ATTACK_STRATEGY, PORCUPINE_MOVE_STRATEGY],
       },
     ],

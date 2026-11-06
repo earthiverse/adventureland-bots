@@ -2,6 +2,7 @@ import { AttackStrategy } from '@/strategies/attack';
 import { BasicMoveStrategy } from '@/strategies/move/basic';
 import { RangerAttackStrategy } from '@/strategies/ranger/attack';
 import type { Setups } from '@/types/setup';
+import { canAvoidDreturn } from '@/utils/combat';
 import { getPriority } from '@/utils/priority';
 
 const ARMADILLO_ATTACK_STRATEGY = new AttackStrategy({ type: 'armadillo' });
@@ -17,7 +18,7 @@ export const armadilloSetups: Setups = [
     configs: [
       {
         ctype: 'ranger',
-        require: (bot) => bot.range > 64, // Need high range to avoid dreturn
+        require: canAvoidDreturn,
         strategies: [ARMADILLO_RANGER_ATTACK_STRATEGY, ARMADILLO_MOVE_STRATEGY],
       },
     ],
@@ -28,7 +29,7 @@ export const armadilloSetups: Setups = [
     priority: (bots) => getPriority(bots, { typeList: ['armadillo'] }),
     configs: [
       {
-        require: (bot) => bot.range > 64, // Need high range to avoid dreturn
+        require: canAvoidDreturn,
         strategies: [ARMADILLO_ATTACK_STRATEGY, ARMADILLO_MOVE_STRATEGY],
       },
     ],
