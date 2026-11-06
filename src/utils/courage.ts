@@ -19,6 +19,16 @@ export function getCourageBudget(bot: PingCompensatedCharacter, maxTargets = Inf
   };
 }
 
+export function getCourageOverage(bot: PingCompensatedCharacter): CourageBudget {
+  const current = bot.calculateTargets();
+  return {
+    magical: Math.max(0, current.magical - bot.mcourage),
+    physical: Math.max(0, current.physical - bot.courage),
+    pure: Math.max(0, current.pure - bot.pcourage),
+    total: Math.max(0, bot.targets - (bot.courage + bot.mcourage + bot.pcourage)),
+  };
+}
+
 export function canSafelyTarget(budget: CourageBudget, entity: Entity): boolean {
   if (entity.target) return true;
   if (budget.total <= 0) return false;

@@ -5,7 +5,7 @@
     "": {
       "name": "adventureland-bots-v2",
       "dependencies": {
-        "alclient": "^0.26.14",
+        "alclient": "^0.26.15",
         "fastpriorityqueue": "^0.8.0",
         "lru-cache": "^11.5.3",
         "zod": "^4.6.5",
@@ -164,7 +164,7 @@
 
     "ajv": ["ajv@6.15.0", "", { "dependencies": { "fast-deep-equal": "^3.1.1", "fast-json-stable-stringify": "^2.0.0", "json-schema-traverse": "^0.4.1", "uri-js": "^4.2.2" } }, "sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw=="],
 
-    "alclient": ["alclient@0.26.14", "", { "dependencies": { "alpathfinder": "^0.6.0", "axios": "^1.9.0", "is-number": "^7.0.0", "lru-cache": "^11.2.6", "mongoose": "^8.15.0", "socket.io-client": "^4.8.1" } }, "sha512-QP2qdAvqUSYJ/vCBMFmVFMbGIGLRLaNYhILeIDDLb+P3vmzUcwS7aI+mhY99uoL+lobK5i5qD/MPV8KwF5fsPw=="],
+    "alclient": ["alclient@0.26.15", "", { "dependencies": { "alpathfinder": "^0.6.0", "axios": "^1.9.0", "is-number": "^7.0.0", "lru-cache": "^11.2.6", "mongoose": "^8.15.0", "socket.io-client": "^4.8.1" } }, "sha512-fy+x+WEjm2O3as1ailryJZbgZDX1NqIZen2aZ3+KBcrTK9tY8i1EitdsbC5NsfnNbmGN9dZFkSKIJbndrx65rQ=="],
 
     "alpathfinder": ["alpathfinder@0.6.0", "", { "dependencies": { "typed-adventureland": "^0.0.55" } }, "sha512-ytKxt8skr3JWQvTIdI/7drPJNhVUc5hUJcRkL3WwMCVNQG7AynSK9bPBtHsVZVZfZPAWfxwSqxZ3XbGjooSfYQ=="],
 
