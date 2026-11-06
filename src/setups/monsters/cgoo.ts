@@ -17,7 +17,7 @@ export const cgooSetups: Setups = [
     configs: [
       {
         ctype: 'ranger',
-        require: (bot) => bot.range > 64, // Need high range to avoid dreturn
+        require: (bot) => bot.range > bot.G.monsters.cgoo.range + 25, // Enough range to kite
         strategies: [CGOO_RANGER_ATTACK_STRATEGY, CGOO_MOVE_STRATEGY],
       },
     ],
