@@ -28,6 +28,13 @@ export const defaultPrioritization: TargetPrioritizer = (bot) => (a, b) => {
 };
 
 /**
+ * Entity prioritization based purely on closest distance to the bot.
+ */
+export const closestPrioritization: TargetPrioritizer = (bot) => (a, b) => {
+  return Tools.distance(bot, a) - Tools.distance(bot, b);
+};
+
+/**
  * Entity prioritization based purely on furthest distance from the bot.
  */
 export const furthestPrioritization: TargetPrioritizer = (bot) => (a, b) => {
