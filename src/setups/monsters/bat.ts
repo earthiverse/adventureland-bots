@@ -11,6 +11,7 @@ const BAT_MOVE_STRATEGY = new BasicMoveStrategy({ type: 'bat' });
 // TODO: Actual strategies per class
 
 export const batSetups: Setups = [
+  // Ranger
   {
     priority: (bots) => 1 + getPriority(bots, { typeList: ['bat'] }),
     configs: [
@@ -20,6 +21,8 @@ export const batSetups: Setups = [
       },
     ],
   },
+
+  // Any
   {
     priority: (bots) => getPriority(bots, { typeList: ['bat'] }),
     configs: [

@@ -2,6 +2,8 @@ import type { Entity, GetEntitiesFilters, GetEntityFilters, MonsterName, PingCom
 import { LRUCache } from 'lru-cache/raw';
 
 import type { Strategy, StrategyLoops } from '@/types/strategy';
+import type { TargetPrioritizer } from '@/types/targeting';
+import { defaultPrioritization } from '@/utils/targeting';
 
 export const IGNORED_MONSTERS = new LRUCache<string, true>({
   max: 50,
@@ -19,6 +21,7 @@ export interface AttackStrategyOptions {
   willBurnToDeath?: boolean;
   willDieToProjectiles?: boolean;
   maxTargets?: number;
+  prioritization?: TargetPrioritizer | undefined;
 }
 
 export class AttackStrategy<
@@ -86,27 +89,8 @@ export class AttackStrategy<
     });
 
     // Prioritize targets
-    entities.sort((a, b) => {
-      // Prioritize monsters that can't burn to death
-      const aWillBurn = a.couldBurnToDeath();
-      const bWillBurn = b.couldBurnToDeath();
-      if (aWillBurn && !bWillBurn) return 1;
-      if (!aWillBurn && bWillBurn) return -1;
-
-      // Prioritize monsters that aren't guaranteed to die to projectiles
-      const aCouldDie = a.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities);
-      const bCouldDie = b.couldDieToProjectiles(bot, bot.projectiles, bot.players, bot.entities);
-      if (aCouldDie && !bCouldDie) return 1;
-      if (!aCouldDie && bCouldDie) return -1;
-
-      // Prioritize monsters with a target
-      if (a.target && !b.target) return -1;
-      // eslint-disable-next-line unicorn/prefer-ternary
-      if (!a.target && b.target) return 1;
-
-      // Prioritize monsters with lower HP
-      return a.hp - b.hp;
-    });
+      const prioritizer = this.options.prioritization ?? defaultPrioritization;
+      entities.sort(prioritizer(bot));
 
     return entities;
   }

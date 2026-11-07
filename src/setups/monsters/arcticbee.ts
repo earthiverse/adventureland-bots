@@ -11,6 +11,7 @@ const ARCTICBEE_MOVE_STRATEGY = new BasicMoveStrategy({ type: 'arcticbee' });
 // TODO: Actual strategies per class
 
 export const arcticbeeSetups: Setups = [
+  // Ranger
   {
     priority: (bots) => 1 + getPriority(bots, { typeList: ['arcticbee'] }),
     configs: [
@@ -20,6 +21,8 @@ export const arcticbeeSetups: Setups = [
       },
     ],
   },
+
+  // Any
   {
     priority: (bots) => getPriority(bots, { typeList: ['arcticbee'] }),
     configs: [

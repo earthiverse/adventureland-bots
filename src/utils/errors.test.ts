@@ -32,4 +32,3 @@ describe('ignoreErrors', () => {
     expect(unhandledTriggered).toBe(false);
   });
 });
-

@@ -22,6 +22,7 @@ import { minimushSetups } from './setups/monsters/minimush';
 import { phoenixSetups } from './setups/monsters/phoenix';
 import { poisioSetups } from './setups/monsters/poisio';
 import { porcupineSetups } from './setups/monsters/porcupine';
+import { pratSetups } from './setups/monsters/prat';
 import { ratSetups } from './setups/monsters/rat';
 import { snakeSetups } from './setups/monsters/snake';
 import { squigSetups } from './setups/monsters/squig';
@@ -99,6 +100,7 @@ const manager = new SetupManager([
   ...phoenixSetups,
   ...poisioSetups,
   ...porcupineSetups,
+  ...pratSetups,
   ...ratSetups,
   ...snakeSetups,
   ...squigSetups,
