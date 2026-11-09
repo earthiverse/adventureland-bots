@@ -24,7 +24,9 @@ import { poisioSetups } from './setups/monsters/poisio';
 import { porcupineSetups } from './setups/monsters/porcupine';
 import { pratSetups } from './setups/monsters/prat';
 import { ratSetups } from './setups/monsters/rat';
+import { scorpionSetups } from './setups/monsters/scorpion';
 import { snakeSetups } from './setups/monsters/snake';
+import { spiderSetups } from './setups/monsters/spider';
 import { squigSetups } from './setups/monsters/squig';
 import { targeta500Setups } from './setups/monsters/target_a500';
 import { targetar900Setups } from './setups/monsters/target_ar900';
@@ -102,7 +104,9 @@ const manager = new SetupManager([
   ...porcupineSetups,
   ...pratSetups,
   ...ratSetups,
+  ...scorpionSetups,
   ...snakeSetups,
+  ...spiderSetups,
   ...squigSetups,
   ...targeta500Setups,
   ...targetar900Setups,

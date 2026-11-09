@@ -89,8 +89,8 @@ export class AttackStrategy<
     });
 
     // Prioritize targets
-      const prioritizer = this.options.prioritization ?? defaultPrioritization;
-      entities.sort(prioritizer(bot));
+    const prioritizer = this.options.prioritization ?? defaultPrioritization;
+    entities.sort(prioritizer(bot));
 
     return entities;
   }

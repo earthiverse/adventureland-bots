@@ -13,7 +13,7 @@ const TARGETA500_MOVE_STRATEGY = new BasicMoveStrategy({ type: 'target_a500' });
 export const targeta500Setups: Setups = [
   // Ranger
   {
-    priority: (bots) => 1 + getPriority(bots, { typeList: ['minimush'] }),
+    priority: (bots) => 1 + getPriority(bots, { typeList: ['target_a500'] }),
     configs: [
       {
         ctype: 'ranger',

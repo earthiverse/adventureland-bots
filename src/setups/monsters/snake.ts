@@ -12,8 +12,9 @@ const SNAKE_MOVE_STRATEGY = new BasicMoveStrategy({ typeList: ['osnake', 'snake'
 // TODO: Actual strategies per class
 
 export const snakeSetups: Setups = [
+  // Ranger
   {
-    priority: (bots) => 1 + getPriority(bots, { typeList: ['rat'] }),
+    priority: (bots) => 1 + getPriority(bots, { typeList: ['osnake', 'snake'] }),
     configs: [
       {
         ctype: 'ranger',
@@ -21,6 +22,8 @@ export const snakeSetups: Setups = [
       },
     ],
   },
+
+  // Any
   {
     priority: (bots) => getPriority(bots, { typeList: ['osnake', 'snake'] }),
     configs: [
