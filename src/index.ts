@@ -17,6 +17,7 @@ import { crocSetups } from './setups/monsters/croc';
 import { frogSetups } from './setups/monsters/frog';
 import { gooSetups } from './setups/monsters/goo';
 import { greenjrSetups } from './setups/monsters/greenjr';
+import { iceroamerSetups } from './setups/monsters/iceroamer';
 import { jrSetups } from './setups/monsters/jr';
 import { minimushSetups } from './setups/monsters/minimush';
 import { phoenixSetups } from './setups/monsters/phoenix';
@@ -28,12 +29,16 @@ import { scorpionSetups } from './setups/monsters/scorpion';
 import { snakeSetups } from './setups/monsters/snake';
 import { spiderSetups } from './setups/monsters/spider';
 import { squigSetups } from './setups/monsters/squig';
+import { stonewormSetups } from './setups/monsters/stoneworm';
 import { targeta500Setups } from './setups/monsters/target_a500';
+import { targeta750Setups } from './setups/monsters/target_a750';
 import { targetar900Setups } from './setups/monsters/target_ar900';
 import { targetr750Setups } from './setups/monsters/target_r750';
 import { tortoiseSetups } from './setups/monsters/tortoise';
+import { xscorpionSetups } from './setups/monsters/xscorpion';
 import { state } from './state/state';
 import { AvoidDeathStrategy } from './strategies/avoid_death';
+import { ItemStrategy } from './strategies/item';
 import { LootStrategy } from './strategies/loot';
 import { MonsterHuntStrategy } from './strategies/monsterhunt';
 import { AvoidStackingStrategy } from './strategies/move/avoid_stacking';
@@ -53,6 +58,7 @@ await AL.Pathfinder.prepare(AL.Game.G);
 
 const AVOID_DEATH_STRATEGY = new AvoidDeathStrategy();
 const AVOID_STACKING_STRATEGY = new AvoidStackingStrategy();
+const ITEM_STRATEGY = new ItemStrategy();
 const LOOT_STRATEGY = new LootStrategy();
 const MONSTER_HUNT_STRATEGY = new MonsterHuntStrategy();
 const PARTY_STRATEGY = new PartyStrategy({ partyLeader: 'Warzair' });
@@ -76,6 +82,7 @@ state.addContext(rangerContext);
 for (const context of [warriorContext, mageContext, rangerContext]) {
   context.applyStrategy(AVOID_DEATH_STRATEGY);
   context.applyStrategy(AVOID_STACKING_STRATEGY);
+  context.applyStrategy(ITEM_STRATEGY);
   context.applyStrategy(LOOT_STRATEGY);
   context.applyStrategy(PARTY_STRATEGY);
   context.applyStrategy(REGEN_STRATEGY);
@@ -97,6 +104,7 @@ const manager = new SetupManager([
   ...frogSetups,
   ...gooSetups,
   ...greenjrSetups,
+  ...iceroamerSetups,
   ...jrSetups,
   ...minimushSetups,
   ...phoenixSetups,
@@ -108,9 +116,12 @@ const manager = new SetupManager([
   ...snakeSetups,
   ...spiderSetups,
   ...squigSetups,
+  ...stonewormSetups,
   ...targeta500Setups,
+  ...targeta750Setups,
   ...targetar900Setups,
   ...targetr750Setups,
   ...tortoiseSetups,
+  ...xscorpionSetups,
 ]);
 manager.start();
