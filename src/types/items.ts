@@ -1,5 +1,15 @@
 import type { CharacterType, ItemName } from 'alclient';
 
+export type ItemLike = {
+  name: ItemName;
+  level?: number | undefined;
+  gift?: number | undefined;
+  expires?: string | undefined;
+  l?: unknown;
+  p?: string | null | undefined;
+  q?: number | undefined;
+};
+
 /**
  * When set to a number, explicit gold price.
  * When set to 'g', base item value from G.items[name].g.
@@ -44,7 +54,7 @@ export interface ExchangeConfig {
 
 export interface HoldConfig {
   /** Which character classes should hold this item */
-  characterTypes: 'all' | readonly CharacterType[] | CharacterType[];
+  characterTypes: 'all' | readonly CharacterType[];
   /** Target quantity to keep in inventory */
   replenish?: number;
   /** Desired inventory slot (0-41) */

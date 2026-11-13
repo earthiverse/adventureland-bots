@@ -1,7 +1,7 @@
 import type { ItemName } from 'alclient';
 
 import type { ItemsConfig } from '@/types/items';
-import { buyAtGoblinPrice, buyAtPontyPrice, craft, exchange, holdFullStack, sellToNpc } from '@/utils/item_config';
+import { buyAtGoblinPrice, buyAtPontyPrice, craft, exchange, holdFullStack, sellToNpc } from '@/utils/items/config';
 
 export const REGEN_ITEMS: readonly ItemName[] = Object.freeze(['hpot0', 'hpot1', 'mpot0', 'mpot1'] as const);
 
