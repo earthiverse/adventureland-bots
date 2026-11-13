@@ -6,7 +6,7 @@ import type { Strategy, StrategyLoops } from '@/types/strategy';
 export interface AvoidStackingStrategyOptions {
   /**
    * Distance threshold to consider entities stacked.
-   * Defaults to 10.
+   * Defaults to 1.
    */
   distance?: number;
 }
@@ -30,7 +30,7 @@ export class AvoidStackingStrategy<
   protected async move(bot: BotType): Promise<false | void> {
     if (bot.isDisabled() || bot.moving || bot.smartMoving) return; // Can't move, or already moving
 
-    const withinRange = this.options.distance ?? 10;
+    const withinRange = this.options.distance ?? 1;
     const players = bot.getPlayers({ isDead: false, withinRange });
     if (players.length === 0) return; // Nobody else is near
 
