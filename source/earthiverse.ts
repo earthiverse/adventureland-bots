@@ -937,9 +937,9 @@ const startMerchantContext = async () => {
             // crypt: {
             //     maxInstances: 10,
             // },
-            // tomb: {
-            //     maxInstances: 3,
-            // },
+            tomb: {
+                maxInstances: 3,
+            },
             // winter_instance: {
             //     maxInstances: 1,
             // },
