@@ -3,7 +3,7 @@ import { checkOnlyEveryMS, setLastCheck } from "./general.js"
 import { CRYPT_MONSTERS, getCryptWaitTime } from "./crypt.js"
 import { Strategist } from "../strategy_pattern/context.js"
 
-export const TOMB_MONSTERS: MonsterName[] = ["ggreenpro", "gredpro", "gbluepro", "gpurplepro"]
+export const TOMB_MONSTERS: MonsterName[] = ["gbluepro", "gredpro", "ggreenpro", "gpurplepro"]
 export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xmagefz"]
 
 const MONSTER_CACHE = new Map<string, MonsterName[]>()

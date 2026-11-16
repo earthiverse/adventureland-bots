@@ -40,7 +40,7 @@ class TombMoveStrategy extends SpecialMonsterMoveStrategy {
             }
         }
 
-        if (entity) return bot.smartMove(entity, { getWithin: bot.range / 2 })
+        if (entity) return bot.smartMove(entity, { getWithin: Math.max(0, bot.range - 15) })
         return super.move(bot) // Go find an entity
     }
 }
@@ -124,6 +124,7 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
         attack: new WarriorAttackStrategy({
             contexts: contexts,
             enableEquipForCleave: true,
+            enableEquipForStomp: true,
             generateEnsureEquipped: {
                 attributes: ["armor", "resistance"],
                 prefer: {
