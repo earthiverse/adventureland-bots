@@ -16,11 +16,13 @@ class WarriorIceGolemAttackStrategy extends WarriorAttackStrategy {
             // No Splash Damage
             this.options.disableCleave = true
             delete this.options.enableEquipForCleave
+            delete this.options.enableEquipForStomp
             delete this.options.enableGreedyAggro
         } else {
             // Additional Cleave Damage
             delete this.options.disableCleave
             this.options.enableEquipForCleave = true
+            this.options.enableEquipForStomp = true
             this.options.enableGreedyAggro = true
         }
     }
@@ -41,11 +43,11 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
                             disableEnergize: true,
                             disableZapper: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "int", "attack"]
+                                attributes: ["armor", "int", "attack"],
                             },
                             type: "icegolem",
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "priest",
@@ -55,11 +57,11 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
                             enableGreedyAggro: true,
                             enableHealStrangers: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "int", "attack"]
+                                attributes: ["armor", "int", "attack"],
                             },
                             type: "icegolem",
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "warrior",
@@ -67,13 +69,13 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableCleave: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "str", "attack"]
+                                attributes: ["armor", "str", "attack"],
                             },
                             type: "icegolem",
                         }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "icegolem_priest,warrior",
@@ -86,11 +88,11 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
                             enableGreedyAggro: true,
                             enableHealStrangers: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "int", "attack"]
+                                attributes: ["armor", "int", "attack"],
                             },
                             type: "icegolem",
                         }),
-                        move: moveStrategy
+                        move: moveStrategy,
                     },
                     {
                         ctype: "warrior",
@@ -98,15 +100,15 @@ export function constructIceGolemSetup(contexts: Strategist<PingCompensatedChara
                             contexts: contexts,
                             disableCleave: true,
                             generateEnsureEquipped: {
-                                attributes: ["armor", "str", "attack"]
+                                attributes: ["armor", "str", "attack"],
                             },
                             type: "icegolem",
                         }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
 
@@ -121,9 +123,9 @@ export function constructIceGolemHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "mage",
                         attack: new MageAttackStrategy({ contexts: contexts, type: "icegolem", hasTarget: true }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "icegolem_paladin",
@@ -131,19 +133,25 @@ export function constructIceGolemHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "paladin",
                         attack: new PaladinAttackStrategy({ contexts: contexts, type: "icegolem", hasTarget: true }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "icegolem_priest",
                 characters: [
                     {
                         ctype: "priest",
-                        attack: new PriestAttackStrategy({ contexts: contexts, disableAbsorb: true, enableHealStrangers: true, type: "icegolem", hasTarget: true }),
-                        move: moveStrategy
-                    }
-                ]
+                        attack: new PriestAttackStrategy({
+                            contexts: contexts,
+                            disableAbsorb: true,
+                            enableHealStrangers: true,
+                            type: "icegolem",
+                            hasTarget: true,
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "icegolem_ranger",
@@ -151,9 +159,9 @@ export function constructIceGolemHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "ranger",
                         attack: new RangerAttackStrategy({ contexts: contexts, type: "icegolem", hasTarget: true }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "icegolem_rogue",
@@ -161,20 +169,26 @@ export function constructIceGolemHelperSetup(contexts: Strategist<PingCompensate
                     {
                         ctype: "rogue",
                         attack: new RogueAttackStrategy({ contexts: contexts, type: "icegolem", hasTarget: true }),
-                        move: moveStrategy
-                    }
-                ]
+                        move: moveStrategy,
+                    },
+                ],
             },
             {
                 id: "icegolem_warrior",
                 characters: [
                     {
                         ctype: "warrior",
-                        attack: new WarriorAttackStrategy({ contexts: contexts, disableAgitate: true, disableCleave: true, type: "icegolem", hasTarget: true }),
-                        move: moveStrategy
-                    }
-                ]
-            }
-        ]
+                        attack: new WarriorAttackStrategy({
+                            contexts: contexts,
+                            disableAgitate: true,
+                            disableCleave: true,
+                            type: "icegolem",
+                            hasTarget: true,
+                        }),
+                        move: moveStrategy,
+                    },
+                ],
+            },
+        ],
     }
 }
