@@ -173,8 +173,7 @@ const getHolidaySpiritStrategy = new GetHolidaySpiritStrategy()
 const finishMonsterHuntStrategy = new FinishMonsterHuntStrategy()
 const getMonsterHuntStrategy = new GetMonsterHuntStrategy()
 // Party
-const partyAcceptStrategy =
-    new AcceptPartyRequestStrategy(/** TODO: TEMP: Allow anyone to join { allowList: PARTY_ALLOWLIST } */)
+const partyAcceptStrategy = new AcceptPartyRequestStrategy({ allowList: PARTY_ALLOWLIST })
 const partyRequestStrategy = new RequestPartyStrategy(PARTY_LEADER)
 // Mage
 const magiportStrategy = new MagiportOthersSmartMovingToUsStrategy(ALL_CONTEXTS)
