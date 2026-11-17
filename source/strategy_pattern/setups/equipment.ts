@@ -40,6 +40,16 @@ export const ZAPPER_STRRING: EnsureEquipped = {
     ring2: { name: "strring", filters: RETURN_HIGHEST },
 }
 
+export const DUAL_CRING: EnsureEquipped = {
+    ring1: { name: "cring", filters: RETURN_HIGHEST },
+    ring2: { name: "cring", filters: RETURN_HIGHEST },
+}
+
+export const DUAL_STRRING: EnsureEquipped = {
+    ring1: { name: "strring", filters: RETURN_HIGHEST },
+    ring2: { name: "strring", filters: RETURN_HIGHEST },
+}
+
 export const MAGE_SPLASH_WEAPONS: EnsureEquipped = {
     mainhand: { name: "gstaff", filters: RETURN_HIGHEST },
     offhand: UNEQUIP,

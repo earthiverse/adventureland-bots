@@ -4,7 +4,7 @@ import { PriestAttackStrategy } from "../strategies/attack_priest.js"
 import { SpecialMonsterMoveStrategy } from "../strategies/move.js"
 import { CharacterConfig, Setup } from "./base.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
-import { RETURN_HIGHEST } from "./equipment.js"
+import { DUAL_CRING, DUAL_STRRING, RETURN_HIGHEST } from "./equipment.js"
 import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { MageAttackStrategy } from "../strategies/attack_mage.js"
@@ -58,6 +58,7 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
                     mainhand: { name: "firebow", filters: RETURN_HIGHEST },
                     offhand: { name: "t2quiver", filters: RETURN_HIGHEST },
                     orb: { name: "orba", filters: RETURN_HIGHEST },
+                    ...DUAL_CRING,
                 },
             },
             hasTarget: true,
@@ -95,6 +96,7 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
                 prefer: {
                     mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
                     orb: { name: "orba", filters: RETURN_HIGHEST },
+                    ...DUAL_CRING,
                 },
             },
             typeList: TOMB_MONSTERS,
@@ -112,6 +114,7 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
                 prefer: {
                     mainhand: { name: "firestaff", filters: RETURN_HIGHEST },
                     orb: { name: "orba", filters: RETURN_HIGHEST },
+                    ...DUAL_CRING,
                 },
             },
             typeList: TOMB_MONSTERS,
@@ -131,6 +134,7 @@ export function constructTombSetup(contexts: Strategist<PingCompensatedCharacter
                     mainhand: { name: "fireblade", filters: RETURN_HIGHEST },
                     offhand: { name: "fireblade", filters: RETURN_HIGHEST },
                     orb: { name: "orba", filters: RETURN_HIGHEST },
+                    ...DUAL_STRRING,
                 },
             },
             typeList: TOMB_MONSTERS,

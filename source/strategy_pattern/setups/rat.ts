@@ -6,7 +6,7 @@ import { RangerAttackStrategy } from "../strategies/attack_ranger.js"
 import { WarriorAttackStrategy } from "../strategies/attack_warrior.js"
 import { ImprovedMoveStrategy } from "../strategies/move.js"
 import { Setup } from "./base"
-import { MAGE_FAST, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
+import { DUAL_STRRING, MAGE_FAST, PRIEST_FAST, WARRIOR_SPLASH } from "./equipment.js"
 import { RogueAttackStrategy } from "../strategies/attack_rogue.js"
 
 export function constructRatSetup(contexts: Strategist<PingCompensatedCharacter>[]): Setup {
@@ -84,7 +84,7 @@ export function constructRatSetup(contexts: Strategist<PingCompensatedCharacter>
                             enableEquipForCleave: true,
                             enableGreedyAggro: true,
                             generateEnsureEquipped: {
-                                prefer: { ...WARRIOR_SPLASH },
+                                prefer: { ...WARRIOR_SPLASH, ...DUAL_STRRING },
                             },
                             type: "rat",
                         }),
