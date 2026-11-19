@@ -20,6 +20,7 @@ export class BoosterStrategy<Type extends Character> implements Strategy<Type> {
 
     protected async buyBooster(bot: Type) {
         if (bot.rip) return
+        if (bot.map.startsWith("bank")) return // Can't buy in bank
         if (bot.hasItem(this.booster)) return // We already have one
         if (!bot.canBuy(this.booster)) return // We can't buy it
 

@@ -30,6 +30,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
 
         this.loops.set("buy", {
             fn: async (bot: Type) => {
+                if (bot.map.startsWith("bank")) return // Can't buy in bank
                 await this.buyFromPlayers(bot).catch(console.error)
                 await this.buyFromPonty(bot).catch(console.error)
                 await this.buyReplenishables(bot).catch(console.error)
