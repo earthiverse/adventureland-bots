@@ -1597,15 +1597,31 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         if (bot.slots.mainhand.level < broom.level) return bot.equip(broomPos) // Replace with better broom
     }
 
-    protected async doBanking(bot: Merchant): Promise<void> {
-        let wantToBank = false
-        if (bot.esize < 2) wantToBank = true
+    protected async doBanking(bot: Merchant, force = false): Promise<void> {
+        const retryKey = `${bot.id}_banking_retry`
+        if (!force && !checkOnlyEveryMS(retryKey, 60_000, false)) return // Wait before retrying after failed or incomplete banking
+
+        let wantToBank = force
+        if (!wantToBank && bot.esize < 2) wantToBank = true
         if (!wantToBank && this.options.goldToHold && bot.gold > this.options.goldToHold) wantToBank = true
         const checkKey = `${bot.id}_banking`
         if (!wantToBank && checkOnlyEveryMS(checkKey, 600_000, false)) wantToBank = true
 
         if (!wantToBank) return
 
+        try {
+            await this.runBanking(bot, checkKey)
+            if (bot.esize < 2 || (this.options.goldToHold && bot.gold > this.options.goldToHold)) {
+                // Back off if banking could not free inventory space or deposit excess gold
+                setLastCheck(retryKey)
+            }
+        } catch (error) {
+            setLastCheck(retryKey)
+            throw error
+        }
+    }
+
+    protected async runBanking(bot: Merchant, checkKey: string): Promise<void> {
         await bot.smartMove(bankingPosition)
 
         const itemCounts = await getItemCounts(bot.owner)
@@ -1701,7 +1717,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await Promise.allSettled(sellPromises)
 
                 // Then restart banking from the beginning
-                return this.doBanking(bot)
+                return this.runBanking(bot, checkKey)
             }
         }
 
