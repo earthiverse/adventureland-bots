@@ -1485,7 +1485,7 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
     }
 }
 
-type LevelCounts = Map<
+export type LevelCounts = Map<
     number | undefined,
     {
         /** How many of this item @ this level do we have? */
@@ -1494,7 +1494,7 @@ type LevelCounts = Map<
         inventorySpaces: number
     }
 >
-type ItemCounts = Map<ItemName, LevelCounts>
+export type ItemCounts = Map<ItemName, LevelCounts>
 type OwnerItemCounts = Map<string, ItemCounts>
 
 export const OWNER_ITEM_COUNTS: OwnerItemCounts = new Map()

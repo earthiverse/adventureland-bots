@@ -420,3 +420,21 @@ export function locateItemsInBank(bot: PingCompensatedCharacter, item: ItemName,
 
     return items.sort(sortByPackNumberAsc)
 }
+
+/**
+ * Returns a key identifying partial bank stacks that can combine together, or `undefined` if the item cannot be stacked.
+ */
+export function getBankStackKey(item: ItemData & { b?: unknown }, g = AL.Game.G): string | undefined {
+    if (!item.q) return undefined // Not stackable
+    if (item.l || item.b) return undefined // Locked or blocked items cannot stack
+
+    const stackSize = g.items[item.name]?.s
+    if (!stackSize) return undefined // Not stackable
+    const maxStack = typeof stackSize === "number" ? stackSize : 9999
+    if (item.q >= maxStack) return undefined // Full stack
+
+    const title = item.p && !g.titles?.[item.p]?.stackable ? item.p : ""
+    const data = item.name === "cxjar" ? (item.data ?? "") : ""
+    const pvp = item.v ? "1" : "0"
+    return `${item.name}\0${title}\0${data}\0${pvp}`
+}

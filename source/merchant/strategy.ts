@@ -23,6 +23,7 @@ import AL, {
 import { TradeItem } from "alclient/build/TradeItem.js"
 import {
     BankItemPosition,
+    getBankStackKey,
     goAndDepositItem,
     goAndWithdrawItem,
     locateEmptyBankSlots,
@@ -1706,32 +1707,34 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
         // If we have space, clean the bank
         emptySlot = bot.getFirstEmptyInventorySlot()
-        if (emptySlot) {
-            // Get item counts
-            const countableCounts = new Map<ItemName, [BankPackName, number, number][]>()
+        if (emptySlot !== undefined) {
+            // Group partial bank stacks by stack-compatible key
+            const countableCounts = new Map<string, { itemName: ItemName; stacks: [BankPackName, number, number][] }>()
             for (const [bankPack, packItems] of bot.getBankItems()) {
                 for (const [bankSlot, packItem] of packItems) {
-                    if (!packItem.q) continue // Not stackable
-                    const gInfo = Game.G.items[packItem.name]
-                    if (packItem.q >= gInfo.s) continue // Full stack
+                    const stackKey = getBankStackKey(packItem)
+                    if (!stackKey) continue // Not stackable, locked/blocked, or full stack
 
-                    const countable = countableCounts.get(packItem.name) ?? []
-                    countable.push([bankPack, bankSlot, packItem.q])
-                    countableCounts.set(packItem.name, countable)
+                    let entry = countableCounts.get(stackKey)
+                    if (!entry) {
+                        entry = { itemName: packItem.name, stacks: [] }
+                        countableCounts.set(stackKey, entry)
+                    }
+                    entry.stacks.push([bankPack, bankSlot, packItem.q])
                 }
             }
             if (bot.esize >= 2) {
                 // We can combine stacks to their max stackable size
-                for (const [itemName, counts] of countableCounts) {
+                for (const { itemName, stacks: counts } of countableCounts.values()) {
                     // Sort highest counts to lowest count
-                    counts.sort((a, b) => a[2] - b[2])
+                    counts.sort((a, b) => b[2] - a[2])
                     const gInfo = Game.G.items[itemName]
 
                     for (let countIndex = 1; countIndex < counts.length; countIndex++) {
                         const [packName1, bankSlot1, q1] = counts[countIndex - 1]
                         const [packName2, bankSlot2, q2] = counts[countIndex]
 
-                        if (q1 + q2 < gInfo.s) {
+                        if (q1 + q2 <= gInfo.s) {
                             // We can stack the first one on the second one
 
                             // Withdraw both so they stack on each other
@@ -1750,7 +1753,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                             counts.splice(countIndex, 1)
 
                             // Re-sort
-                            counts.sort((a, b) => a[2] - b[2])
+                            counts.sort((a, b) => b[2] - a[2])
                         } else if (q1 < gInfo.s) {
                             // We can make one a full stack
                             // Withdraw the lower quantity stack
@@ -1765,21 +1768,17 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                             // Deposit the rest where we got them from
                             await goAndDepositItem(bot, packName2, bankSlot2, emptySlot)
 
-                            // Update counts
-                            counts[countIndex - 1] = [packName1, bankSlot1, bot.bank[packName1][bankSlot1].q]
-                            counts[countIndex] = [packName2, bankSlot2, bot.bank[packName2][bankSlot2].q]
-
                             // Update counts and re-sort
                             counts[countIndex - 1] = [packName1, bankSlot1, bot.bank[packName1][bankSlot1].q]
                             counts[countIndex] = [packName2, bankSlot2, bot.bank[packName2][bankSlot2].q]
-                            counts.sort((a, b) => a[2] - b[2])
+                            counts.sort((a, b) => b[2] - a[2])
                         }
                     }
                 }
             } else if (bot.esize === 1) {
                 // We can combine stacks if two combine to at most their stackable size
-                for (const [itemName, counts] of countableCounts) {
-                    // Sort highest counts to lowest count
+                for (const { itemName, stacks: counts } of countableCounts.values()) {
+                    // Sort lowest counts to highest count
                     counts.sort((a, b) => a[2] - b[2])
                     const gInfo = Game.G.items[itemName]
 
@@ -1787,15 +1786,17 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                         const [packName1, bankSlot1, q1] = counts[countIndex - 1]
                         const [packName2, bankSlot2, q2] = counts[countIndex]
 
-                        if (q1 + q2 < gInfo.s) {
+                        if (q1 + q2 <= gInfo.s) {
                             // We can stack the first one on the second one
                             await goAndWithdrawItem(bot, packName1, bankSlot1, emptySlot)
                             await goAndWithdrawItem(bot, packName2, bankSlot2, -1)
                             if (bot.items[emptySlot]?.name !== itemName) return this.doBanking(bot) // We have a different item!?
                             await goAndDepositItem(bot, packName2, bankSlot2, emptySlot)
 
-                            // Update counts and re-sort
+                            // Update count and remove the emptied slot
                             counts[countIndex] = [packName2, bankSlot2, q1 + q2]
+                            countIndex -= 1
+                            counts.splice(countIndex, 1)
                             counts.sort((a, b) => a[2] - b[2])
                         } else {
                             // We don't have enough empty space to split them to make full stacks
