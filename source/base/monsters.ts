@@ -112,7 +112,7 @@ export async function getRecentProtectors(
     for (const protector of await AL.EntityModel.find(
         {
             $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime("tomb") } }],
-            lastSeen: { $gt: Date.now() - 60000 },
+            lastSeen: { $gt: Date.now() - 300_000 },
             serverIdentifier: serverIdentifier,
             serverRegion: serverRegion,
             type: { $in: TOMB_MONSTERS },
@@ -150,7 +150,7 @@ export async function getRecentXMages(
     for (const xmage of await AL.EntityModel.find(
         {
             $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime("winter_instance") } }],
-            lastSeen: { $gt: Date.now() - 60000 },
+            lastSeen: { $gt: Date.now() - 300_000 },
             serverIdentifier: serverIdentifier,
             serverRegion: serverRegion,
             type: { $in: XMAGE_MONSTERS },
@@ -188,7 +188,7 @@ export async function getRecentCryptMonsters(
     for (const cryptMonster of await AL.EntityModel.find(
         {
             $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime("crypt") } }],
-            lastSeen: { $gt: Date.now() - 60_000 },
+            lastSeen: { $gt: Date.now() - 300_000 },
             serverIdentifier: serverIdentifier,
             serverRegion: serverRegion,
             type: { $in: CRYPT_MONSTERS },
