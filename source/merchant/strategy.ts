@@ -1616,7 +1616,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
         // Dump everything in the bank
         for (const [slot, item] of bot.getItems()) {
-            if (item.l) continue // We don't deposit locked items
+            if (item.l || (item as { b?: unknown }).b) continue // Don't deposit locked or blocked items
 
             if (wantToDestroy(this.options.itemConfig, item)) {
                 await bot.destroy(slot) // Destroy works in the bank (as of 2024-02-26), we'll just destroy it now
@@ -1631,11 +1631,17 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 const stackableLocations = locateItemsInBank(bot, item.name, {
                     quantityLessThan: AL.Game.G.items[item.name].s - item.q + 1,
                     data: item.data,
+                    locked: false,
+                    special: item.p ?? false,
                 })
                 if (stackableLocations.length) {
-                    // We can stack it on an existing stack
-                    await goAndDepositItem(bot, stackableLocations[0][0], -1, slot).catch(suppress_errors)
-                    continue
+                    // Try stacking on an existing stack; fall back to an empty slot on error
+                    try {
+                        await goAndDepositItem(bot, stackableLocations[0][0], -1, slot)
+                        continue
+                    } catch (_error) {
+                        if (!bot.items[slot]) continue // Item was already deposited
+                    }
                 }
             }
 
