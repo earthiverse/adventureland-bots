@@ -1287,7 +1287,7 @@ export class MerchantStrategy implements Strategy<Merchant> {
                 if (bot.serverData.region == DEFAULT_REGION && bot.serverData.name == DEFAULT_IDENTIFIER) {
                     for (const key in this.options.enableInstanceProvider) {
                         const checkKey = `${bot.id}_instance_open_${key}`
-                        if (!checkOnlyEveryMS(checkKey, 1.8e6, false)) continue // Open a new instance no more than once an hour
+                        if (!checkOnlyEveryMS(checkKey, 300_000, false)) continue // Open a new instance no more than once every 5 minutes
                         this.debug(bot, `InstanceProvider - checking if we can open a new ${key} instance`)
                         const map = key as MapName
 
