@@ -31,7 +31,7 @@ class TombMoveStrategy extends SpecialMonsterMoveStrategy {
             // Check for the entity in all of the contexts
             for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
                 const friend = context.bot
-                if (friend.map !== bot.map) continue
+                if (friend.map !== bot.map || friend.in !== bot.in) continue
 
                 const newEntity = friend.getEntity(filter)
                 if (!newEntity) continue

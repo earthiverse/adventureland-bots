@@ -45,7 +45,7 @@ class CryptMoveStratey extends KiteMoveStrategy {
             let entity: Entity
             for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
                 const friend = context.bot
-                if (friend.map !== bot.map) continue
+                if (friend.map !== bot.map || friend.in !== bot.in) continue
 
                 entity = friend.getEntity(filter)
                 if (entity) break
@@ -463,7 +463,7 @@ class CryptHelperMoveStratey extends KiteMoveStrategy {
             let entity: Entity
             for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
                 const friend = context.bot
-                if (friend.map !== bot.map) continue
+                if (friend.map !== bot.map || friend.in !== bot.in) continue
 
                 entity = friend.getEntity(filter)
                 if (entity) break
