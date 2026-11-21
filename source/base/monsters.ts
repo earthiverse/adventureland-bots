@@ -1,4 +1,4 @@
-import AL, { MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { GMap, MapName, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
 import { checkOnlyEveryMS, setLastCheck } from "./general.js"
 import { CRYPT_MONSTERS, getCryptWaitTime } from "./crypt.js"
 import { Strategist } from "../strategy_pattern/context.js"
@@ -7,6 +7,22 @@ export const TOMB_MONSTERS: MonsterName[] = ["gbluepro", "gredpro", "ggreenpro",
 export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xmagefz"]
 
 const MONSTER_CACHE = new Map<string, MonsterName[]>()
+
+export function isInstanceMonsterKilled(
+    map: MapName,
+    type: MonsterName,
+    killed?: Partial<Record<MonsterName, number>>,
+    gMap: GMap | undefined = AL.Game.G?.maps[map],
+): boolean {
+    if (!killed) return false
+
+    // Sum all spawn entries for this type (maps may list the same monster in multiple boundaries)
+    let totalCount = 0
+    for (const monster of gMap?.monsters ?? []) {
+        if (monster.type === type) totalCount += monster.count
+    }
+    return (killed[type] ?? 0) >= Math.max(totalCount, 1) // Phase spawns (respawn_as) have count 0
+}
 
 export function invalidateMonsterCache(serverIdentifier?: ServerIdentifier, serverRegion?: ServerRegion) {
     if (!serverIdentifier || !serverRegion) {
@@ -95,35 +111,82 @@ export async function getRecentSpecialMonsters(
     return types
 }
 
-export async function getRecentProtectors(
+async function getRecentInstanceMonsters(
+    cachePrefix: string,
+    map: MapName,
+    monsterTypes: MonsterName[],
     serverIdentifier: ServerIdentifier,
     serverRegion: ServerRegion,
 ): Promise<MonsterName[]> {
     if (!AL.Database.connection) return [] // No database
 
     // Use the cache if we've recently checked
-    const key = `protector_${serverIdentifier}_${serverRegion}}`
+    const key = `${cachePrefix}_${serverIdentifier}_${serverRegion}`
     if (MONSTER_CACHE.has(key) && !checkOnlyEveryMS(key, 5_000, false)) {
         return MONSTER_CACHE.get(key)
     }
 
     // Get the latest data
-    const types: MonsterName[] = []
-    for (const protector of await AL.EntityModel.find(
+    const entities = await AL.EntityModel.find(
         {
-            $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime("tomb") } }],
+            $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime(map) } }],
             lastSeen: { $gt: Date.now() - 300_000 },
             serverIdentifier: serverIdentifier,
             serverRegion: serverRegion,
-            type: { $in: TOMB_MONSTERS },
+            type: { $in: monsterTypes },
         },
         {
+            _id: 1,
+            in: 1,
             type: 1,
         },
     )
         .lean()
-        .exec()) {
-        types.push(protector.type)
+        .exec()
+
+    // Load kill counts for each referenced instance
+    const instanceIds = [
+        ...new Set(entities.map((entity) => entity.in).filter((id): id is string => Boolean(id && id !== map))),
+    ]
+    const killedByInstance = new Map<string, Partial<Record<MonsterName, number>>>()
+    if (instanceIds.length) {
+        const instances = await AL.InstanceModel.find(
+            {
+                in: { $in: instanceIds },
+                map: map,
+                serverIdentifier: serverIdentifier,
+                serverRegion: serverRegion,
+            },
+            {
+                _id: 0,
+                in: 1,
+                killed: 1,
+            },
+        )
+            .lean()
+            .exec()
+        for (const instance of instances) {
+            if (instance.in && instance.killed) killedByInstance.set(instance.in, instance.killed)
+        }
+    }
+
+    // Filter out and delete entities whose type is already cleared in that instance
+    const types: MonsterName[] = []
+    const staleEntityIds = []
+    for (const entity of entities) {
+        const killed = entity.in ? killedByInstance.get(entity.in) : undefined
+        if (isInstanceMonsterKilled(map, entity.type, killed)) {
+            // Leftover placeholder or stale entity doc from an already-killed spawn
+            staleEntityIds.push(entity._id)
+            continue
+        }
+        types.push(entity.type)
+    }
+    if (staleEntityIds.length) {
+        AL.EntityModel.deleteMany({ _id: { $in: staleEntityIds } })
+            .lean()
+            .exec()
+            .catch(console.error)
     }
 
     // Update the cache
@@ -131,80 +194,25 @@ export async function getRecentProtectors(
     setLastCheck(key)
 
     return types
+}
+
+export async function getRecentProtectors(
+    serverIdentifier: ServerIdentifier,
+    serverRegion: ServerRegion,
+): Promise<MonsterName[]> {
+    return getRecentInstanceMonsters("protector", "tomb", TOMB_MONSTERS, serverIdentifier, serverRegion)
 }
 
 export async function getRecentXMages(
     serverIdentifier: ServerIdentifier,
     serverRegion: ServerRegion,
 ): Promise<MonsterName[]> {
-    if (!AL.Database.connection) return [] // No database
-
-    // Use the cache if we've recently checked
-    const key = `xmage_${serverIdentifier}_${serverRegion}}`
-    if (MONSTER_CACHE.has(key) && !checkOnlyEveryMS(key, 5_000, false)) {
-        return MONSTER_CACHE.get(key)
-    }
-
-    // Get the latest data
-    const types: MonsterName[] = []
-    for (const xmage of await AL.EntityModel.find(
-        {
-            $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime("winter_instance") } }],
-            lastSeen: { $gt: Date.now() - 300_000 },
-            serverIdentifier: serverIdentifier,
-            serverRegion: serverRegion,
-            type: { $in: XMAGE_MONSTERS },
-        },
-        {
-            type: 1,
-        },
-    )
-        .lean()
-        .exec()) {
-        types.push(xmage.type)
-    }
-
-    // Update the cache
-    MONSTER_CACHE.set(key, types)
-    setLastCheck(key)
-
-    return types
+    return getRecentInstanceMonsters("xmage", "winter_instance", XMAGE_MONSTERS, serverIdentifier, serverRegion)
 }
 
 export async function getRecentCryptMonsters(
     serverIdentifier: ServerIdentifier,
     serverRegion: ServerRegion,
 ): Promise<MonsterName[]> {
-    if (!AL.Database.connection) return [] // No database
-
-    // Use the cache if we've recently checked
-    const key = `crypt_${serverIdentifier}_${serverRegion}}`
-    if (MONSTER_CACHE.has(key) && !checkOnlyEveryMS(key, 5_000, false)) {
-        return MONSTER_CACHE.get(key)
-    }
-
-    // Get the latest data
-    const types: MonsterName[] = []
-    for (const cryptMonster of await AL.EntityModel.find(
-        {
-            $or: [{ firstSeen: null }, { firstSeen: { $lt: Date.now() - getCryptWaitTime("crypt") } }],
-            lastSeen: { $gt: Date.now() - 300_000 },
-            serverIdentifier: serverIdentifier,
-            serverRegion: serverRegion,
-            type: { $in: CRYPT_MONSTERS },
-        },
-        {
-            type: 1,
-        },
-    )
-        .lean()
-        .exec()) {
-        types.push(cryptMonster.type)
-    }
-
-    // Update the cache
-    MONSTER_CACHE.set(key, types)
-    setLastCheck(key)
-
-    return types
+    return getRecentInstanceMonsters("crypt", "crypt", CRYPT_MONSTERS, serverIdentifier, serverRegion)
 }
