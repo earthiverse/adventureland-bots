@@ -72,8 +72,24 @@ export async function refreshCryptMonsters(bot: Character, map = bot.map, instan
         .exec()
 }
 
+export function isInstanceMonsterKilled(
+    map: MapName,
+    type: MonsterName,
+    killed?: Partial<Record<MonsterName, number>>,
+    gMap: GMap | undefined = AL.Game.G?.maps[map],
+): boolean {
+    if (!killed) return false
+
+    // Sum all spawn entries for this type (maps may list the same monster in multiple boundaries)
+    let totalCount = 0
+    for (const monster of gMap?.monsters ?? []) {
+        if (monster.type === type) totalCount += monster.count
+    }
+    return (killed[type] ?? 0) >= Math.max(totalCount, 1) // Phase spawns (respawn_as) have count 0
+}
+
 /**
- * Removes the instance and monsters from the DB if we've killed all the monsters in it
+ * Removes finished instances and leftover EntityModel records for already-killed monster types
  */
 export async function cleanInstances() {
     if (!AL.Database.connection) return
@@ -82,16 +98,23 @@ export async function cleanInstances() {
     for (const instance of instances) {
         if (!instance.killed) continue // Nothing has been killed yet
 
+        // Collect unique special monster types for this instance map
+        const gMap = AL.Game.G.maps[instance.map]
+        const specialTypes = new Set<MonsterName>()
+        for (const monster of gMap?.monsters ?? []) {
+            if (AL.Constants.SPECIAL_MONSTERS.includes(monster.type)) specialTypes.add(monster.type)
+        }
+
+        // Partition special types into already killed vs. still remaining
+        const killedTypes: MonsterName[] = []
         let deleteInstance = true
-
-        for (const monster of (AL.Game.G.maps[instance.map] as GMap).monsters) {
-            const mtype = monster.type
-            if (!AL.Constants.SPECIAL_MONSTERS.includes(mtype)) continue // It's not special
-            if (instance.killed[mtype] >= Math.max(monster.count, 1)) continue // We've already killed them all
-
-            // There's something we haven't killed yet
-            deleteInstance = false
-            break
+        for (const mtype of specialTypes) {
+            if (isInstanceMonsterKilled(instance.map, mtype, instance.killed, gMap)) {
+                killedTypes.push(mtype)
+            } else {
+                // There's something we haven't killed yet
+                deleteInstance = false
+            }
         }
 
         if (deleteInstance) {
@@ -101,6 +124,19 @@ export async function cleanInstances() {
                 in: instance.in,
                 serverIdentifier: instance.serverIdentifier,
                 serverRegion: instance.serverRegion,
+            })
+                .lean()
+                .exec()
+            continue
+        }
+
+        if (killedTypes.length) {
+            // Remove leftover EntityModel docs for individual types already killed in this instance
+            await AL.EntityModel.deleteMany({
+                in: instance.in,
+                serverIdentifier: instance.serverIdentifier,
+                serverRegion: instance.serverRegion,
+                type: { $in: killedTypes },
             })
                 .lean()
                 .exec()

@@ -597,12 +597,23 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
         const target = bot.getEntity({ returnNearest: true, typeList: this.options.typeList })
         if (target) return this.returnUndefinedIfMapIgnored(target)
 
+        const inInstance = bot.in !== bot.map
+        let otherInstanceContextTarget: Entity
+
         if (this.options.contexts) {
             // Look for it around the other contexts
             for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData })) {
                 if (bot == context.bot) continue // We've already looked for it around ourself
                 const target = context.bot.getEntity({ returnNearest: true, typeList: this.options.typeList })
-                if (target) return this.returnUndefinedIfMapIgnored(target)
+                if (!target) continue
+                if (inInstance && target.in !== bot.in) {
+                    // Defer targets outside our current instance until we check if this instance still has targets
+                    if (!otherInstanceContextTarget && this.returnUndefinedIfMapIgnored(target)) {
+                        otherInstanceContextTarget = target
+                    }
+                    continue
+                }
+                return this.returnUndefinedIfMapIgnored(target)
             }
         }
 
@@ -630,7 +641,16 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 .sort({ lastSeen: -1 })
                 .lean()
                 .exec()
-            targets.sort(sortTypeThenHp(this.options.typeList))
+            const sortByTypeThenHp = sortTypeThenHp(this.options.typeList)
+            targets.sort((a, b) => {
+                if (inInstance) {
+                    // Prefer targets in our current instance before switching to another
+                    const aInCurrent = a.in === bot.in
+                    const bInCurrent = b.in === bot.in
+                    if (aInCurrent !== bInCurrent) return aInCurrent ? -1 : 1
+                }
+                return sortByTypeThenHp(a, b)
+            })
             targets: for (const target of targets) {
                 // Check if one of our contexts should be able to see it
                 for (const context of this.options.contexts) {
@@ -644,8 +664,14 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                         continue targets
                     }
                 }
+                if (inInstance && target.in !== bot.in && otherInstanceContextTarget) {
+                    // Nothing left in our instance; prefer live sight from another context over DB data
+                    return otherInstanceContextTarget
+                }
                 return target
             }
+
+            if (otherInstanceContextTarget) return otherInstanceContextTarget
 
             const respawningTargets = await AL.RespawnModel.find(
                 {
@@ -660,6 +686,8 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
                 .exec()
             if (respawningTargets.length === this.options.typeList.length) return bot // Everything is respawning, don't move anywhere
         }
+
+        if (otherInstanceContextTarget) return otherInstanceContextTarget
 
         if (!disableFallback) {
             for (const type of this.options.typeList) {
@@ -919,10 +947,10 @@ export class SpecialMonsterMoveStrategy implements Strategy<Character> {
             destinations.push(this.options.idlePosition)
         }
 
-            if (destinations.length === 0) return // No NPCS or idle position nearby
-            destinations.sort(sortClosestDistance(bot))
-            const destination = destinations[0]
-            const destWithOffset = offsetPositionParty(destination, bot)
+        if (destinations.length === 0) return // No NPCS or idle position nearby
+        destinations.sort(sortClosestDistance(bot))
+        const destination = destinations[0]
+        const destWithOffset = offsetPositionParty(destination, bot)
 
         const monsterDist = AL.Tools.distance(bot, monster)
         if (monsterDist > bot.range) return // Out of range of monster, move() will handle approaching

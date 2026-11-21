@@ -1,28 +1,14 @@
-import AL, { GMap, MapName, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
+import AL, { MapName, MonsterName, PingCompensatedCharacter, ServerIdentifier, ServerRegion } from "alclient"
 import { checkOnlyEveryMS, setLastCheck } from "./general.js"
-import { CRYPT_MONSTERS, getCryptWaitTime } from "./crypt.js"
+import { CRYPT_MONSTERS, getCryptWaitTime, isInstanceMonsterKilled } from "./crypt.js"
 import { Strategist } from "../strategy_pattern/context.js"
+
+export { isInstanceMonsterKilled }
 
 export const TOMB_MONSTERS: MonsterName[] = ["gbluepro", "gredpro", "ggreenpro", "gpurplepro"]
 export const XMAGE_MONSTERS: MonsterName[] = ["xmagex", "xmagen", "xmagefi", "xmagefz"]
 
 const MONSTER_CACHE = new Map<string, MonsterName[]>()
-
-export function isInstanceMonsterKilled(
-    map: MapName,
-    type: MonsterName,
-    killed?: Partial<Record<MonsterName, number>>,
-    gMap: GMap | undefined = AL.Game.G?.maps[map],
-): boolean {
-    if (!killed) return false
-
-    // Sum all spawn entries for this type (maps may list the same monster in multiple boundaries)
-    let totalCount = 0
-    for (const monster of gMap?.monsters ?? []) {
-        if (monster.type === type) totalCount += monster.count
-    }
-    return (killed[type] ?? 0) >= Math.max(totalCount, 1) // Phase spawns (respawn_as) have count 0
-}
 
 export function invalidateMonsterCache(serverIdentifier?: ServerIdentifier, serverRegion?: ServerRegion) {
     if (!serverIdentifier || !serverRegion) {
