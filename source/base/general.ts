@@ -24,3 +24,9 @@ export function randomIntFromInterval(min: number, max: number) {
 export function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms))
 }
+
+export function createErrorWithCause(message: string, cause: unknown): Error {
+    const error = new Error(message) as Error & { cause?: unknown }
+    error.cause = cause
+    return error
+}

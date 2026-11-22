@@ -1,4 +1,5 @@
 import AL, { PingCompensatedCharacter, ServerData, ServerIdentifier, ServerRegion, SkillName } from "alclient"
+import { createErrorWithCause } from "../base/general.js"
 
 export type Loop<Type> = {
     fn: (bot: Type) => Promise<unknown>
@@ -245,36 +246,44 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
                     await newBot.connect()
                     this.changeBot(newBot as Type)
+                    resolve()
                 } catch (e) {
                     if (newBot) {
-                        newBot.socket.removeAllListeners("disconnect")
+                        newBot.socket?.removeAllListeners("disconnect")
                         newBot.disconnect()
                         newBot = undefined
                     }
                     console.error(e)
                     if (retry) {
-                        const wait = /wait_(\d+)_second/.exec(e)
+                        const message = String(e)
+                        const wait = /wait_(\d+)_second/.exec(message)
                         if (wait && wait[1]) {
                             setTimeout(() => void switchBots(), 2000 + Number.parseInt(wait[1]) * 1000)
-                        } else if (/limits/.test(e)) {
+                            return
+                        } else if (/limits/.test(message)) {
                             setTimeout(() => void switchBots(), AL.Constants.RECONNECT_TIMEOUT_MS)
-                        } else if (/ingame/.test(e)) {
+                            return
+                        } else if (/ingame/.test(message)) {
                             setTimeout(() => void switchBots(), 500)
-                        } else if (/nouser/.test(e)) {
+                            return
+                        } else if (/nouser/.test(message)) {
                             this.stop()
-                            throw new Error(
-                                `Authorization failed for ${this.bot.name}! No longer trying to reconnect...`,
+                            reject(
+                                createErrorWithCause(
+                                    `Authorization failed for ${this.bot.name}! No longer trying to reconnect...`,
+                                    e,
+                                ),
                             )
+                            return
                         } else {
                             setTimeout(() => void switchBots(), 10000)
                             return
                         }
                     }
-                    reject(new Error("Failed connecting, not retrying..."))
+                    reject(createErrorWithCause("Failed connecting, not retrying...", e))
                 }
-                resolve()
             }
-            switchBots().catch(console.error)
+            void switchBots()
         })
     }
 
