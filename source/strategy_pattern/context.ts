@@ -56,15 +56,25 @@ export interface Strategy<Type> {
 export class Strategist<Type extends PingCompensatedCharacter> {
     public bot: Type
 
+    private connectAttempt = 0
+    private disconnectHandler?: () => void
+    private pendingConnectReject?: (reason: Error) => void
     private strategies = new Set<Strategy<Type>>()
     private loops: ContextLoops<Type> = new Map<LoopName, ContextLoop<Type>>()
     private started: Date
     private stopped = false
+    private targetServerData?: { region: ServerRegion; name: ServerIdentifier }
     private timeouts = new Map<LoopName, NodeJS.Timeout>()
 
     public constructor(bot: Type, initialStrategy?: Strategy<Type>) {
         this.changeBot(bot)
         this.applyStrategy(initialStrategy)
+    }
+
+    public get targetServer(): { region: ServerRegion; name: ServerIdentifier } | undefined {
+        if (this.targetServerData) return this.targetServerData
+        if (!this.bot?.serverData) return undefined
+        return { region: this.bot.serverData.region, name: this.bot.serverData.name }
     }
 
     public applyStrategy(strategy: Strategy<Type>) {
@@ -147,8 +157,20 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     }
 
     protected changeBot(newBot: Type) {
+        if (this.bot && this.bot !== newBot) {
+            // Disconnect any previous bot so we never leak a second active socket
+            this.disconnectBot(this.bot)
+        }
+
         this.bot = newBot
-        this.bot.socket.on("disconnect", () => this.reconnect())
+        this.targetServerData = newBot.serverData
+            ? { region: newBot.serverData.region, name: newBot.serverData.name }
+            : undefined
+        this.disconnectHandler = () => {
+            if (this.bot !== newBot || this.stopped) return
+            this.reconnect().catch(console.error)
+        }
+        this.bot.socket?.on("disconnect", this.disconnectHandler)
         this.started = new Date()
 
         for (const strategy of this.strategies) {
@@ -158,131 +180,150 @@ export class Strategist<Type extends PingCompensatedCharacter> {
         }
     }
 
-    public async changeServer(region: ServerRegion, id: ServerIdentifier, retry = true) {
+    private clearPendingConnect(reason?: string): void {
+        const timeout = this.timeouts.get("connect")
+        if (timeout) {
+            clearTimeout(timeout)
+            this.timeouts.delete("connect")
+        }
+
+        if (this.pendingConnectReject) {
+            const reject = this.pendingConnectReject
+            this.pendingConnectReject = undefined
+            reject(new Error(reason ?? "Connection attempt cancelled"))
+        }
+    }
+
+    private disconnectBot(bot?: PingCompensatedCharacter): void {
+        if (!bot) return
+        if (this.disconnectHandler && bot === this.bot) {
+            // Detach only our listener so alclient's Observer disconnect cleanup still runs
+            bot.socket?.off("disconnect", this.disconnectHandler)
+            this.disconnectHandler = undefined
+        }
+        bot.disconnect()
+    }
+
+    private createBot(region: ServerRegion, id: ServerIdentifier): PingCompensatedCharacter {
+        const serverData = AL.Game.servers[region]?.[id]
+        if (!serverData) {
+            throw new Error(`No server data for ${region} ${id}`)
+        }
+
+        switch (this.bot.ctype) {
+            case "mage":
+                return new AL.Mage(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, serverData)
+            case "merchant":
+                return new AL.Merchant(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, serverData)
+            case "paladin":
+                return new AL.Paladin(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, serverData)
+            case "priest":
+                return new AL.Priest(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, serverData)
+            case "ranger":
+                return new AL.Ranger(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, serverData)
+            case "rogue":
+                return new AL.Rogue(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, serverData)
+            case "warrior":
+                return new AL.Warrior(this.bot.owner, this.bot.userAuth, this.bot.characterID, AL.Game.G, serverData)
+            default:
+                throw new Error(`No handler for ${String(this.bot.ctype)}`)
+        }
+    }
+
+    private getRetryDelayMs(error: unknown): number | "fatal" {
+        const message = String(error)
+        const wait = /wait_(\d+)_second/.exec(message)
+        if (wait && wait[1]) return 2000 + Number.parseInt(wait[1]) * 1000
+        if (/limits/.test(message)) return AL.Constants.RECONNECT_TIMEOUT_MS
+        if (/ingame/.test(message)) return 500
+        if (/nouser/.test(message)) return "fatal"
+        return 10_000
+    }
+
+    public changeServer(region: ServerRegion, id: ServerIdentifier, retry = true): Promise<void> {
+        const attempt = ++this.connectAttempt
+        this.clearPendingConnect("Server change superseded")
+        this.targetServerData = { region, name: id }
+        this.disconnectBot(this.bot)
+
+        if (this.stopped) {
+            return Promise.reject(new Error("Context is stopped"))
+        }
+
         return new Promise<void>((resolve, reject) => {
-            if (this.bot) {
-                this.bot.socket.removeAllListeners("disconnect")
-                this.bot.disconnect()
+            this.pendingConnectReject = reject
+
+            const settleResolve = () => {
+                if (this.pendingConnectReject === reject) {
+                    this.pendingConnectReject = undefined
+                }
+                resolve()
+            }
+
+            const settleReject = (err: Error) => {
+                if (this.pendingConnectReject === reject) {
+                    this.pendingConnectReject = undefined
+                }
+                reject(err)
             }
 
             const switchBots = async () => {
+                if (this.stopped || attempt !== this.connectAttempt) return
+
                 let newBot: PingCompensatedCharacter
                 try {
-                    switch (this.bot.ctype) {
-                        case "mage": {
-                            newBot = new AL.Mage(
-                                this.bot.owner,
-                                this.bot.userAuth,
-                                this.bot.characterID,
-                                AL.Game.G,
-                                AL.Game.servers[region][id],
-                            )
-                            break
-                        }
-                        case "merchant": {
-                            newBot = new AL.Merchant(
-                                this.bot.owner,
-                                this.bot.userAuth,
-                                this.bot.characterID,
-                                AL.Game.G,
-                                AL.Game.servers[region][id],
-                            )
-                            break
-                        }
-                        case "paladin": {
-                            newBot = new AL.Paladin(
-                                this.bot.owner,
-                                this.bot.userAuth,
-                                this.bot.characterID,
-                                AL.Game.G,
-                                AL.Game.servers[region][id],
-                            )
-                            break
-                        }
-                        case "priest": {
-                            newBot = new AL.Priest(
-                                this.bot.owner,
-                                this.bot.userAuth,
-                                this.bot.characterID,
-                                AL.Game.G,
-                                AL.Game.servers[region][id],
-                            )
-                            break
-                        }
-                        case "ranger": {
-                            newBot = new AL.Ranger(
-                                this.bot.owner,
-                                this.bot.userAuth,
-                                this.bot.characterID,
-                                AL.Game.G,
-                                AL.Game.servers[region][id],
-                            )
-                            break
-                        }
-                        case "rogue": {
-                            newBot = new AL.Rogue(
-                                this.bot.owner,
-                                this.bot.userAuth,
-                                this.bot.characterID,
-                                AL.Game.G,
-                                AL.Game.servers[region][id],
-                            )
-                            break
-                        }
-                        case "warrior": {
-                            newBot = new AL.Warrior(
-                                this.bot.owner,
-                                this.bot.userAuth,
-                                this.bot.characterID,
-                                AL.Game.G,
-                                AL.Game.servers[region][id],
-                            )
-                            break
-                        }
-                        default: {
-                            throw new Error(`No handler for ${this.bot.ctype}`)
-                        }
+                    newBot = this.createBot(region, id)
+                    await newBot.connect()
+
+                    if (this.stopped || attempt !== this.connectAttempt) {
+                        // Discard if superseded or stopped while awaiting connect
+                        this.disconnectBot(newBot)
+                        return
                     }
 
-                    await newBot.connect()
+                    if (!newBot.socket || newBot.socket.disconnected || !newBot.ready) {
+                        throw new Error("Disconnected before bot became ready")
+                    }
+
                     this.changeBot(newBot as Type)
-                    resolve()
+                    settleResolve()
                 } catch (e) {
-                    if (newBot) {
-                        newBot.socket?.removeAllListeners("disconnect")
-                        newBot.disconnect()
-                        newBot = undefined
-                    }
+                    this.disconnectBot(newBot)
+                    newBot = undefined
+
+                    if (this.stopped || attempt !== this.connectAttempt) return
+
                     console.error(e)
-                    if (retry) {
-                        const message = String(e)
-                        const wait = /wait_(\d+)_second/.exec(message)
-                        if (wait && wait[1]) {
-                            setTimeout(() => void switchBots(), 2000 + Number.parseInt(wait[1]) * 1000)
-                            return
-                        } else if (/limits/.test(message)) {
-                            setTimeout(() => void switchBots(), AL.Constants.RECONNECT_TIMEOUT_MS)
-                            return
-                        } else if (/ingame/.test(message)) {
-                            setTimeout(() => void switchBots(), 500)
-                            return
-                        } else if (/nouser/.test(message)) {
-                            this.stop()
-                            reject(
-                                createErrorWithCause(
-                                    `Authorization failed for ${this.bot.name}! No longer trying to reconnect...`,
-                                    e,
-                                ),
-                            )
-                            return
-                        } else {
-                            setTimeout(() => void switchBots(), 10000)
-                            return
-                        }
+                    if (!retry) {
+                        settleReject(createErrorWithCause("Failed connecting, not retrying...", e))
+                        return
                     }
-                    reject(createErrorWithCause("Failed connecting, not retrying...", e))
+
+                    const delay = this.getRetryDelayMs(e)
+                    if (delay === "fatal") {
+                        // Reject with the auth error before stop() cancels pending connects
+                        settleReject(
+                            createErrorWithCause(
+                                `Authorization failed for ${this.bot.name}! No longer trying to reconnect...`,
+                                e,
+                            ),
+                        )
+                        this.stop()
+                        return
+                    }
+
+                    const existing = this.timeouts.get("connect")
+                    if (existing) clearTimeout(existing)
+                    this.timeouts.set(
+                        "connect",
+                        setTimeout(() => {
+                            this.timeouts.delete("connect")
+                            void switchBots()
+                        }, delay),
+                    )
                 }
             }
+
             void switchBots()
         })
     }
@@ -307,128 +348,67 @@ export class Strategist<Type extends PingCompensatedCharacter> {
     }
 
     public async reconnect(retry = true): Promise<void> {
-        if (this.bot) {
-            this.bot.socket.removeAllListeners("disconnect")
-            this.bot.disconnect()
-        }
+        const attempt = ++this.connectAttempt
+        this.clearPendingConnect("Reconnect superseded server change")
+        const server = this.targetServer
+        this.disconnectBot(this.bot)
 
         if (this.stopped) return
+        if (!server) {
+            throw new Error(`No server data available to reconnect ${this.bot?.name ?? "bot"}`)
+        }
 
-        let newBot: PingCompensatedCharacter
-        try {
-            switch (this.bot.ctype) {
-                case "mage": {
-                    newBot = new AL.Mage(
-                        this.bot.owner,
-                        this.bot.userAuth,
-                        this.bot.characterID,
-                        AL.Game.G,
-                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
-                    )
-                    break
-                }
-                case "merchant": {
-                    newBot = new AL.Merchant(
-                        this.bot.owner,
-                        this.bot.userAuth,
-                        this.bot.characterID,
-                        AL.Game.G,
-                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
-                    )
-                    break
-                }
-                case "paladin": {
-                    newBot = new AL.Paladin(
-                        this.bot.owner,
-                        this.bot.userAuth,
-                        this.bot.characterID,
-                        AL.Game.G,
-                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
-                    )
-                    break
-                }
-                case "priest": {
-                    newBot = new AL.Priest(
-                        this.bot.owner,
-                        this.bot.userAuth,
-                        this.bot.characterID,
-                        AL.Game.G,
-                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
-                    )
-                    break
-                }
-                case "ranger": {
-                    newBot = new AL.Ranger(
-                        this.bot.owner,
-                        this.bot.userAuth,
-                        this.bot.characterID,
-                        AL.Game.G,
-                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
-                    )
-                    break
-                }
-                case "rogue": {
-                    newBot = new AL.Rogue(
-                        this.bot.owner,
-                        this.bot.userAuth,
-                        this.bot.characterID,
-                        AL.Game.G,
-                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
-                    )
-                    break
-                }
-                case "warrior": {
-                    newBot = new AL.Warrior(
-                        this.bot.owner,
-                        this.bot.userAuth,
-                        this.bot.characterID,
-                        AL.Game.G,
-                        AL.Game.servers[this.bot.serverData.region][this.bot.serverData.name],
-                    )
-                    break
-                }
-                default: {
-                    throw new Error(`No handler for ${this.bot.ctype}`)
-                }
-            }
+        const attemptReconnect = async (): Promise<void> => {
+            if (this.stopped || attempt !== this.connectAttempt) return
 
-            await newBot.connect()
-            this.changeBot(newBot as Type)
-        } catch (e) {
-            if (newBot) {
-                newBot.socket.removeAllListeners("disconnect")
-                newBot.disconnect()
-            }
-            console.error(`Couldn't reconnect ${this.bot.name}!`)
-            console.error(e)
-            if (retry) {
-                const wait = /wait_(\d+)_second/.exec(e)
-                if (wait && wait[1]) {
-                    this.timeouts.set(
-                        "connect",
-                        setTimeout(() => this.reconnect(), 2000 + Number.parseInt(wait[1]) * 1000),
-                    )
-                } else if (/limits/.test(e)) {
-                    this.timeouts.set(
-                        "connect",
-                        setTimeout(() => this.reconnect(), AL.Constants.RECONNECT_TIMEOUT_MS),
-                    )
-                } else if (/ingame/.test(e)) {
-                    this.timeouts.set(
-                        "connect",
-                        setTimeout(() => this.reconnect(), 500),
-                    )
-                } else if (/nouser/.test(e)) {
+            let newBot: PingCompensatedCharacter
+            try {
+                newBot = this.createBot(server.region, server.name)
+                await newBot.connect()
+
+                if (this.stopped || attempt !== this.connectAttempt) {
+                    // Discard if superseded or stopped while awaiting connect
+                    this.disconnectBot(newBot)
+                    return
+                }
+
+                if (!newBot.socket || newBot.socket.disconnected || !newBot.ready) {
+                    throw new Error("Disconnected before bot became ready")
+                }
+
+                this.changeBot(newBot as Type)
+            } catch (e) {
+                this.disconnectBot(newBot)
+                newBot = undefined
+
+                if (this.stopped || attempt !== this.connectAttempt) return
+
+                console.error(`Couldn't reconnect ${this.bot.name}!`)
+                console.error(e)
+                if (!retry) return
+
+                const delay = this.getRetryDelayMs(e)
+                if (delay === "fatal") {
                     this.stop()
-                    throw new Error(`Authorization failed for ${this.bot.name}! No longer trying to reconnect...`)
-                } else {
-                    this.timeouts.set(
-                        "connect",
-                        setTimeout(() => this.reconnect(), 10000),
+                    throw createErrorWithCause(
+                        `Authorization failed for ${this.bot.name}! No longer trying to reconnect...`,
+                        e,
                     )
                 }
+
+                const existing = this.timeouts.get("connect")
+                if (existing) clearTimeout(existing)
+                this.timeouts.set(
+                    "connect",
+                    setTimeout(() => {
+                        this.timeouts.delete("connect")
+                        attemptReconnect().catch(console.error)
+                    }, delay),
+                )
             }
         }
+
+        await attemptReconnect()
     }
 
     private stopLoop(loopName: LoopName): void {
@@ -442,10 +422,11 @@ export class Strategist<Type extends PingCompensatedCharacter> {
 
     public stop(): void {
         this.stopped = true
+        this.connectAttempt++
+        this.clearPendingConnect("Context stopped")
         for (const [, timeout] of this.timeouts) clearTimeout(timeout)
-        if (!this.bot) return
-        this.bot.socket.removeAllListeners("disconnect")
-        this.bot.disconnect()
+        this.timeouts.clear()
+        this.disconnectBot(this.bot)
     }
 
     public uptime(): number {

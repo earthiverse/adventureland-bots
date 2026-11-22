@@ -64,8 +64,9 @@ function makeServer(region: ServerRegion, name: ServerIdentifier): ServerData {
 
 const US_I = makeServer("US", "I")
 const EU_I = makeServer("EU", "I")
+const US_II = makeServer("US", "II")
 
-describe("Strategist.changeServer", () => {
+describe("Strategist server switching and reconnection", () => {
     const originalWarrior = AL.Warrior
     const originalServers = AL.Game.servers
     let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
@@ -75,7 +76,7 @@ describe("Strategist.changeServer", () => {
         consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined)
         AL.Game.servers = {
             EU: { I: EU_I },
-            US: { I: US_I },
+            US: { I: US_I, II: US_II },
         } as unknown as typeof AL.Game.servers
     })
 
@@ -182,5 +183,152 @@ describe("Strategist.changeServer", () => {
 
         await jest.advanceTimersByTimeAsync(60_000)
         expect(createdBots).toHaveLength(1)
+    })
+
+    test("cancels pending reconnect timer when changeServer switches to another server", async () => {
+        const createdBots: FakeBot[] = []
+        let failUsConnect = true
+
+        AL.Warrior = class extends FakeBot {
+            public constructor(o: string, a: string, c: string, g: unknown, s: ServerData) {
+                super(o, a, c, g, s)
+                createdBots.push(this)
+            }
+
+            public override connect(): Promise<void> {
+                if (this.serverData === US_I && failUsConnect) {
+                    return Promise.reject(new Error("Failed to connect: wait_5_seconds"))
+                }
+                return Promise.resolve()
+            }
+        } as unknown as typeof AL.Warrior
+
+        const initialBot = new FakeBot("owner", "auth", "char1", {}, US_I)
+        const strategist = new Strategist(initialBot as unknown as PingCompensatedCharacter)
+
+        // Trigger unexpected disconnect on US I, which schedules a 7000ms reconnect timer
+        initialBot.socket.disconnect()
+        await Promise.resolve()
+        expect(createdBots).toHaveLength(1)
+        expect(createdBots[0].serverData).toBe(US_I)
+
+        // Switch to EU I before the US I retry fires
+        failUsConnect = false
+        await strategist.changeServer("EU", "I")
+        expect(strategist.bot.serverData).toBe(EU_I)
+        const euBot = strategist.bot as unknown as FakeBot
+
+        // Advance past the old US I retry timer and verify it never fires
+        await jest.advanceTimersByTimeAsync(20_000)
+        expect(strategist.bot).toBe(euBot)
+        expect(strategist.bot.serverData).toBe(EU_I)
+        expect(euBot.disconnectCount).toBe(0)
+        expect(createdBots).toHaveLength(2)
+    })
+
+    test("discards late-resolving connect from a superseded changeServer", async () => {
+        const resolvers: Array<() => void> = []
+        const createdBots: FakeBot[] = []
+
+        AL.Warrior = class extends FakeBot {
+            public constructor(o: string, a: string, c: string, g: unknown, s: ServerData) {
+                super(o, a, c, g, s)
+                createdBots.push(this)
+            }
+
+            public override connect(): Promise<void> {
+                return new Promise<void>((resolve) => {
+                    resolvers.push(resolve)
+                })
+            }
+        } as unknown as typeof AL.Warrior
+
+        const initialBot = new FakeBot("owner", "auth", "char1", {}, US_I)
+        const strategist = new Strategist(initialBot as unknown as PingCompensatedCharacter)
+
+        const firstHop = strategist.changeServer("EU", "I")
+        const secondHop = strategist.changeServer("US", "II")
+
+        await expect(firstHop).rejects.toThrow("Server change superseded")
+        expect(createdBots).toHaveLength(2)
+
+        // Resolve the second hop first, then the stale first hop
+        resolvers[1]()
+        await secondHop
+        expect(strategist.bot).toBe(createdBots[1])
+        expect(strategist.bot.serverData).toBe(US_II)
+
+        resolvers[0]()
+        await Promise.resolve()
+
+        // Stale EU I bot must be disconnected and must not overwrite the US II bot
+        expect(createdBots[0].disconnectCount).toBe(1)
+        expect(strategist.bot).toBe(createdBots[1])
+        expect(strategist.bot.serverData).toBe(US_II)
+    })
+
+    test("cancels pending changeServer retries when stop is called", async () => {
+        const createdBots: FakeBot[] = []
+
+        AL.Warrior = class extends FakeBot {
+            public constructor(o: string, a: string, c: string, g: unknown, s: ServerData) {
+                super(o, a, c, g, s)
+                createdBots.push(this)
+            }
+
+            public override connect(): Promise<void> {
+                return Promise.reject(new Error("Failed to start within 10s."))
+            }
+        } as unknown as typeof AL.Warrior
+
+        const initialBot = new FakeBot("owner", "auth", "char1", {}, US_I)
+        const strategist = new Strategist(initialBot as unknown as PingCompensatedCharacter)
+
+        const hopPromise = strategist.changeServer("EU", "I")
+        await Promise.resolve()
+        expect(createdBots).toHaveLength(1)
+
+        strategist.stop()
+        await expect(hopPromise).rejects.toThrow("Context stopped")
+
+        await jest.advanceTimersByTimeAsync(60_000)
+        expect(createdBots).toHaveLength(1)
+    })
+
+    test("preserves non-strategist disconnect listeners on intentional server change", async () => {
+        AL.Warrior = FakeBot as unknown as typeof AL.Warrior
+
+        const initialBot = new FakeBot("owner", "auth", "char1", {}, US_I)
+        const observerDisconnect = jest.fn()
+        initialBot.socket.on("disconnect", observerDisconnect)
+
+        const strategist = new Strategist(initialBot as unknown as PingCompensatedCharacter)
+        await strategist.changeServer("EU", "I")
+
+        expect(observerDisconnect).toHaveBeenCalledTimes(1)
+        expect(strategist.bot.serverData).toBe(EU_I)
+    })
+
+    test("reconnects to targetServer instead of stale bot serverData", async () => {
+        let shouldFail = true
+        AL.Warrior = class extends FakeBot {
+            public override connect(): Promise<void> {
+                if (shouldFail) return Promise.reject(new Error("Failed to connect: ingame"))
+                return Promise.resolve()
+            }
+        } as unknown as typeof AL.Warrior
+
+        const initialBot = new FakeBot("owner", "auth", "char1", {}, US_I)
+        const strategist = new Strategist(initialBot as unknown as PingCompensatedCharacter)
+
+        const hopPromise = strategist.changeServer("EU", "I")
+        await Promise.resolve()
+        expect(strategist.targetServer).toEqual({ name: "I", region: "EU" })
+
+        // Calling reconnect while the hop is retrying must keep targeting EU I
+        shouldFail = false
+        await strategist.reconnect()
+        await expect(hopPromise).rejects.toThrow("Reconnect superseded server change")
+        expect(strategist.bot.serverData).toBe(EU_I)
     })
 })
