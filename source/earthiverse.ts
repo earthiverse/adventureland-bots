@@ -126,6 +126,7 @@ const ROGUES: string[] = [] // earthRog, earthRog2, earthRog3
 
 const PARTY_ALLOWLIST: string[] = [...WARRIORS, ...RANGERS, ...MAGES, ...PRIESTS, ...PALADINS, ...ROGUES]
 const PARTY_LEADER: string = PARTY_ALLOWLIST[0]
+const EXPECTED_PRIVATE_CONTEXTS = (MERCHANT ? 1 : 0) + PARTY_ALLOWLIST.length
 
 // Sanity checks
 if (PARTY_LEADER === undefined) throw new Error("We don't have a party leader set!")
@@ -655,8 +656,7 @@ const removeSetup = (context: Strategist<PingCompensatedCharacter>) => {
 
 const serverHopLogic = async () => {
     try {
-        const expected = (MERCHANT ? 1 : 0) + PARTY_ALLOWLIST.length
-        if (PRIVATE_CONTEXTS.length < expected || PRIVATE_CONTEXTS.some((c) => !c.isReady())) return
+        if (PRIVATE_CONTEXTS.length < EXPECTED_PRIVATE_CONTEXTS) return
 
         const bot1 = PRIVATE_CONTEXTS.find((c) => c.isReady())?.bot
         if (!bot1) return
@@ -750,12 +750,13 @@ const serverHopLogic = async () => {
             TARGET_IDENTIFIER = OVERRIDE_IDENTIFIER
         }
 
-        // Coordinate server change across all contexts
-        const contextsNeedingHop = ALL_CONTEXTS.filter(
-            (c) =>
-                c.isReady() &&
-                (c.bot.serverData.region !== TARGET_REGION || c.bot.serverData.name !== TARGET_IDENTIFIER),
-        )
+        // Coordinate server change across all contexts (including disconnected ones retrying an old server)
+        const contextsNeedingHop = ALL_CONTEXTS.filter((c) => {
+            if (c.isStopped()) return false
+            const server = c.targetServer
+            if (!server) return false
+            return server.region !== TARGET_REGION || server.name !== TARGET_IDENTIFIER
+        })
 
         if (contextsNeedingHop.length > 0) {
             console.log(
@@ -763,7 +764,9 @@ const serverHopLogic = async () => {
             )
             for (const context of contextsNeedingHop) {
                 removeSetup(context)
-                for (const [id] of context.bot.chests) await context.bot.openChest(id).catch(console.error)
+                if (context.isReady()) {
+                    for (const [id] of context.bot.chests) await context.bot.openChest(id).catch(console.error)
+                }
             }
 
             // Initiate server change
