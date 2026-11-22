@@ -654,6 +654,8 @@ const removeSetup = (context: Strategist<PingCompensatedCharacter>) => {
     }
 }
 
+const pendingHopContexts = new Set<Strategist<PingCompensatedCharacter>>()
+
 const serverHopLogic = async () => {
     try {
         if (PRIVATE_CONTEXTS.length < EXPECTED_PRIVATE_CONTEXTS) return
@@ -763,15 +765,34 @@ const serverHopLogic = async () => {
                 `Changing servers for ${contextsNeedingHop.length} character(s) to ${TARGET_REGION} ${TARGET_IDENTIFIER}...`,
             )
             for (const context of contextsNeedingHop) {
-                removeSetup(context)
-                if (context.isReady()) {
-                    for (const [id] of context.bot.chests) await context.bot.openChest(id).catch(console.error)
-                }
+                pendingHopContexts.add(context)
             }
 
-            // Initiate server change
-            for (const context of contextsNeedingHop) {
-                await context.changeServer(TARGET_REGION, TARGET_IDENTIFIER).catch(console.error)
+            try {
+                for (const context of contextsNeedingHop) {
+                    removeSetup(context)
+                    if (context.isReady()) {
+                        for (const [id] of context.bot.chests) await context.bot.openChest(id).catch(console.error)
+                    }
+                }
+
+                // Initiate server change sequentially, capping per-bot wait so long retries do not leave other bots on the old server
+                for (const context of contextsNeedingHop) {
+                    pendingHopContexts.delete(context)
+                    const hopPromise = context.changeServer(TARGET_REGION, TARGET_IDENTIFIER).catch(console.error)
+                    let staggerTimer: NodeJS.Timeout
+                    const staggerPromise = new Promise<void>((resolve) => {
+                        staggerTimer = setTimeout(resolve, 2000)
+                    })
+                    await Promise.race([
+                        hopPromise.finally(() => clearTimeout(staggerTimer)),
+                        staggerPromise,
+                    ])
+                }
+            } finally {
+                for (const context of contextsNeedingHop) {
+                    pendingHopContexts.delete(context)
+                }
             }
         }
     } catch (e) {
@@ -786,7 +807,7 @@ const contextsLogic = async (contexts: Strategist<PingCompensatedCharacter>[], s
         const freeContexts: Strategist<PingCompensatedCharacter>[] = []
 
         for (const context of contexts) {
-            if (!context.isReady()) continue
+            if (!context.isReady() || pendingHopContexts.has(context)) continue
             const bot = context.bot
 
             if (bot.ctype == "merchant") continue // Merchant should have equivalent event logic in the Merchant Strategy
