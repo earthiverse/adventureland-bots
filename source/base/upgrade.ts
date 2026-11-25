@@ -110,7 +110,7 @@ export const UPGRADE_SCROLLS: { [T in UpgradeScrollName]?: number } = {
     scroll0: 1_000,
     scroll1: 40_000,
     scroll2: 1_600_000,
-    scroll3: 250_000_000,
+    scroll3: 300_000_000,
 }
 
 /** pscroll -> price */
@@ -125,7 +125,7 @@ export const COMPOUND_SCROLLS: { [T in CompoundScrollName]?: number } = {
     cscroll0: 6_400,
     cscroll1: 240_000,
     cscroll2: 9_600_000,
-    cscroll3: 500_000_000,
+    cscroll3: 750_000_000,
 }
 
 /** offering -> price */
