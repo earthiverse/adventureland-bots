@@ -187,6 +187,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellExcess: 5,
         upgradeUntilLevel: 0,
     },
+    bowofthedead: {
+        ...SELL_TO_NPC,
+    },
     cake: {
         craft: true,
         ...SELL_TO_NPC,
@@ -296,6 +299,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     dagger: {
         ...SELL_TO_NPC,
     },
+    daggerofthedead: {
+        ...SELL_TO_NPC,
+    },
     dexamulet: {
         buy: true,
         buyPrice: "ponty",
@@ -401,6 +407,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     fury: {
         buy: true,
         buyPrice: 100_000_000,
+    },
+    gbow: {
+        ...SELL_TO_NPC,
     },
     gem0: {
         /** Green Gem */
@@ -617,6 +626,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         hold: ["merchant"],
         buy: true,
         buyPrice: 5_000_000,
+    },
+    oozingterror: {
+        ...SELL_TO_NPC,
     },
     orba: {
         craft: true,
@@ -866,6 +878,9 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     sword: {
         sellExcess: 5,
+    },
+    swordofthedead: {
+        ...SELL_TO_NPC,
     },
     t2quiver: {
         buy: true,
