@@ -1,4 +1,4 @@
-import AL, { Item, ItemName, Merchant, PingCompensatedCharacter, Player } from "alclient"
+import AL, { Character, Item, ItemName, Merchant, PingCompensatedCharacter, Player } from "alclient"
 import {
     DEFAULT_ITEM_CONFIG,
     ItemConfig,
@@ -14,6 +14,32 @@ import {
 } from "../../base/itemsNew.js"
 import { getNextCompoundAction, getNextUpgradeAction } from "../../base/upgrade.js"
 import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
+
+export async function applyMassExchangeBuffs(bot: Character): Promise<void> {
+    if (!(bot instanceof Merchant)) return
+
+    const mpReduction = (100 - (bot.mp_reduction ?? 0)) / 100
+    const ppCost = (bot.G.skills.massexchangepp?.mp ?? 0) * mpReduction
+    const exchangeCost = (bot.G.skills.massexchange?.mp ?? 0) * mpReduction
+    let remainingMp = bot.mp
+
+    if (!bot.s.massexchangepp && bot.canUse("massexchangepp")) {
+        const mpBefore = bot.mp
+        let succeeded = true
+        await bot.massExchangePP().catch((error) => {
+            succeeded = false
+            console.error(error)
+        })
+        if (succeeded) {
+            // Local bot.mp may lag until the next player update after massExchangePP resolves
+            remainingMp = bot.mp < mpBefore ? bot.mp : bot.mp - ppCost
+        }
+    }
+
+    if (!bot.s.massexchange && bot.canUse("massexchange") && remainingMp >= exchangeCost) {
+        await bot.massExchange().catch(console.error)
+    }
+}
 
 /**
  * There are slots that give a slightly better chance to succeed when upgrading
@@ -459,6 +485,11 @@ export class ItemStrategy<Type extends PingCompensatedCharacter> implements Stra
 
         // Sort itemsToExchange lowest -> highest quantity, so we free up inventory the fastest
         itemsToExchange.sort((a, b) => (a[1].q ?? 1) - (b[1].q ?? 1))
-        return bot.exchange(itemsToExchange[0][0])
+        const [slot, item] = itemsToExchange[0]
+
+        await applyMassExchangeBuffs(bot)
+        if (bot.q.exchange || bot.esize <= 1) return
+        if (bot.items[slot]?.name !== item.name) return
+        return bot.exchange(slot)
     }
 }

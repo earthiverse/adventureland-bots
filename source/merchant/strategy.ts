@@ -78,6 +78,7 @@ import { AcceptPartyRequestStrategy } from "../strategy_pattern/strategies/party
 import { ToggleStandStrategy } from "../strategy_pattern/strategies/stand.js"
 import { TrackerStrategy } from "../strategy_pattern/strategies/tracker.js"
 import { canDoAnniversaryKiss } from "../strategy_pattern/strategies/anniversary.js"
+import { applyMassExchangeBuffs } from "../strategy_pattern/strategies/item.js"
 
 export const DEFAULT_MINI_BOSSES: MonsterName[] = [
     "skeletor",
@@ -108,12 +109,7 @@ export function decrementItemCount(itemCounts: ItemCounts, item: Item): void {
     countData.q -= item.q ?? 1
 }
 
-export function canSellStackToNpc(
-    itemConfig: ItemConfig,
-    item: Item,
-    bot: Character,
-    itemCounts: ItemCounts,
-): boolean {
+export function canSellStackToNpc(itemConfig: ItemConfig, item: Item, bot: Character, itemCounts: ItemCounts): boolean {
     if (!wantToSellToNpc(itemConfig, item, bot, itemCounts)) return false
 
     const config = itemConfig[item.name]
@@ -2424,11 +2420,22 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
 
         for (const [slot, item] of bot.getItems()) {
             if (!wantToExchange(this.options.itemConfig, item)) continue
+            if (bot.q.exchange) await sleep(bot.q.exchange.ms)
+            if (bot.esize <= 1) return // Inventory filled while waiting on an active exchange
+            if (bot.items[slot]?.name !== item.name) continue
+
             if (!bot.canExchange(item.name)) {
                 // We need to move to exchange
                 const npc = AL.Pathfinder.locateExchangeNPC(item.name)
                 await bot.smartMove(npc, { getWithin: Constants.NPC_INTERACTION_DISTANCE - 50 })
             }
+
+            if (bot.q.exchange) continue // ItemStrategy started exchanging while we were moving
+            if (!bot.canExchange(item.name)) continue
+
+            await applyMassExchangeBuffs(bot)
+            if (bot.q.exchange || bot.esize <= 1) continue // Another loop started exchanging while we cast buffs
+            if (bot.items[slot]?.name !== item.name) continue
 
             await bot.exchange(slot)
             if (bot.q.exchange) await sleep(bot.q.exchange.ms)
