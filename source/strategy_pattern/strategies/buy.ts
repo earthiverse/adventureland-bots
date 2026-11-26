@@ -1,6 +1,90 @@
-import AL, { ItemName, IPosition, ItemDataTrade, PingCompensatedCharacter, Item, Tools } from "alclient"
+import AL, { type GData, ItemName, IPosition, ItemDataTrade, PingCompensatedCharacter, Item, Tools } from "alclient"
+import type { TradeItem } from "alclient/build/TradeItem.js"
 import { Loop, LoopName, Strategist, Strategy, filterContexts } from "../context.js"
-import { BuyConfig, DEFAULT_ITEM_CONFIG, HoldConfig, ItemConfig, runSanityCheckOnItemConfig } from "../../base/itemsNew.js"
+import {
+    BuyConfig,
+    DEFAULT_ITEM_CONFIG,
+    HoldConfig,
+    ItemConfig,
+    runSanityCheckOnItemConfig,
+} from "../../base/itemsNew.js"
+
+export function getPlayerPurchaseQuantity(
+    itemConfig: ItemConfig,
+    forSaleItem: TradeItem,
+    bot: Pick<PingCompensatedCharacter, "countItem" | "gold">,
+    enableBuyForProfit = false,
+    g: GData = AL.Game.G,
+): number {
+    const config: HoldConfig & BuyConfig = itemConfig[forSaleItem.name]
+    if (!config) return 0 // Not in config
+    if (bot.gold < forSaleItem.price) return 0 // We don't have enough gold
+
+    const available = forSaleItem.q ?? 1
+    const maxAffordable = forSaleItem.price > 0 ? Math.floor(bot.gold / forSaleItem.price) : available
+    const maxQuantity = Math.min(available, maxAffordable)
+    if (maxQuantity <= 0) return 0
+
+    // TODO: Merge this logic with wantToBuyFromPlayer
+    if (enableBuyForProfit && forSaleItem.price < forSaleItem.calculateNpcValue() + (forSaleItem.l ? 250_000 : 0)) {
+        // We want to buy it to resell it for a profit
+        return maxQuantity
+    }
+
+    if (
+        config.buy &&
+        ((typeof config.buyPrice === "number" &&
+            forSaleItem.price <= config.buyPrice + (forSaleItem.l ? 250_000 : 0)) ||
+            (config.buyPrice === "ponty" &&
+                forSaleItem.price <=
+                    forSaleItem.calculateValue() * g.multipliers.secondhands_mult + (forSaleItem.l ? 250_000 : 0)))
+    ) {
+        return maxQuantity
+    }
+
+    if (
+        config.replenish &&
+        bot.countItem(forSaleItem.name) < config.replenish &&
+        forSaleItem.price <= forSaleItem.calculateValue() + (forSaleItem.l ? 250_000 : 0)
+    ) {
+        // We want to buy them to replenish
+        return Math.min(maxQuantity, config.replenish - bot.countItem(forSaleItem.name))
+    }
+
+    return 0
+}
+
+export function getPontyUnitPrice(item: Item, g: GData = AL.Game.G): number {
+    const mult = g.items[item.name]?.cash ? g.multipliers.secondhands_cash_mult : g.multipliers.secondhands_mult
+    return item.calculateValue() * mult
+}
+
+export function shouldBuyFromPonty(
+    itemConfig: ItemConfig,
+    pontyItem: ItemDataTrade,
+    bot: Pick<PingCompensatedCharacter, "esize" | "gold" | "hasItem" | "items">,
+    g: GData = AL.Game.G,
+): boolean {
+    const config: BuyConfig = itemConfig[pontyItem.name]
+    if (!config?.buy) return false
+
+    const itemData = new Item(pontyItem, g)
+    const pontyPrice = getPontyUnitPrice(itemData, g)
+
+    if (bot.gold < (pontyItem.q ?? 1) * pontyPrice) return false // We can't afford it
+
+    if (bot.esize <= 0) {
+        if (!pontyItem.q) return false // Not stackable
+
+        const gItem = g.items[pontyItem.name]
+        if (!bot.hasItem(pontyItem.name, bot.items, { quantityLessThan: 1 + gItem.s - pontyItem.q })) return false // We can't stack it
+    }
+
+    if (typeof config.buyPrice === "number") {
+        return pontyPrice <= config.buyPrice
+    }
+    return config.buyPrice === "ponty"
+}
 
 export type BuyStrategyOptions = {
     itemConfig: ItemConfig
@@ -11,7 +95,7 @@ export type BuyStrategyOptions = {
 }
 
 export const defaultBuyStrategyOptions: BuyStrategyOptions = {
-    itemConfig: DEFAULT_ITEM_CONFIG
+    itemConfig: DEFAULT_ITEM_CONFIG,
 }
 
 export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strategy<Type> {
@@ -35,7 +119,7 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
                 await this.buyFromPonty(bot).catch(console.error)
                 await this.buyReplenishables(bot).catch(console.error)
             },
-            interval: 1000
+            interval: 1000,
         })
     }
 
@@ -56,90 +140,46 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
 
     protected async buyFromPlayers(bot: Type) {
         const players = bot.getPlayers({
-            withinRange: AL.Constants.NPC_INTERACTION_DISTANCE
+            withinRange: AL.Constants.NPC_INTERACTION_DISTANCE,
         })
         for (const player of players) {
             for (const [tradeSlot, forSaleItem] of player.getItemsForSale()) {
-                const config: HoldConfig & BuyConfig = this.options.itemConfig[forSaleItem.name]
-                if (!config) continue // Not in config
-                if (bot.gold < forSaleItem.price) continue // We don't have enough gold
-
-                // TODO: Merge this logic with wantToBuyFromPlayer
-                let wantToBuy = false
-
-                if (
-                    this.options.enableBuyForProfit
-                    && forSaleItem.price < (forSaleItem.calculateNpcValue() + (forSaleItem.l ? 250_000 : 0))
-                ) {
-                    // We want to buy it to resell it for a profit
-                    wantToBuy = true
-                }
-
-                if (
-                    !wantToBuy
-                    && config.replenish
-                    && bot.countItem(forSaleItem.name) < config.replenish
-                    && forSaleItem.price <= (forSaleItem.calculateValue() + (forSaleItem.l ? 250_000 : 0))
-                ) {
-                    // We want to buy them to replenish
-                    wantToBuy = true
-                }
-
-                // Do we want to buy because we want it?
-                if (
-                    !wantToBuy
-                    && config.buy
-                    && (
-                        (typeof config.buyPrice === "number" && forSaleItem.price <= (config.buyPrice + (forSaleItem.l ? 250_000 : 0)))
-                        || (config.buyPrice === "ponty" && forSaleItem.price <= ((forSaleItem.calculateValue() * AL.Game.G.multipliers.secondhands_mult) + (forSaleItem.l ? 250_000 : 0)))
-                    )
-                ) {
-                    wantToBuy = true
-                }
-
-                if (!wantToBuy) continue // We don't want to buy it
-                await bot.buyFromMerchant(player.id, tradeSlot, forSaleItem.rid)
+                const quantity = getPlayerPurchaseQuantity(
+                    this.options.itemConfig,
+                    forSaleItem,
+                    bot,
+                    this.options.enableBuyForProfit,
+                )
+                if (quantity <= 0) continue // We don't want to buy it
+                await bot.buyFromMerchant(player.id, tradeSlot, forSaleItem.rid, quantity)
             }
         }
     }
 
     protected async buyFromPonty(bot: Type) {
-        if (this.pontyLocations.every((location) => {
-            return AL.Tools.squaredDistance(bot, location) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED
-        })) return // We're not close to Ponty
+        if (
+            this.pontyLocations.every((location) => {
+                return AL.Tools.squaredDistance(bot, location) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED
+            })
+        )
+            return // We're not close to Ponty
 
-        let [lastChecked, pontyItems] = BuyStrategy.pontyData.get(`${bot.server.region}${bot.server.name}`) ?? [null, []]
+        let [lastChecked, pontyItems] = BuyStrategy.pontyData.get(`${bot.server.region}${bot.server.name}`) ?? [
+            null,
+            [],
+        ]
 
         if (
-            bot.cc < 100
-            && (
-                !lastChecked // We haven't checked ponty yet
-                || Date.now() - lastChecked.getTime() > 30_000 // It's been 30s since we last checked
-            )
+            bot.cc < 100 &&
+            (!lastChecked || // We haven't checked ponty yet
+                Date.now() - lastChecked.getTime() > 30_000) // It's been 30s since we last checked
         ) {
             // Refresh ponty data
             pontyItems = await bot.getPontyItems()
         }
 
         for (const pontyItem of pontyItems) {
-            const config: BuyConfig = this.options.itemConfig[pontyItem.name]
-            if (!config) continue // No config
-            if (!config.buy) continue // Don't want to buy
-
-            const itemData = new Item(pontyItem, AL.Game.G)
-            const pontyPrice = itemData.calculateNpcValue() * AL.Game.G.multipliers.lostandfound_mult
-
-            if (bot.gold < (pontyItem.q ?? 1) * pontyPrice) continue // We can't affort it
-
-            if (bot.esize <= 0) {
-                if (!pontyItem.q) continue // Not stackable
-
-                const gItem = AL.Game.G.items[pontyItem.name]
-                if (!bot.hasItem(pontyItem.name, bot.items, { quantityLessThan: 1 + gItem.s - pontyItem.q })) continue // We can't stack it
-            }
-
-            if (typeof config.buyPrice === "number" && config.buyPrice < pontyPrice) continue // We don't want to pay ponty price
-            else if (config.buyPrice !== "ponty") continue
+            if (!shouldBuyFromPonty(this.options.itemConfig, pontyItem, bot)) continue
 
             await bot.buyFromPonty(pontyItem)
         }
@@ -157,14 +197,20 @@ export class BuyStrategy<Type extends PingCompensatedCharacter> implements Strat
 
             if (!bot.canBuy(itemName)) {
                 // We can't buy it, check if another one of our characters can
-                for (const context of filterContexts(this.options.contexts, { serverData: bot.serverData, owner: bot.owner })) {
+                for (const context of filterContexts(this.options.contexts, {
+                    serverData: bot.serverData,
+                    owner: bot.owner,
+                })) {
                     const contextBot = context.bot
                     if (!contextBot.canBuy(itemName)) continue // They can't buy any either
                     if (Tools.squaredDistance(bot, contextBot) > AL.Constants.NPC_INTERACTION_DISTANCE_SQUARED) continue // They're too far away
 
                     const contextNum = contextBot.countItem(itemName)
                     const numWant = config.replenish - num
-                    const numToBuy = Math.min(config.replenish + numWant - contextNum, Math.floor(contextBot.gold / gItem.g))
+                    const numToBuy = Math.min(
+                        config.replenish + numWant - contextNum,
+                        Math.floor(contextBot.gold / gItem.g),
+                    )
                     if (numToBuy > 0) await contextBot.buy(itemName, numToBuy) // Buy some more
 
                     // Transfer them
