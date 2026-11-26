@@ -1272,13 +1272,6 @@ export async function adjustItemConfig(itemConfig: ItemConfig) {
         const gItem = AL.Game.G.items[itemName]
         let config = itemConfig[itemName]
 
-        // TODO: Temporary stop buying things we have no money
-        if (config && config.buy) {
-            delete config.buy
-            delete config.buyPrice
-            continue
-        }
-
         if (config && (config.buy || config.sell)) continue // Buy (or sell) is already set, don't change it
 
         if (!config) config = {}
