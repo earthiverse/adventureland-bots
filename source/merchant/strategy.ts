@@ -56,6 +56,8 @@ import { IndexesToCompoundOrUpgrade, getItemsToCompoundOrUpgrade, withdrawItemFr
 import {
     DEFAULT_ITEM_CONFIG,
     ItemConfig,
+    type ItemCounts,
+    type LevelCounts,
     UpgradeConfig,
     getItemCounts,
     reduceCount,
@@ -86,6 +88,46 @@ export const DEFAULT_MINI_BOSSES: MonsterName[] = [
     "stompy",
     "rharpy",
 ]
+
+export function cloneItemCounts(itemCounts: ItemCounts): ItemCounts {
+    const cloned: ItemCounts = new Map()
+    for (const [name, levelCounts] of itemCounts) {
+        const clonedLevels: LevelCounts = new Map()
+        for (const [level, countData] of levelCounts) {
+            clonedLevels.set(level, { ...countData })
+        }
+        cloned.set(name, clonedLevels)
+    }
+    return cloned
+}
+
+export function decrementItemCount(itemCounts: ItemCounts, item: Item): void {
+    const countData = itemCounts.get(item.name)?.get(item.level)
+    if (!countData) return
+    countData.inventorySpaces -= 1
+    countData.q -= item.q ?? 1
+}
+
+export function canSellStackToNpc(
+    itemConfig: ItemConfig,
+    item: Item,
+    bot: Character,
+    itemCounts: ItemCounts,
+): boolean {
+    if (!wantToSellToNpc(itemConfig, item, bot, itemCounts)) return false
+
+    const config = itemConfig[item.name]
+    if (!config?.sellExcess) return true
+
+    // Only sell a whole stack when removing it keeps remaining stock at or above sellExcess
+    const levelCounts = itemCounts.get(item.name)
+    if (!levelCounts) return false
+    let total = 0
+    for (const countData of levelCounts.values()) {
+        total += countData.q
+    }
+    return total - (item.q ?? 1) >= config.sellExcess
+}
 
 export type MerchantMoveStrategyOptions = {
     /** If enabled, we will log debug messages */
@@ -1625,6 +1667,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         await bot.smartMove(bankingPosition)
 
         const itemCounts = await getItemCounts(bot.owner)
+        const plannedCounts = cloneItemCounts(itemCounts)
 
         // Deposit or withdraw gold to match what we want to hold
         const goldDifference = bot.gold - this.options.goldToHold
@@ -1641,7 +1684,10 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
             }
 
             if (wantToHold(this.options.itemConfig, item, bot)) continue
-            if (wantToSellToNpc(this.options.itemConfig, item, bot, itemCounts)) continue
+            if (canSellStackToNpc(this.options.itemConfig, item, bot, plannedCounts)) {
+                decrementItemCount(plannedCounts, item)
+                continue
+            }
 
             if (item.q) {
                 // It's stackable
@@ -1687,9 +1733,10 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                         continue
                     }
 
-                    if (wantToSellToNpc(this.options.itemConfig, packItem, bot)) {
-                        foundItemToSell = true
+                    if (canSellStackToNpc(this.options.itemConfig, packItem, bot, plannedCounts)) {
                         await goAndWithdrawItem(bot, packName, packSlot, emptySlot)
+                        foundItemToSell = true
+                        decrementItemCount(plannedCounts, packItem)
                         emptySlot = bot.getFirstEmptyInventorySlot()
                         if (emptySlot === undefined) break bankSearch // No more empty slots
                         continue
@@ -1710,7 +1757,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await bot.smartMove("main")
                 const sellPromises: Promise<boolean>[] = []
                 for (const [slot, item] of bot.getItems()) {
-                    if (!wantToSellToNpc(this.options.itemConfig, item, bot)) continue
+                    if (!canSellStackToNpc(this.options.itemConfig, item, bot, itemCounts)) continue
                     sellPromises.push(bot.sell(slot, item.q ?? 1))
                     reduceCount(bot.owner, item)
                 }
