@@ -1,8 +1,10 @@
 import { jest } from "@jest/globals"
-import AL, { Item, Priest } from "alclient"
+import AL, { Item, Merchant, Priest } from "alclient"
 import {
     DEFAULT_ITEM_CONFIG,
     ItemConfig,
+    type ItemCounts,
+    type LevelCounts,
     adjustItemConfig,
     runSanityCheckOnItemConfig,
     wantToSellToNpc,
@@ -119,4 +121,59 @@ test("wantToSell works as expected", () => {
         const pricedOkay = new TradeItem({ name: "monstertoken", b: true, q: 9999, price: price, rid: "" }, AL.Game.G)
         expect(wantToSellToPlayer(itemConfig, pricedOkay)).toBeTruthy()
     }
+})
+
+test("warns when hold: true is combined with sellExcess", async () => {
+    const warn = console.warn
+    const warnMock = jest.fn()
+    console.warn = warnMock
+
+    try {
+        const itemConfig: ItemConfig = {
+            pumpkinspice: {
+                hold: ["mage", "paladin", "priest", "ranger", "rogue", "warrior"],
+                sellExcess: 9999 * 3,
+            },
+            smoke: {
+                hold: true,
+                sellExcess: 200,
+            },
+        }
+
+        await runSanityCheckOnItemConfig(itemConfig)
+
+        expect(warnMock).toHaveBeenCalledTimes(1)
+        expect(itemConfig.smoke?.sellExcess).toBeUndefined()
+        expect(itemConfig.pumpkinspice?.sellExcess).toBe(9999 * 3)
+    } finally {
+        console.warn = warn
+    }
+})
+
+test("sells excess pumpkinspice for merchant but holds for attackers", () => {
+    const serverData = {
+        region: "ASIA" as const,
+        name: "I" as const,
+        address: "test",
+        path: "/test",
+        players: 0,
+        key: "ASIAI",
+    }
+    const merchant = new Merchant("", "", "", AL.Game.G, serverData)
+    const priest = new Priest("", "", "", AL.Game.G, serverData)
+    const pumpkinspice = new Item({ name: "pumpkinspice", q: 9999 }, AL.Game.G)
+
+    const atLimitLevelCounts: LevelCounts = new Map<number | undefined, { q: number; inventorySpaces: number }>([
+        [undefined, { q: 9999 * 3, inventorySpaces: 3 }],
+    ])
+    const atLimit: ItemCounts = new Map([["pumpkinspice", atLimitLevelCounts]])
+    expect(wantToSellToNpc(DEFAULT_ITEM_CONFIG, pumpkinspice, merchant, atLimit)).toBe(false)
+    expect(wantToSellToNpc(DEFAULT_ITEM_CONFIG, pumpkinspice, priest, atLimit)).toBe(false)
+
+    const overLimitLevelCounts: LevelCounts = new Map<number | undefined, { q: number; inventorySpaces: number }>([
+        [undefined, { q: 9999 * 3 + 1, inventorySpaces: 4 }],
+    ])
+    const overLimit: ItemCounts = new Map([["pumpkinspice", overLimitLevelCounts]])
+    expect(wantToSellToNpc(DEFAULT_ITEM_CONFIG, pumpkinspice, merchant, overLimit)).toBe(true)
+    expect(wantToSellToNpc(DEFAULT_ITEM_CONFIG, pumpkinspice, priest, overLimit)).toBe(false)
 })

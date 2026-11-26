@@ -683,8 +683,8 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     //     craft: true,
     // },
     pumpkinspice: {
+        hold: ["mage", "paladin", "priest", "ranger", "rogue", "warrior"],
         sellExcess: 9999 * 3,
-        hold: true,
     },
     pyjamas: {
         ...SELL_TO_NPC,
@@ -1414,6 +1414,10 @@ export async function runSanityCheckOnItemConfig(itemConfig = DEFAULT_ITEM_CONFI
                 console.warn(`${itemName} has 'hold' and 'sellPrice' set to 'npc', removing 'sell: true'`)
                 delete config.sell
             }
+            if (config.hold === true && config.sellExcess !== undefined) {
+                console.warn(`${itemName} has 'hold: true' and 'sellExcess' set, removing 'sellExcess'`)
+                delete config.sellExcess
+            }
         }
 
         if (config.sell) {
@@ -1700,11 +1704,11 @@ export async function getItemCounts(owner: string): Promise<ItemCounts> {
  * @returns
  */
 export function reduceCount(owner: string, item: ItemData) {
-    let countMap = OWNER_ITEM_COUNTS.get(owner)
+    const countMap = OWNER_ITEM_COUNTS.get(owner)
     if (!countMap) return // We don't have any owner data
-    let itemMap = countMap.get(item.name)
+    const itemMap = countMap.get(item.name)
     if (!itemMap) return // We don't have any item data
-    let countData = itemMap.get(item.level)
+    const countData = itemMap.get(item.level)
     if (!countData) return // We don't have any count data
     countData.inventorySpaces -= 1
     countData.q -= item.q ?? 1
