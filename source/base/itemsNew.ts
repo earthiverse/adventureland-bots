@@ -218,9 +218,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         sellPrice: "npc",
     },
     cclaw: {
-        buy: true,
-        buyPrice: "ponty",
-        craft: true,
+        ...SELL_TO_NPC,
     },
     cdragon: {
         sellExcess: 5,
@@ -986,9 +984,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
     },
     wattire: {
-        buy: true,
-        buyPrice: "ponty",
-        craft: true,
+        ...SELL_TO_NPC,
     },
     wblade: {
         buy: true,
@@ -999,22 +995,16 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
     },
     wbreeches: {
-        buy: true,
-        buyPrice: "ponty",
-        craft: true,
+        ...SELL_TO_NPC,
     },
     wcap: {
-        buy: true,
-        buyPrice: "ponty",
-        craft: true,
+        ...SELL_TO_NPC,
     },
     weaponbox: {
         exchange: true,
     },
     wgloves: {
-        buy: true,
-        buyPrice: "ponty",
-        craft: true,
+        ...SELL_TO_NPC,
     },
     wingedboots: {
         craft: true,
@@ -1024,9 +1014,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         buyPrice: "ponty",
     },
     wshoes: {
-        buy: true,
-        buyPrice: "ponty",
-        craft: true,
+        ...SELL_TO_NPC,
     },
     xarmor: {
         buy: true,
