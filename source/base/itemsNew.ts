@@ -460,12 +460,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         upgradeUntilLevel: 8, // We can craft at level 8
     },
     harmor: {
-        buy: true,
-        buyPrice: "ponty",
+        ...SELL_TO_NPC,
     },
     hboots: {
-        buy: true,
-        buyPrice: "ponty",
+        ...SELL_TO_NPC,
     },
     helmet: {
         ...SELL_TO_NPC,
@@ -474,12 +472,10 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         ...SELL_TO_NPC,
     },
     hgloves: {
-        buy: true,
-        buyPrice: "ponty",
+        ...SELL_TO_NPC,
     },
     hhelmet: {
-        buy: true,
-        buyPrice: "ponty",
+        ...SELL_TO_NPC,
     },
     homecomingcape: {
         buy: true,
@@ -507,8 +503,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
         ...SELL_TO_NPC,
     },
     hpants: {
-        buy: true,
-        buyPrice: "ponty",
+        ...SELL_TO_NPC,
     },
     hpbelt: {
         ...SELL_TO_NPC,
