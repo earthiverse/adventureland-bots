@@ -96,6 +96,8 @@ let ENABLE_EVENTS = true
 let ENABLE_SERVER_HOPS = true
 let ENABLE_SPECIAL_MONSTERS = true
 let ENABLE_MONSTERHUNTS = false
+// Temporary: avoid unstable servers when picking automatic server hops
+const AVOID_SERVERS = new Set<string>(["ASIAI", "ASIAII"])
 const DEFAULT_MONSTERS: MonsterName[] = ["rat", "rat", "rat"]
 const SPECIAL_MONSTERS: MonsterName[] = [
     "crabxx",
@@ -656,6 +658,13 @@ const removeSetup = (context: Strategist<PingCompensatedCharacter>) => {
 
 const pendingHopContexts = new Set<Strategist<PingCompensatedCharacter>>()
 
+const isAvoidedServer = (region: ServerRegion, identifier: ServerIdentifier): boolean =>
+    AVOID_SERVERS.has(`${region}${identifier}`)
+
+const pickServerHopMonster = <T extends { serverRegion: ServerRegion; serverIdentifier: ServerIdentifier }>(
+    monsters: T[],
+): T | undefined => monsters.find((m) => !isAvoidedServer(m.serverRegion, m.serverIdentifier))
+
 const serverHopLogic = async () => {
     try {
         if (PRIVATE_CONTEXTS.length < EXPECTED_PRIVATE_CONTEXTS) return
@@ -670,7 +679,7 @@ const serverHopLogic = async () => {
 
             if (bot1.S.lunarnewyear) {
                 // Lunar New Year
-                const monster = (await getLunarNewYearMonsterPriority())[0]
+                const monster = pickServerHopMonster(await getLunarNewYearMonsterPriority())
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier
@@ -685,7 +694,7 @@ const serverHopLogic = async () => {
                 bot1.S.valentines
             ) {
                 // Valentines
-                const monster = (await getValentinesMonsterPriority(true))[0]
+                const monster = pickServerHopMonster(await getValentinesMonsterPriority(true))
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier
@@ -693,7 +702,7 @@ const serverHopLogic = async () => {
                 }
             } else if (bot1.S.egghunt) {
                 // Easter
-                const monster = (await getEasterMonsterPriority(true))[0]
+                const monster = pickServerHopMonster(await getEasterMonsterPriority(true))
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier
@@ -704,13 +713,16 @@ const serverHopLogic = async () => {
                 const currentPumpkin = bot1.S.mrpumpkin as ServerInfoDataLive
                 const currentGreen = bot1.S.mrgreen as ServerInfoDataLive
 
-                if (currentPumpkin?.live || currentGreen?.live) {
+                if (
+                    (currentPumpkin?.live || currentGreen?.live) &&
+                    !isAvoidedServer(bot1.serverData.region, bot1.serverData.name)
+                ) {
                     // Stay and fight
                     TARGET_IDENTIFIER = bot1.serverData.name
                     TARGET_REGION = bot1.serverData.region
                 } else {
                     // Look for pumpkins on other servers
-                    const monster = (await getHalloweenMonsterPriority(true))[0]
+                    const monster = pickServerHopMonster(await getHalloweenMonsterPriority(true))
                     if (monster) {
                         // We want to switch servers
                         TARGET_IDENTIFIER = monster.serverIdentifier
@@ -720,7 +732,7 @@ const serverHopLogic = async () => {
             } else if (bot1.S.holidayseason) {
                 // Christmas
                 // NOTE: We're going on PVP as of 2023-12-16
-                const monster = (await getHolidaySeasonMonsterPriority(false))[0]
+                const monster = pickServerHopMonster(await getHolidaySeasonMonsterPriority(false))
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier
@@ -730,7 +742,7 @@ const serverHopLogic = async () => {
 
             // Other servers
             if (TARGET_REGION == DEFAULT_REGION && TARGET_IDENTIFIER == DEFAULT_IDENTIFIER) {
-                const monster = (await getServerHopMonsterPriority(true, PRIVATE_CONTEXTS))[0]
+                const monster = pickServerHopMonster(await getServerHopMonsterPriority(true, PRIVATE_CONTEXTS))
                 if (monster) {
                     // We want to switch servers
                     TARGET_IDENTIFIER = monster.serverIdentifier
@@ -739,7 +751,7 @@ const serverHopLogic = async () => {
             }
 
             // Goobrawl
-            if (canDoGoobrawl(bot1)) {
+            if (canDoGoobrawl(bot1) && !isAvoidedServer(bot1.serverData.region, bot1.serverData.name)) {
                 // Goobrawl is active, stay on the current server
                 TARGET_IDENTIFIER = bot1.serverData.name
                 TARGET_REGION = bot1.serverData.region
