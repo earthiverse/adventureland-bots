@@ -1,4 +1,6 @@
-import AL from "alclient"
+import fs from "fs"
+import { jest } from "@jest/globals"
+import AL, { type Character, type GData, type ItemName } from "alclient"
 import {
     calculateCompoundChance,
     calculateOptimalCompoundPath,
@@ -9,7 +11,17 @@ import {
 } from "./upgrade.js"
 
 beforeAll(async () => {
-    await AL.Game.getGData(true, false)
+    try {
+        await AL.Game.getGData(true, false)
+    } catch (error) {
+        const cachedG = fs
+            .readdirSync(process.cwd())
+            .filter((file) => /^G_\d+\.json$/.test(file))
+            .sort((a, b) => Number.parseInt(a.slice(2), 10) - Number.parseInt(b.slice(2), 10))
+            .pop()
+        if (!cachedG) throw error
+        AL.Game.G = JSON.parse(fs.readFileSync(cachedG, "utf8")) as GData
+    }
     getScrollAndOfferingPricesFromG(AL.Game.G)
 }, 60_000)
 
@@ -119,4 +131,69 @@ test("calculateOptimalCompoundPath computes valid compound paths", () => {
         expect(path![i]!.cost).toBeGreaterThan(path![i - 1]!.cost)
         expect(path![i]!.level).toBeGreaterThan(path![i - 1]!.level)
     }
+})
+
+test("queries live grace with offeringp when no matching upgrade scroll is held", async () => {
+    const calculateUpgrade = jest.fn<() => Promise<{ grace: number }>>()
+    const mockBot = {
+        G: AL.Game.G,
+        items: [{ name: "xarmor", level: 8 }],
+        locateItem: (name: ItemName) => (name === "offeringp" ? 5 : undefined),
+        calculateUpgrade,
+    } as unknown as Character
+
+    calculateUpgrade.mockResolvedValueOnce({ grace: 0 })
+    const stackAction = await getNextUpgradeAction(mockBot, 0, { buyPrice: 15_000_000 })
+    expect(calculateUpgrade).toHaveBeenLastCalledWith(0, undefined, 5)
+    expect(stackAction).toEqual({
+        action: "stack",
+        scroll: undefined,
+        offering: "offeringp",
+    })
+
+    calculateUpgrade.mockResolvedValueOnce({ grace: 159.5 })
+    const upgradeAction = await getNextUpgradeAction(mockBot, 0, { buyPrice: 15_000_000 })
+    expect(calculateUpgrade).toHaveBeenLastCalledWith(0, undefined, 5)
+    expect(upgradeAction?.action).toBe("upgrade")
+    expect(upgradeAction?.scroll).toBe("scroll3")
+})
+
+test("returns undefined when required live grace cannot be checked", async () => {
+    const noProbeBot = {
+        G: AL.Game.G,
+        items: [{ name: "xarmor", level: 8 }],
+        locateItem: () => undefined,
+        calculateUpgrade: jest.fn(),
+    } as unknown as Character
+    await expect(getNextUpgradeAction(noProbeBot, 0, { buyPrice: 15_000_000 })).resolves.toBeUndefined()
+
+    const failingBot = {
+        G: AL.Game.G,
+        items: [{ name: "xarmor", level: 8 }],
+        locateItem: (name: ItemName) => (name === "offeringp" ? 5 : undefined),
+        calculateUpgrade: jest.fn<() => Promise<{ grace: number }>>().mockRejectedValue(new Error("timeout")),
+    } as unknown as Character
+    await expect(getNextUpgradeAction(failingBot, 0, { buyPrice: 15_000_000 })).resolves.toBeUndefined()
+
+    const nonFiniteGraceBot = {
+        G: AL.Game.G,
+        items: [{ name: "xarmor", level: 8 }],
+        locateItem: (name: ItemName) => (name === "offeringp" ? 5 : undefined),
+        calculateUpgrade: jest.fn<() => Promise<{ grace: number }>>().mockResolvedValue({ grace: Number.NaN }),
+    } as unknown as Character
+    await expect(getNextUpgradeAction(nonFiniteGraceBot, 0, { buyPrice: 15_000_000 })).resolves.toBeUndefined()
+})
+
+test("skips calculateUpgrade when planned upgrade requires zero grace", async () => {
+    const calculateUpgrade = jest.fn()
+    const mockBot = {
+        G: AL.Game.G,
+        items: [{ name: "bataxe", level: 0 }],
+        locateItem: () => undefined,
+        calculateUpgrade,
+    } as unknown as Character
+
+    const action = await getNextUpgradeAction(mockBot, 0, { buyPrice: 6_000_000 })
+    expect(action?.action).toBe("upgrade")
+    expect(calculateUpgrade).not.toHaveBeenCalled()
 })

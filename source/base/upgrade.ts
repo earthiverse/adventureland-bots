@@ -652,6 +652,38 @@ export type NextUpgradeAction =
           offering?: OfferingName
       }
 
+const GRACE_PROBE_OFFERINGS: readonly OfferingName[] = ["offeringp", "offering", "offeringx"]
+
+async function getLiveItemGrace(bot: Character, itemPos: number, grade: number): Promise<number | undefined> {
+    let scrollPos: number | undefined
+    for (let i = grade; i <= 3; i++) {
+        scrollPos = bot.locateItem(`scroll${i}` as ItemName, bot.items, { locked: false })
+        if (scrollPos !== undefined) break
+    }
+
+    let offeringPos: number | undefined
+    if (scrollPos === undefined) {
+        // Offering-only calculate works at any item grade, including grade 3 without scroll3
+        for (const offering of GRACE_PROBE_OFFERINGS) {
+            offeringPos = bot.locateItem(offering, bot.items, { locked: false })
+            if (offeringPos !== undefined) break
+        }
+    }
+
+    if (scrollPos === undefined && offeringPos === undefined) return undefined
+
+    try {
+        const chanceData = await bot.calculateUpgrade(itemPos, scrollPos, offeringPos)
+        if (chanceData && Number.isFinite(chanceData.grace)) {
+            return Math.round(chanceData.grace * 10) / 10
+        }
+    } catch {
+        return undefined
+    }
+
+    return undefined
+}
+
 export async function getNextUpgradeAction(
     bot: Character,
     itemPos: number,
@@ -670,39 +702,27 @@ export async function getNextUpgradeAction(
     const grade = getItemGrade(item, g)
     if (grade === undefined) return undefined
 
-    // Calculate current live grace from game if possible
-    let grace = 0
-    let scrollPos: number | undefined
-    for (let i = grade; i <= 3; i++) {
-        scrollPos = bot.locateItem(`scroll${i}` as ItemName)
-        if (scrollPos !== undefined) break
-    }
-
-    if (scrollPos !== undefined) {
-        try {
-            const chanceData = await bot.calculateUpgrade(itemPos, scrollPos, undefined)
-            if (chanceData && typeof chanceData.grace === "number") {
-                grace = Math.round(chanceData.grace * 10) / 10
-            }
-        } catch {
-            // Ignore calculate error
-        }
-    }
-
     const currentLevel = item.level ?? 0
     for (let i = 1; i < upgradePath.length; i++) {
         const node = upgradePath[i]
         const prev = upgradePath[i - 1]
         if (node.level <= currentLevel) continue
-        if (grace < prev.grace) {
-            const canStatScroll = Boolean(g.items[item.name]?.stat) && grade <= 2
-            const needMoreThanHalf = Math.round((prev.grace - grace) * 10) > 5
-            return {
-                action: "stack",
-                scroll: canStatScroll && needMoreThanHalf ? "strscroll" : undefined,
-                offering: "offeringp",
+
+        if (prev.grace > 0) {
+            const grace = await getLiveItemGrace(bot, itemPos, grade)
+            if (grace === undefined) return undefined // Avoid blind stacking or upgrading when live grace is unknown
+
+            if (grace < prev.grace) {
+                const canStatScroll = Boolean(g.items[item.name]?.stat) && grade <= 2
+                const needMoreThanHalf = Math.round((prev.grace - grace) * 10) > 5
+                return {
+                    action: "stack",
+                    scroll: canStatScroll && needMoreThanHalf ? "strscroll" : undefined,
+                    offering: "offeringp",
+                }
             }
         }
+
         return {
             action: "upgrade",
             scroll: (node.scroll as UpgradeScrollName) ?? (`scroll${grade}` as UpgradeScrollName),
