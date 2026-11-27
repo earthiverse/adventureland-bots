@@ -806,7 +806,7 @@ export const DEFAULT_ITEM_CONFIG: ItemConfig = {
     },
     snring: {
         buy: true,
-        buyPrice: 250_000_000,
+        buyPrice: 100_000_000,
         // NOTE: Currently selling to Aria
         sell: true,
         sellPrice: 300_000_000,
