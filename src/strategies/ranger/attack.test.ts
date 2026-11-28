@@ -1,7 +1,7 @@
 import type { Entity, GData, Ranger } from 'alclient';
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
 
-import { IGNORED_MONSTERS } from '@/strategies/attack';
+import { state } from '@/state/state';
 import { RangerAttackStrategy } from '@/strategies/ranger/attack';
 
 function createMockEntity(id: string, hp = 100, damageType: 'physical' | 'magical' | 'pure' = 'physical'): Entity {
@@ -18,7 +18,7 @@ function createMockEntity(id: string, hp = 100, damageType: 'physical' | 'magica
 describe('RangerAttackStrategy', () => {
   beforeEach(() => {
     mock.restore();
-    IGNORED_MONSTERS.clear();
+    state.ignoredMonsters.clear();
   });
 
   describe('3shot', () => {
@@ -56,9 +56,9 @@ describe('RangerAttackStrategy', () => {
 
       expect(threeShotMock).toHaveBeenCalledTimes(1);
       expect(threeShotMock).toHaveBeenCalledWith('m1', 'm2', 'm3');
-      expect(IGNORED_MONSTERS.has('m1')).toBe(true);
-      expect(IGNORED_MONSTERS.has('m2')).toBe(false);
-      expect(IGNORED_MONSTERS.has('m3')).toBe(false);
+      expect(state.ignoredMonsters.has('m1')).toBe(true);
+      expect(state.ignoredMonsters.has('m2')).toBe(false);
+      expect(state.ignoredMonsters.has('m3')).toBe(false);
     });
 
     test('does not 3shot if courage budget is insufficient for surviving targets', async () => {
@@ -139,7 +139,7 @@ describe('RangerAttackStrategy', () => {
       expect(fiveShotMock).toHaveBeenCalledTimes(1);
       expect(fiveShotMock).toHaveBeenCalledWith('m1', 'm2', 'm3', 'm4', 'm5');
       expect(threeShotMock).not.toHaveBeenCalled();
-      expect(IGNORED_MONSTERS.has('m1')).toBe(true);
+      expect(state.ignoredMonsters.has('m1')).toBe(true);
     });
 
     test('falls back to 3shot when 5shot cannot find 5 safe targets', async () => {
@@ -220,7 +220,7 @@ describe('RangerAttackStrategy', () => {
       expect(fiveShotMock).not.toHaveBeenCalled();
       expect(threeShotMock).toHaveBeenCalledTimes(1);
       expect(threeShotMock).toHaveBeenCalledWith('m1', 'm2', 'm3');
-      expect(IGNORED_MONSTERS.has('m1')).toBe(true);
+      expect(state.ignoredMonsters.has('m1')).toBe(true);
     });
   });
 

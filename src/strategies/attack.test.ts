@@ -1,7 +1,8 @@
 import type { Entity, PingCompensatedCharacter, ProjectileSkillGRDataObject } from 'alclient';
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
 
-import { AttackStrategy, IGNORED_MONSTERS } from '@/strategies/attack';
+import { state } from '@/state/state';
+import { AttackStrategy } from '@/strategies/attack';
 import { furthestPrioritization } from '@/utils/targeting';
 
 const MOCK_ATTACK_RESPONSE = {
@@ -41,7 +42,7 @@ function createMockBot(overrides: Partial<PingCompensatedCharacter> = {}): PingC
 describe('AttackStrategy', () => {
   beforeEach(() => {
     mock.restore();
-    IGNORED_MONSTERS.clear();
+    state.ignoredMonsters.clear();
   });
 
   describe('prioritization option', () => {
@@ -101,7 +102,7 @@ describe('AttackStrategy', () => {
       expect(basicAttackMock).toHaveBeenCalledTimes(0);
     });
 
-    test('marks one-shot kill targets in IGNORED_MONSTERS', async () => {
+    test('marks one-shot kill targets in state.ignoredMonsters', async () => {
       const strategy = new AttackStrategy();
       const basicAttackMock = mock(() => Promise.resolve(MOCK_ATTACK_RESPONSE));
 
@@ -115,7 +116,7 @@ describe('AttackStrategy', () => {
       await strategy.loops.attack?.fn(bot);
 
       expect(basicAttackMock).toHaveBeenCalledWith('target');
-      expect(IGNORED_MONSTERS.has('target')).toBe(true);
+      expect(state.ignoredMonsters.has('target')).toBe(true);
     });
   });
 });

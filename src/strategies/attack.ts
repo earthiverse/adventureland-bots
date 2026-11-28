@@ -1,14 +1,9 @@
 import type { Entity, GetEntitiesFilters, GetEntityFilters, MonsterName, PingCompensatedCharacter } from 'alclient';
-import { LRUCache } from 'lru-cache/raw';
 
+import { state } from '@/state/state';
 import type { Strategy, StrategyLoops } from '@/types/strategy';
 import type { TargetPrioritizer } from '@/types/targeting';
 import { defaultPrioritization } from '@/utils/targeting';
-
-export const IGNORED_MONSTERS = new LRUCache<string, true>({
-  max: 50,
-  ttl: 2500,
-});
 
 export interface AttackStrategyOptions {
   type?: MonsterName;
@@ -53,11 +48,11 @@ export class AttackStrategy<
     if (!target) return;
 
     const willDie = bot.canKillInOneShot(target, 'attack');
-    if (willDie) IGNORED_MONSTERS.set(target.id, true);
+    if (willDie) state.ignoredMonsters.set(target.id, true);
     try {
       await bot.basicAttack(target.id);
     } catch {
-      if (willDie) IGNORED_MONSTERS.delete(target.id);
+      if (willDie) state.ignoredMonsters.delete(target.id);
     }
   }
 
@@ -70,7 +65,7 @@ export class AttackStrategy<
       couldBurnToDeath: this.options.couldBurnToDeath ?? false,
       couldDieToProjectiles: this.options.couldDieToProjectiles ?? false,
       couldGiveCredit: this.options.couldGiveCredit ?? true,
-      ignoreIDs: [...IGNORED_MONSTERS.keys()],
+      ignoreIDs: [...state.ignoredMonsters.keys()],
       type: this.options.type,
       typeList: this.options.typeList,
       willBurnToDeath: this.options.willBurnToDeath ?? false,

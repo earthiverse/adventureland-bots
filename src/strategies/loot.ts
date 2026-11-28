@@ -1,13 +1,7 @@
 import { Constants, type PingCompensatedCharacter, Tools } from 'alclient';
-import { LRUCache } from 'lru-cache/raw';
 
 import { state } from '@/state/state';
 import type { Strategy, StrategyLoops } from '@/types/strategy';
-
-const LOOTED_CHESTS = new LRUCache<string, true>({
-  max: 500,
-  ttl: 10_000,
-});
 
 export class LootStrategy<BotType extends PingCompensatedCharacter> implements Strategy<BotType> {
   public readonly loops: StrategyLoops<BotType> = {
@@ -21,7 +15,7 @@ export class LootStrategy<BotType extends PingCompensatedCharacter> implements S
 
   protected loot(bot: BotType): void {
     for (const chest of bot.chests.values()) {
-      if (LOOTED_CHESTS.has(chest.id)) continue; // Another character is looting
+      if (state.lootedChests.has(chest.id)) continue; // Another character is looting
 
       // Get the best nearby looter
       const bestNearbyLooter = state
@@ -36,8 +30,8 @@ export class LootStrategy<BotType extends PingCompensatedCharacter> implements S
         .toSorted((a, b) => b.goldm - a.goldm)[0];
       if (!bestNearbyLooter) continue;
 
-      LOOTED_CHESTS.set(chest.id, true);
-      void bestNearbyLooter.openChest(chest.id).catch(() => LOOTED_CHESTS.delete(chest.id));
+      state.lootedChests.set(chest.id, true);
+      void bestNearbyLooter.openChest(chest.id).catch(() => state.lootedChests.delete(chest.id));
     }
   }
 }

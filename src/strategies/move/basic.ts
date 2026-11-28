@@ -1,9 +1,8 @@
 import { type MonsterName, Pathfinder, type PingCompensatedCharacter, Tools } from 'alclient';
 
+import { state } from '@/state/state';
 import type { Strategy, StrategyLoops } from '@/types/strategy';
 import { ignoreErrors } from '@/utils/errors';
-
-import { IGNORED_MONSTERS } from '../attack';
 
 export interface MoveStrategyOptions {
   type?: MonsterName;
@@ -25,7 +24,7 @@ export class BasicMoveStrategy<BotType extends PingCompensatedCharacter> impleme
 
     // Target nearest entity
     const target = bot.getEntity({
-      ignoreIDs: [...IGNORED_MONSTERS.keys()],
+      ignoreIDs: [...state.ignoredMonsters.keys()],
       type: this.options.type,
       typeList: this.options.typeList,
       returnNearest: true,

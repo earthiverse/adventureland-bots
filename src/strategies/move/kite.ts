@@ -1,6 +1,6 @@
 import { type Entity, type MonsterName, Pathfinder, type PingCompensatedCharacter, Tools } from 'alclient';
 
-import { IGNORED_MONSTERS } from '@/strategies/attack';
+import { state } from '@/state/state';
 import type { Strategy, StrategyLoops } from '@/types/strategy';
 import { ignoreErrors } from '@/utils/errors';
 import { calculateKiteDistance, findKitePosition } from '@/utils/kiting';
@@ -83,7 +83,7 @@ export class KiteMoveStrategy<
   }
 
   protected getTarget(bot: BotType): Entity | undefined {
-    const ignoreIDs = [...IGNORED_MONSTERS.keys()];
+    const ignoreIDs = [...state.ignoredMonsters.keys()];
     const aggroTarget = bot.getEntity({
       couldGiveCredit: true,
       ignoreIDs,

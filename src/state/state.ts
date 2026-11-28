@@ -1,4 +1,5 @@
 import type { BankInfo, PingCompensatedCharacter } from 'alclient';
+import { LRUCache } from 'lru-cache/raw';
 
 import type { Context } from '@/context/context';
 import { StateStrategy } from '@/strategies/state';
@@ -8,6 +9,16 @@ export class State {
   private contextsMap = new Map<string, Context>();
   private banksMap = new Map<string, BankInfo>();
   private readonly stateStrategy = new StateStrategy(this);
+
+  // Short-TTL caches to prevent bots from overkilling the same monster or double-looting the same chest
+  public readonly ignoredMonsters = new LRUCache<string, true>({
+    max: 50,
+    ttl: 2500,
+  });
+  public readonly lootedChests = new LRUCache<string, true>({
+    max: 500,
+    ttl: 10_000,
+  });
 
   public constructor() {}
 
@@ -118,6 +129,8 @@ export class State {
       context.stop();
     }
     this.contextsMap.clear();
+    this.ignoredMonsters.clear();
+    this.lootedChests.clear();
   }
 }
 

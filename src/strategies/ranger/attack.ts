@@ -1,8 +1,9 @@
 import type { Entity, Ranger } from 'alclient';
 
+import { state } from '@/state/state';
 import { canSafelyTarget, consumeCourageSlot, type CourageBudget, getCourageBudget } from '@/utils/courage';
 
-import { AttackStrategy, type AttackStrategyOptions, IGNORED_MONSTERS } from '../attack';
+import { AttackStrategy, type AttackStrategyOptions } from '../attack';
 
 export interface RangerAttackStrategyOptions extends AttackStrategyOptions {
   disableMultiShot?: boolean;
@@ -59,10 +60,10 @@ export class RangerAttackStrategy extends AttackStrategy<Ranger, RangerAttackStr
     const [f1, f2, f3, f4, f5] = targets5;
     if (f1 && f2 && f3 && f4 && f5) {
       const dyingTargets = targets5.filter((t) => bot.canKillInOneShot(t, '5shot'));
-      for (const t of dyingTargets) IGNORED_MONSTERS.set(t.id, true);
+      for (const t of dyingTargets) state.ignoredMonsters.set(t.id, true);
 
       void bot.fiveShot(f1.id, f2.id, f3.id, f4.id, f5.id).catch(() => {
-        for (const t of dyingTargets) IGNORED_MONSTERS.delete(t.id);
+        for (const t of dyingTargets) state.ignoredMonsters.delete(t.id);
       });
       for (const t of targets5) {
         if (!dyingTargets.includes(t)) consumeCourageSlot(courageBudget, t);
@@ -73,10 +74,10 @@ export class RangerAttackStrategy extends AttackStrategy<Ranger, RangerAttackStr
     const [t1, t2, t3] = targets3;
     if (t1 && t2 && t3) {
       const dyingTargets = targets3.filter((t) => bot.canKillInOneShot(t, '3shot'));
-      for (const t of dyingTargets) IGNORED_MONSTERS.set(t.id, true);
+      for (const t of dyingTargets) state.ignoredMonsters.set(t.id, true);
 
       void bot.threeShot(t1.id, t2.id, t3.id).catch(() => {
-        for (const t of dyingTargets) IGNORED_MONSTERS.delete(t.id);
+        for (const t of dyingTargets) state.ignoredMonsters.delete(t.id);
       });
       for (const t of targets3) {
         if (!dyingTargets.includes(t)) consumeCourageSlot(courageBudget, t);
@@ -95,9 +96,9 @@ export class RangerAttackStrategy extends AttackStrategy<Ranger, RangerAttackStr
     const target = this.getEntity(bot, { canDamage: 'supershot', withinRange: 'supershot' });
     if (!target) return false; // No target
 
-    if (bot.canKillInOneShot(target, 'supershot')) IGNORED_MONSTERS.set(target.id, true);
+    if (bot.canKillInOneShot(target, 'supershot')) state.ignoredMonsters.set(target.id, true);
     void bot.superShot(target.id).catch(() => {
-      IGNORED_MONSTERS.delete(target.id);
+      state.ignoredMonsters.delete(target.id);
     });
     consumeCourageSlot(courageBudget, target);
     return true;
