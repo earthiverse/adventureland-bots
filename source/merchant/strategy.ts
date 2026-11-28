@@ -1567,7 +1567,9 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
                 await this.goGetItemsFromContexts(bot).catch(console.error)
                 await this.goMluck(bot).catch(console.error)
                 await this.goFishing(bot).catch(console.error)
+                await this.equipBroom(bot).catch(console.error)
                 await this.goMining(bot).catch(console.error)
+                await this.equipBroom(bot).catch(console.error)
                 await this.goCraft(bot).catch(console.error)
                 await this.goExchange(bot).catch(console.error)
                 await this.goBuyItems(bot).catch(console.error)
@@ -1626,13 +1628,15 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
      * unless we're fishing, mining, or attacking
      */
     protected async equipBroom(bot: Merchant): Promise<void> {
+        if (bot.c?.fishing || bot.c?.mining) return // Equipping cancels active fishing or mining casts
+
         const broomPos = bot.locateItem("broom", bot.items, { returnHighestLevel: true })
         if (broomPos === undefined) return // No broom, or we already have it equipped
 
-        if (!bot.slots.mainhand) return bot.equip(broomPos) // We don't have a broom equipped
-        if (bot.slots.mainhand.name !== "broom") return bot.equip(broomPos) // Replace with the broom
+        if (!bot.slots.mainhand) return bot.equip(broomPos, "mainhand") // We don't have a broom equipped
+        if (bot.slots.mainhand.name !== "broom") return bot.equip(broomPos, "mainhand") // Replace with the broom
         const broom = bot.items[broomPos]
-        if (bot.slots.mainhand.level < broom.level) return bot.equip(broomPos) // Replace with better broom
+        if ((bot.slots.mainhand.level ?? 0) < (broom.level ?? 0)) return bot.equip(broomPos, "mainhand") // Replace with better broom
     }
 
     protected async doBanking(bot: Merchant, force = false): Promise<void> {
@@ -2447,6 +2451,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         if (bot.c.fishing) await sleep(bot.c.fishing.ms) // We're already fishing!?
 
         if (!bot.hasItem("rod") && !bot.isEquipped("rod")) {
+            await this.equipBroom(bot).catch(console.error)
             const key = `find_rod_${bot.name}${bot.serverData.region}${bot.serverData.name}`
             if (!checkOnlyEveryMS(key, 900_000, false)) return
 
@@ -2518,17 +2523,24 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         // TODO: Find closest fishing spot
         await bot.smartMove(mainFishingSpot).catch()
 
-        if (!bot.isEquipped("rod")) {
-            // Equip the rod
-            if (bot.slots.offhand) await bot.unequip("offhand")
-            await bot.equip(bot.locateItem("rod"))
+        try {
+            if (!bot.isEquipped("rod")) {
+                // Equip the rod
+                if (bot.slots.offhand) await bot.unequip("offhand")
+                await bot.equip(bot.locateItem("rod"))
+            }
+
+            // Wait if we're on cooldown
+            if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
+
+            await bot.fish()
+        } catch (error) {
+            await this.equipBroom(bot).catch(console.error)
+            throw error
         }
 
-        // Wait if we're on cooldown
-        if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
-
-        await bot.fish()
         if (!bot.isOnCooldown("fishing")) return this.goFishing(bot) // Keep fishing
+        await this.equipBroom(bot).catch(console.error)
     }
 
     protected async goGetHolidaySpirit(bot: Merchant): Promise<void> {
@@ -2601,6 +2613,7 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         if (bot.c.mining) await sleep(bot.c.mining.ms) // We're already mining!?
 
         if (!bot.hasItem("pickaxe") && !bot.isEquipped("pickaxe")) {
+            await this.equipBroom(bot).catch(console.error)
             const key = `find_pickaxe_${bot.name}${bot.serverData.region}${bot.serverData.name}`
             if (!checkOnlyEveryMS(key, 900_000, false)) return
 
@@ -2678,17 +2691,24 @@ export class NewMerchantStrategy implements Strategy<Merchant> {
         // TODO: Find closest mining spot
         await bot.smartMove(miningSpot).catch()
 
-        if (!bot.isEquipped("pickaxe")) {
-            // Equip the pickaxe
-            if (bot.slots.offhand) await bot.unequip("offhand")
-            await bot.equip(bot.locateItem("pickaxe"))
+        try {
+            if (!bot.isEquipped("pickaxe")) {
+                // Equip the pickaxe
+                if (bot.slots.offhand) await bot.unequip("offhand")
+                await bot.equip(bot.locateItem("pickaxe"))
+            }
+
+            // Wait if we're on cooldown
+            if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
+
+            await bot.mine()
+        } catch (error) {
+            await this.equipBroom(bot).catch(console.error)
+            throw error
         }
 
-        // Wait if we're on cooldown
-        if (bot.s.penalty_cd) await sleep(bot.s.penalty_cd.ms)
-
-        await bot.mine()
         if (!bot.isOnCooldown("mining")) return this.goMining(bot) // Keep mining
+        await this.equipBroom(bot).catch(console.error)
     }
 
     protected async goMluck(bot: Merchant): Promise<void> {
