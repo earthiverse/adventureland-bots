@@ -38,7 +38,7 @@ export class PartyHealStrategy implements Strategy<Priest> {
   public readonly priority = 20;
 
   protected readonly onCmListeners = new Map<string, (data: CMData) => void>();
-  protected listenerHealAmount = 0;
+  protected readonly listenerHealAmounts = new Map<string, number>();
 
   public constructor(protected options: PartyHealStrategyOptions) {
     if (options.disableCmListener && options.healIfMissingHp === undefined && options.healIfHpRatioBelow === undefined)
@@ -56,13 +56,27 @@ export class PartyHealStrategy implements Strategy<Priest> {
     if (!bot.party) return; // Not in a party, don't party heal
     if (!bot.canUse('partyheal')) return; // Can't use partyheal
 
-    if (this.listenerHealAmount > 0) {
-      const healAmount = this.getPartyHealAmount(bot);
-      if (!healAmount) return; // Won't heal anything
-      await bot.partyHeal();
-      this.listenerHealAmount = Math.max(0, this.listenerHealAmount - healAmount);
-      return;
-    }
+    if (await this.tryCmPartyHeal(bot)) return;
+    await this.tryVisiblePartyHeal(bot);
+  }
+
+  protected async tryCmPartyHeal(bot: Priest): Promise<boolean> {
+    const requestedHeal = this.listenerHealAmounts.get(bot.id) ?? 0;
+    if (requestedHeal <= 0) return false; // No pending CM heal requests
+
+    const healAmount = this.getPartyHealAmount(bot);
+    if (!healAmount) return false; // Won't heal anything
+
+    await bot.partyHeal();
+    // Re-read after await in case a larger CM request arrived while casting
+    const remaining = Math.max(0, (this.listenerHealAmounts.get(bot.id) ?? 0) - healAmount);
+    if (remaining > 0) this.listenerHealAmounts.set(bot.id, remaining);
+    else this.listenerHealAmounts.delete(bot.id); // Clear completed request
+    return true;
+  }
+
+  protected async tryVisiblePartyHeal(bot: Priest): Promise<boolean> {
+    if (!bot.party) return false; // Not in a party
 
     const partyMembers = getVisiblePlayers({
       party: bot.party,
@@ -71,17 +85,17 @@ export class PartyHealStrategy implements Strategy<Priest> {
       serverIdentifier: bot.serverData.name,
       serverRegion: bot.serverData.region,
     });
-    if (!partyMembers.length) return; // Nobody (that we can see) needs healing
+    if (!partyMembers.length) return false; // Nobody (that we can see) needs healing
 
     // healIfMissingHp
     let healAmount: number | 'optimal' | undefined = this.options.healIfMissingHp;
     if (healAmount === 'optimal') {
       healAmount = this.getPartyHealAmount(bot);
-      if (!healAmount) return; // Won't heal anything
+      if (!healAmount) return false; // Won't heal anything
     }
     if (healAmount && partyMembers.some((c) => c.max_hp - c.hp >= healAmount)) {
       await bot.partyHeal();
-      return;
+      return true;
     }
 
     // healIfHpRatioBelow
@@ -90,7 +104,10 @@ export class PartyHealStrategy implements Strategy<Priest> {
       partyMembers.some((c) => c.hp / c.max_hp < this.options.healIfHpRatioBelow!)
     ) {
       await bot.partyHeal();
+      return true;
     }
+
+    return false;
   }
 
   public getDelay(bot: Priest): number {
@@ -109,7 +126,8 @@ export class PartyHealStrategy implements Strategy<Priest> {
         const request = listenerDataSchema.safeParse(json);
         if (!request.success) return;
 
-        this.listenerHealAmount = Math.max(this.listenerHealAmount, request.data.hp ?? this.getPartyHealAmount(bot));
+        const current = this.listenerHealAmounts.get(bot.id) ?? 0;
+        this.listenerHealAmounts.set(bot.id, Math.max(current, request.data.hp ?? this.getPartyHealAmount(bot)));
       } catch {
         // Invalid JSON
       }
@@ -122,6 +140,7 @@ export class PartyHealStrategy implements Strategy<Priest> {
     const listener = this.onCmListeners.get(bot.id);
     if (listener) bot.socket.off('cm', listener);
     this.onCmListeners.delete(bot.id);
+    this.listenerHealAmounts.delete(bot.id);
   }
 
   /**

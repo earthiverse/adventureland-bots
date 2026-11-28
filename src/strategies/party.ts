@@ -30,7 +30,7 @@ export class PartyStrategy<BotType extends PingCompensatedCharacter> implements 
   };
   public readonly priority = -100;
 
-  protected onRequest: ((data: InviteData) => Promise<void>) | undefined = undefined;
+  protected readonly onRequestListeners = new Map<string, (data: InviteData) => void>();
 
   public constructor(protected options: PartyStrategyOptions) {}
 
@@ -44,18 +44,20 @@ export class PartyStrategy<BotType extends PingCompensatedCharacter> implements 
   public onApply(bot: BotType): void {
     if (bot.id !== this.options.partyLeader) return; // Only the party leader listens for invites
 
-    this.onRequest = async (data: InviteData) => {
+    const listener = (data: InviteData): void => {
       if (this.options.allowIds && !this.options.allowIds.includes(data.name)) return; // Not in allow list
       if (this.options.denyIds && this.options.denyIds.includes(data.name)) return; // In deny list
 
-      await ignoreErrors(bot.acceptPartyRequest(data.name));
+      void ignoreErrors(bot.acceptPartyRequest(data.name));
     };
-    bot.socket.on('request', this.onRequest);
+    bot.socket.on('request', listener);
+    this.onRequestListeners.set(bot.id, listener);
   }
 
   public onRemove(bot: BotType): void {
-    if (this.onRequest) bot.socket.off('request', this.onRequest);
-    this.onRequest = undefined;
+    const listener = this.onRequestListeners.get(bot.id);
+    if (listener) bot.socket.off('request', listener);
+    this.onRequestListeners.delete(bot.id);
   }
 
   public getDelay(bot: BotType): number {
