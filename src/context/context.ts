@@ -4,6 +4,7 @@ import { sleep } from 'bun';
 import type { BusyReason } from '@/types/context';
 import type { LoopDefinition, LoopName } from '@/types/loops';
 import type { Strategy } from '@/types/strategy';
+import { getReconnectDelayMs, isFatalReconnectError } from '@/utils/errors';
 
 interface RegisteredLoopEntry<BotType extends PingCompensatedCharacter> {
   strategy: Strategy<BotType>;
@@ -17,6 +18,7 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
   private isRunning = true;
   private isSwitchingOrReconnecting = false;
   private busyReasons = new Set<BusyReason>();
+  private disconnectListener: (() => void) | undefined;
 
   public constructor(
     public bot: BotType,
@@ -27,61 +29,98 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
   }
 
   private setupSocketListeners(): void {
-    this.bot.socket.on('disconnect', () => {
-      if (this.isSwitchingOrReconnecting) return; // We're already handling it
+    const currentBot = this.bot;
+    const listener = (): void => {
+      if (this.bot !== currentBot || !this.canRunLoops()) return; // Stale, stopped, or reconnecting
       console.warn(`[Context] ${this.bot.id} disconnected. Attempting auto-reconnect...`);
       void this.reconnect().catch(console.error);
-    });
+    };
+    this.disconnectListener = listener;
+    currentBot.socket.on('disconnect', listener);
   }
 
-  public async reconnect(): Promise<void> {
-    if (this.isSwitchingOrReconnecting) return; // We're already handling it
-    this.isSwitchingOrReconnecting = true;
-
-    // Pause loop ticks
-    for (const name of this.activeTimeouts.keys()) this.stopLoop(name);
-
-    // Call remove on strategies
-    for (const strategy of this.strategies) {
-      if (strategy.onRemove) strategy.onRemove(this.bot);
+  private disconnectCurrentBot(): void {
+    if (this.disconnectListener) {
+      this.bot.socket?.off('disconnect', this.disconnectListener);
+      this.disconnectListener = undefined;
     }
-
-    this.busyReasons.clear();
-
-    // Disconnect
     try {
       this.bot.disconnect();
     } catch {
       // May already be disconnected
     }
+  }
 
-    // Retry loop
-    while (this.isRunning) {
-      try {
-        console.log(`[Context] Connecting ${this.bot.id} to ${this.serverRegion} ${this.serverIdentifier}...`);
-        const newBot = (await AL.Game.startCharacter(this.bot.id, this.serverRegion, this.serverIdentifier)) as BotType;
-        this.bot = newBot;
-        this.setupSocketListeners();
+  public async reconnect(): Promise<void> {
+    if (!this.canRunLoops()) return; // Stopped or already reconnecting
+    this.isSwitchingOrReconnecting = true;
 
-        // Reapply strategies
-        for (const strategy of this.strategies) {
-          if (strategy.onApply) strategy.onApply(this.bot);
-        }
+    try {
+      // Pause loop ticks
+      for (const name of this.activeTimeouts.keys()) this.stopLoop(name);
 
-        // Resume loops
-        for (const name of this.loopRegistrations.keys()) {
-          this.scheduleNextTick(name, 0);
-        }
-
-        this.isSwitchingOrReconnecting = false;
-        console.log(
-          `[Context] ${this.bot.id} successfully connected to ${this.serverRegion} ${this.serverIdentifier}.`,
-        );
-        return;
-      } catch (error) {
-        console.error(`[Context] Connection failed for ${this.bot.id}, retrying in 5s...`, error);
-        await sleep(5000);
+      // Call remove on strategies
+      for (const strategy of this.strategies) {
+        if (strategy.onRemove) strategy.onRemove(this.bot);
       }
+
+      this.busyReasons.clear();
+      this.disconnectCurrentBot();
+
+      // Retry loop
+      while (this.isRunning) {
+        if (await this.tryReconnectOnce()) return;
+      }
+    } finally {
+      this.isSwitchingOrReconnecting = false;
+    }
+  }
+
+  private async tryReconnectOnce(): Promise<boolean> {
+    try {
+      console.log(`[Context] Connecting ${this.bot.id} to ${this.serverRegion} ${this.serverIdentifier}...`);
+      const newBot = (await AL.Game.startCharacter(this.bot.id, this.serverRegion, this.serverIdentifier)) as BotType;
+      if (!this.isRunning) {
+        // Stopped while startCharacter was in flight; disconnect the newly opened socket
+        try {
+          newBot.disconnect();
+        } catch {
+          // Suppress disconnection errors
+        }
+        return true;
+      }
+
+      this.bot = newBot;
+      this.setupSocketListeners();
+
+      // Reapply strategies
+      for (const strategy of this.strategies) {
+        if (strategy.onApply) strategy.onApply(this.bot);
+      }
+
+      // Clear reconnecting flag before resuming loops so scheduleNextTick accepts them
+      this.isSwitchingOrReconnecting = false;
+
+      // Resume loops
+      for (const name of this.loopRegistrations.keys()) {
+        this.scheduleNextTick(name, 0);
+      }
+
+      console.log(`[Context] ${this.bot.id} successfully connected to ${this.serverRegion} ${this.serverIdentifier}.`);
+      return true;
+    } catch (error) {
+      if (!this.isRunning) return true;
+
+      if (isFatalReconnectError(error)) {
+        console.error(`[Context] Authorization failed for ${this.bot.id}; stopping reconnect retries.`, error);
+        this.stop();
+        return true;
+      }
+
+      const delay = getReconnectDelayMs(error);
+      console.error(`[Context] Connection failed for ${this.bot.id}, retrying in ${delay}ms...`, error);
+      await sleep(delay);
+      return false;
     }
   }
 
@@ -174,12 +213,16 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
     }
   }
 
+  private canRunLoops(): boolean {
+    return this.isRunning && !this.isSwitchingOrReconnecting;
+  }
+
   /**
    * Executes a loop tick: runs all registered strategy handlers sequentially in order,
    * then computes the dynamic delay via Math.min across all handlers.
    */
   private async runLoopTick(name: LoopName): Promise<void> {
-    if (!this.isRunning) return;
+    if (!this.canRunLoops()) return;
 
     const entries = this.loopRegistrations.get(name);
     if (!entries || entries.length === 0) {
@@ -188,22 +231,8 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
     }
 
     // Only run if bot is ready/connected
-    const executedEntries: RegisteredLoopEntry<BotType>[] = [];
-    if (this.bot.ready) {
-      for (const entry of entries) {
-        if (!this.strategies.has(entry.strategy)) continue;
-        executedEntries.push(entry);
-        try {
-          const shouldContinue = await entry.definition.fn(this.bot);
-          if (shouldContinue === false) break; // Stop executing lower priority handlers
-        } catch (error) {
-          console.error(
-            `[Context] Error executing ${name} loop in strategy ${entry.strategy.constructor.name}:`,
-            error,
-          );
-        }
-      }
-    }
+    const executedEntries = this.bot.ready ? await this.executeLoopEntries(name, entries) : [];
+    if (!this.canRunLoops()) return;
 
     // Dynamic delay calculation: minimum delay requested among all active handlers
     const activeEntries = executedEntries.length > 0 ? executedEntries : this.loopRegistrations.get(name);
@@ -218,9 +247,33 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
     this.scheduleNextTick(name, nextDelay);
   }
 
+  /**
+   * Runs registered loop entries in priority order until one returns `false` or loops pause,
+   * returning the entries that ran so the next tick delay is computed only from active handlers.
+   */
+  private async executeLoopEntries(
+    name: LoopName,
+    entries: RegisteredLoopEntry<BotType>[],
+  ): Promise<RegisteredLoopEntry<BotType>[]> {
+    const executedEntries: RegisteredLoopEntry<BotType>[] = [];
+    for (const entry of entries) {
+      if (!this.canRunLoops()) return executedEntries;
+      if (!this.strategies.has(entry.strategy)) continue;
+      executedEntries.push(entry);
+      try {
+        const shouldContinue = await entry.definition.fn(this.bot);
+        if (!this.canRunLoops()) return executedEntries; // Reconnect or stop started while awaiting
+        if (shouldContinue === false) break; // Stop executing lower priority handlers
+      } catch (error) {
+        console.error(`[Context] Error executing ${name} loop in strategy ${entry.strategy.constructor.name}:`, error);
+      }
+    }
+    return executedEntries;
+  }
+
   private scheduleNextTick(name: LoopName, delayMs: number): void {
     this.stopLoop(name);
-    if (!this.isRunning) return;
+    if (!this.canRunLoops()) return;
 
     const timeout = setTimeout(() => {
       void this.runLoopTick(name).catch(console.error);
@@ -240,18 +293,18 @@ export class Context<BotType extends PingCompensatedCharacter = PingCompensatedC
   }
 
   public stop(): void {
+    if (!this.isRunning) return; // Already stopped
     this.isRunning = false;
     for (const name of this.activeTimeouts.keys()) {
       this.stopLoop(name);
     }
-    for (const strategy of this.strategies) {
-      if (strategy.onRemove) strategy.onRemove(this.bot);
+    if (!this.isSwitchingOrReconnecting) {
+      // Skip if reconnect() already ran onRemove before disconnecting the old bot
+      for (const strategy of this.strategies) {
+        if (strategy.onRemove) strategy.onRemove(this.bot);
+      }
     }
     this.busyReasons.clear();
-    try {
-      this.bot.disconnect();
-    } catch {
-      // Suppress disconnection errors
-    }
+    this.disconnectCurrentBot();
   }
 }

@@ -47,8 +47,19 @@ import { PartyStrategy } from './strategies/party';
 import { RegenStrategy } from './strategies/regen';
 import { RespawnStrategy } from './strategies/respawn';
 
-// Shut down cleanly on SIGINT (Ctrl+C)
-process.on('SIGINT', () => process.exit(0));
+// Shut down cleanly on SIGINT (Ctrl+C) and SIGTERM
+const shutdownHandlers: (() => void)[] = [() => state.stopAll()];
+const runShutdownHandlers = (): void => {
+  for (const handler of shutdownHandlers) handler();
+};
+process.on('SIGINT', () => {
+  runShutdownHandlers();
+  process.exit(0);
+});
+process.on('SIGTERM', () => {
+  runShutdownHandlers();
+  process.exit(0);
+});
 
 // Login
 await AL.Game.login(env.EMAIL, env.PASSWORD, env.MONGO_URI, true);
@@ -126,4 +137,5 @@ const manager = new SetupManager([
   ...tortoiseSetups,
   ...xscorpionSetups,
 ]);
+shutdownHandlers.unshift(() => manager.stop());
 manager.start();
