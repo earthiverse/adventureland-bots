@@ -248,5 +248,78 @@ describe('KiteMoveStrategy', () => {
       await strategy.loops.move?.fn(botOverThreshold);
       expect(moveMock).toHaveBeenCalledTimes(1);
     });
+
+    test('keeps current smartMove active while rounding a corner within reroute threshold', async () => {
+      const strategy = new KiteMoveStrategy({ distance: 150, type: 'phoenix' });
+      const smartMoveMock = mock(() => Promise.resolve());
+      const target = {
+        charge: 0,
+        id: 'phoenix1',
+        map: 'main',
+        range: 50,
+        speed: 40,
+        type: 'phoenix',
+        x: 0,
+        y: 0,
+      } as unknown as Entity;
+
+      // kitePos will be (150, 0), distance from smartMoving (210, 0) is 60 <= Math.max(50, 150 * 0.5) = 75
+      const bot = {
+        getEntity: () => target,
+        getTargetEntity: () => {},
+        isDisabled: () => false,
+        map: 'main',
+        range: 300,
+        smartMove: smartMoveMock,
+        smartMoving: { map: 'main', x: 210, y: 0 },
+        x: 300,
+        y: 0,
+      } as unknown as PingCompensatedCharacter;
+
+      Pathfinder.canStand = mock(() => true);
+      Pathfinder.canWalkPath = mock(() => false);
+
+      await strategy.loops.move?.fn(bot);
+      expect(smartMoveMock).not.toHaveBeenCalled();
+    });
+
+    test('biases corner turn direction toward current bot movement', async () => {
+      const strategy = new KiteMoveStrategy({ distance: 150, type: 'phoenix' });
+      const moveMock = mock(() => Promise.resolve({ map: 'main', x: 150, y: -30 }));
+      const target = {
+        charge: 0,
+        id: 'phoenix1',
+        map: 'main',
+        range: 50,
+        speed: 40,
+        type: 'phoenix',
+        x: 0,
+        y: 0,
+      } as unknown as Entity;
+
+      // Bot is moving in -y (CW around target at (0,0)), and straight back (|y| < 10) is blocked
+      const bot = {
+        getEntity: () => target,
+        getTargetEntity: () => {},
+        going_x: 100,
+        going_y: -50,
+        isDisabled: () => false,
+        map: 'main',
+        move: moveMock,
+        moving: true,
+        range: 300,
+        smartMoving: undefined,
+        x: 100,
+        y: 0,
+      } as unknown as PingCompensatedCharacter;
+
+      Pathfinder.canStand = mock((pos: { x: number; y: number }) => !(pos.x > 140 && Math.abs(pos.y) < 10));
+      Pathfinder.canWalkPath = mock(() => true);
+
+      await strategy.loops.move?.fn(bot);
+      expect(moveMock).toHaveBeenCalledTimes(1);
+      const [, moveY] = moveMock.mock.calls[0] as unknown as [number, number];
+      expect(moveY).toBeLessThan(0);
+    });
   });
 });

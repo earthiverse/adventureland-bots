@@ -1,7 +1,7 @@
 import type { IPosition, MonsterName } from 'alclient';
 import { describe, expect, test } from 'bun:test';
 
-import { calculateKiteDistance, findKitePosition, matchesMonsterType } from '@/utils/kiting';
+import { calculateKiteDistance, findKitePosition, getPreferredTurn, matchesMonsterType } from '@/utils/kiting';
 
 describe('kiting utilities', () => {
   describe('calculateKiteDistance', () => {
@@ -66,6 +66,7 @@ describe('kiting utilities', () => {
       const kitePos = findKitePosition({
         botPosition: botPos,
         canStand: () => true,
+        canWalkPath: () => true,
         kiteDistance: 150,
         targetPosition: targetPos,
       });
@@ -86,6 +87,7 @@ describe('kiting utilities', () => {
           // If looking straight back beyond 180, it's blocked by a wall
           return !(pos.x > 180 && Math.abs(pos.y) < 10);
         },
+        canWalkPath: () => true,
         kiteDistance: 150,
         targetPosition: targetPos,
       });
@@ -104,6 +106,7 @@ describe('kiting utilities', () => {
       const kitePos = findKitePosition({
         botPosition: botPos,
         canStand: (pos) => Math.hypot(pos.x, pos.y) <= 160,
+        canWalkPath: () => true,
         kiteDistance: 150,
         targetPosition: targetPos,
       });
@@ -113,6 +116,68 @@ describe('kiting utilities', () => {
       expect(kitePos?.y).toBeCloseTo(0, 1);
     });
 
+    test('avoids standable spots behind a wall/corner in favor of directly walkable angles', () => {
+      const botPos: IPosition = { map: 'main', x: 100, y: 0 };
+      const targetPos: IPosition = { map: 'main', x: 0, y: 0 };
+
+      // Straight back (y near 0) is standable on the far side of a wall, so canWalkPath is false there
+      const kitePos = findKitePosition({
+        botPosition: botPos,
+        canStand: () => true,
+        canWalkPath: (from, to) => !(from.x === 100 && Math.abs(to.y) < 30),
+        kiteDistance: 150,
+        targetPosition: targetPos,
+      });
+
+      expect(kitePos).toBeDefined();
+      expect(Math.abs(kitePos?.y ?? 0)).toBeGreaterThanOrEqual(30);
+    });
+
+    test('rejects rear clearance when a wall separates kitePos and lookPos', () => {
+      const botPos: IPosition = { map: 'main', x: 100, y: 0 };
+      const targetPos: IPosition = { map: 'main', x: 0, y: 0 };
+
+      // Thin wall between x=150 and x=187.5 along |y| < 20
+      const kitePos = findKitePosition({
+        botPosition: botPos,
+        canStand: () => true,
+        canWalkPath: (from, to) => !(from.x > 140 && to.x > 160 && Math.abs(to.y) < 20),
+        kiteDistance: 150,
+        targetPosition: targetPos,
+      });
+
+      expect(kitePos).toBeDefined();
+      expect(Math.abs(kitePos?.y ?? 0)).toBeGreaterThanOrEqual(20);
+    });
+
+    test('respects preferredTurn when baseAngle is blocked', () => {
+      const botPos: IPosition = { map: 'main', x: 100, y: 0 };
+      const targetPos: IPosition = { map: 'main', x: 0, y: 0 };
+
+      // Block straight back (|y| < 10)
+      const canStand = (pos: IPosition): boolean => !(pos.x > 140 && Math.abs(pos.y) < 10);
+
+      const ccwPos = findKitePosition({
+        botPosition: botPos,
+        canStand,
+        canWalkPath: () => true,
+        kiteDistance: 150,
+        preferredTurn: 1,
+        targetPosition: targetPos,
+      });
+      const cwPos = findKitePosition({
+        botPosition: botPos,
+        canStand,
+        canWalkPath: () => true,
+        kiteDistance: 150,
+        preferredTurn: -1,
+        targetPosition: targetPos,
+      });
+
+      expect(ccwPos?.y).toBeGreaterThan(0);
+      expect(cwPos?.y).toBeLessThan(0);
+    });
+
     test('returns undefined when all candidate positions are blocked', () => {
       const botPos: IPosition = { map: 'main', x: 100, y: 0 };
       const targetPos: IPosition = { map: 'main', x: 0, y: 0 };
@@ -120,11 +185,50 @@ describe('kiting utilities', () => {
       const kitePos = findKitePosition({
         botPosition: botPos,
         canStand: () => false,
+        canWalkPath: () => false,
         kiteDistance: 150,
         targetPosition: targetPos,
       });
 
       expect(kitePos).toBeUndefined();
+    });
+  });
+
+  describe('getPreferredTurn', () => {
+    const targetPos: IPosition = { map: 'main', x: 0, y: 0 };
+
+    test('returns undefined when not moving', () => {
+      expect(
+        getPreferredTurn({ going_x: 100, going_y: 50, map: 'main', moving: false, x: 100, y: 0 }, targetPos),
+      ).toBeUndefined();
+    });
+
+    test('returns 1 for counter-clockwise movement and -1 for clockwise movement', () => {
+      expect(getPreferredTurn({ going_x: 100, going_y: 50, map: 'main', moving: true, x: 100, y: 0 }, targetPos)).toBe(
+        1,
+      );
+      expect(getPreferredTurn({ going_x: 100, going_y: -50, map: 'main', moving: true, x: 100, y: 0 }, targetPos)).toBe(
+        -1,
+      );
+    });
+  });
+
+  describe('getPreferredTurn', () => {
+    const targetPos: IPosition = { map: 'main', x: 0, y: 0 };
+
+    test('returns undefined when not moving', () => {
+      expect(
+        getPreferredTurn({ going_x: 100, going_y: 50, map: 'main', moving: false, x: 100, y: 0 }, targetPos),
+      ).toBeUndefined();
+    });
+
+    test('returns 1 for counter-clockwise movement and -1 for clockwise movement', () => {
+      expect(getPreferredTurn({ going_x: 100, going_y: 50, map: 'main', moving: true, x: 100, y: 0 }, targetPos)).toBe(
+        1,
+      );
+      expect(getPreferredTurn({ going_x: 100, going_y: -50, map: 'main', moving: true, x: 100, y: 0 }, targetPos)).toBe(
+        -1,
+      );
     });
   });
 });

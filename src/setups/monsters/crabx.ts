@@ -1,12 +1,12 @@
 import { AttackStrategy } from '@/strategies/attack';
-import { BasicMoveStrategy } from '@/strategies/move/basic';
+import { KiteMoveStrategy } from '@/strategies/move/kite';
 import { RangerAttackStrategy } from '@/strategies/ranger/attack';
 import type { Setups } from '@/types/setup';
 import { getPriority } from '@/utils/priority';
 
 const CRABX_ATTACK_STRATEGY = new AttackStrategy({ type: 'crabx' });
 const CRABX_RANGER_ATTACK_STRATEGY = new RangerAttackStrategy({ type: 'crabx' });
-const CRABX_MOVE_STRATEGY = new BasicMoveStrategy({ type: 'crabx' });
+const CRABX_MOVE_STRATEGY = new KiteMoveStrategy({ type: 'crabx' });
 
 // TODO: Actual strategies per class
 // TODO: require with minimum stats

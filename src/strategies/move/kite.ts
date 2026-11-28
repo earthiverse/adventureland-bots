@@ -47,9 +47,10 @@ export class KiteMoveStrategy<
       return;
     }
 
+    const kiteDistance = calculateKiteDistance(bot.range, target, this.options.distance);
     const kitePos = findKitePosition({
       botPosition: bot,
-      kiteDistance: calculateKiteDistance(bot.range, target, this.options.distance),
+      kiteDistance,
       targetPosition: target,
     });
 
@@ -70,7 +71,8 @@ export class KiteMoveStrategy<
       return;
     }
 
-    if (!bot.smartMoving || Tools.distance(bot.smartMoving, kitePos) > 50) {
+    // Avoid restarting smartMove mid-corner for small shifts in kitePos
+    if (!bot.smartMoving || Tools.distance(bot.smartMoving, kitePos) > Math.max(50, kiteDistance * 0.5)) {
       void ignoreErrors(
         bot.smartMove(kitePos, {
           avoidTownWarps: true,

@@ -1,12 +1,38 @@
 import { type IPosition, type MonsterName, Pathfinder } from 'alclient';
 
+export interface MovingPosition extends IPosition {
+  moving?: boolean | undefined;
+  going_x?: number | undefined;
+  going_y?: number | undefined;
+}
+
 export interface FindKitePositionOptions {
-  botPosition: IPosition;
+  botPosition: MovingPosition;
   targetPosition: IPosition;
   kiteDistance: number;
   canStand?: (position: IPosition) => boolean;
+  canWalkPath?: (from: IPosition, to: IPosition) => boolean;
   numAngles?: number;
   lookMargin?: number;
+  /** Preferred angular direction when stepping away from baseAngle (1 = CCW, -1 = CW). */
+  preferredTurn?: 1 | -1 | undefined;
+}
+
+/**
+ * Determines the orbital turn direction around a target from a moving position's heading.
+ */
+export function getPreferredTurn(botPosition: MovingPosition, targetPosition: IPosition): 1 | -1 | undefined {
+  if (!botPosition.moving || botPosition.going_x === undefined || botPosition.going_y === undefined) {
+    return undefined;
+  }
+
+  const vx = botPosition.going_x - botPosition.x;
+  const vy = botPosition.going_y - botPosition.y;
+  if (vx === 0 && vy === 0) return undefined;
+
+  const rx = botPosition.x - targetPosition.x;
+  const ry = botPosition.y - targetPosition.y;
+  return rx * vy >= ry * vx ? 1 : -1;
 }
 
 /**
@@ -46,8 +72,10 @@ export function findKitePosition({
   targetPosition,
   kiteDistance,
   canStand = (position: IPosition) => Pathfinder.canStand(position),
+  canWalkPath = (from: IPosition, to: IPosition) => Pathfinder.canWalkPath(from, to),
   numAngles = 40,
   lookMargin = 1.25,
+  preferredTurn = getPreferredTurn(botPosition, targetPosition) ?? 1,
 }: FindKitePositionOptions): IPosition | undefined {
   const baseAngle = Math.atan2(botPosition.y - targetPosition.y, botPosition.x - targetPosition.x);
   const lookDistance = kiteDistance * lookMargin;
@@ -58,11 +86,17 @@ export function findKitePosition({
     y: targetPosition.y + distance * sin,
   });
 
-  let fallbackPos: IPosition | undefined;
+  let walkableFallback: IPosition | undefined;
+  let clearanceFallback: IPosition | undefined;
+  let standFallback: IPosition | undefined;
 
   for (let i = 0; i < numAngles; i++) {
-    // Offsets: 0, +1, -1, +2, -2 ... steps around the circle
-    const step = Math.ceil(i / 2) * (i % 2 === 1 ? 1 : -1);
+    // Offsets: 0, +1, -1, +2, -2 ... steps around the circle (biased by preferredTurn)
+    let step = 0;
+    if (i > 0) {
+      const sign = i % 2 === 1 ? preferredTurn : -preferredTurn;
+      step = Math.ceil(i / 2) * sign;
+    }
     const angle = baseAngle + (step * 2 * Math.PI) / numAngles;
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
@@ -70,15 +104,24 @@ export function findKitePosition({
     const kitePos = pointAt(cos, sin, kiteDistance);
     if (!canStand(kitePos)) continue;
 
-    // Prioritize spots that have clearance behind them to avoid getting cornered
+    const isWalkable = canWalkPath(botPosition, kitePos);
     const lookPos = pointAt(cos, sin, lookDistance);
-    if (canStand(lookPos)) {
+    const hasClearance = canStand(lookPos) && canWalkPath(kitePos, lookPos);
+
+    if (isWalkable && hasClearance) {
       return kitePos;
     }
 
-    // Fall back to the nearest standable spot if no spots have rear clearance
-    fallbackPos ??= kitePos;
+    if (isWalkable) {
+      // Directly reachable even if tight against a wall
+      walkableFallback ??= kitePos;
+    } else if (hasClearance) {
+      // Needs smartMove around an obstacle, but has open space behind it
+      clearanceFallback ??= kitePos;
+    } else {
+      standFallback ??= kitePos;
+    }
   }
 
-  return fallbackPos;
+  return walkableFallback ?? clearanceFallback ?? standFallback;
 }
