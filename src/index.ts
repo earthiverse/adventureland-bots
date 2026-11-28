@@ -1,8 +1,7 @@
 import AL from 'alclient';
 
-import { DEFAULT_IDENTIFIER, DEFAULT_REGION } from './config/defaults';
+import { botsConfig } from './config/bots';
 import { env } from './config/env';
-import { ENABLE_MONSTER_HUNTS } from './config/flags';
 import { Context } from './context/context';
 import { SetupManager } from './setups/manager';
 import { arcticbeeSetups } from './setups/monsters/arcticbee';
@@ -73,34 +72,31 @@ const AVOID_STACKING_STRATEGY = new AvoidStackingStrategy();
 const ITEM_STRATEGY = new ItemStrategy();
 const LOOT_STRATEGY = new LootStrategy();
 const MONSTER_HUNT_STRATEGY = new MonsterHuntStrategy();
-const PARTY_STRATEGY = new PartyStrategy({ partyLeader: 'Warzair' });
+const partyLeader = botsConfig.partyLeader ?? botsConfig.characters[0];
+const PARTY_STRATEGY = partyLeader ? new PartyStrategy({ partyLeader }) : undefined;
 const REGEN_STRATEGY = new RegenStrategy();
 const RESPAWN_STRATEGY = new RespawnStrategy();
 
-const warrior = await AL.Game.startWarrior('Warzair', DEFAULT_REGION, DEFAULT_IDENTIFIER);
-const mage = await AL.Game.startMage('Magzair', DEFAULT_REGION, DEFAULT_IDENTIFIER);
-const ranger = await AL.Game.startRanger('Ranzair', DEFAULT_REGION, DEFAULT_IDENTIFIER);
-
-const warriorContext = new Context(warrior, DEFAULT_REGION, DEFAULT_IDENTIFIER);
-state.addContext(warriorContext);
-
-const mageContext = new Context(mage, DEFAULT_REGION, DEFAULT_IDENTIFIER);
-state.addContext(mageContext);
-
-const rangerContext = new Context(ranger, DEFAULT_REGION, DEFAULT_IDENTIFIER);
-state.addContext(rangerContext);
+// Start configured characters; AL.Game.startCharacter picks each character's class from account data
+const contexts: Context[] = [];
+for (const characterName of botsConfig.characters) {
+  const bot = await AL.Game.startCharacter(characterName, botsConfig.server.region, botsConfig.server.identifier);
+  const context = new Context(bot, botsConfig.server.region, botsConfig.server.identifier);
+  state.addContext(context);
+  contexts.push(context);
+}
 
 // Base strategies
-for (const context of [warriorContext, mageContext, rangerContext]) {
+for (const context of contexts) {
   context.applyStrategy(AVOID_DEATH_STRATEGY);
   context.applyStrategy(AVOID_STACKING_STRATEGY);
   context.applyStrategy(ITEM_STRATEGY);
   context.applyStrategy(LOOT_STRATEGY);
-  context.applyStrategy(PARTY_STRATEGY);
+  if (PARTY_STRATEGY) context.applyStrategy(PARTY_STRATEGY);
   context.applyStrategy(REGEN_STRATEGY);
   context.applyStrategy(RESPAWN_STRATEGY);
 
-  if (ENABLE_MONSTER_HUNTS) context.applyStrategy(MONSTER_HUNT_STRATEGY);
+  if (botsConfig.flags.enableMonsterHunts) context.applyStrategy(MONSTER_HUNT_STRATEGY);
 }
 
 const manager = new SetupManager([

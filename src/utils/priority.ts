@@ -1,7 +1,6 @@
 import { Constants, type MonsterName, type PingCompensatedCharacter } from 'alclient';
 
-import { DEFAULT_MONSTER } from '@/config/defaults';
-import { ENABLE_MONSTER_HUNTS } from '@/config/flags';
+import { botsConfig } from '@/config/bots';
 import { state } from '@/state/state';
 
 export interface PriorityOptions {
@@ -11,8 +10,9 @@ export interface PriorityOptions {
 export function getPriority(bots: PingCompensatedCharacter[], options: PriorityOptions = {}): number {
   let priority = 0;
 
-  // Increase priority if it's a default monster
-  if (options.typeList?.includes(DEFAULT_MONSTER)) priority += 10;
+  // Increase priority if it's the primary default monster
+  const primaryDefault = botsConfig.defaultMonsters[0];
+  if (primaryDefault && options.typeList?.includes(primaryDefault)) priority += 10;
 
   // Increase priority if it's a special monster and one of our party members can see it
   if (
@@ -23,7 +23,7 @@ export function getPriority(bots: PingCompensatedCharacter[], options: PriorityO
   }
 
   // Increase priority if we're doing a monster hunt
-  if (ENABLE_MONSTER_HUNTS && options.typeList?.length) {
+  if (botsConfig.flags.enableMonsterHunts && options.typeList?.length) {
     const types = new Set(options.typeList);
 
     for (const bot of bots) {
